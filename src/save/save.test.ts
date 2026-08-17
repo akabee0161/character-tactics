@@ -67,4 +67,67 @@ describe('writeSave / loadSave', () => {
     expect(loadSave(fakeStorage({ [SAVE_KEY]: '42' }))).toBeNull();
     expect(loadSave(fakeStorage({ [SAVE_KEY]: 'null' }))).toBeNull();
   });
+
+  it('counters の一部フィールドが欠けていれば null', () => {
+    const broken = newSave() as unknown as Record<string, unknown>;
+    broken.counters = { funbaruUses: 0 };
+    expect(loadSave(fakeStorage({ [SAVE_KEY]: JSON.stringify(broken) }))).toBeNull();
+  });
+
+  it('counters のフィールドが数値でなければ null', () => {
+    const broken = newSave() as unknown as { counters: Record<string, unknown> };
+    broken.counters.bondSupports = 'たくさん';
+    expect(loadSave(fakeStorage({ [SAVE_KEY]: JSON.stringify(broken) }))).toBeNull();
+  });
+
+  it('counters のフィールドが負の数や小数なら null', () => {
+    const negative = newSave() as unknown as { counters: Record<string, unknown> };
+    negative.counters.bondSupports = -1;
+    expect(loadSave(fakeStorage({ [SAVE_KEY]: JSON.stringify(negative) }))).toBeNull();
+
+    const fractional = newSave() as unknown as { counters: Record<string, unknown> };
+    fractional.counters.bondSupports = 1.5;
+    expect(loadSave(fakeStorage({ [SAVE_KEY]: JSON.stringify(fractional) }))).toBeNull();
+  });
+
+  it('chars の level / xp が負の数や小数なら null', () => {
+    const negative = newSave();
+    negative.chars.roran = { level: -1, xp: 0 };
+    expect(loadSave(fakeStorage({ [SAVE_KEY]: JSON.stringify(negative) }))).toBeNull();
+
+    const fractional = newSave();
+    fractional.chars.roran = { level: 1, xp: 0.5 };
+    expect(loadSave(fakeStorage({ [SAVE_KEY]: JSON.stringify(fractional) }))).toBeNull();
+  });
+
+  it('clearedStages が負の数や小数なら null', () => {
+    const negative = { ...newSave(), clearedStages: -1 };
+    expect(loadSave(fakeStorage({ [SAVE_KEY]: JSON.stringify(negative) }))).toBeNull();
+
+    const fractional = { ...newSave(), clearedStages: 1.5 };
+    expect(loadSave(fakeStorage({ [SAVE_KEY]: JSON.stringify(fractional) }))).toBeNull();
+  });
+
+  it('titles に不正な称号 ID が含まれていれば null', () => {
+    const broken = { ...newSave(), titles: ['nazono-shougou'] } as unknown as Record<string, unknown>;
+    expect(loadSave(fakeStorage({ [SAVE_KEY]: JSON.stringify(broken) }))).toBeNull();
+  });
+});
+
+describe('writeSave の失敗', () => {
+  it('setItem が例外を投げても writeSave は例外を投げず false を返す', () => {
+    const throwingStorage: StorageLike = {
+      getItem: () => null,
+      setItem: () => {
+        throw new Error('QuotaExceededError');
+      },
+    };
+    expect(() => writeSave(throwingStorage, newSave())).not.toThrow();
+    expect(writeSave(throwingStorage, newSave())).toBe(false);
+  });
+
+  it('setItem が成功すれば true を返す', () => {
+    const st = fakeStorage();
+    expect(writeSave(st, newSave())).toBe(true);
+  });
 });
