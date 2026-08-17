@@ -1,0 +1,10 @@
+name = "ankardo-game-character-tactics"
+compatibility_date = "2026-08-17"
+
+routes = [
+  { pattern = "ankardo.com/play/character-tactics/*", zone_name = "ankardo.com" }
+]
+
+[assets]
+directory = "./out"
+not_found_handling = "404-page"
