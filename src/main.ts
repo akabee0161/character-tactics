@@ -57,6 +57,12 @@ function toLogical(ev: PointerEvent): Vec2 {
   return screenToLogical(vp, ev.clientX - rect.left, ev.clientY - rect.top);
 }
 
+/** Canvas 外までポインターが移動しても pointerup を確実に受け取れるようにする */
+function startDrag(id: CharId, ev: PointerEvent): void {
+  dragging = id;
+  canvas.setPointerCapture(ev.pointerId);
+}
+
 function beginStage(index: number): void {
   stageIndex = index;
   battle = createBattleState(STAGES[index]!, save.chars, Date.now() % 100000);
@@ -78,8 +84,7 @@ function onPointerDown(ev: PointerEvent): void {
     case 'title':
       if (hitRect(BTN.titleNew, p)) {
         save = newSave();
-        writeSave(window.localStorage, save);
-        hasSave = true;
+        hasSave = writeSave(window.localStorage, save) || hasSave;
         phase = 'select';
       } else if (hasSave && hitRect(BTN.titleContinue, p)) {
         phase = 'select';
@@ -101,7 +106,7 @@ function onPointerDown(ev: PointerEvent): void {
         return;
       }
       const hit = pickAlly(battle.allies, logicalToMap(p));
-      if (hit) dragging = hit;
+      if (hit) startDrag(hit, ev);
       return;
     }
 
@@ -130,7 +135,7 @@ function onPointerDown(ev: PointerEvent): void {
       const hit = pickAlly(battle.allies, logicalToMap(p));
       if (hit) {
         selected = hit;
-        dragging = hit;
+        startDrag(hit, ev);
       } else if (selected) {
         commands.push({ type: 'move', allyId: selected, dest: logicalToMap(p) });
       }
@@ -147,7 +152,7 @@ function onPointerDown(ev: PointerEvent): void {
       }
       // なみの あいだは 再配置できる
       const hit = pickAlly(battle.allies, logicalToMap(p));
-      if (hit) dragging = hit;
+      if (hit) startDrag(hit, ev);
       return;
     }
 
@@ -170,8 +175,13 @@ function onPointerUp(ev: PointerEvent): void {
   dragging = null;
 }
 
+function onPointerCancel(): void {
+  dragging = null;
+}
+
 canvas.addEventListener('pointerdown', onPointerDown);
 canvas.addEventListener('pointerup', onPointerUp);
+canvas.addEventListener('pointercancel', onPointerCancel);
 
 function update(dt: number): void {
   if (phase !== 'battle' || !battle) return;
@@ -193,8 +203,7 @@ function update(dt: number): void {
   } else if (battle.phase === 'stageCleared') {
     const r = applyStageClear(save, stageIndex, battle.stats);
     save = r.save;
-    writeSave(window.localStorage, save);
-    hasSave = true;
+    hasSave = writeSave(window.localStorage, save) || hasSave;
     result = { gains: r.gains, newTitles: r.newTitles };
     phase = 'result';
   }
