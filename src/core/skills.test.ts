@@ -166,6 +166,26 @@ describe('かけぬける', () => {
     expect(canUseSkill(s, 'gau')).toBe(true);
   });
 
+  it('目的地は歩けても経路上に壁があれば発動しない', () => {
+    const stage: StageDef = { ...STAGE, mapRows: ['..........', '.....#....', '..........'] };
+    const s = createBattleState(stage, LV1, 1);
+    startWave(s);
+    ally(s, 'gau').pos = { x: 16, y: 48 };
+    expect(useSkill(s, 'gau', { x: 300, y: 48 })).toBe(false);
+    expect(ally(s, 'gau').pos).toEqual({ x: 16, y: 48 });
+    expect(canUseSkill(s, 'gau')).toBe(true);
+  });
+
+  it('倒した敵の lastHitBy が記録され、撃破功績が付く', () => {
+    const s = createBattleState(STAGE, LV1, 1);
+    startWave(s);
+    ally(s, 'gau').pos = { x: 16, y: 16 };
+    const e = addEnemy(s, 100, 16, 3);
+    expect(useSkill(s, 'gau', { x: 200, y: 16 })).toBe(true);
+    expect(e.lastHitBy).toBe('gau');
+    expect(e.lastHitNeraiuchi).toBe(false);
+  });
+
   it('交戦は解除される', () => {
     const s = createBattleState(STAGE, LV1, 1);
     startWave(s);

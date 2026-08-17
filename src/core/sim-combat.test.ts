@@ -158,6 +158,16 @@ describe('撃破と撤退', () => {
     expect(s.stats.ines.neraiuchiKills).toBe(1);
   });
 
+  it('かけぬけるで倒すと defeats が増え、enemyDefeated イベントに byAlly が入る', () => {
+    const s = fresh();
+    ally(s, 'gau').pos = { x: 16, y: 16 };
+    const e = addEnemy(s, 'narazumono', 100, 16, 3);
+    step(s, [{ type: 'skill', allyId: 'gau', dest: { x: 200, y: 16 } }], 0.01);
+    expect(s.enemies).toHaveLength(0);
+    expect(s.events).toContainEqual({ type: 'enemyDefeated', uid: e.uid, kind: 'narazumono', byAlly: 'gau' });
+    expect(s.stats.gau.defeats).toBe(1);
+  });
+
   it('ガルムは 30% を切ると撤退する（garumFlees が true のとき）', () => {
     const s = fresh();
     ally(s, 'roran').pos = { x: 16, y: 16 };
