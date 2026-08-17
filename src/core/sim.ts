@@ -1,11 +1,14 @@
+import { bondSupporters } from './bonds';
 import { ENEMIES } from '../content/enemies';
-import { nearestWithin } from './combat';
-import { computeFlowField, flowDirection, isWalkableAt } from './field';
+import { computeDamage, effectiveInterval, hasThreatWithinMelee, nearestWithin } from './combat';
+import { computeFlowField, distance, flowDirection, isWalkableAt } from './field';
 import { nextFloat } from './rng';
-import { useSkill } from './skills';
+import { isFunbaruActive, useSkill } from './skills';
 import type { AllyUnit, BattleState, CharId, EnemyUnit, Vec2 } from './types';
 
 export const SPAWN_JITTER = 12;
+export const FORT_RADIUS = 24;
+export const PINCH_RATIO = 0.3;
 
 export type SimCommand =
   | { type: 'move'; allyId: CharId; dest: Vec2 }
@@ -21,6 +24,11 @@ export function step(state: BattleState, commands: SimCommand[], dt: number): vo
   spawnDueEnemies(state);
   updateEngagements(state, movedThisTick);
   moveUnits(state, dt);
+  resolveAttacks(state, dt);
+  resolveEnemyRemoval(state);
+  resolveAllyRetirement(state);
+  resolveFort(state);
+  updatePhase(state);
 }
 
 function applyCommands(state: BattleState, commands: SimCommand[]): Set<CharId> {
@@ -101,7 +109,12 @@ function updateEngagements(state: BattleState, movedThisTick: Set<CharId>): void
     const target = nearestWithin(ally.pos, available, ally.range);
     if (target) {
       ally.engagedWith = target.uid;
-      ally.attackCooldown = 0;
+      // 交戦成立の直後は攻撃していないので、1 攻撃間隔ぶんのクールダウンを与える
+      ally.attackCooldown = effectiveInterval(
+        ally.attackInterval,
+        ally.attack,
+        hasThreatWithinMelee(ally.pos, state.enemies),
+      );
       claimed.add(target.uid);
       const firstMeeting = !ally.seenKinds.includes(target.kind);
       if (firstMeeting) ally.seenKinds.push(target.kind);
@@ -128,7 +141,8 @@ function updateEngagements(state: BattleState, movedThisTick: Set<CharId>): void
       const target = nearestWithin(enemy.pos, allies, range);
       if (target) {
         enemy.engagedWith = target.id;
-        enemy.attackCooldown = 0;
+        // 敵は常に近接なので、交戦成立の直後は素の攻撃間隔ぶんのクールダウンを与える
+        enemy.attackCooldown = ENEMIES[enemy.kind].attackInterval;
       }
     }
   }
@@ -155,5 +169,155 @@ function moveUnits(state: BattleState, dt: number): void {
     if (!dir) continue;
     const speed = ENEMIES[enemy.kind].speed;
     enemy.pos = { x: enemy.pos.x + dir.x * speed * dt, y: enemy.pos.y + dir.y * speed * dt };
+  }
+}
+
+function resolveAttacks(state: BattleState, dt: number): void {
+  const byUid = new Map(state.enemies.map((e) => [e.uid, e]));
+
+  for (const ally of state.allies) {
+    if (ally.retired) continue;
+    ally.attackCooldown -= dt;
+    if (ally.engagedWith === null) continue;
+    const target = byUid.get(ally.engagedWith);
+    if (!target) continue;
+
+    const interval = effectiveInterval(
+      ally.attackInterval,
+      ally.attack,
+      hasThreatWithinMelee(ally.pos, state.enemies),
+    );
+    if (ally.attackCooldown > 0) continue;
+
+    const supporters = bondSupporters(ally.id, ally.pos, state.allies);
+    let bonus = 0;
+    for (const s of supporters) {
+      bonus += s.bonus;
+      state.events.push({ type: 'bondSupport', supporterId: s.id, targetId: ally.id });
+    }
+    if (supporters.length > 0) state.stats[ally.id].bondSupports += 1;
+
+    const neraiuchi = ally.neraiuchiArmed;
+    const dmg = computeDamage({
+      power: ally.power,
+      guard: ENEMIES[target.kind].guard,
+      attackKind: ally.attack,
+      bowDamageCap: ENEMIES[target.kind].bowDamageCap,
+      bondBonus: bonus,
+      neraiuchi,
+      targetFunbaru: false,
+    });
+    target.hp -= dmg;
+    target.lastHitBy = ally.id;
+    target.lastHitNeraiuchi = neraiuchi;
+    ally.neraiuchiArmed = false;
+    ally.attackCooldown = interval;
+    state.events.push({ type: 'hit', targetPos: { ...target.pos }, amount: dmg });
+  }
+
+  for (const enemy of state.enemies) {
+    enemy.attackCooldown -= dt;
+    if (enemy.engagedWith === null) continue;
+    const target = state.allies.find((a) => a.id === enemy.engagedWith && !a.retired);
+    if (!target) continue;
+    if (enemy.attackCooldown > 0) continue;
+
+    const def = ENEMIES[enemy.kind];
+    const before = target.hp;
+    const dmg = computeDamage({
+      power: def.power,
+      guard: target.guard,
+      attackKind: 'melee',
+      bowDamageCap: null,
+      bondBonus: 0,
+      neraiuchi: false,
+      targetFunbaru: isFunbaruActive(target, state.time),
+    });
+    target.hp -= dmg;
+    enemy.attackCooldown = def.attackInterval;
+    state.events.push({ type: 'hit', targetPos: { ...target.pos }, amount: dmg });
+
+    const ratio = target.hp / target.maxHp;
+    const beforeRatio = before / target.maxHp;
+    if (target.hp > 0 && ratio < PINCH_RATIO && beforeRatio >= PINCH_RATIO && !target.pinchShown) {
+      target.pinchShown = true;
+      state.events.push({ type: 'pinch', allyId: target.id });
+    }
+  }
+}
+
+function resolveEnemyRemoval(state: BattleState): void {
+  const survivors: EnemyUnit[] = [];
+  for (const enemy of state.enemies) {
+    const def = ENEMIES[enemy.kind];
+    const flees =
+      def.fleeAtHpRatio !== null &&
+      state.stage.garumFlees &&
+      enemy.hp / enemy.maxHp < def.fleeAtHpRatio;
+
+    if (flees) {
+      state.events.push({ type: 'garumRepelled', byAlly: enemy.lastHitBy });
+      continue;
+    }
+    if (enemy.hp <= 0) {
+      state.events.push({
+        type: 'enemyDefeated', uid: enemy.uid, kind: enemy.kind, byAlly: enemy.lastHitBy,
+      });
+      if (enemy.lastHitBy) {
+        state.stats[enemy.lastHitBy].defeats += 1;
+        if (enemy.lastHitNeraiuchi) state.stats[enemy.lastHitBy].neraiuchiKills += 1;
+      }
+      continue;
+    }
+    survivors.push(enemy);
+  }
+  if (survivors.length !== state.enemies.length) {
+    const alive = new Set(survivors.map((e) => e.uid));
+    for (const ally of state.allies) {
+      if (ally.engagedWith !== null && !alive.has(ally.engagedWith)) ally.engagedWith = null;
+    }
+  }
+  state.enemies = survivors;
+}
+
+function resolveAllyRetirement(state: BattleState): void {
+  for (const ally of state.allies) {
+    if (ally.retired || ally.hp > 0) continue;
+    ally.hp = 0;
+    ally.retired = true;
+    ally.engagedWith = null;
+    ally.goalField = null;
+    for (const enemy of state.enemies) {
+      if (enemy.engagedWith === ally.id) enemy.engagedWith = null;
+    }
+    state.events.push({ type: 'allyRetired', allyId: ally.id });
+  }
+}
+
+function resolveFort(state: BattleState): void {
+  const survivors: EnemyUnit[] = [];
+  for (const enemy of state.enemies) {
+    // 交戦中の敵はその場で足止めされているので、たまたま砦の近くで戦っていても
+    // 砦への到達扱いにはしない
+    if (enemy.engagedWith === null && distance(enemy.pos, state.stage.fort) <= FORT_RADIUS) {
+      const amount = ENEMIES[enemy.kind].fortDamage;
+      state.fortHp -= amount;
+      state.events.push({ type: 'fortDamaged', amount });
+      continue;
+    }
+    survivors.push(enemy);
+  }
+  state.enemies = survivors;
+}
+
+function updatePhase(state: BattleState): void {
+  if (state.fortHp <= 0) {
+    state.fortHp = 0;
+    state.phase = 'defeat';
+    return;
+  }
+  if (state.enemies.length === 0 && state.pending.length === 0) {
+    const isLast = state.waveIndex >= state.stage.waves.length - 1;
+    state.phase = isLast ? 'stageCleared' : 'waveCleared';
   }
 }
