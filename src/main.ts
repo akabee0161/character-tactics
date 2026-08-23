@@ -4,6 +4,7 @@ import { createBattleState, placeAlly, startWave } from './core/state';
 import { step } from './core/sim';
 import type { SimCommand } from './core/sim';
 import { drawBattle } from './render/draw';
+import { makeEffectState, spawnHitEffects, tickEffects } from './render/effects';
 import { LOGICAL_H, LOGICAL_W, computeViewport, logicalToMap, mapToLogical, screenToLogical } from './render/viewport';
 import { advanceBubble, currentBubble, enqueue, isBlocking, makeBubbleQueue } from './ui/bubbles';
 import { applyStageClear, isStageUnlocked } from './ui/flow';
@@ -37,6 +38,7 @@ let dragging: CharId | null = null;
 let pendingSkill: CharId | null = null;
 let result: { gains: XpGain[]; newTitles: TitleId[] } | null = null;
 const bubbles = makeBubbleQueue();
+const effects = makeEffectState();
 const commands: SimCommand[] = [];
 let accumulator = 0;
 let lastTime = performance.now();
@@ -192,9 +194,11 @@ function update(dt: number): void {
     accumulator -= FIXED_DT;
     const batch = commands.splice(0, commands.length);
     step(battle, batch, FIXED_DT);
+    spawnHitEffects(effects, battle.events);
     enqueue(bubbles, pickDialogue(battle.events));
     if (isBlocking(bubbles)) break;
   }
+  tickEffects(effects, dt);
 
   if (battle.phase === 'defeat') {
     phase = 'defeat';
@@ -224,21 +228,21 @@ function render(): void {
       break;
     case 'placement':
       if (battle) {
-        drawBattle(ctx, battle);
+        drawBattle(ctx, battle, selected, effects);
         drawPlacement(ctx, battle);
         drawBottomBar(ctx, battle, selected);
       }
       break;
     case 'battle':
       if (battle) {
-        drawBattle(ctx, battle);
+        drawBattle(ctx, battle, selected, effects);
         drawBottomBar(ctx, battle, selected);
         if (selected) drawSkillButton(ctx, battle, selected);
       }
       break;
     case 'waveCleared':
       if (battle) {
-        drawBattle(ctx, battle);
+        drawBattle(ctx, battle, selected, effects);
         drawBottomBar(ctx, battle, selected);
         drawWaveCleared(ctx, battle);
       }

@@ -4,7 +4,9 @@ import { bondSupporters } from '../core/bonds';
 import { isFunbaruActive } from '../core/skills';
 import { FORT_MAX_HP } from '../core/types';
 import { LOGICAL_H, LOGICAL_W, mapToLogical } from './viewport';
-import type { BattleState, Vec2 } from '../core/types';
+import { HIT_EFFECT_DURATION } from './effects';
+import type { EffectState } from './effects';
+import type { BattleState, CharId, Vec2 } from '../core/types';
 
 const COLORS = {
   sea: '#12303f',
@@ -21,7 +23,12 @@ const COLORS = {
 
 const UNIT_R = 11;
 
-export function drawBattle(ctx: CanvasRenderingContext2D, state: BattleState): void {
+export function drawBattle(
+  ctx: CanvasRenderingContext2D,
+  state: BattleState,
+  selected: CharId | null,
+  effects: EffectState,
+): void {
   ctx.save();
   ctx.fillStyle = COLORS.sea;
   ctx.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
@@ -30,7 +37,8 @@ export function drawBattle(ctx: CanvasRenderingContext2D, state: BattleState): v
   drawFort(ctx, state);
   drawBonds(ctx, state);
   drawEnemies(ctx, state);
-  drawAllies(ctx, state);
+  drawAllies(ctx, state, selected);
+  drawEffects(ctx, effects);
   drawTopBar(ctx, state);
   ctx.restore();
 }
@@ -110,7 +118,7 @@ function drawEnemies(ctx: CanvasRenderingContext2D, state: BattleState): void {
   }
 }
 
-function drawAllies(ctx: CanvasRenderingContext2D, state: BattleState): void {
+function drawAllies(ctx: CanvasRenderingContext2D, state: BattleState, selected: CharId | null): void {
   for (const ally of state.allies) {
     if (ally.retired) continue;
     const p = mapToLogical(ally.pos);
@@ -123,6 +131,16 @@ function drawAllies(ctx: CanvasRenderingContext2D, state: BattleState): void {
     ctx.fillStyle = COLORS.text;
     ctx.fillRect(p.x + UNIT_R - 2, p.y - UNIT_R - 6, 2, 10);
     ctx.fillRect(p.x + UNIT_R, p.y - UNIT_R - 6, 7, 5);
+
+    if (ally.id === selected) {
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 3;
+      ctx.setLineDash([4, 3]);
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, UNIT_R + 10, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
 
     if (isFunbaruActive(ally, state.time)) {
       ctx.strokeStyle = '#ffe27a';
@@ -139,6 +157,18 @@ function drawAllies(ctx: CanvasRenderingContext2D, state: BattleState): void {
       ctx.stroke();
     }
     drawHpBar(ctx, p, ally.hp / ally.maxHp, COLORS.hpAlly);
+  }
+}
+
+function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void {
+  for (const e of effects.items) {
+    const p = mapToLogical(e.pos);
+    const ratio = Math.max(0, e.ttl / HIT_EFFECT_DURATION);
+    ctx.strokeStyle = `rgba(255, 235, 150, ${ratio})`;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, UNIT_R + (1 - ratio) * 14, 0, Math.PI * 2);
+    ctx.stroke();
   }
 }
 
