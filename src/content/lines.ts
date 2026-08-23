@@ -38,4 +38,12 @@ export const LINES: Record<string, string> = {
   'retire:ines': 'くっ……\nここまでね',
   'retire:mist': 'ちょっと……\nやすみますね……',
   'retire:gau': 'うう、\nまだ やれるのに……',
+
+  // ウェーブ開始時の かいわ
+  'wave:s1w1:roran': 'みんな、\nじゅんびは いい？',
+  'wave:s1w1:gau': 'ばっちりだよ！\nはやく こいこい！',
+  'wave:s1w3:garum': 'また きたぞ。\nこんどこそ とりでを もらう',
+  'wave:s1w3:roran': 'させないよ。\nここは ぼくが まもる',
+  'wave:s3w1:narazumono': 'おい、\nたてもちも きたぞ',
+  'wave:s3w1:tatemochi': 'まもりは まかせろ。\nおまえは すすめ',
 };

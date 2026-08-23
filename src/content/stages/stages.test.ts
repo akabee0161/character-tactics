@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { STAGES } from './index';
 import { cellIndexAt, computeFlowField, isWalkableAt, makeGrid } from '../../core/field';
+import { LINES } from '../lines';
 
 describe('STAGES', () => {
   it('3 ステージある', () => {
@@ -90,5 +91,15 @@ describe('STAGES', () => {
 
   it('ステージ 1 の上陸地点は 1 つ、2 と 3 は 2 つ', () => {
     expect(STAGES.map((s) => s.landings.length)).toEqual([1, 2, 2]);
+  });
+
+  it('intro に書かれた lineId はすべて LINES に存在する', () => {
+    for (const stage of STAGES) {
+      for (const wave of stage.waves) {
+        for (const item of wave.intro ?? []) {
+          expect(LINES[item.lineId], item.lineId).toBeDefined();
+        }
+      }
+    }
   });
 });

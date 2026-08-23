@@ -1,5 +1,5 @@
 import { STAGES } from './content/stages';
-import { pickDialogue } from './core/dialogue';
+import { pickDialogue, pickWaveIntro } from './core/dialogue';
 import { createBattleState, placeAlly, startWave } from './core/state';
 import { step } from './core/sim';
 import type { SimCommand } from './core/sim';
@@ -111,6 +111,7 @@ function onPointerDown(ev: PointerEvent): void {
       if (hitRect(BTN.start, p)) {
         writeSave(window.localStorage, save); // ステージ開始時点を保存する
         startWave(battle);
+        enqueue(bubbles, pickWaveIntro(battle.stage, battle.waveIndex));
         phase = 'battle';
         return;
       }
@@ -158,6 +159,7 @@ function onPointerDown(ev: PointerEvent): void {
       if (hitRect(BTN.next, p)) {
         battle.waveIndex += 1;
         startWave(battle);
+        enqueue(bubbles, pickWaveIntro(battle.stage, battle.waveIndex));
         phase = 'battle';
         return;
       }

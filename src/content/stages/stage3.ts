@@ -27,11 +27,17 @@ export const STAGE3: StageDef = {
   landings: [A, B],
   garumFlees: false,
   waves: [
-    { spawns: [
-      { at: 0, kind: 'narazumono', from: A },
-      { at: 1, kind: 'tatemochi', from: B },
-      { at: 3, kind: 'narazumono', from: A },
-    ] },
+    {
+      intro: [
+        { speaker: { side: 'enemy', id: 'narazumono' }, lineId: 'wave:s3w1:narazumono' },
+        { speaker: { side: 'enemy', id: 'tatemochi' }, lineId: 'wave:s3w1:tatemochi' },
+      ],
+      spawns: [
+        { at: 0, kind: 'narazumono', from: A },
+        { at: 1, kind: 'tatemochi', from: B },
+        { at: 3, kind: 'narazumono', from: A },
+      ],
+    },
     { spawns: [
       { at: 0, kind: 'tatemochi', from: A },
       { at: 1, kind: 'tatemochi', from: B },
