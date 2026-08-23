@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { advanceBubble, currentBubble, enqueue, isBlocking, makeBubbleQueue } from './bubbles';
 import type { DialogueRequest } from '../core/dialogue';
 
-const req = (lineId: string): DialogueRequest => ({ speaker: 'roran', lineId, text: lineId });
+const req = (lineId: string): DialogueRequest => ({ speaker: { side: 'ally', id: 'roran' }, lineId, text: lineId });
 
 describe('BubbleQueue', () => {
   it('空なら止めないし、表示するものもない', () => {

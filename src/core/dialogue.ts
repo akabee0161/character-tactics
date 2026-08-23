@@ -1,14 +1,18 @@
 import { LINES } from '../content/lines';
-import type { CharId, SimEvent } from './types';
+import type { CharId, Speaker, StageDef, SimEvent } from './types';
 
-export type DialogueRequest = { speaker: CharId; lineId: string; text: string };
+export type DialogueRequest = { speaker: Speaker; lineId: string; text: string };
 
 const RIVAL_SPEAKERS: readonly CharId[] = ['roran', 'ines'];
 
 /** 小さいほど先に表示する */
 const PRIORITY = ['rival', 'first', 'skill', 'pinch', 'win', 'retire'] as const;
 
-function make(speaker: CharId, lineId: string): DialogueRequest | null {
+function ally(id: CharId): Speaker {
+  return { side: 'ally', id };
+}
+
+function make(speaker: Speaker, lineId: string): DialogueRequest | null {
   const text = LINES[lineId];
   if (text === undefined) return null;
   return { speaker, lineId, text };
@@ -26,23 +30,23 @@ export function pickDialogue(events: SimEvent[]): DialogueRequest[] {
       case 'engage': {
         if (!ev.firstMeeting) break;
         if (ev.kind === 'garum' && RIVAL_SPEAKERS.includes(ev.allyId)) {
-          push('rival', make(ev.allyId, `rival:${ev.allyId}`));
+          push('rival', make(ally(ev.allyId), `rival:${ev.allyId}`));
         } else {
-          push('first', make(ev.allyId, `first:${ev.allyId}:${ev.kind}`));
+          push('first', make(ally(ev.allyId), `first:${ev.allyId}:${ev.kind}`));
         }
         break;
       }
       case 'skill':
-        push('skill', make(ev.allyId, `skill:${ev.allyId}`));
+        push('skill', make(ally(ev.allyId), `skill:${ev.allyId}`));
         break;
       case 'pinch':
-        push('pinch', make(ev.allyId, `pinch:${ev.allyId}`));
+        push('pinch', make(ally(ev.allyId), `pinch:${ev.allyId}`));
         break;
       case 'garumRepelled':
-        if (ev.byAlly) push('win', make(ev.byAlly, `win:${ev.byAlly}`));
+        if (ev.byAlly) push('win', make(ally(ev.byAlly), `win:${ev.byAlly}`));
         break;
       case 'allyRetired':
-        push('retire', make(ev.allyId, `retire:${ev.allyId}`));
+        push('retire', make(ally(ev.allyId), `retire:${ev.allyId}`));
         break;
       default:
         break;
@@ -53,4 +57,16 @@ export function pickDialogue(events: SimEvent[]): DialogueRequest[] {
     .map((f, i) => ({ ...f, i }))
     .sort((a, b) => a.order - b.order || a.i - b.i)
     .map((f) => f.req);
+}
+
+/** ウェーブ開始時の会話を、そのウェーブの `intro` 定義どおりの順番で返す */
+export function pickWaveIntro(stage: StageDef, waveIndex: number): DialogueRequest[] {
+  const wave = stage.waves[waveIndex];
+  if (!wave?.intro) return [];
+  const found: DialogueRequest[] = [];
+  for (const { speaker, lineId } of wave.intro) {
+    const req = make(speaker, lineId);
+    if (req) found.push(req);
+  }
+  return found;
 }

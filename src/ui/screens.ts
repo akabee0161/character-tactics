@@ -1,4 +1,5 @@
 import { CHARACTERS } from '../content/characters';
+import { ENEMIES } from '../content/enemies';
 import { STAGES } from '../content/stages';
 import { TITLE_LABELS, TITLE_OWNER, xpToNext } from '../core/progress';
 import { CHAR_IDS } from '../core/types';
@@ -174,14 +175,15 @@ export function drawBubble(ctx: CanvasRenderingContext2D, req: DialogueRequest):
 
   const r: Rect = { x: 120, y: 300, w: 720, h: 150 };
   panel(ctx, r, '#f7f3e6');
-  ctx.fillStyle = CHARACTERS[req.speaker].color;
+  const info = req.speaker.side === 'ally' ? CHARACTERS[req.speaker.id] : ENEMIES[req.speaker.id];
+  ctx.fillStyle = info.color;
   ctx.beginPath();
   ctx.arc(r.x + 54, r.y + 60, 30, 0, Math.PI * 2);
   ctx.fill();
 
   ctx.fillStyle = '#1a1a1a';
   ctx.font = '20px sans-serif';
-  ctx.fillText(CHARACTERS[req.speaker].name, r.x + 100, r.y + 34);
+  ctx.fillText(info.name, r.x + 100, r.y + 34);
   ctx.font = '26px sans-serif';
   req.text.split('\n').forEach((line, i) => {
     ctx.fillText(line, r.x + 100, r.y + 74 + i * 36);

@@ -70,8 +70,14 @@ export type EnemyUnit = {
   lastHitNeraiuchi: boolean;
 };
 
+export type Speaker = { side: 'ally'; id: CharId } | { side: 'enemy'; id: EnemyKind };
+
 export type SpawnEntry = { at: number; kind: EnemyKind; from: Vec2 };
-export type WaveDef = { spawns: SpawnEntry[] };
+export type WaveDef = {
+  spawns: SpawnEntry[];
+  /** ウェーブ開始時に順番に表示する会話。省略時は何も表示しない */
+  intro?: { speaker: Speaker; lineId: string }[];
+};
 
 export type StageDef = {
   id: number;
