@@ -163,7 +163,7 @@ function onPointerDown(ev: PointerEvent): void {
         phase = 'battle';
         return;
       }
-      // なみの あいだは 再配置できる
+      // しゅうげきの あいだは 再配置できる
       const hit = pickAlly(battle.allies, logicalToMap(p));
       if (hit) startDrag(hit, ev);
       return;

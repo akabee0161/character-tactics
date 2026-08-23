@@ -179,7 +179,7 @@ function drawTopBar(ctx: CanvasRenderingContext2D, state: BattleState): void {
   ctx.font = '20px sans-serif';
   ctx.textBaseline = 'middle';
   ctx.fillText(`とりで ${state.fortHp} / ${FORT_MAX_HP}`, 16, 23);
-  ctx.fillText(`なみ ${state.waveIndex + 1} / ${state.stage.waves.length}`, 280, 23);
+  ctx.fillText(`しゅうげき ${state.waveIndex + 1} / ${state.stage.waves.length}`, 280, 23);
   ctx.fillText(state.stage.name, 500, 23);
 }
 

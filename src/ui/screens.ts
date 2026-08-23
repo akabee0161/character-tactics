@@ -202,9 +202,9 @@ export function drawWaveCleared(ctx: CanvasRenderingContext2D, state: BattleStat
   ctx.fillStyle = INK;
   ctx.font = '40px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('つぎの なみが くるよ', LOGICAL_W / 2, 260);
+  ctx.fillText('つぎの しゅうげきが くるよ', LOGICAL_W / 2, 260);
   ctx.font = '20px sans-serif';
-  ctx.fillText(`なみ ${state.waveIndex + 2} / ${state.stage.waves.length}`, LOGICAL_W / 2, 306);
+  ctx.fillText(`しゅうげき ${state.waveIndex + 2} / ${state.stage.waves.length}`, LOGICAL_W / 2, 306);
   ctx.textAlign = 'left';
   button(ctx, BTN.next, 'つぎへ');
 }
