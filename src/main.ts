@@ -3,7 +3,7 @@ import { pickDialogue } from './core/dialogue';
 import { createBattleState, placeAlly, startWave } from './core/state';
 import { step } from './core/sim';
 import type { SimCommand } from './core/sim';
-import { drawBattle } from './render/draw';
+import { drawBattle, drawMoveMarker } from './render/draw';
 import { makeEffectState, spawnHitEffects, tickEffects } from './render/effects';
 import { LOGICAL_H, LOGICAL_W, computeViewport, logicalToMap, mapToLogical, screenToLogical } from './render/viewport';
 import { advanceBubble, currentBubble, enqueue, isBlocking, makeBubbleQueue } from './ui/bubbles';
@@ -42,6 +42,8 @@ const effects = makeEffectState();
 const commands: SimCommand[] = [];
 let accumulator = 0;
 let lastTime = performance.now();
+let moveMarker: Vec2 | null = null;
+let moveMarkerUntil = 0;
 
 function resize(): void {
   const scale = Math.min(window.innerWidth / LOGICAL_W, window.innerHeight / LOGICAL_H);
@@ -63,6 +65,11 @@ function toLogical(ev: PointerEvent): Vec2 {
 function startDrag(id: CharId, ev: PointerEvent): void {
   dragging = id;
   canvas.setPointerCapture(ev.pointerId);
+}
+
+function setMoveMarker(dest: Vec2): void {
+  moveMarker = dest;
+  moveMarkerUntil = performance.now() + 400;
 }
 
 function beginStage(index: number): void {
@@ -139,7 +146,9 @@ function onPointerDown(ev: PointerEvent): void {
         selected = hit;
         startDrag(hit, ev);
       } else if (selected) {
-        commands.push({ type: 'move', allyId: selected, dest: logicalToMap(p) });
+        const dest = logicalToMap(p);
+        commands.push({ type: 'move', allyId: selected, dest });
+        setMoveMarker(dest);
       }
       return;
     }
@@ -173,7 +182,10 @@ function onPointerUp(ev: PointerEvent): void {
   if (!battle || !dragging) return;
   const dest = logicalToMap(toLogical(ev));
   if (phase === 'placement' || phase === 'waveCleared') placeAlly(battle, dragging, dest);
-  else if (phase === 'battle') commands.push({ type: 'move', allyId: dragging, dest });
+  else if (phase === 'battle') {
+    commands.push({ type: 'move', allyId: dragging, dest });
+    setMoveMarker(dest);
+  }
   dragging = null;
 }
 
@@ -214,6 +226,7 @@ function update(dt: number): void {
 }
 
 function render(): void {
+  if (moveMarker && performance.now() > moveMarkerUntil) moveMarker = null;
   const vp = computeViewport(canvas.width, canvas.height);
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -238,6 +251,7 @@ function render(): void {
         drawBattle(ctx, battle, selected, effects);
         drawBottomBar(ctx, battle, selected);
         if (selected) drawSkillButton(ctx, battle, selected);
+        if (moveMarker) drawMoveMarker(ctx, moveMarker);
       }
       break;
     case 'waveCleared':

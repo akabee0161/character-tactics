@@ -182,3 +182,18 @@ function drawTopBar(ctx: CanvasRenderingContext2D, state: BattleState): void {
   ctx.fillText(`なみ ${state.waveIndex + 1} / ${state.stage.waves.length}`, 280, 23);
   ctx.fillText(state.stage.name, 500, 23);
 }
+
+export function drawMoveMarker(ctx: CanvasRenderingContext2D, pos: Vec2): void {
+  const p = mapToLogical(pos);
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(p.x - 10, p.y);
+  ctx.lineTo(p.x + 10, p.y);
+  ctx.moveTo(p.x, p.y - 10);
+  ctx.lineTo(p.x, p.y + 10);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, 12, 0, Math.PI * 2);
+  ctx.stroke();
+}
