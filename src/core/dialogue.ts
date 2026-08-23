@@ -60,7 +60,7 @@ export function pickDialogue(events: SimEvent[]): DialogueRequest[] {
 }
 
 /** ウェーブ開始時の会話を、そのウェーブの `intro` 定義どおりの順番で返す */
-export function pickWaveIntro(stage: StageDef, waveIndex: number): DialogueRequest[] {
+export function pickWaveIntro(stage: Pick<StageDef, 'waves'>, waveIndex: number): DialogueRequest[] {
   const wave = stage.waves[waveIndex];
   if (!wave?.intro) return [];
   const found: DialogueRequest[] = [];

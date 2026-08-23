@@ -78,6 +78,10 @@ function beginStage(index: number): void {
   selected = null;
   pendingSkill = null;
   bubbles.items.length = 0;
+  effects.items.length = 0;
+  moveMarker = null;
+  commands.length = 0;
+  accumulator = 0;
   phase = 'placement';
 }
 
@@ -200,6 +204,7 @@ canvas.addEventListener('pointerup', onPointerUp);
 canvas.addEventListener('pointercancel', onPointerCancel);
 
 function update(dt: number): void {
+  tickEffects(effects, dt);
   if (phase !== 'battle' || !battle) return;
   if (isBlocking(bubbles)) return; // 吹き出し中は時間が止まる
 
@@ -212,7 +217,6 @@ function update(dt: number): void {
     enqueue(bubbles, pickDialogue(battle.events));
     if (isBlocking(bubbles)) break;
   }
-  tickEffects(effects, dt);
 
   if (battle.phase === 'defeat') {
     phase = 'defeat';

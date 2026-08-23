@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { pickDialogue, pickWaveIntro } from './dialogue';
 import { LINES } from '../content/lines';
-import type { SimEvent } from './types';
+import type { Speaker, SimEvent } from './types';
 
 describe('LINES', () => {
   it('すべてのセリフが ひらがな・カタカナ のみ', () => {
@@ -100,22 +100,23 @@ describe('pickDialogue', () => {
 
 describe('pickWaveIntro', () => {
   it('intro が定義されていなければ空配列', () => {
-    const stage = { waves: [{ spawns: [] }] } as unknown as Parameters<typeof pickWaveIntro>[0];
+    const stage = { waves: [{ spawns: [] }] };
     expect(pickWaveIntro(stage, 0)).toEqual([]);
   });
 
   it('intro の順番どおりに DialogueRequest を返す', () => {
+    const intro: { speaker: Speaker; lineId: string }[] = [
+      { speaker: { side: 'ally', id: 'roran' }, lineId: 'rival:roran' },
+      { speaker: { side: 'enemy', id: 'garum' }, lineId: 'rival:roran' },
+    ];
     const stage = {
       waves: [
         {
           spawns: [],
-          intro: [
-            { speaker: { side: 'ally', id: 'roran' }, lineId: 'rival:roran' },
-            { speaker: { side: 'enemy', id: 'garum' }, lineId: 'rival:roran' },
-          ],
+          intro,
         },
       ],
-    } as unknown as Parameters<typeof pickWaveIntro>[0];
+    };
     expect(pickWaveIntro(stage, 0)).toEqual([
       { speaker: { side: 'ally', id: 'roran' }, lineId: 'rival:roran', text: LINES['rival:roran'] },
       { speaker: { side: 'enemy', id: 'garum' }, lineId: 'rival:roran', text: LINES['rival:roran'] },
@@ -123,7 +124,7 @@ describe('pickWaveIntro', () => {
   });
 
   it('存在しない waveIndex では空配列', () => {
-    const stage = { waves: [{ spawns: [] }] } as unknown as Parameters<typeof pickWaveIntro>[0];
+    const stage = { waves: [{ spawns: [] }] };
     expect(pickWaveIntro(stage, 5)).toEqual([]);
   });
 });
