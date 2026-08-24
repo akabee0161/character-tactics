@@ -162,6 +162,7 @@ function onPointerDown(ev: PointerEvent): void {
       if (!battle) return;
       if (hitRect(BTN.next, p)) {
         battle.waveIndex += 1;
+        effects.items.length = 0;
         startWave(battle);
         enqueue(bubbles, pickWaveIntro(battle.stage, battle.waveIndex));
         phase = 'battle';
