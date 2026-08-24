@@ -1,9 +1,10 @@
 import { STAGES } from './content/stages';
-import { pickDialogue } from './core/dialogue';
+import { pickDialogue, pickWaveIntro } from './core/dialogue';
 import { createBattleState, placeAlly, startWave } from './core/state';
 import { step } from './core/sim';
 import type { SimCommand } from './core/sim';
-import { drawBattle } from './render/draw';
+import { drawBattle, drawMoveMarker } from './render/draw';
+import { makeEffectState, spawnHitEffects, tickEffects } from './render/effects';
 import { LOGICAL_H, LOGICAL_W, computeViewport, logicalToMap, mapToLogical, screenToLogical } from './render/viewport';
 import { advanceBubble, currentBubble, enqueue, isBlocking, makeBubbleQueue } from './ui/bubbles';
 import { applyStageClear, isStageUnlocked } from './ui/flow';
@@ -37,9 +38,12 @@ let dragging: CharId | null = null;
 let pendingSkill: CharId | null = null;
 let result: { gains: XpGain[]; newTitles: TitleId[] } | null = null;
 const bubbles = makeBubbleQueue();
+const effects = makeEffectState();
 const commands: SimCommand[] = [];
 let accumulator = 0;
 let lastTime = performance.now();
+let moveMarker: Vec2 | null = null;
+let moveMarkerUntil = 0;
 
 function resize(): void {
   const scale = Math.min(window.innerWidth / LOGICAL_W, window.innerHeight / LOGICAL_H);
@@ -63,12 +67,21 @@ function startDrag(id: CharId, ev: PointerEvent): void {
   canvas.setPointerCapture(ev.pointerId);
 }
 
+function setMoveMarker(dest: Vec2): void {
+  moveMarker = dest;
+  moveMarkerUntil = performance.now() + 400;
+}
+
 function beginStage(index: number): void {
   stageIndex = index;
   battle = createBattleState(STAGES[index]!, save.chars, Date.now() % 100000);
   selected = null;
   pendingSkill = null;
   bubbles.items.length = 0;
+  effects.items.length = 0;
+  moveMarker = null;
+  commands.length = 0;
+  accumulator = 0;
   phase = 'placement';
 }
 
@@ -102,6 +115,7 @@ function onPointerDown(ev: PointerEvent): void {
       if (hitRect(BTN.start, p)) {
         writeSave(window.localStorage, save); // ステージ開始時点を保存する
         startWave(battle);
+        enqueue(bubbles, pickWaveIntro(battle.stage, battle.waveIndex));
         phase = 'battle';
         return;
       }
@@ -137,7 +151,9 @@ function onPointerDown(ev: PointerEvent): void {
         selected = hit;
         startDrag(hit, ev);
       } else if (selected) {
-        commands.push({ type: 'move', allyId: selected, dest: logicalToMap(p) });
+        const dest = logicalToMap(p);
+        commands.push({ type: 'move', allyId: selected, dest });
+        setMoveMarker(dest);
       }
       return;
     }
@@ -146,11 +162,13 @@ function onPointerDown(ev: PointerEvent): void {
       if (!battle) return;
       if (hitRect(BTN.next, p)) {
         battle.waveIndex += 1;
+        effects.items.length = 0;
         startWave(battle);
+        enqueue(bubbles, pickWaveIntro(battle.stage, battle.waveIndex));
         phase = 'battle';
         return;
       }
-      // なみの あいだは 再配置できる
+      // しゅうげきの あいだは 再配置できる
       const hit = pickAlly(battle.allies, logicalToMap(p));
       if (hit) startDrag(hit, ev);
       return;
@@ -171,7 +189,10 @@ function onPointerUp(ev: PointerEvent): void {
   if (!battle || !dragging) return;
   const dest = logicalToMap(toLogical(ev));
   if (phase === 'placement' || phase === 'waveCleared') placeAlly(battle, dragging, dest);
-  else if (phase === 'battle') commands.push({ type: 'move', allyId: dragging, dest });
+  else if (phase === 'battle') {
+    commands.push({ type: 'move', allyId: dragging, dest });
+    setMoveMarker(dest);
+  }
   dragging = null;
 }
 
@@ -184,6 +205,7 @@ canvas.addEventListener('pointerup', onPointerUp);
 canvas.addEventListener('pointercancel', onPointerCancel);
 
 function update(dt: number): void {
+  tickEffects(effects, dt);
   if (phase !== 'battle' || !battle) return;
   if (isBlocking(bubbles)) return; // 吹き出し中は時間が止まる
 
@@ -192,6 +214,7 @@ function update(dt: number): void {
     accumulator -= FIXED_DT;
     const batch = commands.splice(0, commands.length);
     step(battle, batch, FIXED_DT);
+    spawnHitEffects(effects, battle.events);
     enqueue(bubbles, pickDialogue(battle.events));
     if (isBlocking(bubbles)) break;
   }
@@ -210,6 +233,7 @@ function update(dt: number): void {
 }
 
 function render(): void {
+  if (moveMarker && performance.now() > moveMarkerUntil) moveMarker = null;
   const vp = computeViewport(canvas.width, canvas.height);
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -224,21 +248,22 @@ function render(): void {
       break;
     case 'placement':
       if (battle) {
-        drawBattle(ctx, battle);
+        drawBattle(ctx, battle, selected, effects);
         drawPlacement(ctx, battle);
         drawBottomBar(ctx, battle, selected);
       }
       break;
     case 'battle':
       if (battle) {
-        drawBattle(ctx, battle);
+        drawBattle(ctx, battle, selected, effects);
         drawBottomBar(ctx, battle, selected);
         if (selected) drawSkillButton(ctx, battle, selected);
+        if (moveMarker) drawMoveMarker(ctx, moveMarker);
       }
       break;
     case 'waveCleared':
       if (battle) {
-        drawBattle(ctx, battle);
+        drawBattle(ctx, battle, selected, effects);
         drawBottomBar(ctx, battle, selected);
         drawWaveCleared(ctx, battle);
       }

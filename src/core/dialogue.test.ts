@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { pickDialogue } from './dialogue';
+import { pickDialogue, pickWaveIntro } from './dialogue';
 import { LINES } from '../content/lines';
-import type { SimEvent } from './types';
+import type { Speaker, SimEvent } from './types';
 
 describe('LINES', () => {
   it('すべてのセリフが ひらがな・カタカナ のみ', () => {
@@ -23,7 +23,7 @@ describe('pickDialogue', () => {
       { type: 'engage', allyId: 'gau', enemyUid: 'e1', kind: 'narazumono', firstMeeting: true },
     ];
     expect(pickDialogue(events)).toEqual([
-      { speaker: 'gau', lineId: 'first:gau:narazumono', text: LINES['first:gau:narazumono'] },
+      { speaker: { side: 'ally', id: 'gau' }, lineId: 'first:gau:narazumono', text: LINES['first:gau:narazumono'] },
     ]);
   });
 
@@ -39,7 +39,7 @@ describe('pickDialogue', () => {
       { type: 'engage', allyId: 'roran', enemyUid: 'g1', kind: 'garum', firstMeeting: true },
     ];
     expect(pickDialogue(events)).toEqual([
-      { speaker: 'roran', lineId: 'rival:roran', text: LINES['rival:roran'] },
+      { speaker: { side: 'ally', id: 'roran' }, lineId: 'rival:roran', text: LINES['rival:roran'] },
     ]);
   });
 
@@ -95,5 +95,36 @@ describe('pickDialogue', () => {
       'win:gau',
       'retire:roran',
     ]);
+  });
+});
+
+describe('pickWaveIntro', () => {
+  it('intro が定義されていなければ空配列', () => {
+    const stage = { waves: [{ spawns: [] }] };
+    expect(pickWaveIntro(stage, 0)).toEqual([]);
+  });
+
+  it('intro の順番どおりに DialogueRequest を返す', () => {
+    const intro: { speaker: Speaker; lineId: string }[] = [
+      { speaker: { side: 'ally', id: 'roran' }, lineId: 'rival:roran' },
+      { speaker: { side: 'enemy', id: 'garum' }, lineId: 'rival:roran' },
+    ];
+    const stage = {
+      waves: [
+        {
+          spawns: [],
+          intro,
+        },
+      ],
+    };
+    expect(pickWaveIntro(stage, 0)).toEqual([
+      { speaker: { side: 'ally', id: 'roran' }, lineId: 'rival:roran', text: LINES['rival:roran'] },
+      { speaker: { side: 'enemy', id: 'garum' }, lineId: 'rival:roran', text: LINES['rival:roran'] },
+    ]);
+  });
+
+  it('存在しない waveIndex では空配列', () => {
+    const stage = { waves: [{ spawns: [] }] };
+    expect(pickWaveIntro(stage, 5)).toEqual([]);
   });
 });
