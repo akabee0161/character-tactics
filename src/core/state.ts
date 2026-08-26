@@ -85,13 +85,14 @@ export function createBattleState(
   };
 }
 
-export function placeAlly(state: BattleState, id: CharId, pos: Vec2): void {
-  if (!isWalkableAt(state.grid, pos)) return;
+export function placeAlly(state: BattleState, id: CharId, pos: Vec2): boolean {
+  if (!isWalkableAt(state.grid, pos)) return false;
   const ally = state.allies.find((a) => a.id === id);
-  if (!ally) return;
+  if (!ally) return false;
   ally.pos = { ...pos };
   ally.goalField = null;
   ally.goalPos = null;
+  return true;
 }
 
 export function startWave(state: BattleState): void {

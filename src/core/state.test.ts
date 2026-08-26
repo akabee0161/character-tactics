@@ -88,6 +88,22 @@ describe('placeAlly', () => {
   });
 });
 
+describe('placeAlly の戻り値', () => {
+  it('歩ける場所なら true を返して移動する', () => {
+    const s = createBattleState(STAGE, LV1, 1);
+    expect(placeAlly(s, 'roran', { x: 48, y: 48 })).toBe(true);
+    expect(s.allies.find((a) => a.id === 'roran')!.pos).toEqual({ x: 48, y: 48 });
+  });
+
+  it('歩けない場所なら false を返して動かさない', () => {
+    const stage = { ...STAGE, mapRows: ['..........', '..####....', '..........'] };
+    const s = createBattleState(stage, LV1, 1);
+    const before = { ...s.allies.find((a) => a.id === 'roran')!.pos };
+    expect(placeAlly(s, 'roran', { x: 80, y: 48 })).toBe(false);
+    expect(s.allies.find((a) => a.id === 'roran')!.pos).toEqual(before);
+  });
+});
+
 describe('startWave', () => {
   it('フェーズが wave になり、時刻がリセットされる', () => {
     const s = createBattleState(STAGE, LV1, 1);
