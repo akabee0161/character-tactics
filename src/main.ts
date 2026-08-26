@@ -3,7 +3,8 @@ import { pickDialogue, pickWaveIntro } from './core/dialogue';
 import { createBattleState, placeAlly, startWave } from './core/state';
 import { step } from './core/sim';
 import type { SimCommand } from './core/sim';
-import { drawBattle } from './render/draw';
+import { drawBattle, drawDragPreview } from './render/draw';
+import { isWalkableAt } from './core/field';
 import { makeEffectState, spawnHitEffects, tickEffects } from './render/effects';
 import { LOGICAL_H, LOGICAL_W, computeViewport, logicalToMap, mapToLogical, screenToLogical } from './render/viewport';
 import { advanceBubble, currentBubble, enqueue, isBlocking, makeBubbleQueue } from './ui/bubbles';
@@ -292,6 +293,13 @@ function render(): void {
     case 'defeat':
       drawDefeat(ctx);
       break;
+  }
+
+  const dragChar = pointerStart?.charId ?? null;
+  if (battle && dragChar !== null && dragMap !== null) {
+    const ally = battle.allies.find((a) => a.id === dragChar)!;
+    const blocked = !isWalkableAt(battle.grid, dragMap);
+    drawDragPreview(ctx, ally.pos, dragMap, dragChar, blocked);
   }
 
   const bubble = currentBubble(bubbles);

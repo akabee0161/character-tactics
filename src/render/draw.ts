@@ -35,6 +35,7 @@ export function drawBattle(
 
   drawTerrain(ctx, state);
   drawFort(ctx, state);
+  drawGoalMarkers(ctx, state, selected);
   drawBonds(ctx, state);
   drawEnemies(ctx, state);
   drawAllies(ctx, state, selected);
@@ -183,17 +184,70 @@ function drawTopBar(ctx: CanvasRenderingContext2D, state: BattleState): void {
   ctx.fillText(state.stage.name, 500, 23);
 }
 
-export function drawMoveMarker(ctx: CanvasRenderingContext2D, pos: Vec2): void {
-  const p = mapToLogical(pos);
-  ctx.strokeStyle = '#ffffff';
+/** 4人ぶんの移動先を常に出す。誰がどこへ向かっているかを盤面だけで読めるようにする */
+export function drawGoalMarkers(
+  ctx: CanvasRenderingContext2D,
+  state: BattleState,
+  selected: CharId | null,
+): void {
+  for (const ally of state.allies) {
+    if (ally.retired || !ally.goalPos) continue;
+    const a = mapToLogical(ally.pos);
+    const g = mapToLogical(ally.goalPos);
+    const color = CHARACTERS[ally.id].color;
+    const isSelected = ally.id === selected;
+
+    // 交戦中は足が止まっているので薄くする。交戦が解けたら再開するため消しはしない
+    ctx.globalAlpha = ally.engagedWith !== null ? 0.35 : 1;
+    ctx.strokeStyle = color;
+
+    if (isSelected) {
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6, 5]);
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(g.x, g.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    ctx.lineWidth = isSelected ? 3 : 2;
+    ctx.beginPath();
+    ctx.arc(g.x, g.y, isSelected ? 11 : 6, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(g.x, g.y, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+}
+
+/** ドラッグ中に、離したらどうなるかを先に見せる */
+export function drawDragPreview(
+  ctx: CanvasRenderingContext2D,
+  fromMap: Vec2,
+  toMap: Vec2,
+  charId: CharId,
+  blocked: boolean,
+): void {
+  const a = mapToLogical(fromMap);
+  const b = mapToLogical(toMap);
+  const color = blocked ? COLORS.hpEnemy : CHARACTERS[charId].color;
+
+  ctx.strokeStyle = color;
   ctx.lineWidth = 2;
+  ctx.setLineDash([6, 5]);
   ctx.beginPath();
-  ctx.moveTo(p.x - 10, p.y);
-  ctx.lineTo(p.x + 10, p.y);
-  ctx.moveTo(p.x, p.y - 10);
-  ctx.lineTo(p.x, p.y + 10);
+  ctx.moveTo(a.x, a.y);
+  ctx.lineTo(b.x, b.y);
   ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.globalAlpha = 0.5;
+  ctx.fillStyle = color;
   ctx.beginPath();
-  ctx.arc(p.x, p.y, 12, 0, Math.PI * 2);
-  ctx.stroke();
+  ctx.arc(b.x, b.y, UNIT_R, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
 }
