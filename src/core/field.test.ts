@@ -88,9 +88,10 @@ describe('computeFlowField', () => {
 
   it('壁の角はすり抜けない（コーナーカット禁止）', () => {
     // セル(1,1) が壁。(0,0) から (2,2) へ斜めに 2 回では行けない
+    // 迂回は直交移動のみ 4 回（右→右→下→下 など）で ORTHO_COST * 4 = 40 になる
     const g = makeGrid(32, ['...', '.#.', '...']);
     const f = computeFlowField(g, { x: 16, y: 16 });
-    expect(f.dist[2 * 3 + 2]).toBeGreaterThan(DIAG_COST * 2);
+    expect(f.dist[2 * 3 + 2]).toBe(ORTHO_COST * 4);
   });
 
   it('壁の内側をゴールにしたら全部 -1', () => {

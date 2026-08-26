@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { isWalkableAt } from './field';
 import { createBattleState, startWave } from './state';
 import { step } from './sim';
 import type { BattleState, CharId, CharProgress, EnemyUnit, StageDef } from './types';
@@ -265,6 +266,23 @@ describe('移動: 直線ショートカットと到達', () => {
     step(s, [{ type: 'move', allyId: 'roran', dest }], 0.1);
     for (let i = 0; i < 200 && a.goalPos; i++) step(s, [], 0.1);
     expect(a.goalPos).toBeNull();
+    expect(a.pos).toEqual(dest);
+  });
+
+  it('障害物ごしでもフローフィールドで回り込んで到達する', () => {
+    // (16,16) から (176,80) への直線は壁 (row1, col2-5) を貫くため見通せず、
+    // フローフィールドで壁の左側から回り込む経路を取る必要がある
+    const stage: StageDef = { ...STAGE, mapRows: ['..........', '..####....', '..........'] };
+    const s = fresh(stage);
+    const a = ally(s, 'roran');
+    a.pos = { x: 16, y: 16 };
+    const dest = { x: 176, y: 80 };
+    step(s, [{ type: 'move', allyId: 'roran', dest }], 0.1);
+    for (let i = 0; i < 400 && a.goalPos; i++) {
+      step(s, [], 0.1);
+      // 壁を突っ切っていないこと（回り込みが働いていることの直接の証拠）
+      expect(isWalkableAt(s.grid, a.pos)).toBe(true);
+    }
     expect(a.pos).toEqual(dest);
   });
 });
