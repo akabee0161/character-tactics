@@ -244,3 +244,27 @@ describe('goalPos: 目的地の保持', () => {
     expect(a.goalPos).toBeNull();
   });
 });
+
+describe('移動: 直線ショートカットと到達', () => {
+  it('障害物がなければ目的地へまっすぐ進む', () => {
+    const s = fresh();
+    const a = ally(s, 'roran');
+    a.pos = { x: 16, y: 16 };
+    const dest = { x: 208, y: 80 };
+    step(s, [{ type: 'move', allyId: 'roran', dest }], 0.1);
+    // 出発点と目的地を結ぶ直線上に乗っていること
+    const t = (a.pos.x - 16) / (dest.x - 16);
+    expect(a.pos.y).toBeCloseTo(16 + t * (dest.y - 16), 4);
+  });
+
+  it('目的地に着いたら、その座標ちょうどで止まって goalPos が消える', () => {
+    const s = fresh();
+    const a = ally(s, 'roran');
+    a.pos = { x: 16, y: 16 };
+    const dest = { x: 48, y: 16 };
+    step(s, [{ type: 'move', allyId: 'roran', dest }], 0.1);
+    for (let i = 0; i < 200 && a.goalPos; i++) step(s, [], 0.1);
+    expect(a.goalPos).toBeNull();
+    expect(a.pos).toEqual(dest);
+  });
+});

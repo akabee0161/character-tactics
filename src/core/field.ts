@@ -131,6 +131,25 @@ export function distance(a: Vec2, b: Vec2): number {
   return Math.hypot(a.x - b.x, a.y - b.y);
 }
 
+/**
+ * 2点を結ぶ線分がすべて歩けるセルの上を通るか。
+ * セルの 1/4 ごとにサンプリングする。壁の角を一瞬かすめる程度は拾えないが、
+ * 通れなかった場合はフローフィールドに戻るだけなので実害はない。
+ */
+export function hasLineOfSight(grid: Grid, from: Vec2, to: Vec2): boolean {
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const len = Math.hypot(dx, dy);
+  if (len === 0) return isWalkableAt(grid, from);
+
+  const steps = Math.ceil(len / (grid.cell / 4));
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    if (!isWalkableAt(grid, { x: from.x + dx * t, y: from.y + dy * t })) return false;
+  }
+  return true;
+}
+
 export function distanceToSegment(p: Vec2, a: Vec2, b: Vec2): number {
   const dx = b.x - a.x;
   const dy = b.y - a.y;

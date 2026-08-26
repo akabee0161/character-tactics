@@ -8,6 +8,7 @@ import {
   distance,
   distanceToSegment,
   flowDirection,
+  hasLineOfSight,
   isWalkableAt,
   makeGrid,
 } from './field';
@@ -143,5 +144,23 @@ describe('distance / distanceToSegment', () => {
 
   it('線分が点に潰れているとき', () => {
     expect(distanceToSegment({ x: 0, y: 5 }, { x: 0, y: 0 }, { x: 0, y: 0 })).toBe(5);
+  });
+});
+
+describe('hasLineOfSight', () => {
+  it('開けたマップでは通る', () => {
+    const g = makeGrid(32, ['.....', '.....', '.....']);
+    expect(hasLineOfSight(g, { x: 16, y: 16 }, { x: 144, y: 80 })).toBe(true);
+  });
+
+  it('壁をまたぐと通らない', () => {
+    const g = makeGrid(32, MAP); // 中段の (1,1)-(3,1) が壁
+    expect(hasLineOfSight(g, { x: 48, y: 16 }, { x: 48, y: 80 })).toBe(false);
+  });
+
+  it('同じ点なら、その場所が歩けるかどうかを返す', () => {
+    const g = makeGrid(32, MAP);
+    expect(hasLineOfSight(g, { x: 16, y: 16 }, { x: 16, y: 16 })).toBe(true);
+    expect(hasLineOfSight(g, { x: 48, y: 48 }, { x: 48, y: 48 })).toBe(false);
   });
 });
