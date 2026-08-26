@@ -9,7 +9,7 @@ export function hitRect(r: Rect, p: Vec2): boolean {
   return p.x >= r.x && p.x < r.x + r.w && p.y >= r.y && p.y < r.y + r.h;
 }
 
-export function pickAlly(allies: AllyUnit[], mapPoint: Vec2, radius = 24): CharId | null {
+export function pickAlly(allies: AllyUnit[], mapPoint: Vec2, radius = 32): CharId | null {
   let best: CharId | null = null;
   let bestDist = Infinity;
   for (const a of allies) {
