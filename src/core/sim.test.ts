@@ -220,3 +220,27 @@ describe('step: skill コマンド', () => {
     expect(ally(s, 'gau').pos).toEqual({ x: 200, y: 80 });
   });
 });
+
+describe('goalPos: 目的地の保持', () => {
+  it('move コマンドで目的地が入る', () => {
+    const s = fresh();
+    step(s, [{ type: 'move', allyId: 'roran', dest: { x: 200, y: 48 } }], 0.1);
+    expect(ally(s, 'roran').goalPos).toEqual({ x: 200, y: 48 });
+  });
+
+  it('歩けない場所への move では目的地が入らない', () => {
+    const stage: StageDef = { ...STAGE, mapRows: ['..........', '..####....', '..........'] };
+    const s = fresh(stage);
+    step(s, [{ type: 'move', allyId: 'roran', dest: { x: 80, y: 48 } }], 0.1);
+    expect(ally(s, 'roran').goalPos).toBeNull();
+  });
+
+  it('たいきゃくすると目的地が消える', () => {
+    const s = fresh();
+    const a = ally(s, 'roran');
+    step(s, [{ type: 'move', allyId: 'roran', dest: { x: 200, y: 48 } }], 0.1);
+    a.hp = 0;
+    step(s, [], 0.1);
+    expect(a.goalPos).toBeNull();
+  });
+});

@@ -40,6 +40,7 @@ function applyCommands(state: BattleState, commands: SimCommand[]): Set<CharId> 
     if (cmd.type === 'move') {
       if (!isWalkableAt(state.grid, cmd.dest)) continue;
       ally.goalField = computeFlowField(state.grid, cmd.dest);
+      ally.goalPos = { ...cmd.dest };
       ally.engagedWith = null;
       movedThisTick.add(ally.id);
     } else {
@@ -158,6 +159,7 @@ function moveUnits(state: BattleState, dt: number): void {
     const dir = flowDirection(state.grid, ally.goalField, ally.pos);
     if (!dir) {
       ally.goalField = null;
+      ally.goalPos = null;
       continue;
     }
     ally.pos = { x: ally.pos.x + dir.x * ally.speed * dt, y: ally.pos.y + dir.y * ally.speed * dt };
@@ -287,6 +289,7 @@ function resolveAllyRetirement(state: BattleState): void {
     ally.retired = true;
     ally.engagedWith = null;
     ally.goalField = null;
+    ally.goalPos = null;
     for (const enemy of state.enemies) {
       if (enemy.engagedWith === ally.id) enemy.engagedWith = null;
     }
