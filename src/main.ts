@@ -179,9 +179,9 @@ function beginMapPointer(state: BattleState, p: Vec2, ev: PointerEvent): void {
   const charId = pickAlly(state.allies, startMap);
   pointerStart = { charId, startMap, wasSelected: charId !== null && selected === charId };
   dragMap = startMap;
+  canvas.setPointerCapture(ev.pointerId);
   if (charId !== null) {
     selected = charId; // 掴んだ時点で見た目に反映する。解除は pointerup で判定する
-    canvas.setPointerCapture(ev.pointerId);
   }
 }
 
@@ -296,7 +296,8 @@ function render(): void {
   }
 
   const dragChar = pointerStart?.charId ?? null;
-  if (battle && dragChar !== null && dragMap !== null) {
+  const dragPhaseOk = phase === 'placement' || phase === 'battle' || phase === 'waveCleared';
+  if (battle && dragPhaseOk && dragChar !== null && dragMap !== null) {
     const ally = battle.allies.find((a) => a.id === dragChar)!;
     const blocked = !isWalkableAt(battle.grid, dragMap);
     drawDragPreview(ctx, ally.pos, dragMap, dragChar, blocked);
