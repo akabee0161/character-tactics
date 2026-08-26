@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { ORTHO_COST } from './field';
 import { createBattleState, placeAlly, startWave, statsForLevel } from './state';
 import { CHAR_IDS, FORT_MAX_HP } from './types';
 import type { CharId, CharProgress, StageDef } from './types';
@@ -63,7 +64,7 @@ describe('createBattleState', () => {
   it('砦へのフローフィールドが計算されている', () => {
     const s = createBattleState(STAGE, LV1, 1);
     expect(s.enemyField.dist[0]).toBe(0);
-    expect(s.enemyField.dist[4]).toBe(4);
+    expect(s.enemyField.dist[4]).toBe(ORTHO_COST * 4);
   });
 
   it('戦績カウンタが 0 で初期化される', () => {
