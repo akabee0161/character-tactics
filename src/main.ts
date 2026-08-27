@@ -167,6 +167,7 @@ function onPointerDown(ev: PointerEvent): void {
 }
 
 function beginMapPointer(state: BattleState, p: Vec2, ev: PointerEvent): void {
+  if (pointerStart !== null) return; // 別の指のジェスチャが進行中は新しいジェスチャを始めない
   for (let i = 0; i < 4; i++) {
     if (hitRect(portraitSlot(i), p)) {
       const id = state.allies[i]!.id;
