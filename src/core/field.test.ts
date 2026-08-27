@@ -164,4 +164,12 @@ describe('hasLineOfSight', () => {
     expect(hasLineOfSight(g, { x: 16, y: 16 }, { x: 16, y: 16 })).toBe(true);
     expect(hasLineOfSight(g, { x: 48, y: 48 }, { x: 48, y: 48 })).toBe(false);
   });
+
+  it('壁の角をかすめる対角線はコーナーカットとして拒否する', () => {
+    // (0,1)→(1,0) の対角移動で、間にある直交セルの一方 (1,1) が壁。
+    // 経路は壁セル (1,1) の内部を通らず格子点 (32,32) をかすめるだけなので、
+    // 点サンプリング（8pxごと）だとこの一点をまたいで「通れる」と誤判定していた。
+    const g = makeGrid(32, MAP);
+    expect(hasLineOfSight(g, { x: 16, y: 48 }, { x: 50, y: 14 })).toBe(false);
+  });
 });

@@ -133,19 +133,50 @@ export function distance(a: Vec2, b: Vec2): number {
 
 /**
  * 2点を結ぶ線分がすべて歩けるセルの上を通るか。
- * セルの 1/4 ごとにサンプリングする。壁の角を一瞬かすめる程度は拾えないが、
- * 通れなかった場合はフローフィールドに戻るだけなので実害はない。
+ * DDA で線分が通過するセルを漏れなく列挙し、対角に隣のセルへ移る瞬間は
+ * 両側の直交セルも歩行可能か確認する（computeFlowField の canStep と同じ理由で、
+ * 壁の角をかすめてすり抜けるのを禁止する）。
  */
 export function hasLineOfSight(grid: Grid, from: Vec2, to: Vec2): boolean {
+  const walkableCell = (x: number, y: number): boolean =>
+    x >= 0 && y >= 0 && x < grid.cols && y < grid.rows && grid.walkable[y * grid.cols + x] === true;
+
+  let cx = Math.floor(from.x / grid.cell);
+  let cy = Math.floor(from.y / grid.cell);
+  const ex = Math.floor(to.x / grid.cell);
+  const ey = Math.floor(to.y / grid.cell);
+  if (!walkableCell(cx, cy)) return false;
+
   const dx = to.x - from.x;
   const dy = to.y - from.y;
-  const len = Math.hypot(dx, dy);
-  if (len === 0) return isWalkableAt(grid, from);
+  const stepX = dx > 0 ? 1 : dx < 0 ? -1 : 0;
+  const stepY = dy > 0 ? 1 : dy < 0 ? -1 : 0;
 
-  const steps = Math.ceil(len / (grid.cell / 4));
-  for (let i = 0; i <= steps; i++) {
-    const t = i / steps;
-    if (!isWalkableAt(grid, { x: from.x + dx * t, y: from.y + dy * t })) return false;
+  let tMaxX = stepX !== 0 ? ((cx + (stepX > 0 ? 1 : 0)) * grid.cell - from.x) / dx : Infinity;
+  let tMaxY = stepY !== 0 ? ((cy + (stepY > 0 ? 1 : 0)) * grid.cell - from.y) / dy : Infinity;
+  const tDeltaX = stepX !== 0 ? grid.cell / Math.abs(dx) : Infinity;
+  const tDeltaY = stepY !== 0 ? grid.cell / Math.abs(dy) : Infinity;
+  const EPS = 1e-9;
+
+  while (cx !== ex || cy !== ey) {
+    if (Math.abs(tMaxX - tMaxY) < EPS) {
+      // 両方の境界を同時に跨ぐ = 格子点(壁の角)を通過する対角遷移
+      const nx = cx + stepX;
+      const ny = cy + stepY;
+      if (!walkableCell(nx, ny) || !walkableCell(cx, ny) || !walkableCell(nx, cy)) return false;
+      cx = nx;
+      cy = ny;
+      tMaxX += tDeltaX;
+      tMaxY += tDeltaY;
+    } else if (tMaxX < tMaxY) {
+      cx += stepX;
+      if (!walkableCell(cx, cy)) return false;
+      tMaxX += tDeltaX;
+    } else {
+      cy += stepY;
+      if (!walkableCell(cx, cy)) return false;
+      tMaxY += tDeltaY;
+    }
   }
   return true;
 }

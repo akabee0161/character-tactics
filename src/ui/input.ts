@@ -10,6 +10,8 @@ export type PointerStart = {
   startMap: Vec2;
   /** 下ろした時点で、その味方がすでに選択されていたか */
   wasSelected: boolean;
+  /** このジェスチャを開始した指/ポインターの識別子。マルチタッチ時に他の指のイベントと区別するために使う */
+  pointerId: number;
 };
 
 export type MapGesture =

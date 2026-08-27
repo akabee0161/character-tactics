@@ -177,7 +177,12 @@ function beginMapPointer(state: BattleState, p: Vec2, ev: PointerEvent): void {
   }
   const startMap = logicalToMap(p);
   const charId = pickAlly(state.allies, startMap);
-  pointerStart = { charId, startMap, wasSelected: charId !== null && selected === charId };
+  pointerStart = {
+    charId,
+    startMap,
+    wasSelected: charId !== null && selected === charId,
+    pointerId: ev.pointerId,
+  };
   dragMap = startMap;
   canvas.setPointerCapture(ev.pointerId);
   if (charId !== null) {
@@ -186,15 +191,16 @@ function beginMapPointer(state: BattleState, p: Vec2, ev: PointerEvent): void {
 }
 
 function onPointerMove(ev: PointerEvent): void {
-  if (!pointerStart) return;
+  if (!pointerStart || ev.pointerId !== pointerStart.pointerId) return;
   dragMap = logicalToMap(toLogical(ev));
 }
 
 function onPointerUp(ev: PointerEvent): void {
+  if (!pointerStart || ev.pointerId !== pointerStart.pointerId) return;
   const start = pointerStart;
   pointerStart = null;
   dragMap = null;
-  if (!battle || !start) return;
+  if (!battle) return;
   if (phase !== 'placement' && phase !== 'battle' && phase !== 'waveCleared') return;
 
   const endMap = logicalToMap(toLogical(ev));
@@ -215,7 +221,8 @@ function onPointerUp(ev: PointerEvent): void {
   }
 }
 
-function onPointerCancel(): void {
+function onPointerCancel(ev: PointerEvent): void {
+  if (!pointerStart || ev.pointerId !== pointerStart.pointerId) return;
   pointerStart = null;
   dragMap = null;
 }

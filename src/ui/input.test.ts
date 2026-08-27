@@ -5,7 +5,7 @@ import type { PointerStart } from './input';
 const at = (x: number, y: number) => ({ x, y });
 
 function start(charId: PointerStart['charId'], wasSelected = false): PointerStart {
-  return { charId, startMap: at(100, 100), wasSelected };
+  return { charId, startMap: at(100, 100), wasSelected, pointerId: 0 };
 }
 
 describe('resolveMapGesture', () => {
