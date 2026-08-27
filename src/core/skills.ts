@@ -74,6 +74,7 @@ export function useSkill(state: BattleState, allyId: CharId, dest?: Vec2): boole
       state.stats[allyId].kakenukeruHits += hits;
       ally.pos = { ...dest };
       ally.goalField = null;
+      ally.goalPos = null;
       ally.engagedWith = null;
       break;
     }

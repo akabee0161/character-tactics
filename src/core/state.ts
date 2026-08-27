@@ -46,6 +46,7 @@ function makeAlly(id: CharId, level: number, pos: Vec2): AllyUnit {
     speed: def.speed,
     skill: def.skill,
     goalField: null,
+    goalPos: null,
     engagedWith: null,
     attackCooldown: 0,
     skillUsed: false,
@@ -84,12 +85,14 @@ export function createBattleState(
   };
 }
 
-export function placeAlly(state: BattleState, id: CharId, pos: Vec2): void {
-  if (!isWalkableAt(state.grid, pos)) return;
+export function placeAlly(state: BattleState, id: CharId, pos: Vec2): boolean {
+  if (!isWalkableAt(state.grid, pos)) return false;
   const ally = state.allies.find((a) => a.id === id);
-  if (!ally) return;
+  if (!ally) return false;
   ally.pos = { ...pos };
   ally.goalField = null;
+  ally.goalPos = null;
+  return true;
 }
 
 export function startWave(state: BattleState): void {
@@ -105,6 +108,7 @@ export function startWave(state: BattleState): void {
     ally.engagedWith = null;
     ally.attackCooldown = 0;
     ally.goalField = null;
+    ally.goalPos = null;
     ally.funbaruUntil = -1;
     ally.neraiuchiArmed = false;
   }

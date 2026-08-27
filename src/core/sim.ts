@@ -1,7 +1,7 @@
 import { bondSupporters } from './bonds';
 import { ENEMIES } from '../content/enemies';
 import { computeDamage, effectiveInterval, hasThreatWithinMelee, nearestWithin } from './combat';
-import { computeFlowField, distance, flowDirection, isWalkableAt } from './field';
+import { computeFlowField, distance, flowDirection, hasLineOfSight, isWalkableAt } from './field';
 import { nextFloat } from './rng';
 import { isFunbaruActive, useSkill } from './skills';
 import type { AllyUnit, BattleState, CharId, EnemyUnit, Vec2 } from './types';
@@ -40,6 +40,7 @@ function applyCommands(state: BattleState, commands: SimCommand[]): Set<CharId> 
     if (cmd.type === 'move') {
       if (!isWalkableAt(state.grid, cmd.dest)) continue;
       ally.goalField = computeFlowField(state.grid, cmd.dest);
+      ally.goalPos = { ...cmd.dest };
       ally.engagedWith = null;
       movedThisTick.add(ally.id);
     } else {
@@ -152,15 +153,36 @@ function distanceBetween(a: Vec2, b: Vec2): number {
   return Math.hypot(a.x - b.x, a.y - b.y);
 }
 
+function moveAlly(state: BattleState, ally: AllyUnit, dt: number): void {
+  const goal = ally.goalPos;
+  if (!goal) return;
+
+  const remaining = distance(ally.pos, goal);
+  const stepLen = ally.speed * dt;
+  if (remaining <= stepLen) {
+    ally.pos = { ...goal };
+    ally.goalPos = null;
+    ally.goalField = null;
+    return;
+  }
+
+  // 目的地まで見通せるならフローフィールドを使わず直行する
+  const dir = hasLineOfSight(state.grid, ally.pos, goal)
+    ? { x: (goal.x - ally.pos.x) / remaining, y: (goal.y - ally.pos.y) / remaining }
+    : ally.goalField && flowDirection(state.grid, ally.goalField, ally.pos);
+
+  if (!dir) {
+    ally.goalPos = null;
+    ally.goalField = null;
+    return;
+  }
+  ally.pos = { x: ally.pos.x + dir.x * stepLen, y: ally.pos.y + dir.y * stepLen };
+}
+
 function moveUnits(state: BattleState, dt: number): void {
   for (const ally of state.allies) {
-    if (ally.retired || ally.engagedWith !== null || !ally.goalField) continue;
-    const dir = flowDirection(state.grid, ally.goalField, ally.pos);
-    if (!dir) {
-      ally.goalField = null;
-      continue;
-    }
-    ally.pos = { x: ally.pos.x + dir.x * ally.speed * dt, y: ally.pos.y + dir.y * ally.speed * dt };
+    if (ally.retired || ally.engagedWith !== null) continue;
+    moveAlly(state, ally, dt);
   }
 
   for (const enemy of state.enemies) {
@@ -287,6 +309,7 @@ function resolveAllyRetirement(state: BattleState): void {
     ally.retired = true;
     ally.engagedWith = null;
     ally.goalField = null;
+    ally.goalPos = null;
     for (const enemy of state.enemies) {
       if (enemy.engagedWith === ally.id) enemy.engagedWith = null;
     }

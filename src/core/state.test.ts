@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { ORTHO_COST } from './field';
 import { createBattleState, placeAlly, startWave, statsForLevel } from './state';
 import { CHAR_IDS, FORT_MAX_HP } from './types';
 import type { CharId, CharProgress, StageDef } from './types';
@@ -63,7 +64,7 @@ describe('createBattleState', () => {
   it('砦へのフローフィールドが計算されている', () => {
     const s = createBattleState(STAGE, LV1, 1);
     expect(s.enemyField.dist[0]).toBe(0);
-    expect(s.enemyField.dist[4]).toBe(4);
+    expect(s.enemyField.dist[4]).toBe(ORTHO_COST * 4);
   });
 
   it('戦績カウンタが 0 で初期化される', () => {
@@ -84,6 +85,22 @@ describe('placeAlly', () => {
     const s = createBattleState(stage, LV1, 1);
     const before = { ...s.allies.find((a) => a.id === 'roran')!.pos };
     placeAlly(s, 'roran', { x: 48, y: 48 });
+    expect(s.allies.find((a) => a.id === 'roran')!.pos).toEqual(before);
+  });
+});
+
+describe('placeAlly の戻り値', () => {
+  it('歩ける場所なら true を返して移動する', () => {
+    const s = createBattleState(STAGE, LV1, 1);
+    expect(placeAlly(s, 'roran', { x: 48, y: 48 })).toBe(true);
+    expect(s.allies.find((a) => a.id === 'roran')!.pos).toEqual({ x: 48, y: 48 });
+  });
+
+  it('歩けない場所なら false を返して動かさない', () => {
+    const stage = { ...STAGE, mapRows: ['..........', '..####....', '..........'] };
+    const s = createBattleState(stage, LV1, 1);
+    const before = { ...s.allies.find((a) => a.id === 'roran')!.pos };
+    expect(placeAlly(s, 'roran', { x: 80, y: 48 })).toBe(false);
     expect(s.allies.find((a) => a.id === 'roran')!.pos).toEqual(before);
   });
 });

@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import {
+  DIAG_COST,
+  ORTHO_COST,
   cellCenter,
   cellIndexAt,
   computeFlowField,
   distance,
   distanceToSegment,
   flowDirection,
+  hasLineOfSight,
   isWalkableAt,
   makeGrid,
 } from './field';
@@ -62,30 +65,36 @@ describe('isWalkableAt', () => {
 });
 
 describe('computeFlowField', () => {
-  it('ゴールの距離は 0、隣接セルは 1', () => {
+  it('ゴールからのコストを 8 近傍で埋める', () => {
     const g = makeGrid(32, MAP);
     const f = computeFlowField(g, { x: 16, y: 16 }); // セル 0
     expect(f.dist[0]).toBe(0);
-    expect(f.dist[1]).toBe(1);
-    expect(f.dist[5]).toBe(1);
+    expect(f.dist[1]).toBe(ORTHO_COST);
+    expect(f.dist[5]).toBe(ORTHO_COST);
   });
 
-  it('壁セルは到達不能の -1 のまま', () => {
+  it('壁は -1 のまま', () => {
     const g = makeGrid(32, MAP);
     const f = computeFlowField(g, { x: 16, y: 16 });
     expect(f.dist[1 * 5 + 1]).toBe(-1);
   });
 
-  it('壁を回り込んだ距離になる', () => {
-    const g = makeGrid(32, MAP);
+  it('開けたマップでは斜めが直交2回より安い', () => {
+    const g = makeGrid(32, ['.....', '.....', '.....']);
     const f = computeFlowField(g, { x: 16, y: 16 }); // 左上
-    // 右上(セル4)へは上段をまっすぐ4歩
-    expect(f.dist[4]).toBe(4);
-    // 中央下(セル11)へは左端を下って右へ、で 3歩
-    expect(f.dist[2 * 5 + 1]).toBe(3);
+    expect(f.dist[1 * 5 + 1]).toBe(DIAG_COST);
+    expect(f.dist[1 * 5 + 1]).toBeLessThan(ORTHO_COST * 2);
   });
 
-  it('壁の中をゴールに指定すると全セル到達不能になる', () => {
+  it('壁の角はすり抜けない（コーナーカット禁止）', () => {
+    // セル(1,1) が壁。(0,0) から (2,2) へ斜めに 2 回では行けない
+    // 迂回は直交移動のみ 4 回（右→右→下→下 など）で ORTHO_COST * 4 = 40 になる
+    const g = makeGrid(32, ['...', '.#.', '...']);
+    const f = computeFlowField(g, { x: 16, y: 16 });
+    expect(f.dist[2 * 3 + 2]).toBe(ORTHO_COST * 4);
+  });
+
+  it('壁の内側をゴールにしたら全部 -1', () => {
     const g = makeGrid(32, MAP);
     const f = computeFlowField(g, { x: 48, y: 48 });
     expect(Array.from(f.dist).every((d) => d === -1)).toBe(true);
@@ -93,22 +102,28 @@ describe('computeFlowField', () => {
 });
 
 describe('flowDirection', () => {
-  it('距離が減る隣へ向かう単位ベクトルを返す', () => {
+  it('コストが下がる隣へ向かう', () => {
     const g = makeGrid(32, MAP);
     const f = computeFlowField(g, { x: 16, y: 16 });
-    const dir = flowDirection(g, f, { x: 144, y: 16 }); // 右上から左へ
-    expect(dir).not.toBeNull();
-    expect(dir!.x).toBeCloseTo(-1);
-    expect(dir!.y).toBeCloseTo(0);
+    const dir = flowDirection(g, f, { x: 144, y: 16 })!; // 右上から左へ
+    expect(dir.x).toBeLessThan(0);
   });
 
-  it('ゴールに着いていたら null', () => {
+  it('開けたマップでは斜めを返す', () => {
+    const g = makeGrid(32, ['.....', '.....', '.....']);
+    const f = computeFlowField(g, { x: 16, y: 16 }); // 左上
+    const dir = flowDirection(g, f, { x: 80, y: 80 })!; // セル(2,2)
+    expect(dir.x).toBeLessThan(0);
+    expect(dir.y).toBeLessThan(0);
+  });
+
+  it('ゴールのセルにいたら null', () => {
     const g = makeGrid(32, MAP);
     const f = computeFlowField(g, { x: 16, y: 16 });
     expect(flowDirection(g, f, { x: 16, y: 16 })).toBeNull();
   });
 
-  it('到達不能な場所にいたら null', () => {
+  it('到達できないセルからは null', () => {
     const g = makeGrid(32, MAP);
     const f = computeFlowField(g, { x: 16, y: 16 });
     expect(flowDirection(g, f, { x: 48, y: 48 })).toBeNull();
@@ -130,5 +145,31 @@ describe('distance / distanceToSegment', () => {
 
   it('線分が点に潰れているとき', () => {
     expect(distanceToSegment({ x: 0, y: 5 }, { x: 0, y: 0 }, { x: 0, y: 0 })).toBe(5);
+  });
+});
+
+describe('hasLineOfSight', () => {
+  it('開けたマップでは通る', () => {
+    const g = makeGrid(32, ['.....', '.....', '.....']);
+    expect(hasLineOfSight(g, { x: 16, y: 16 }, { x: 144, y: 80 })).toBe(true);
+  });
+
+  it('壁をまたぐと通らない', () => {
+    const g = makeGrid(32, MAP); // 中段の (1,1)-(3,1) が壁
+    expect(hasLineOfSight(g, { x: 48, y: 16 }, { x: 48, y: 80 })).toBe(false);
+  });
+
+  it('同じ点なら、その場所が歩けるかどうかを返す', () => {
+    const g = makeGrid(32, MAP);
+    expect(hasLineOfSight(g, { x: 16, y: 16 }, { x: 16, y: 16 })).toBe(true);
+    expect(hasLineOfSight(g, { x: 48, y: 48 }, { x: 48, y: 48 })).toBe(false);
+  });
+
+  it('壁の角をかすめる対角線はコーナーカットとして拒否する', () => {
+    // (0,1)→(1,0) の対角移動で、間にある直交セルの一方 (1,1) が壁。
+    // 経路は壁セル (1,1) の内部を通らず格子点 (32,32) をかすめるだけなので、
+    // 点サンプリング（8pxごと）だとこの一点をまたいで「通れる」と誤判定していた。
+    const g = makeGrid(32, MAP);
+    expect(hasLineOfSight(g, { x: 16, y: 48 }, { x: 50, y: 14 })).toBe(false);
   });
 });

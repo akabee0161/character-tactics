@@ -34,34 +34,64 @@ export function isWalkableAt(grid: Grid, pos: Vec2): boolean {
   return i >= 0 && grid.walkable[i] === true;
 }
 
-const NEIGHBORS: readonly [number, number][] = [
-  [1, 0],
-  [-1, 0],
-  [0, 1],
-  [0, -1],
+/** セル距離を整数で持つためのスケール。斜めは √2 ≒ 1.4 倍 */
+export const ORTHO_COST = 10;
+export const DIAG_COST = 14;
+
+const NEIGHBORS: readonly [number, number, number][] = [
+  [1, 0, ORTHO_COST],
+  [-1, 0, ORTHO_COST],
+  [0, 1, ORTHO_COST],
+  [0, -1, ORTHO_COST],
+  [1, 1, DIAG_COST],
+  [1, -1, DIAG_COST],
+  [-1, 1, DIAG_COST],
+  [-1, -1, DIAG_COST],
 ];
 
+/** 斜めに進むには両隣のセルも歩けること。これがないと壁の角をすり抜ける */
+function canStep(grid: Grid, cx: number, cy: number, dx: number, dy: number): boolean {
+  const nx = cx + dx;
+  const ny = cy + dy;
+  if (nx < 0 || ny < 0 || nx >= grid.cols || ny >= grid.rows) return false;
+  if (grid.walkable[ny * grid.cols + nx] !== true) return false;
+  if (dx !== 0 && dy !== 0) {
+    if (grid.walkable[cy * grid.cols + nx] !== true) return false;
+    if (grid.walkable[ny * grid.cols + cx] !== true) return false;
+  }
+  return true;
+}
+
 export function computeFlowField(grid: Grid, goal: Vec2): FlowField {
-  const dist = new Int32Array(grid.cols * grid.rows).fill(-1);
-  const start = cellIndexAt(grid, goal);
+  const n = grid.cols * grid.rows;
+  const dist = new Int32Array(n).fill(-1);
   const field: FlowField = { cols: grid.cols, rows: grid.rows, dist };
+  const start = cellIndexAt(grid, goal);
   if (start < 0 || grid.walkable[start] !== true) return field;
 
+  // グリッドは最大でも 30x14 なので、優先度キューは持たず素朴に最小値を線形探索する
+  const settled = new Uint8Array(n);
   dist[start] = 0;
-  const queue: number[] = [start];
-  for (let head = 0; head < queue.length; head++) {
-    const cur = queue[head]!;
+  for (;;) {
+    let cur = -1;
+    let curDist = Infinity;
+    for (let i = 0; i < n; i++) {
+      const d = dist[i]!;
+      if (settled[i] === 1 || d < 0 || d >= curDist) continue;
+      curDist = d;
+      cur = i;
+    }
+    if (cur < 0) break;
+    settled[cur] = 1;
+
     const cx = cur % grid.cols;
     const cy = Math.floor(cur / grid.cols);
-    for (const [dx, dy] of NEIGHBORS) {
-      const nx = cx + dx;
-      const ny = cy + dy;
-      if (nx < 0 || ny < 0 || nx >= grid.cols || ny >= grid.rows) continue;
-      const ni = ny * grid.cols + nx;
-      if (grid.walkable[ni] !== true) continue;
-      if (dist[ni] !== -1) continue;
-      dist[ni] = dist[cur]! + 1;
-      queue.push(ni);
+    for (const [dx, dy, cost] of NEIGHBORS) {
+      if (!canStep(grid, cx, cy, dx, dy)) continue;
+      const ni = (cy + dy) * grid.cols + (cx + dx);
+      if (settled[ni] === 1) continue;
+      const nd = curDist + cost;
+      if (dist[ni]! < 0 || nd < dist[ni]!) dist[ni] = nd;
     }
   }
   return field;
@@ -79,10 +109,8 @@ export function flowDirection(grid: Grid, field: FlowField, pos: Vec2): Vec2 | n
   let best = -1;
   let bestDist = curDist;
   for (const [dx, dy] of NEIGHBORS) {
-    const nx = cx + dx;
-    const ny = cy + dy;
-    if (nx < 0 || ny < 0 || nx >= grid.cols || ny >= grid.rows) continue;
-    const ni = ny * grid.cols + nx;
+    if (!canStep(grid, cx, cy, dx, dy)) continue;
+    const ni = (cy + dy) * grid.cols + (cx + dx);
     const d = field.dist[ni];
     if (d === undefined || d < 0) continue;
     if (d < bestDist) {
@@ -101,6 +129,56 @@ export function flowDirection(grid: Grid, field: FlowField, pos: Vec2): Vec2 | n
 
 export function distance(a: Vec2, b: Vec2): number {
   return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
+/**
+ * 2点を結ぶ線分がすべて歩けるセルの上を通るか。
+ * DDA で線分が通過するセルを漏れなく列挙し、対角に隣のセルへ移る瞬間は
+ * 両側の直交セルも歩行可能か確認する（computeFlowField の canStep と同じ理由で、
+ * 壁の角をかすめてすり抜けるのを禁止する）。
+ */
+export function hasLineOfSight(grid: Grid, from: Vec2, to: Vec2): boolean {
+  const walkableCell = (x: number, y: number): boolean =>
+    x >= 0 && y >= 0 && x < grid.cols && y < grid.rows && grid.walkable[y * grid.cols + x] === true;
+
+  let cx = Math.floor(from.x / grid.cell);
+  let cy = Math.floor(from.y / grid.cell);
+  const ex = Math.floor(to.x / grid.cell);
+  const ey = Math.floor(to.y / grid.cell);
+  if (!walkableCell(cx, cy)) return false;
+
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const stepX = dx > 0 ? 1 : dx < 0 ? -1 : 0;
+  const stepY = dy > 0 ? 1 : dy < 0 ? -1 : 0;
+
+  let tMaxX = stepX !== 0 ? ((cx + (stepX > 0 ? 1 : 0)) * grid.cell - from.x) / dx : Infinity;
+  let tMaxY = stepY !== 0 ? ((cy + (stepY > 0 ? 1 : 0)) * grid.cell - from.y) / dy : Infinity;
+  const tDeltaX = stepX !== 0 ? grid.cell / Math.abs(dx) : Infinity;
+  const tDeltaY = stepY !== 0 ? grid.cell / Math.abs(dy) : Infinity;
+  const EPS = 1e-9;
+
+  while (cx !== ex || cy !== ey) {
+    if (Math.abs(tMaxX - tMaxY) < EPS) {
+      // 両方の境界を同時に跨ぐ = 格子点(壁の角)を通過する対角遷移
+      const nx = cx + stepX;
+      const ny = cy + stepY;
+      if (!walkableCell(nx, ny) || !walkableCell(cx, ny) || !walkableCell(nx, cy)) return false;
+      cx = nx;
+      cy = ny;
+      tMaxX += tDeltaX;
+      tMaxY += tDeltaY;
+    } else if (tMaxX < tMaxY) {
+      cx += stepX;
+      if (!walkableCell(cx, cy)) return false;
+      tMaxX += tDeltaX;
+    } else {
+      cy += stepY;
+      if (!walkableCell(cx, cy)) return false;
+      tMaxY += tDeltaY;
+    }
+  }
+  return true;
 }
 
 export function distanceToSegment(p: Vec2, a: Vec2, b: Vec2): number {

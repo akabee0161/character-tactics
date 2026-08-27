@@ -41,6 +41,8 @@ export type AllyUnit = {
   skill: SkillId;
   /** 移動先へのフローフィールド。null なら移動しない */
   goalField: FlowField | null;
+  /** 移動先として指定されたマップ座標。null なら移動しない */
+  goalPos: Vec2 | null;
   /** 交戦中の敵の uid。null なら非交戦 */
   engagedWith: string | null;
   attackCooldown: number;

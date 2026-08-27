@@ -55,4 +55,10 @@ describe('pickAlly', () => {
     expect(pickAlly(allies, { x: 100, y: 160 }, 70)).toBe('roran');
     expect(pickAlly(allies, { x: 100, y: 160 }, 40)).toBeNull();
   });
+
+  it('既定の判定半径は 32 まで拾う', () => {
+    const list = [unit('roran', 100, 100)];
+    expect(pickAlly(list, { x: 132, y: 100 })).toBe('roran');
+    expect(pickAlly(list, { x: 133, y: 100 })).toBeNull();
+  });
 });
