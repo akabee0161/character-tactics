@@ -1,18 +1,8 @@
+import type { Registry } from '../engine/registry';
 import type { CharProgress } from '../core/types';
 
-/**
- * Task 10 で src/content/characters.ts が消えたための暫定の固定リスト。
- * newSave/isValid は Registry を受け取らないので、まだこれに頼っている。
- * Task 11（セーブを version 2 へ）で Registry ベースの検証に置き換える。
- */
-export const ALL_CHAR_IDS: readonly string[] = ['roran', 'ines', 'mist', 'gau'];
-
-function isFiniteNonNegInt(v: unknown): boolean {
-  return typeof v === 'number' && Number.isInteger(v) && v >= 0;
-}
-
 export const SAVE_KEY = 'character-tactics/save';
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 
 export type StorageLike = {
   getItem(key: string): string | null;
@@ -21,51 +11,78 @@ export type StorageLike = {
 
 export type SaveData = {
   version: number;
-  clearedStages: number;
-  chars: Record<string, CharProgress>;
+  clearedStageIds: string[];
+  units: Record<string, CharProgress>;
   counters: Record<string, number>;
   titles: string[];
 };
 
-export function newSave(): SaveData {
-  const chars = {} as Record<string, CharProgress>;
-  for (const id of ALL_CHAR_IDS) chars[id] = { level: 1, xp: 0 };
-  return { version: SAVE_VERSION, clearedStages: 0, chars, counters: {}, titles: [] };
+function isFiniteNonNegInt(v: unknown): boolean {
+  return typeof v === 'number' && Number.isInteger(v) && v >= 0;
 }
 
-function isValid(value: unknown): value is SaveData {
-  if (typeof value !== 'object' || value === null || Array.isArray(value)) return false;
-  const v = value as Record<string, unknown>;
-  if (v.version !== SAVE_VERSION) return false;
-  if (!isFiniteNonNegInt(v.clearedStages)) return false;
-  if (!Array.isArray(v.titles)) return false;
-  if (!v.titles.every((t) => typeof t === 'string')) return false;
-  if (typeof v.counters !== 'object' || v.counters === null || Array.isArray(v.counters)) return false;
-  for (const value of Object.values(v.counters as Record<string, unknown>)) {
-    if (!isFiniteNonNegInt(value)) return false;
-  }
-  if (typeof v.chars !== 'object' || v.chars === null) return false;
-
-  const chars = v.chars as Record<string, unknown>;
-  for (const id of ALL_CHAR_IDS) {
-    const p = chars[id] as Record<string, unknown> | undefined;
-    if (!p || !isFiniteNonNegInt(p.level) || !isFiniteNonNegInt(p.xp)) return false;
-  }
-  return true;
+function isPlainObject(v: unknown): v is Record<string, unknown> {
+  return typeof v === 'object' && v !== null && !Array.isArray(v);
 }
 
-export function loadSave(storage: StorageLike): SaveData | null {
+export function newSave(reg: Registry): SaveData {
+  const units: Record<string, CharProgress> = {};
+  for (const id of reg.units.keys()) units[id] = { level: 1, xp: 0 };
+  return { version: SAVE_VERSION, clearedStageIds: [], units, counters: {}, titles: [] };
+}
+
+/**
+ * 壊れたエントリだけを捨て、セーブ全体は捨てない。
+ * レジストリに無い ID は無視し、レジストリにあってセーブに無い ID は既定値で補う。
+ * これによりコンテンツを足し引きしてもプレイヤーの進行が失われない。
+ */
+function reconcile(raw: Record<string, unknown>, reg: Registry): SaveData {
+  const save = newSave(reg);
+
+  const rawUnits = isPlainObject(raw.units) ? raw.units : {};
+  for (const id of reg.units.keys()) {
+    const p = rawUnits[id];
+    if (!isPlainObject(p) || !isFiniteNonNegInt(p.level) || !isFiniteNonNegInt(p.xp)) continue;
+    save.units[id] = { level: p.level as number, xp: p.xp as number };
+  }
+
+  if (Array.isArray(raw.clearedStageIds)) {
+    const known = new Set(reg.stages.map((s) => s.id));
+    save.clearedStageIds = raw.clearedStageIds.filter(
+      (id): id is string => typeof id === 'string' && known.has(id),
+    );
+  }
+
+  if (Array.isArray(raw.titles)) {
+    const known = new Set(reg.titles.map((t) => t.id));
+    save.titles = raw.titles.filter((id): id is string => typeof id === 'string' && known.has(id));
+  }
+
+  if (isPlainObject(raw.counters)) {
+    for (const [key, value] of Object.entries(raw.counters)) {
+      if (isFiniteNonNegInt(value)) save.counters[key] = value as number;
+    }
+  }
+
+  return save;
+}
+
+export function loadSave(storage: StorageLike, reg: Registry): SaveData | null {
   const raw = storage.getItem(SAVE_KEY);
   if (raw === null) return null;
   try {
     const parsed: unknown = JSON.parse(raw);
-    return isValid(parsed) ? parsed : null;
+    if (!isPlainObject(parsed)) return null;
+    // 旧セーブはマイグレーションせず読み捨てる（設計書 9 節）
+    if (parsed.version !== SAVE_VERSION) return null;
+    if (!isPlainObject(parsed.units)) return null;
+    return reconcile(parsed, reg);
   } catch {
     return null;
   }
 }
 
-/** 保存できたら true。localStorage が例外を投げる環境(容量超過・プライベートブラウジング等)では false */
+/** 保存できたら true。localStorage が例外を投げる環境では false */
 export function writeSave(storage: StorageLike, data: SaveData): boolean {
   try {
     storage.setItem(SAVE_KEY, JSON.stringify(data));

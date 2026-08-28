@@ -51,11 +51,12 @@ if (!loadResult.ok) {
 }
 const registry = loadResult.value;
 
-const loaded = loadSave(window.localStorage);
-let save: SaveData = loaded ?? newSave();
+const loaded = loadSave(window.localStorage, registry);
+let save: SaveData = loaded ?? newSave(registry);
 let hasSave = loaded !== null;
 let phase: Phase = 'title';
 let stageIndex = 0;
+let stageId = registry.stages[0]!.id;
 let battle: BattleState | null = null;
 let selected: string | null = null;
 let pointerStart: PointerStart | null = null;
@@ -77,7 +78,8 @@ function toLogical(ev: PointerEvent): Vec2 {
 
 function beginStage(index: number): void {
   stageIndex = index;
-  battle = createBattleState(registry, STAGES[index]!, save.chars, Date.now() % 100000);
+  stageId = registry.stages[index]!.id;
+  battle = createBattleState(registry, STAGES[index]!, save.units, Date.now() % 100000);
   selected = null;
   pendingSkill = null;
   bubbles.items.length = 0;
@@ -100,7 +102,7 @@ function onPointerDown(ev: PointerEvent): void {
   switch (phase) {
     case 'title':
       if (hitRect(BTN.titleNew, p)) {
-        save = newSave();
+        save = newSave(registry);
         hasSave = writeSave(window.localStorage, save) || hasSave;
         phase = 'select';
       } else if (hasSave && hitRect(BTN.titleContinue, p)) {
@@ -110,7 +112,7 @@ function onPointerDown(ev: PointerEvent): void {
 
     case 'select':
       for (let i = 0; i < STAGE_BTN.length; i++) {
-        if (hitRect(STAGE_BTN[i]!, p) && isStageUnlocked(save, i)) beginStage(i);
+        if (hitRect(STAGE_BTN[i]!, p) && isStageUnlocked(registry, save, i)) beginStage(i);
       }
       return;
 
@@ -264,7 +266,7 @@ function update(dt: number): void {
   } else if (battle.phase === 'waveCleared') {
     phase = 'waveCleared';
   } else if (battle.phase === 'stageCleared') {
-    const r = applyStageClear(registry, save, stageIndex, battle);
+    const r = applyStageClear(registry, save, stageId, battle);
     save = r.save;
     hasSave = writeSave(window.localStorage, save) || hasSave;
     result = { gains: r.gains, newTitles: r.newTitles };

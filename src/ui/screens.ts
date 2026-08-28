@@ -58,14 +58,14 @@ export function drawStageSelect(ctx: CanvasRenderingContext2D, reg: Registry, sa
 
   reg.stages.forEach((stage, i) => {
     const r = STAGE_BTN[i]!;
-    const unlocked = isStageUnlocked(save, i);
+    const unlocked = isStageUnlocked(reg, save, i);
     panel(ctx, r, unlocked ? '#2c4a63' : '#2a2f35');
     ctx.fillStyle = unlocked ? INK : '#78808a';
     ctx.font = '24px sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText(unlocked ? stage.name : 'まだ いけない', r.x + r.w / 2, r.y + 60);
     ctx.font = '18px sans-serif';
-    if (unlocked && i < save.clearedStages) ctx.fillText('クリア ずみ', r.x + r.w / 2, r.y + 104);
+    if (unlocked && save.clearedStageIds.includes(stage.id)) ctx.fillText('クリア ずみ', r.x + r.w / 2, r.y + 104);
     ctx.textAlign = 'left';
   });
 
@@ -84,7 +84,7 @@ function drawRoster(ctx: CanvasRenderingContext2D, reg: Registry, save: SaveData
     ctx.arc(r.x + 28, r.y + 32, 16, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = INK;
-    ctx.fillText(`${def.name} Lv${save.chars[id]!.level}`, r.x + 54, r.y + 26);
+    ctx.fillText(`${def.name} Lv${save.units[id]!.level}`, r.x + 54, r.y + 26);
     const own = titlesOf(reg, save.titles, id);
     ctx.fillStyle = '#9fb3c4';
     ctx.fillText(own.map((t) => t.label).join('、'), r.x + 54, r.y + 48);
