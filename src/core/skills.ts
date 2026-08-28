@@ -1,7 +1,10 @@
 import { BOND_RANGE } from './bonds';
-import { MELEE_RANGE } from '../content/characters';
+import { MELEE_RANGE } from './constants';
 import { distance, distanceToSegment, isWalkableAt } from './field';
+import { skillParam } from '../engine/registry';
 import type { AllyUnit, BattleState, Vec2 } from './types';
+
+export const SKILL_EFFECT_IDS: readonly string[] = ['funbaru', 'neraiuchi', 'omajinai', 'kakenukeru'];
 
 export const FUNBARU_DURATION = 5;
 export const OMAJINAI_HEAL = 12;
@@ -36,7 +39,7 @@ export function useSkill(state: BattleState, allyId: string, dest?: Vec2): boole
 
   switch (ally.skill) {
     case 'funbaru':
-      ally.funbaruUntil = state.time + FUNBARU_DURATION;
+      ally.funbaruUntil = state.time + skillParam(state.reg, 'funbaru', 'duration', FUNBARU_DURATION);
       break;
 
     case 'neraiuchi':
@@ -44,8 +47,9 @@ export function useSkill(state: BattleState, allyId: string, dest?: Vec2): boole
       break;
 
     case 'omajinai': {
+      const range = skillParam(state.reg, 'omajinai', 'range', BOND_RANGE);
       const candidates = state.allies.filter(
-        (a) => !a.retired && distance(ally.pos, a.pos) <= BOND_RANGE,
+        (a) => !a.retired && distance(ally.pos, a.pos) <= range,
       );
       if (candidates.length === 0) return false;
       let target = candidates[0]!;

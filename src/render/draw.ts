@@ -68,7 +68,7 @@ function drawBonds(ctx: CanvasRenderingContext2D, state: BattleState): void {
   ctx.strokeStyle = COLORS.bond;
   for (const ally of state.allies) {
     if (ally.retired || ally.engagedWith === null) continue;
-    for (const s of bondSupporters(ally.id, ally.pos, state.allies)) {
+    for (const s of bondSupporters(state.reg, ally.id, ally.pos, state.allies)) {
       const other = state.allies.find((a) => a.id === s.id);
       if (!other) continue;
       const a = mapToLogical(ally.pos);

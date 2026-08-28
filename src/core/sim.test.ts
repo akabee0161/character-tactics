@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { isWalkableAt } from './field';
 import { createBattleState, startWave } from './state';
 import { step } from './sim';
+import { testRegistry } from './testing';
 import type { BattleState, CharProgress, EnemyUnit, StageDef } from './types';
 
 const STAGE: StageDef = {
@@ -24,7 +25,7 @@ const LV1: Record<string, CharProgress> = {
 };
 
 function fresh(stage: StageDef = STAGE): BattleState {
-  const s = createBattleState(stage, LV1, 42);
+  const s = createBattleState(testRegistry(), stage, LV1, 42);
   startWave(s);
   // 邪魔にならない場所へ全員どける
   for (const a of s.allies) a.pos = { x: 16, y: 80 };
@@ -138,6 +139,7 @@ describe('step: 移動', () => {
 
   it('交戦中の味方は移動しない', () => {
     const s = fresh();
+    for (const a of s.allies) if (a.id !== 'roran') a.pos = { x: 900, y: 900 };
     const e = addEnemy(s, 20, 80);
     step(s, [], 0.1);
     const pos = { ...ally(s, 'roran').pos };
@@ -150,6 +152,7 @@ describe('step: 移動', () => {
 describe('step: 交戦の成立と解除', () => {
   it('レンジ内に入ると交戦が成立し engage イベントが出る', () => {
     const s = fresh();
+    for (const a of s.allies) if (a.id !== 'roran') a.pos = { x: 900, y: 900 };
     const e = addEnemy(s, 30, 80);
     step(s, [], 0.1);
     expect(ally(s, 'roran').engagedWith).toBe(e.uid);
@@ -191,6 +194,7 @@ describe('step: 交戦の成立と解除', () => {
 
   it('move コマンドで交戦から離脱できる', () => {
     const s = fresh();
+    for (const a of s.allies) if (a.id !== 'roran') a.pos = { x: 900, y: 900 };
     addEnemy(s, 30, 80);
     step(s, [], 0.1);
     expect(ally(s, 'roran').engagedWith).not.toBeNull();
@@ -200,6 +204,7 @@ describe('step: 交戦の成立と解除', () => {
 
   it('一度成立した交戦相手は、より近い敵が来ても入れ替わらない', () => {
     const s = fresh();
+    for (const a of s.allies) if (a.id !== 'roran') a.pos = { x: 900, y: 900 };
     const first = addEnemy(s, 40, 80);
     step(s, [], 0.1);
     addEnemy(s, 18, 80);

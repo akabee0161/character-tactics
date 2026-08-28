@@ -1,5 +1,7 @@
 import { STAGES } from './content/stages';
+import { loadRegistry } from './engine/loader';
 import { pickDialogue, pickWaveIntro } from './core/dialogue';
+import { SKILL_EFFECT_IDS } from './core/skills';
 import { createBattleState, placeAlly, startWave } from './core/state';
 import { step } from './core/sim';
 import type { SimCommand } from './core/sim';
@@ -28,6 +30,15 @@ type Phase = 'title' | 'select' | 'placement' | 'battle' | 'waveCleared' | 'resu
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d')!;
+
+const regResult = loadRegistry(SKILL_EFFECT_IDS);
+if (!regResult.ok) {
+  throw new Error(
+    'assets の よみこみに しっぱい:\n' +
+      regResult.errors.map((e) => `  ${e.file} ${e.path}: ${e.reason}`).join('\n'),
+  );
+}
+const registry = regResult.value;
 
 const loaded = loadSave(window.localStorage);
 let save: SaveData = loaded ?? newSave();
@@ -65,7 +76,7 @@ function toLogical(ev: PointerEvent): Vec2 {
 
 function beginStage(index: number): void {
   stageIndex = index;
-  battle = createBattleState(STAGES[index]!, save.chars, Date.now() % 100000);
+  battle = createBattleState(registry, STAGES[index]!, save.chars, Date.now() % 100000);
   selected = null;
   pendingSkill = null;
   bubbles.items.length = 0;
@@ -108,7 +119,7 @@ function onPointerDown(ev: PointerEvent): void {
         pointerStart = null;
         writeSave(window.localStorage, save); // ステージ開始時点を保存する
         startWave(battle);
-        enqueue(bubbles, pickWaveIntro(battle.stage, battle.waveIndex));
+        enqueue(bubbles, pickWaveIntro(battle.reg, battle.stage, battle.waveIndex));
         phase = 'battle';
         return;
       }
@@ -145,7 +156,7 @@ function onPointerDown(ev: PointerEvent): void {
         battle.waveIndex += 1;
         effects.items.length = 0;
         startWave(battle);
-        enqueue(bubbles, pickWaveIntro(battle.stage, battle.waveIndex));
+        enqueue(bubbles, pickWaveIntro(battle.reg, battle.stage, battle.waveIndex));
         phase = 'battle';
         return;
       }
@@ -243,7 +254,7 @@ function update(dt: number): void {
     const batch = commands.splice(0, commands.length);
     step(battle, batch, FIXED_DT);
     spawnHitEffects(effects, battle.events);
-    enqueue(bubbles, pickDialogue(battle.events));
+    enqueue(bubbles, pickDialogue(battle.reg, battle.events));
     if (isBlocking(bubbles)) break;
   }
 

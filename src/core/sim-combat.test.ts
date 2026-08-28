@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createBattleState, startWave } from './state';
 import { step } from './sim';
+import { testRegistry } from './testing';
 import type { BattleState, CharProgress, EnemyUnit, StageDef } from './types';
 
 const STAGE: StageDef = {
@@ -18,7 +19,7 @@ const LV1: Record<string, CharProgress> = {
 };
 
 function fresh(stage: StageDef = STAGE): BattleState {
-  const s = createBattleState(stage, LV1, 42);
+  const s = createBattleState(testRegistry(), stage, LV1, 42);
   startWave(s);
   for (const a of s.allies) a.pos = { x: 16, y: 300 }; // マップ外の遠くへ退避
   return s;
@@ -67,7 +68,9 @@ describe('攻撃の解決', () => {
   it('なかよし支援が乗り、bondSupport イベントが出る', () => {
     const s = fresh();
     ally(s, 'roran').pos = { x: 16, y: 16 };
-    ally(s, 'ines').pos = { x: 100, y: 16 };
+    // イネスの弓レンジ(160)の外、なかよしレンジ(200)の内に置き、
+    // イネス自身が交戦を横取りせず支援だけする状況にする
+    ally(s, 'ines').pos = { x: 200, y: 16 };
     const e = addEnemy(s, 'narazumono', 30, 16);
     step(s, [], 0.01);
     step(s, [], 1.7);

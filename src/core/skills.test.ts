@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createBattleState, startWave } from './state';
 import { canUseSkill, isFunbaruActive, useSkill, FUNBARU_DURATION, OMAJINAI_HEAL, KAKENUKERU_DAMAGE } from './skills';
+import { testRegistry } from './testing';
 import type { BattleState, CharProgress, EnemyUnit, StageDef } from './types';
 
 const STAGE: StageDef = {
@@ -32,7 +33,7 @@ const ally = (s: BattleState, id: string) => s.allies.find((a) => a.id === id)!;
 describe('canUseSkill', () => {
   let s: BattleState;
   beforeEach(() => {
-    s = createBattleState(STAGE, LV1, 1);
+    s = createBattleState(testRegistry(), STAGE, LV1, 1);
     startWave(s);
   });
 
@@ -64,7 +65,7 @@ describe('canUseSkill', () => {
 
 describe('ふんばる', () => {
   it('5 秒間の効果が付き、skill イベントが出る', () => {
-    const s = createBattleState(STAGE, LV1, 1);
+    const s = createBattleState(testRegistry(), STAGE, LV1, 1);
     startWave(s);
     s.time = 10;
     expect(useSkill(s, 'roran')).toBe(true);
@@ -74,7 +75,7 @@ describe('ふんばる', () => {
   });
 
   it('isFunbaruActive は期限内だけ true', () => {
-    const s = createBattleState(STAGE, LV1, 1);
+    const s = createBattleState(testRegistry(), STAGE, LV1, 1);
     startWave(s);
     useSkill(s, 'roran');
     expect(isFunbaruActive(ally(s, 'roran'), 4.9)).toBe(true);
@@ -84,7 +85,7 @@ describe('ふんばる', () => {
 
 describe('ねらいうち', () => {
   it('次の一撃に効果が乗る', () => {
-    const s = createBattleState(STAGE, LV1, 1);
+    const s = createBattleState(testRegistry(), STAGE, LV1, 1);
     startWave(s);
     expect(useSkill(s, 'ines')).toBe(true);
     expect(ally(s, 'ines').neraiuchiArmed).toBe(true);
@@ -93,7 +94,7 @@ describe('ねらいうち', () => {
 
 describe('おまじない', () => {
   it('範囲内で HP 割合がいちばん低い味方を回復する', () => {
-    const s = createBattleState(STAGE, LV1, 1);
+    const s = createBattleState(testRegistry(), STAGE, LV1, 1);
     startWave(s);
     ally(s, 'mist').pos = { x: 100, y: 16 };
     ally(s, 'roran').pos = { x: 150, y: 16 };
@@ -106,7 +107,7 @@ describe('おまじない', () => {
   });
 
   it('最大 HP を超えて回復しない', () => {
-    const s = createBattleState(STAGE, LV1, 1);
+    const s = createBattleState(testRegistry(), STAGE, LV1, 1);
     startWave(s);
     for (const a of s.allies) a.pos = { x: 100, y: 16 };
     ally(s, 'ines').hp = 19;
@@ -115,7 +116,7 @@ describe('おまじない', () => {
   });
 
   it('範囲内に誰もいなければ自分を回復する', () => {
-    const s = createBattleState(STAGE, LV1, 1);
+    const s = createBattleState(testRegistry(), STAGE, LV1, 1);
     startWave(s);
     ally(s, 'mist').pos = { x: 16, y: 16 };
     for (const a of s.allies) if (a.id !== 'mist') a.pos = { x: 300, y: 80 };
@@ -125,7 +126,7 @@ describe('おまじない', () => {
   });
 
   it('たいきゃく中の味方は対象にならない', () => {
-    const s = createBattleState(STAGE, LV1, 1);
+    const s = createBattleState(testRegistry(), STAGE, LV1, 1);
     startWave(s);
     for (const a of s.allies) a.pos = { x: 100, y: 16 };
     ally(s, 'roran').hp = 1;
@@ -139,7 +140,7 @@ describe('おまじない', () => {
 
 describe('かけぬける', () => {
   it('目的地まで移動し、経路上の敵にダメージを与える', () => {
-    const s = createBattleState(STAGE, LV1, 1);
+    const s = createBattleState(testRegistry(), STAGE, LV1, 1);
     startWave(s);
     ally(s, 'gau').pos = { x: 16, y: 16 };
     const onPath = addEnemy(s, 100, 16);
@@ -152,7 +153,7 @@ describe('かけぬける', () => {
   });
 
   it('目的地の指定がなければ発動しない', () => {
-    const s = createBattleState(STAGE, LV1, 1);
+    const s = createBattleState(testRegistry(), STAGE, LV1, 1);
     startWave(s);
     expect(useSkill(s, 'gau')).toBe(false);
     expect(canUseSkill(s, 'gau')).toBe(true);
@@ -160,7 +161,7 @@ describe('かけぬける', () => {
 
   it('歩けない目的地なら発動しない', () => {
     const stage: StageDef = { ...STAGE, mapRows: ['..........', '.....#....', '..........'] };
-    const s = createBattleState(stage, LV1, 1);
+    const s = createBattleState(testRegistry(), stage, LV1, 1);
     startWave(s);
     expect(useSkill(s, 'gau', { x: 176, y: 48 })).toBe(false);
     expect(canUseSkill(s, 'gau')).toBe(true);
@@ -168,7 +169,7 @@ describe('かけぬける', () => {
 
   it('目的地は歩けても経路上に壁があれば発動しない', () => {
     const stage: StageDef = { ...STAGE, mapRows: ['..........', '.....#....', '..........'] };
-    const s = createBattleState(stage, LV1, 1);
+    const s = createBattleState(testRegistry(), stage, LV1, 1);
     startWave(s);
     ally(s, 'gau').pos = { x: 16, y: 48 };
     expect(useSkill(s, 'gau', { x: 300, y: 48 })).toBe(false);
@@ -177,7 +178,7 @@ describe('かけぬける', () => {
   });
 
   it('倒した敵の lastHitBy が記録され、撃破功績が付く', () => {
-    const s = createBattleState(STAGE, LV1, 1);
+    const s = createBattleState(testRegistry(), STAGE, LV1, 1);
     startWave(s);
     ally(s, 'gau').pos = { x: 16, y: 16 };
     const e = addEnemy(s, 100, 16, 3);
@@ -187,7 +188,7 @@ describe('かけぬける', () => {
   });
 
   it('交戦は解除される', () => {
-    const s = createBattleState(STAGE, LV1, 1);
+    const s = createBattleState(testRegistry(), STAGE, LV1, 1);
     startWave(s);
     ally(s, 'gau').pos = { x: 16, y: 16 };
     ally(s, 'gau').engagedWith = 'e1';

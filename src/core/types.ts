@@ -1,6 +1,6 @@
-export type Vec2 = { x: number; y: number };
-
-export type AttackKind = 'melee' | 'bow';
+export type { AttackKind, Vec2 } from '../engine/schema';
+import type { Registry } from '../engine/registry';
+import type { AttackKind, Vec2 } from '../engine/schema';
 
 export type Grid = {
   cols: number;
@@ -111,6 +111,7 @@ export type CharBattleStats = {
 };
 
 export type BattleState = {
+  reg: Registry;
   stage: StageDef;
   grid: Grid;
   /** 砦をゴールとするフローフィールド。全敵で共有する */
