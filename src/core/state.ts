@@ -1,12 +1,11 @@
-import { CHARACTERS } from '../content/characters';
+import { ALL_CHAR_IDS, charDef } from '../content/characters';
 import { computeFlowField, isWalkableAt, makeGrid } from './field';
 import { makeRng } from './rng';
-import { CHAR_IDS, FORT_MAX_HP } from './types';
+import { FORT_MAX_HP } from './types';
 import type {
   AllyUnit,
   BattleState,
   CharBattleStats,
-  CharId,
   CharProgress,
   StageDef,
   Vec2,
@@ -17,8 +16,8 @@ const POWER_PER_LEVEL = 1;
 const WAVE_HEAL_RATIO = 0.3;
 const REVIVE_HP_RATIO = 0.5;
 
-export function statsForLevel(id: CharId, level: number): { maxHp: number; power: number } {
-  const def = CHARACTERS[id];
+export function statsForLevel(id: string, level: number): { maxHp: number; power: number } {
+  const def = charDef(id);
   const steps = Math.max(0, level - 1);
   return {
     maxHp: def.maxHp + steps * HP_PER_LEVEL,
@@ -30,8 +29,8 @@ function emptyStats(): CharBattleStats {
   return { defeats: 0, skillUses: 0, neraiuchiKills: 0, kakenukeruHits: 0, bondSupports: 0 };
 }
 
-function makeAlly(id: CharId, level: number, pos: Vec2): AllyUnit {
-  const def = CHARACTERS[id];
+function makeAlly(id: string, level: number, pos: Vec2): AllyUnit {
+  const def = charDef(id);
   const { maxHp, power } = statsForLevel(id, level);
   return {
     id,
@@ -54,18 +53,18 @@ function makeAlly(id: CharId, level: number, pos: Vec2): AllyUnit {
     funbaruUntil: -1,
     neraiuchiArmed: false,
     pinchShown: false,
-    seenKinds: [],
+    seenDefIds: [],
   };
 }
 
 export function createBattleState(
   stage: StageDef,
-  progress: Record<CharId, CharProgress>,
+  progress: Record<string, CharProgress>,
   seed: number,
 ): BattleState {
   const grid = makeGrid(stage.cell, stage.mapRows);
-  const stats = {} as Record<CharId, CharBattleStats>;
-  for (const id of CHAR_IDS) stats[id] = emptyStats();
+  const stats = {} as Record<string, CharBattleStats>;
+  for (const id of ALL_CHAR_IDS) stats[id] = emptyStats();
 
   return {
     stage,
@@ -75,7 +74,7 @@ export function createBattleState(
     waveIndex: 0,
     time: 0,
     phase: 'placement',
-    allies: CHAR_IDS.map((id) => makeAlly(id, progress[id].level, stage.fort)),
+    allies: ALL_CHAR_IDS.map((id) => makeAlly(id, progress[id]!.level, stage.fort)),
     enemies: [],
     pending: [],
     events: [],
@@ -85,7 +84,7 @@ export function createBattleState(
   };
 }
 
-export function placeAlly(state: BattleState, id: CharId, pos: Vec2): boolean {
+export function placeAlly(state: BattleState, id: string, pos: Vec2): boolean {
   if (!isWalkableAt(state.grid, pos)) return false;
   const ally = state.allies.find((a) => a.id === id);
   if (!ally) return false;

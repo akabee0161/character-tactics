@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { SAVE_KEY, SAVE_VERSION, loadSave, newSave, writeSave } from './save';
 import type { StorageLike } from './save';
-import { CHAR_IDS } from '../core/types';
+import { ALL_CHAR_IDS } from '../content/characters';
 
 function fakeStorage(initial: Record<string, string> = {}): StorageLike & { data: Record<string, string> } {
   const data = { ...initial };
@@ -18,7 +18,7 @@ describe('newSave', () => {
     expect(s.version).toBe(SAVE_VERSION);
     expect(s.clearedStages).toBe(0);
     expect(s.titles).toEqual([]);
-    for (const id of CHAR_IDS) {
+    for (const id of ALL_CHAR_IDS) {
       expect(s.chars[id]).toEqual({ level: 1, xp: 0 });
     }
   });

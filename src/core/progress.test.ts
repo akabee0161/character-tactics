@@ -3,16 +3,16 @@ import {
   accumulateCounters, applyXp, earnedTitles, emptyCounters,
   MAX_LEVEL, TITLE_LABELS, TITLE_OWNER, xpGain, xpToNext,
 } from './progress';
-import type { CharBattleStats, CharId } from './types';
+import type { CharBattleStats } from './types';
 
-const stats = (over: Partial<Record<CharId, Partial<CharBattleStats>>> = {}) => {
+const stats = (over: Partial<Record<string, Partial<CharBattleStats>>> = {}) => {
   const base: CharBattleStats = { defeats: 0, skillUses: 0, neraiuchiKills: 0, kakenukeruHits: 0, bondSupports: 0 };
   return {
     roran: { ...base, ...over.roran },
     ines: { ...base, ...over.ines },
     mist: { ...base, ...over.mist },
     gau: { ...base, ...over.gau },
-  } as Record<CharId, CharBattleStats>;
+  } as Record<string, CharBattleStats>;
 };
 
 describe('xpGain / xpToNext', () => {

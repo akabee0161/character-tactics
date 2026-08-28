@@ -1,12 +1,12 @@
-import { CHARACTERS } from '../content/characters';
-import { ENEMIES } from '../content/enemies';
+import { charDef } from '../content/characters';
+import { enemyDef } from '../content/enemies';
 import { bondSupporters } from '../core/bonds';
 import { isFunbaruActive } from '../core/skills';
 import { FORT_MAX_HP } from '../core/types';
 import { LOGICAL_H, LOGICAL_W, mapToLogical } from './viewport';
 import { HIT_EFFECT_DURATION } from './effects';
 import type { EffectState } from './effects';
-import type { BattleState, CharId, Vec2 } from '../core/types';
+import type { BattleState, Vec2 } from '../core/types';
 
 const COLORS = {
   sea: '#12303f',
@@ -26,7 +26,7 @@ const UNIT_R = 11;
 export function drawBattle(
   ctx: CanvasRenderingContext2D,
   state: BattleState,
-  selected: CharId | null,
+  selected: string | null,
   effects: EffectState,
 ): void {
   ctx.save();
@@ -106,7 +106,7 @@ function drawHpBar(ctx: CanvasRenderingContext2D, p: Vec2, ratio: number, color:
 function drawEnemies(ctx: CanvasRenderingContext2D, state: BattleState): void {
   for (const enemy of state.enemies) {
     const p = mapToLogical(enemy.pos);
-    const def = ENEMIES[enemy.kind];
+    const def = enemyDef(enemy.kind);
     ctx.fillStyle = def.color;
     ctx.beginPath();
     ctx.arc(p.x, p.y, enemy.kind === 'garum' ? UNIT_R + 3 : UNIT_R, 0, Math.PI * 2);
@@ -119,11 +119,11 @@ function drawEnemies(ctx: CanvasRenderingContext2D, state: BattleState): void {
   }
 }
 
-function drawAllies(ctx: CanvasRenderingContext2D, state: BattleState, selected: CharId | null): void {
+function drawAllies(ctx: CanvasRenderingContext2D, state: BattleState, selected: string | null): void {
   for (const ally of state.allies) {
     if (ally.retired) continue;
     const p = mapToLogical(ally.pos);
-    ctx.fillStyle = CHARACTERS[ally.id].color;
+    ctx.fillStyle = charDef(ally.id).color;
     ctx.beginPath();
     ctx.arc(p.x, p.y, UNIT_R, 0, Math.PI * 2);
     ctx.fill();
@@ -188,13 +188,13 @@ function drawTopBar(ctx: CanvasRenderingContext2D, state: BattleState): void {
 export function drawGoalMarkers(
   ctx: CanvasRenderingContext2D,
   state: BattleState,
-  selected: CharId | null,
+  selected: string | null,
 ): void {
   for (const ally of state.allies) {
     if (ally.retired || !ally.goalPos) continue;
     const a = mapToLogical(ally.pos);
     const g = mapToLogical(ally.goalPos);
-    const color = CHARACTERS[ally.id].color;
+    const color = charDef(ally.id).color;
     const isSelected = ally.id === selected;
 
     // 交戦中は足が止まっているので薄くする。交戦が解けたら再開するため消しはしない
@@ -228,12 +228,12 @@ export function drawDragPreview(
   ctx: CanvasRenderingContext2D,
   fromMap: Vec2,
   toMap: Vec2,
-  charId: CharId,
+  charId: string,
   blocked: boolean,
 ): void {
   const a = mapToLogical(fromMap);
   const b = mapToLogical(toMap);
-  const color = blocked ? COLORS.hpEnemy : CHARACTERS[charId].color;
+  const color = blocked ? COLORS.hpEnemy : charDef(charId).color;
 
   ctx.strokeStyle = color;
   ctx.lineWidth = 2;

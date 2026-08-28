@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { isWalkableAt } from './field';
 import { createBattleState, startWave } from './state';
 import { step } from './sim';
-import type { BattleState, CharId, CharProgress, EnemyUnit, StageDef } from './types';
+import type { BattleState, CharProgress, EnemyUnit, StageDef } from './types';
 
 const STAGE: StageDef = {
   id: 1, name: 'テスト', cell: 32,
@@ -18,7 +18,7 @@ const STAGE: StageDef = {
   }],
 };
 
-const LV1: Record<CharId, CharProgress> = {
+const LV1: Record<string, CharProgress> = {
   roran: { level: 1, xp: 0 }, ines: { level: 1, xp: 0 },
   mist: { level: 1, xp: 0 }, gau: { level: 1, xp: 0 },
 };
@@ -31,7 +31,7 @@ function fresh(stage: StageDef = STAGE): BattleState {
   return s;
 }
 
-const ally = (s: BattleState, id: CharId) => s.allies.find((a) => a.id === id)!;
+const ally = (s: BattleState, id: string) => s.allies.find((a) => a.id === id)!;
 
 function addEnemy(s: BattleState, x: number, y: number, hp = 12): EnemyUnit {
   const e: EnemyUnit = {

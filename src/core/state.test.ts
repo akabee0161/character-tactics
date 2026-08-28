@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { ALL_CHAR_IDS } from '../content/characters';
 import { ORTHO_COST } from './field';
 import { createBattleState, placeAlly, startWave, statsForLevel } from './state';
-import { CHAR_IDS, FORT_MAX_HP } from './types';
-import type { CharId, CharProgress, StageDef } from './types';
+import { FORT_MAX_HP } from './types';
+import type { CharProgress, StageDef } from './types';
 
 const STAGE: StageDef = {
   id: 1,
@@ -18,7 +19,7 @@ const STAGE: StageDef = {
   ],
 };
 
-const LV1: Record<CharId, CharProgress> = {
+const LV1: Record<string, CharProgress> = {
   roran: { level: 1, xp: 0 },
   ines: { level: 1, xp: 0 },
   mist: { level: 1, xp: 0 },
@@ -38,7 +39,7 @@ describe('statsForLevel', () => {
 describe('createBattleState', () => {
   it('4人ぶんのユニットが作られる', () => {
     const s = createBattleState(STAGE, LV1, 1);
-    expect(s.allies.map((a) => a.id).sort()).toEqual([...CHAR_IDS].sort());
+    expect(s.allies.map((a) => a.id).sort()).toEqual([...ALL_CHAR_IDS].sort());
   });
 
   it('砦 HP は満タン、フェーズは placement', () => {
@@ -69,7 +70,7 @@ describe('createBattleState', () => {
 
   it('戦績カウンタが 0 で初期化される', () => {
     const s = createBattleState(STAGE, LV1, 1);
-    expect(s.stats.roran).toEqual({ defeats: 0, skillUses: 0, neraiuchiKills: 0, kakenukeruHits: 0, bondSupports: 0 });
+    expect(s.stats.roran!).toEqual({ defeats: 0, skillUses: 0, neraiuchiKills: 0, kakenukeruHits: 0, bondSupports: 0 });
   });
 });
 

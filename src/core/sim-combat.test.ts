@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createBattleState, startWave } from './state';
 import { step } from './sim';
-import type { BattleState, CharId, CharProgress, EnemyKind, EnemyUnit, StageDef } from './types';
+import type { BattleState, CharProgress, EnemyUnit, StageDef } from './types';
 
 const STAGE: StageDef = {
   id: 1, name: 'テスト', cell: 32,
@@ -12,7 +12,7 @@ const STAGE: StageDef = {
   waves: [{ spawns: [] }, { spawns: [] }],
 };
 
-const LV1: Record<CharId, CharProgress> = {
+const LV1: Record<string, CharProgress> = {
   roran: { level: 1, xp: 0 }, ines: { level: 1, xp: 0 },
   mist: { level: 1, xp: 0 }, gau: { level: 1, xp: 0 },
 };
@@ -24,10 +24,10 @@ function fresh(stage: StageDef = STAGE): BattleState {
   return s;
 }
 
-const ally = (s: BattleState, id: CharId) => s.allies.find((a) => a.id === id)!;
+const ally = (s: BattleState, id: string) => s.allies.find((a) => a.id === id)!;
 
-function addEnemy(s: BattleState, kind: EnemyKind, x: number, y: number, hp?: number): EnemyUnit {
-  const maxHp = { narazumono: 12, tatemochi: 20, garum: 40 }[kind];
+function addEnemy(s: BattleState, kind: string, x: number, y: number, hp?: number): EnemyUnit {
+  const maxHp = ({ narazumono: 12, tatemochi: 20, garum: 40 } as Record<string, number>)[kind]!;
   const e: EnemyUnit = {
     uid: `t${s.nextEnemyUid++}`, kind, pos: { x, y },
     hp: hp ?? maxHp, maxHp, engagedWith: null, attackCooldown: 0,
@@ -73,7 +73,7 @@ describe('攻撃の解決', () => {
     step(s, [], 1.7);
     expect(e.hp).toBe(12 - 7); // (6+2)-1
     expect(s.events).toContainEqual({ type: 'bondSupport', supporterId: 'ines', targetId: 'roran' });
-    expect(s.stats.roran.bondSupports).toBe(1);
+    expect(s.stats.roran!.bondSupports).toBe(1);
   });
 
   it('イネスはたてもちに 1 しか通らない', () => {
@@ -146,7 +146,7 @@ describe('撃破と撤退', () => {
     engageAndAttack(s, 1.7);
     expect(s.enemies).toHaveLength(0);
     expect(s.events).toContainEqual({ type: 'enemyDefeated', uid: e.uid, kind: 'narazumono', byAlly: 'roran' });
-    expect(s.stats.roran.defeats).toBe(1);
+    expect(s.stats.roran!.defeats).toBe(1);
   });
 
   it('ねらいうちで倒すと neraiuchiKills が増える', () => {
@@ -155,7 +155,7 @@ describe('撃破と撤退', () => {
     addEnemy(s, 'narazumono', 100, 16, 5);
     step(s, [{ type: 'skill', allyId: 'ines' }], 0.01);
     step(s, [], 2.3);
-    expect(s.stats.ines.neraiuchiKills).toBe(1);
+    expect(s.stats.ines!.neraiuchiKills).toBe(1);
   });
 
   it('かけぬけるで倒すと defeats が増え、enemyDefeated イベントに byAlly が入る', () => {
@@ -165,7 +165,7 @@ describe('撃破と撤退', () => {
     step(s, [{ type: 'skill', allyId: 'gau', dest: { x: 200, y: 16 } }], 0.01);
     expect(s.enemies).toHaveLength(0);
     expect(s.events).toContainEqual({ type: 'enemyDefeated', uid: e.uid, kind: 'narazumono', byAlly: 'gau' });
-    expect(s.stats.gau.defeats).toBe(1);
+    expect(s.stats.gau!.defeats).toBe(1);
   });
 
   it('ガルムは 30% を切ると撤退する（garumFlees が true のとき）', () => {
@@ -175,7 +175,7 @@ describe('撃破と撤退', () => {
     engageAndAttack(s, 1.7);
     expect(s.enemies).toHaveLength(0);
     expect(s.events).toContainEqual({ type: 'garumRepelled', byAlly: 'roran' });
-    expect(s.stats.roran.defeats).toBe(0);
+    expect(s.stats.roran!.defeats).toBe(0);
   });
 
   it('garumFlees が false なら撤退せず最後まで戦う', () => {

@@ -1,10 +1,10 @@
-import type { AttackKind, CharId, SkillId } from '../core/types';
+import type { AttackKind } from '../core/types';
 
 export const MELEE_RANGE = 24;
 export const BOW_RANGE = 160;
 
 export type CharDef = {
-  id: CharId;
+  id: string;
   name: string;
   role: string;
   maxHp: number;
@@ -14,11 +14,11 @@ export type CharDef = {
   range: number;
   attackInterval: number;
   speed: number;
-  skill: SkillId;
+  skill: string;
   color: string;
 };
 
-export const CHARACTERS: Record<CharId, CharDef> = {
+export const CHARACTERS: Record<string, CharDef> = {
   roran: {
     id: 'roran', name: 'ロラン', role: 'たて',
     maxHp: 30, power: 6, guard: 5,
@@ -44,3 +44,12 @@ export const CHARACTERS: Record<CharId, CharDef> = {
     skill: 'kakenukeru', color: '#e0a03c',
   },
 };
+
+/** CHAR_IDS の置き換え。Task 10 でレジストリに移り、このファイルごと消える */
+export const ALL_CHAR_IDS: readonly string[] = Object.keys(CHARACTERS);
+
+export function charDef(id: string): CharDef {
+  const def = CHARACTERS[id];
+  if (!def) throw new Error(`しらない キャラ: ${id}`);
+  return def;
+}

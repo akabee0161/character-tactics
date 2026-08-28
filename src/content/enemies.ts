@@ -1,8 +1,7 @@
-import type { EnemyKind } from '../core/types';
 import { MELEE_RANGE } from './characters';
 
 export type EnemyDef = {
-  kind: EnemyKind;
+  kind: string;
   name: string;
   maxHp: number;
   power: number;
@@ -19,7 +18,7 @@ export type EnemyDef = {
   color: string;
 };
 
-export const ENEMIES: Record<EnemyKind, EnemyDef> = {
+export const ENEMIES: Record<string, EnemyDef> = {
   narazumono: {
     kind: 'narazumono', name: 'ならずもの',
     maxHp: 12, power: 5, guard: 1,
@@ -42,3 +41,9 @@ export const ENEMIES: Record<EnemyKind, EnemyDef> = {
     color: '#b03a3a',
   },
 };
+
+export function enemyDef(kind: string): EnemyDef {
+  const def = ENEMIES[kind];
+  if (!def) throw new Error(`しらない てき: ${kind}`);
+  return def;
+}

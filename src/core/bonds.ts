@@ -1,9 +1,9 @@
 import { distance } from './field';
-import type { CharId, Vec2 } from './types';
+import type { Vec2 } from './types';
 
 export const BOND_RANGE = 200;
 
-export type Bond = { a: CharId; b: CharId; bonus: number };
+export type Bond = { a: string; b: string; bonus: number };
 
 export const BONDS: readonly Bond[] = [
   { a: 'roran', b: 'ines', bonus: 2 },
@@ -11,9 +11,9 @@ export const BONDS: readonly Bond[] = [
   { a: 'roran', b: 'mist', bonus: 1 },
 ];
 
-export type BondSupporter = { id: CharId; pos: Vec2; retired: boolean };
+export type BondSupporter = { id: string; pos: Vec2; retired: boolean };
 
-function bonusBetween(a: CharId, b: CharId): number {
+function bonusBetween(a: string, b: string): number {
   for (const bond of BONDS) {
     if ((bond.a === a && bond.b === b) || (bond.a === b && bond.b === a)) {
       return bond.bonus;
@@ -23,11 +23,11 @@ function bonusBetween(a: CharId, b: CharId): number {
 }
 
 export function bondSupporters(
-  selfId: CharId,
+  selfId: string,
   selfPos: Vec2,
   others: BondSupporter[],
-): { id: CharId; bonus: number }[] {
-  const result: { id: CharId; bonus: number }[] = [];
+): { id: string; bonus: number }[] {
+  const result: { id: string; bonus: number }[] = [];
   for (const other of others) {
     if (other.id === selfId) continue;
     if (other.retired) continue;
@@ -39,6 +39,6 @@ export function bondSupporters(
   return result;
 }
 
-export function bondBonus(selfId: CharId, selfPos: Vec2, others: BondSupporter[]): number {
+export function bondBonus(selfId: string, selfPos: Vec2, others: BondSupporter[]): number {
   return bondSupporters(selfId, selfPos, others).reduce((sum, s) => sum + s.bonus, 0);
 }

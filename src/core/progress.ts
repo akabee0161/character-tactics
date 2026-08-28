@@ -1,19 +1,11 @@
-import { CHAR_IDS } from './types';
-import type { CharBattleStats, CharId, CharProgress } from './types';
+import type { CharBattleStats, CharProgress } from './types';
 
 export const MAX_LEVEL = 5;
 export const XP_BASE = 20;
 export const XP_PER_DEFEAT = 5;
 const XP_PER_LEVEL = 30;
 
-export type TitleId =
-  | 'gamanzuyoi'
-  | 'ichigekihissatsu'
-  | 'minnanookaasan'
-  | 'kazenoyouni'
-  | 'nakayoshi';
-
-export const TITLE_LABELS: Record<TitleId, string> = {
+export const TITLE_LABELS: Record<string, string> = {
   gamanzuyoi: 'がまんづよい',
   ichigekihissatsu: 'いちげきひっさつ',
   minnanookaasan: 'みんなの おかあさん',
@@ -22,7 +14,7 @@ export const TITLE_LABELS: Record<TitleId, string> = {
 };
 
 /** その称号が誰のものか。null は全員共通 */
-export const TITLE_OWNER: Record<TitleId, CharId | null> = {
+export const TITLE_OWNER: Record<string, string | null> = {
   gamanzuyoi: 'roran',
   ichigekihissatsu: 'ines',
   minnanookaasan: 'mist',
@@ -66,21 +58,24 @@ export function applyXp(p: CharProgress, gained: number): CharProgress {
 
 export function accumulateCounters(
   prev: Counters,
-  stats: Record<CharId, CharBattleStats>,
+  stats: Record<string, CharBattleStats>,
 ): Counters {
   let bondSupports = prev.bondSupports;
-  for (const id of CHAR_IDS) bondSupports += stats[id].bondSupports;
+  for (const s of Object.values(stats)) bondSupports += s.bondSupports;
+
+  const of = (id: string): CharBattleStats =>
+    stats[id] ?? { defeats: 0, skillUses: 0, neraiuchiKills: 0, kakenukeruHits: 0, bondSupports: 0 };
 
   return {
-    funbaruUses: prev.funbaruUses + stats.roran.skillUses,
-    neraiuchiKills: prev.neraiuchiKills + stats.ines.neraiuchiKills,
-    omajinaiUses: prev.omajinaiUses + stats.mist.skillUses,
-    kakenukeruHits: prev.kakenukeruHits + stats.gau.kakenukeruHits,
+    funbaruUses: prev.funbaruUses + of('roran').skillUses,
+    neraiuchiKills: prev.neraiuchiKills + of('ines').neraiuchiKills,
+    omajinaiUses: prev.omajinaiUses + of('mist').skillUses,
+    kakenukeruHits: prev.kakenukeruHits + of('gau').kakenukeruHits,
     bondSupports,
   };
 }
 
-const TITLE_RULES: { id: TitleId; test: (c: Counters) => boolean }[] = [
+const TITLE_RULES: { id: string; test: (c: Counters) => boolean }[] = [
   { id: 'gamanzuyoi', test: (c) => c.funbaruUses >= 5 },
   { id: 'ichigekihissatsu', test: (c) => c.neraiuchiKills >= 3 },
   { id: 'minnanookaasan', test: (c) => c.omajinaiUses >= 5 },
@@ -88,6 +83,6 @@ const TITLE_RULES: { id: TitleId; test: (c: Counters) => boolean }[] = [
   { id: 'nakayoshi', test: (c) => c.bondSupports >= 20 },
 ];
 
-export function earnedTitles(c: Counters): TitleId[] {
+export function earnedTitles(c: Counters): string[] {
   return TITLE_RULES.filter((r) => r.test(c)).map((r) => r.id);
 }

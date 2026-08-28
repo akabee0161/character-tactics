@@ -1,18 +1,18 @@
 import { bondSupporters } from './bonds';
-import { ENEMIES } from '../content/enemies';
+import { enemyDef } from '../content/enemies';
 import { computeDamage, effectiveInterval, hasThreatWithinMelee, nearestWithin } from './combat';
 import { computeFlowField, distance, flowDirection, hasLineOfSight, isWalkableAt } from './field';
 import { nextFloat } from './rng';
 import { isFunbaruActive, useSkill } from './skills';
-import type { AllyUnit, BattleState, CharId, EnemyUnit, Vec2 } from './types';
+import type { AllyUnit, BattleState, EnemyUnit, Vec2 } from './types';
 
 export const SPAWN_JITTER = 12;
 export const FORT_RADIUS = 24;
 export const PINCH_RATIO = 0.3;
 
 export type SimCommand =
-  | { type: 'move'; allyId: CharId; dest: Vec2 }
-  | { type: 'skill'; allyId: CharId; dest?: Vec2 };
+  | { type: 'move'; allyId: string; dest: Vec2 }
+  | { type: 'skill'; allyId: string; dest?: Vec2 };
 
 export function step(state: BattleState, commands: SimCommand[], dt: number): void {
   state.events = [];
@@ -31,8 +31,8 @@ export function step(state: BattleState, commands: SimCommand[], dt: number): vo
   updatePhase(state);
 }
 
-function applyCommands(state: BattleState, commands: SimCommand[]): Set<CharId> {
-  const movedThisTick = new Set<CharId>();
+function applyCommands(state: BattleState, commands: SimCommand[]): Set<string> {
+  const movedThisTick = new Set<string>();
   for (const cmd of commands) {
     const ally = state.allies.find((a) => a.id === cmd.allyId);
     if (!ally || ally.retired) continue;
@@ -57,7 +57,7 @@ function spawnDueEnemies(state: BattleState): void {
       remaining.push(entry);
       continue;
     }
-    const def = ENEMIES[entry.kind];
+    const def = enemyDef(entry.kind);
     const jitter = () => (nextFloat(state.rng) * 2 - 1) * SPAWN_JITTER;
     const enemy: EnemyUnit = {
       uid: `e${state.nextEnemyUid++}`,
@@ -79,7 +79,7 @@ function activeAllies(state: BattleState): AllyUnit[] {
   return state.allies.filter((a) => !a.retired);
 }
 
-function updateEngagements(state: BattleState, movedThisTick: Set<CharId>): void {
+function updateEngagements(state: BattleState, movedThisTick: Set<string>): void {
   const byUid = new Map(state.enemies.map((e) => [e.uid, e]));
 
   // 解除
@@ -117,8 +117,8 @@ function updateEngagements(state: BattleState, movedThisTick: Set<CharId>): void
         hasThreatWithinMelee(ally.pos, state.enemies),
       );
       claimed.add(target.uid);
-      const firstMeeting = !ally.seenKinds.includes(target.kind);
-      if (firstMeeting) ally.seenKinds.push(target.kind);
+      const firstMeeting = !ally.seenDefIds.includes(target.kind);
+      if (firstMeeting) ally.seenDefIds.push(target.kind);
       state.events.push({
         type: 'engage',
         allyId: ally.id,
@@ -131,7 +131,7 @@ function updateEngagements(state: BattleState, movedThisTick: Set<CharId>): void
 
   const allies = activeAllies(state);
   for (const enemy of state.enemies) {
-    const range = ENEMIES[enemy.kind].range;
+    const range = enemyDef(enemy.kind).range;
     if (enemy.engagedWith !== null) {
       const target = allies.find((a) => a.id === enemy.engagedWith);
       if (!target || distanceBetween(enemy.pos, target.pos) > range) {
@@ -143,7 +143,7 @@ function updateEngagements(state: BattleState, movedThisTick: Set<CharId>): void
       if (target) {
         enemy.engagedWith = target.id;
         // 敵は常に近接なので、交戦成立の直後は素の攻撃間隔ぶんのクールダウンを与える
-        enemy.attackCooldown = ENEMIES[enemy.kind].attackInterval;
+        enemy.attackCooldown = enemyDef(enemy.kind).attackInterval;
       }
     }
   }
@@ -189,7 +189,7 @@ function moveUnits(state: BattleState, dt: number): void {
     if (enemy.engagedWith !== null) continue;
     const dir = flowDirection(state.grid, state.enemyField, enemy.pos);
     if (!dir) continue;
-    const speed = ENEMIES[enemy.kind].speed;
+    const speed = enemyDef(enemy.kind).speed;
     enemy.pos = { x: enemy.pos.x + dir.x * speed * dt, y: enemy.pos.y + dir.y * speed * dt };
   }
 }
@@ -217,14 +217,14 @@ function resolveAttacks(state: BattleState, dt: number): void {
       bonus += s.bonus;
       state.events.push({ type: 'bondSupport', supporterId: s.id, targetId: ally.id });
     }
-    if (supporters.length > 0) state.stats[ally.id].bondSupports += 1;
+    if (supporters.length > 0) state.stats[ally.id]!.bondSupports += 1;
 
     const neraiuchi = ally.neraiuchiArmed;
     const dmg = computeDamage({
       power: ally.power,
-      guard: ENEMIES[target.kind].guard,
+      guard: enemyDef(target.kind).guard,
       attackKind: ally.attack,
-      bowDamageCap: ENEMIES[target.kind].bowDamageCap,
+      bowDamageCap: enemyDef(target.kind).bowDamageCap,
       bondBonus: bonus,
       neraiuchi,
       targetFunbaru: false,
@@ -244,7 +244,7 @@ function resolveAttacks(state: BattleState, dt: number): void {
     if (!target) continue;
     if (enemy.attackCooldown > 0) continue;
 
-    const def = ENEMIES[enemy.kind];
+    const def = enemyDef(enemy.kind);
     const before = target.hp;
     const dmg = computeDamage({
       power: def.power,
@@ -271,7 +271,7 @@ function resolveAttacks(state: BattleState, dt: number): void {
 function resolveEnemyRemoval(state: BattleState): void {
   const survivors: EnemyUnit[] = [];
   for (const enemy of state.enemies) {
-    const def = ENEMIES[enemy.kind];
+    const def = enemyDef(enemy.kind);
     const flees =
       def.fleeAtHpRatio !== null &&
       state.stage.garumFlees &&
@@ -286,8 +286,8 @@ function resolveEnemyRemoval(state: BattleState): void {
         type: 'enemyDefeated', uid: enemy.uid, kind: enemy.kind, byAlly: enemy.lastHitBy,
       });
       if (enemy.lastHitBy) {
-        state.stats[enemy.lastHitBy].defeats += 1;
-        if (enemy.lastHitNeraiuchi) state.stats[enemy.lastHitBy].neraiuchiKills += 1;
+        state.stats[enemy.lastHitBy]!.defeats += 1;
+        if (enemy.lastHitNeraiuchi) state.stats[enemy.lastHitBy]!.neraiuchiKills += 1;
       }
       continue;
     }
@@ -323,7 +323,7 @@ function resolveFort(state: BattleState): void {
     // 交戦中の敵はその場で足止めされているので、たまたま砦の近くで戦っていても
     // 砦への到達扱いにはしない
     if (enemy.engagedWith === null && distance(enemy.pos, state.stage.fort) <= FORT_RADIUS) {
-      const amount = ENEMIES[enemy.kind].fortDamage;
+      const amount = enemyDef(enemy.kind).fortDamage;
       state.fortHp -= amount;
       state.events.push({ type: 'fortDamaged', amount });
       continue;

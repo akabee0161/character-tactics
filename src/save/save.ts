@@ -1,7 +1,7 @@
+import { ALL_CHAR_IDS } from '../content/characters';
 import { emptyCounters, TITLE_LABELS } from '../core/progress';
-import { CHAR_IDS } from '../core/types';
-import type { Counters, TitleId } from '../core/progress';
-import type { CharId, CharProgress } from '../core/types';
+import type { Counters } from '../core/progress';
+import type { CharProgress } from '../core/types';
 
 const COUNTER_KEYS: readonly (keyof Counters)[] = [
   'funbaruUses', 'neraiuchiKills', 'omajinaiUses', 'kakenukeruHits', 'bondSupports',
@@ -23,14 +23,14 @@ export type StorageLike = {
 export type SaveData = {
   version: number;
   clearedStages: number;
-  chars: Record<CharId, CharProgress>;
+  chars: Record<string, CharProgress>;
   counters: Counters;
-  titles: TitleId[];
+  titles: string[];
 };
 
 export function newSave(): SaveData {
-  const chars = {} as Record<CharId, CharProgress>;
-  for (const id of CHAR_IDS) chars[id] = { level: 1, xp: 0 };
+  const chars = {} as Record<string, CharProgress>;
+  for (const id of ALL_CHAR_IDS) chars[id] = { level: 1, xp: 0 };
   return { version: SAVE_VERSION, clearedStages: 0, chars, counters: emptyCounters(), titles: [] };
 }
 
@@ -50,7 +50,7 @@ function isValid(value: unknown): value is SaveData {
   }
 
   const chars = v.chars as Record<string, unknown>;
-  for (const id of CHAR_IDS) {
+  for (const id of ALL_CHAR_IDS) {
     const p = chars[id] as Record<string, unknown> | undefined;
     if (!p || !isFiniteNonNegInt(p.level) || !isFiniteNonNegInt(p.xp)) return false;
   }

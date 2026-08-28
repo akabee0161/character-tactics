@@ -20,8 +20,7 @@ import {
 import { loadSave, newSave, writeSave } from './save/save';
 import type { SaveData } from './save/save';
 import type { XpGain } from './ui/flow';
-import type { TitleId } from './core/progress';
-import type { BattleState, CharId, Vec2 } from './core/types';
+import type { BattleState, Vec2 } from './core/types';
 
 const FIXED_DT = 1 / 60;
 
@@ -36,12 +35,12 @@ let hasSave = loaded !== null;
 let phase: Phase = 'title';
 let stageIndex = 0;
 let battle: BattleState | null = null;
-let selected: CharId | null = null;
+let selected: string | null = null;
 let pointerStart: PointerStart | null = null;
 /** ドラッグ中の指の位置（マップ座標）。プレビュー描画が読む */
 let dragMap: Vec2 | null = null;
-let pendingSkill: CharId | null = null;
-let result: { gains: XpGain[]; newTitles: TitleId[] } | null = null;
+let pendingSkill: string | null = null;
+let result: { gains: XpGain[]; newTitles: string[] } | null = null;
 const bubbles = makeBubbleQueue();
 const effects = makeEffectState();
 const commands: SimCommand[] = [];

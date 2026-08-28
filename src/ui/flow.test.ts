@@ -2,14 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { applyStageClear, isStageUnlocked } from './flow';
 import { newSave } from '../save/save';
 import { STAGES } from '../content/stages';
-import type { CharBattleStats, CharId } from '../core/types';
+import type { CharBattleStats } from '../core/types';
 
-const stats = (over: Partial<Record<CharId, Partial<CharBattleStats>>> = {}) => {
+const stats = (over: Partial<Record<string, Partial<CharBattleStats>>> = {}) => {
   const base: CharBattleStats = { defeats: 0, skillUses: 0, neraiuchiKills: 0, kakenukeruHits: 0, bondSupports: 0 };
   return {
     roran: { ...base, ...over.roran }, ines: { ...base, ...over.ines },
     mist: { ...base, ...over.mist }, gau: { ...base, ...over.gau },
-  } as Record<CharId, CharBattleStats>;
+  } as Record<string, CharBattleStats>;
 };
 
 describe('isStageUnlocked', () => {
@@ -56,7 +56,7 @@ describe('applyStageClear', () => {
     const ines = r.gains.find((g) => g.id === 'ines')!;
     expect(ines.after.level).toBe(2);
     expect(ines.leveledUp).toBe(true);
-    expect(r.save.chars.ines.level).toBe(2);
+    expect(r.save.chars.ines!.level).toBe(2);
   });
 
   it('届かなければレベルは据え置き', () => {

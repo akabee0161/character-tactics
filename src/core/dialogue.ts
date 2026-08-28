@@ -1,14 +1,14 @@
 import { LINES } from '../content/lines';
-import type { CharId, Speaker, StageDef, SimEvent } from './types';
+import type { Speaker, StageDef, SimEvent } from './types';
 
 export type DialogueRequest = { speaker: Speaker; lineId: string; text: string };
 
-const RIVAL_SPEAKERS: readonly CharId[] = ['roran', 'ines'];
+const RIVAL_SPEAKERS: readonly string[] = ['roran', 'ines'];
 
 /** 小さいほど先に表示する */
 const PRIORITY = ['rival', 'first', 'skill', 'pinch', 'win', 'retire'] as const;
 
-function ally(id: CharId): Speaker {
+function ally(id: string): Speaker {
   return { side: 'ally', id };
 }
 

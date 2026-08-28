@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createBattleState, startWave } from './state';
 import { canUseSkill, isFunbaruActive, useSkill, FUNBARU_DURATION, OMAJINAI_HEAL, KAKENUKERU_DAMAGE } from './skills';
-import type { BattleState, CharId, CharProgress, EnemyUnit, StageDef } from './types';
+import type { BattleState, CharProgress, EnemyUnit, StageDef } from './types';
 
 const STAGE: StageDef = {
   id: 1, name: 'テスト', cell: 32,
@@ -12,7 +12,7 @@ const STAGE: StageDef = {
   waves: [{ spawns: [] }],
 };
 
-const LV1: Record<CharId, CharProgress> = {
+const LV1: Record<string, CharProgress> = {
   roran: { level: 1, xp: 0 }, ines: { level: 1, xp: 0 },
   mist: { level: 1, xp: 0 }, gau: { level: 1, xp: 0 },
 };
@@ -27,7 +27,7 @@ function addEnemy(s: BattleState, x: number, y: number, hp = 12): EnemyUnit {
   return e;
 }
 
-const ally = (s: BattleState, id: CharId) => s.allies.find((a) => a.id === id)!;
+const ally = (s: BattleState, id: string) => s.allies.find((a) => a.id === id)!;
 
 describe('canUseSkill', () => {
   let s: BattleState;
@@ -70,7 +70,7 @@ describe('ふんばる', () => {
     expect(useSkill(s, 'roran')).toBe(true);
     expect(ally(s, 'roran').funbaruUntil).toBe(10 + FUNBARU_DURATION);
     expect(s.events).toContainEqual({ type: 'skill', allyId: 'roran', skill: 'funbaru' });
-    expect(s.stats.roran.skillUses).toBe(1);
+    expect(s.stats.roran!.skillUses).toBe(1);
   });
 
   it('isFunbaruActive は期限内だけ true', () => {
@@ -148,7 +148,7 @@ describe('かけぬける', () => {
     expect(ally(s, 'gau').pos).toEqual({ x: 200, y: 16 });
     expect(onPath.hp).toBe(12 - KAKENUKERU_DAMAGE);
     expect(offPath.hp).toBe(12);
-    expect(s.stats.gau.kakenukeruHits).toBe(1);
+    expect(s.stats.gau!.kakenukeruHits).toBe(1);
   });
 
   it('目的地の指定がなければ発動しない', () => {

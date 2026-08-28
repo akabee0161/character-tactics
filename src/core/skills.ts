@@ -1,7 +1,7 @@
 import { BOND_RANGE } from './bonds';
 import { MELEE_RANGE } from '../content/characters';
 import { distance, distanceToSegment, isWalkableAt } from './field';
-import type { AllyUnit, BattleState, CharId, Vec2 } from './types';
+import type { AllyUnit, BattleState, Vec2 } from './types';
 
 export const FUNBARU_DURATION = 5;
 export const OMAJINAI_HEAL = 12;
@@ -23,14 +23,14 @@ function isPathWalkable(state: BattleState, from: Vec2, dest: Vec2): boolean {
   return true;
 }
 
-export function canUseSkill(state: BattleState, allyId: CharId): boolean {
+export function canUseSkill(state: BattleState, allyId: string): boolean {
   if (state.phase !== 'wave') return false;
   const ally = state.allies.find((a) => a.id === allyId);
   if (!ally) return false;
   return !ally.retired && !ally.skillUsed;
 }
 
-export function useSkill(state: BattleState, allyId: CharId, dest?: Vec2): boolean {
+export function useSkill(state: BattleState, allyId: string, dest?: Vec2): boolean {
   if (!canUseSkill(state, allyId)) return false;
   const ally = state.allies.find((a) => a.id === allyId)!;
 
@@ -71,7 +71,7 @@ export function useSkill(state: BattleState, allyId: CharId, dest?: Vec2): boole
           state.events.push({ type: 'hit', targetPos: { ...enemy.pos }, amount: KAKENUKERU_DAMAGE });
         }
       }
-      state.stats[allyId].kakenukeruHits += hits;
+      state.stats[allyId]!.kakenukeruHits += hits;
       ally.pos = { ...dest };
       ally.goalField = null;
       ally.goalPos = null;
@@ -81,7 +81,7 @@ export function useSkill(state: BattleState, allyId: CharId, dest?: Vec2): boole
   }
 
   ally.skillUsed = true;
-  state.stats[allyId].skillUses += 1;
+  state.stats[allyId]!.skillUses += 1;
   state.events.push({ type: 'skill', allyId, skill: ally.skill });
   return true;
 }

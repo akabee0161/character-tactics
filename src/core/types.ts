@@ -1,11 +1,6 @@
 export type Vec2 = { x: number; y: number };
 
-export type CharId = 'roran' | 'ines' | 'mist' | 'gau';
-export type EnemyKind = 'narazumono' | 'tatemochi' | 'garum';
-export type SkillId = 'funbaru' | 'neraiuchi' | 'omajinai' | 'kakenukeru';
 export type AttackKind = 'melee' | 'bow';
-
-export const CHAR_IDS: readonly CharId[] = ['roran', 'ines', 'mist', 'gau'];
 
 export type Grid = {
   cols: number;
@@ -28,7 +23,7 @@ export const FORT_MAX_HP = 30;
 export type CharProgress = { level: number; xp: number };
 
 export type AllyUnit = {
-  id: CharId;
+  id: string;
   pos: Vec2;
   hp: number;
   maxHp: number;
@@ -38,7 +33,7 @@ export type AllyUnit = {
   range: number;
   attackInterval: number;
   speed: number;
-  skill: SkillId;
+  skill: string;
   /** 移動先へのフローフィールド。null なら移動しない */
   goalField: FlowField | null;
   /** 移動先として指定されたマップ座標。null なら移動しない */
@@ -54,27 +49,27 @@ export type AllyUnit = {
   neraiuchiArmed: boolean;
   /** このウェーブでピンチのセリフを出したか */
   pinchShown: boolean;
-  /** このステージで交戦したことのある敵種 */
-  seenKinds: EnemyKind[];
+  /** このステージで交戦したことのある敵の defId */
+  seenDefIds: string[];
 };
 
 export type EnemyUnit = {
   uid: string;
-  kind: EnemyKind;
+  kind: string;
   pos: Vec2;
   hp: number;
   maxHp: number;
-  engagedWith: CharId | null;
+  engagedWith: string | null;
   attackCooldown: number;
   /** 最後にこの敵を攻撃した味方。撃破の手柄をつけるのに使う */
-  lastHitBy: CharId | null;
+  lastHitBy: string | null;
   /** 最後に受けた攻撃がねらいうちだったか */
   lastHitNeraiuchi: boolean;
 };
 
-export type Speaker = { side: 'ally'; id: CharId } | { side: 'enemy'; id: EnemyKind };
+export type Speaker = { side: 'ally' | 'enemy'; id: string };
 
-export type SpawnEntry = { at: number; kind: EnemyKind; from: Vec2 };
+export type SpawnEntry = { at: number; kind: string; from: Vec2 };
 export type WaveDef = {
   spawns: SpawnEntry[];
   /** ウェーブ開始時に順番に表示する会話。省略時は何も表示しない */
@@ -97,14 +92,14 @@ export type StageDef = {
 export type BattlePhase = 'placement' | 'wave' | 'waveCleared' | 'stageCleared' | 'defeat';
 
 export type SimEvent =
-  | { type: 'engage'; allyId: CharId; enemyUid: string; kind: EnemyKind; firstMeeting: boolean }
-  | { type: 'skill'; allyId: CharId; skill: SkillId }
-  | { type: 'pinch'; allyId: CharId }
+  | { type: 'engage'; allyId: string; enemyUid: string; kind: string; firstMeeting: boolean }
+  | { type: 'skill'; allyId: string; skill: string }
+  | { type: 'pinch'; allyId: string }
   | { type: 'hit'; targetPos: Vec2; amount: number }
-  | { type: 'enemyDefeated'; uid: string; kind: EnemyKind; byAlly: CharId | null }
-  | { type: 'garumRepelled'; byAlly: CharId | null }
-  | { type: 'allyRetired'; allyId: CharId }
-  | { type: 'bondSupport'; supporterId: CharId; targetId: CharId }
+  | { type: 'enemyDefeated'; uid: string; kind: string; byAlly: string | null }
+  | { type: 'garumRepelled'; byAlly: string | null }
+  | { type: 'allyRetired'; allyId: string }
+  | { type: 'bondSupport'; supporterId: string; targetId: string }
   | { type: 'fortDamaged'; amount: number };
 
 export type CharBattleStats = {
@@ -132,6 +127,6 @@ export type BattleState = {
   /** 直近の step で発生したイベント */
   events: SimEvent[];
   rng: Rng;
-  stats: Record<CharId, CharBattleStats>;
+  stats: Record<string, CharBattleStats>;
   nextEnemyUid: number;
 };
