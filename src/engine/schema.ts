@@ -167,3 +167,100 @@ export function validateEnemyDef(file: string, raw: unknown): Validated<EnemyDef
   };
   return finish(ctx, def);
 }
+
+export type SkillDef = { id: string; label: string; params: Record<string, number> };
+export type BondDef = { a: string; b: string; bonus: number };
+export type TitleDef = {
+  id: string;
+  label: string;
+  /** 持ち主の UnitDef id。null は全員共通 */
+  owner: string | null;
+  /** counters のキー。例: "skill:funbaru:uses" */
+  counter: string;
+  threshold: number;
+};
+
+/** id を持つ定義の配列を検証する共通部分。id の重複もここで見る */
+function validateIdArray<T extends { id: string }>(
+  file: string,
+  raw: unknown,
+  readOne: (ctx: Ctx, path: string, o: Record<string, unknown>) => T,
+): Validated<T[]> {
+  const ctx = makeCtx(file);
+  const arr = requireArray(ctx, '', raw, { min: 1 });
+  if (!arr) return { ok: false, errors: ctx.errors };
+
+  const seen = new Set<string>();
+  const out: T[] = [];
+  arr.forEach((item, i) => {
+    const path = `[${i}]`;
+    const o = requireObject(ctx, path, item);
+    if (!o) return;
+    const def = readOne(ctx, path, o);
+    if (def.id !== '') {
+      if (seen.has(def.id)) fail(ctx, `${path}.id`, `id が じゅうふくしている: ${def.id}`);
+      seen.add(def.id);
+    }
+    out.push(def);
+  });
+  return finish(ctx, out);
+}
+
+function readParams(ctx: Ctx, path: string, v: unknown): Record<string, number> {
+  const o = requireObject(ctx, path, v);
+  if (!o) return {};
+  const out: Record<string, number> = {};
+  for (const [key, value] of Object.entries(o)) {
+    const n = requireNumber(ctx, `${path}.${key}`, value);
+    if (n !== null) out[key] = n;
+  }
+  return out;
+}
+
+export function validateSkillsFile(file: string, raw: unknown): Validated<SkillDef[]> {
+  return validateIdArray<SkillDef>(file, raw, (ctx, path, o) => ({
+    id: requireString(ctx, `${path}.id`, o.id) ?? '',
+    label: requireString(ctx, `${path}.label`, o.label) ?? '',
+    params: readParams(ctx, `${path}.params`, o.params),
+  }));
+}
+
+export function validateBondsFile(file: string, raw: unknown): Validated<BondDef[]> {
+  const ctx = makeCtx(file);
+  const arr = requireArray(ctx, '', raw, { min: 1 });
+  if (!arr) return { ok: false, errors: ctx.errors };
+
+  const out: BondDef[] = [];
+  arr.forEach((item, i) => {
+    const path = `[${i}]`;
+    const o = requireObject(ctx, path, item);
+    if (!o) return;
+    const a = requireString(ctx, `${path}.a`, o.a) ?? '';
+    const b = requireString(ctx, `${path}.b`, o.b) ?? '';
+    if (a !== '' && a === b) fail(ctx, `${path}.b`, 'じぶん じしんとの きずなは つくれない');
+    out.push({ a, b, bonus: requireNumber(ctx, `${path}.bonus`, o.bonus, { min: 1 }) ?? 1 });
+  });
+  return finish(ctx, out);
+}
+
+export function validateTitlesFile(file: string, raw: unknown): Validated<TitleDef[]> {
+  return validateIdArray<TitleDef>(file, raw, (ctx, path, o) => ({
+    id: requireString(ctx, `${path}.id`, o.id) ?? '',
+    label: requireString(ctx, `${path}.label`, o.label) ?? '',
+    owner: o.owner === null ? null : requireString(ctx, `${path}.owner`, o.owner),
+    counter: requireString(ctx, `${path}.counter`, o.counter) ?? '',
+    threshold: requireNumber(ctx, `${path}.threshold`, o.threshold, { min: 1, int: true }) ?? 1,
+  }));
+}
+
+export function validateLinesFile(file: string, raw: unknown): Validated<Record<string, string>> {
+  const ctx = makeCtx(file);
+  const o = requireObject(ctx, '', raw);
+  if (!o) return { ok: false, errors: ctx.errors };
+  const out: Record<string, string> = {};
+  for (const [key, value] of Object.entries(o)) {
+    const text = requireString(ctx, key, value);
+    if (text !== null) out[key] = text;
+  }
+  return finish(ctx, out);
+}

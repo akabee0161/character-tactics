@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { validateEnemyDef, validateUnitDef } from './schema';
+import {
+  validateBondsFile, validateEnemyDef, validateLinesFile, validateSkillsFile,
+  validateTitlesFile, validateUnitDef,
+} from './schema';
 
 const VALID_UNIT = {
   id: 'roran', name: 'ロラン', role: 'たて',
@@ -92,5 +95,90 @@ describe('validateEnemyDef', () => {
     const r = validateEnemyDef('enemies/x.json', missing);
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.errors[0]?.path).toBe('xpReward');
+  });
+});
+
+describe('validateSkillsFile', () => {
+  it('id と label と params を読む', () => {
+    const r = validateSkillsFile('skills.json', [
+      { id: 'funbaru', label: 'ふんばる', params: { duration: 5 } },
+      { id: 'neraiuchi', label: 'ねらいうち', params: {} },
+    ]);
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value[0]?.params.duration).toBe(5);
+  });
+
+  it('params の値が数でなければ、その キーを path に含めて弾く', () => {
+    const r = validateSkillsFile('skills.json', [
+      { id: 'funbaru', label: 'ふんばる', params: { duration: 'ごびょう' } },
+    ]);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors[0]?.path).toBe('[0].params.duration');
+  });
+
+  it('id が重複したら弾く', () => {
+    const r = validateSkillsFile('skills.json', [
+      { id: 'funbaru', label: 'ふんばる', params: {} },
+      { id: 'funbaru', label: 'べつ', params: {} },
+    ]);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors[0]?.reason).toContain('じゅうふく');
+  });
+
+  it('はいれつでなければ弾く', () => {
+    const r = validateSkillsFile('skills.json', { funbaru: {} });
+    expect(r.ok).toBe(false);
+  });
+});
+
+describe('validateBondsFile', () => {
+  it('正しい絆を受け入れる', () => {
+    const r = validateBondsFile('bonds.json', [{ a: 'roran', b: 'ines', bonus: 2 }]);
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value[0]?.bonus).toBe(2);
+  });
+
+  it('bonus が 0 以下なら弾く', () => {
+    const r = validateBondsFile('bonds.json', [{ a: 'roran', b: 'ines', bonus: 0 }]);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors[0]?.path).toBe('[0].bonus');
+  });
+
+  it('自分自身との絆を弾く', () => {
+    const r = validateBondsFile('bonds.json', [{ a: 'roran', b: 'roran', bonus: 2 }]);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors[0]?.reason).toContain('じぶん');
+  });
+});
+
+describe('validateTitlesFile', () => {
+  it('owner に null を許す', () => {
+    const r = validateTitlesFile('titles.json', [
+      { id: 'nakayoshi', label: 'なかよし', owner: null, counter: 'bond:supports', threshold: 20 },
+    ]);
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value[0]?.owner).toBeNull();
+  });
+
+  it('threshold が 1 未満なら弾く', () => {
+    const r = validateTitlesFile('titles.json', [
+      { id: 'x', label: 'エックス', owner: null, counter: 'bond:supports', threshold: 0 },
+    ]);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors[0]?.path).toBe('[0].threshold');
+  });
+});
+
+describe('validateLinesFile', () => {
+  it('もじれつの じしょを 受け入れる', () => {
+    const r = validateLinesFile('lines/common.json', { 'skill:roran': 'ここは とおさない！' });
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value['skill:roran']).toBe('ここは とおさない！');
+  });
+
+  it('あたいが もじれつでなければ、その キーを path にして弾く', () => {
+    const r = validateLinesFile('lines/common.json', { 'skill:roran': 42 });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors[0]?.path).toBe('skill:roran');
   });
 });
