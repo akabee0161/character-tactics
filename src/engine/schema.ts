@@ -264,3 +264,181 @@ export function validateLinesFile(file: string, raw: unknown): Validated<Record<
   }
   return finish(ctx, out);
 }
+
+export type AiDef =
+  | { kind: 'sentry'; sightRange: number }
+  | { kind: 'aggressive' }
+  | { kind: 'guard'; post: Vec2; leash: number; sightRange: number };
+
+export const AI_KINDS: readonly AiDef['kind'][] = ['sentry', 'aggressive', 'guard'];
+
+export type VictoryCond = {
+  type: 'reach';
+  pos: Vec2;
+  radius: number;
+  /** 'any' なら味方のだれでもよい。それ以外は到達すべき UnitDef id */
+  by: 'any' | string;
+};
+
+export type DefeatCond =
+  | { type: 'unitLost'; defIds: string[] }
+  | { type: 'allPlayerUnitsLost' };
+
+export type EnemyPlacement = { defId: string; pos: Vec2; ai: AiDef };
+
+export type StageDef = {
+  /** ファイル名と一致させる。セーブのキーになる */
+  id: string;
+  name: string;
+  cell: number;
+  /** '.' 歩ける / '#' 歩けない */
+  mapRows: string[];
+  placementZone: { pos: Vec2 }[];
+  roster: string[];
+  enemies: EnemyPlacement[];
+  victory: VictoryCond;
+  defeat: DefeatCond[];
+  intro?: { speaker: string; lineId: string }[];
+};
+
+function readMapRows(ctx: Ctx, v: unknown): string[] {
+  const arr = requireArray(ctx, 'mapRows', v, { min: 1 });
+  if (!arr) return [];
+  const rows: string[] = [];
+  let width = -1;
+  arr.forEach((item, y) => {
+    const row = requireString(ctx, `mapRows[${y}]`, item);
+    if (row === null) return;
+    if (width < 0) width = row.length;
+    else if (row.length !== width) {
+      fail(ctx, `mapRows[${y}]`, `ながさが ${width} で ないと いけない（じっさいは ${row.length}）`);
+      return;
+    }
+    if (!/^[.#]+$/.test(row)) {
+      fail(ctx, `mapRows[${y}]`, "つかえる もじは '.' と '#' だけ");
+      return;
+    }
+    rows.push(row);
+  });
+  return rows;
+}
+
+function readAiDef(ctx: Ctx, path: string, v: unknown): AiDef {
+  const o = requireObject(ctx, path, v);
+  if (!o) return { kind: 'aggressive' };
+  const kind = requireEnum(ctx, `${path}.kind`, o.kind, AI_KINDS);
+  switch (kind) {
+    case 'sentry':
+      return {
+        kind: 'sentry',
+        sightRange: requireNumber(ctx, `${path}.sightRange`, o.sightRange, { min: 1 }) ?? 1,
+      };
+    case 'guard':
+      return {
+        kind: 'guard',
+        post: requireVec2(ctx, `${path}.post`, o.post) ?? { x: 0, y: 0 },
+        leash: requireNumber(ctx, `${path}.leash`, o.leash, { min: 1 }) ?? 1,
+        sightRange: requireNumber(ctx, `${path}.sightRange`, o.sightRange, { min: 1 }) ?? 1,
+      };
+    default:
+      // kind が null（未知の値）だったときもここに来る。エラーはすでに積まれている
+      return { kind: 'aggressive' };
+  }
+}
+
+function readVictory(ctx: Ctx, v: unknown): VictoryCond {
+  const fallback: VictoryCond = { type: 'reach', pos: { x: 0, y: 0 }, radius: 1, by: 'any' };
+  const o = requireObject(ctx, 'victory', v);
+  if (!o) return fallback;
+  if (requireEnum(ctx, 'victory.type', o.type, ['reach'] as const) === null) return fallback;
+  return {
+    type: 'reach',
+    pos: requireVec2(ctx, 'victory.pos', o.pos) ?? { x: 0, y: 0 },
+    radius: requireNumber(ctx, 'victory.radius', o.radius, { min: 1 }) ?? 1,
+    by: requireString(ctx, 'victory.by', o.by) ?? 'any',
+  };
+}
+
+function readDefeat(ctx: Ctx, v: unknown): DefeatCond[] {
+  const arr = requireArray(ctx, 'defeat', v, { min: 1 });
+  if (!arr) return [];
+  const out: DefeatCond[] = [];
+  arr.forEach((item, i) => {
+    const path = `defeat[${i}]`;
+    const o = requireObject(ctx, path, item);
+    if (!o) return;
+    const type = requireEnum(ctx, `${path}.type`, o.type, ['unitLost', 'allPlayerUnitsLost'] as const);
+    if (type === 'unitLost') {
+      const ids = requireArray(ctx, `${path}.defIds`, o.defIds, { min: 1 }) ?? [];
+      const defIds: string[] = [];
+      ids.forEach((id, j) => {
+        const s = requireString(ctx, `${path}.defIds[${j}]`, id);
+        if (s !== null) defIds.push(s);
+      });
+      out.push({ type: 'unitLost', defIds });
+    } else if (type === 'allPlayerUnitsLost') {
+      out.push({ type: 'allPlayerUnitsLost' });
+    }
+  });
+  return out;
+}
+
+function readStringArray(ctx: Ctx, path: string, v: unknown, min: number): string[] {
+  const arr = requireArray(ctx, path, v, { min });
+  if (!arr) return [];
+  const out: string[] = [];
+  arr.forEach((item, i) => {
+    const s = requireString(ctx, `${path}[${i}]`, item);
+    if (s !== null) out.push(s);
+  });
+  return out;
+}
+
+export function validateStageDef(file: string, raw: unknown): Validated<StageDef> {
+  const ctx = makeCtx(file);
+  const o = requireObject(ctx, '', raw);
+  if (!o) return { ok: false, errors: ctx.errors };
+
+  const zoneRaw = requireArray(ctx, 'placementZone', o.placementZone, { min: 1 }) ?? [];
+  const placementZone = zoneRaw.map((item, i) => {
+    const z = requireObject(ctx, `placementZone[${i}]`, item);
+    return { pos: (z && requireVec2(ctx, `placementZone[${i}].pos`, z.pos)) ?? { x: 0, y: 0 } };
+  });
+
+  const enemiesRaw = requireArray(ctx, 'enemies', o.enemies) ?? [];
+  const enemies = enemiesRaw.map((item, i) => {
+    const path = `enemies[${i}]`;
+    const e = requireObject(ctx, path, item);
+    return {
+      defId: (e && requireString(ctx, `${path}.defId`, e.defId)) ?? '',
+      pos: (e && requireVec2(ctx, `${path}.pos`, e.pos)) ?? { x: 0, y: 0 },
+      ai: readAiDef(ctx, `${path}.ai`, e?.ai),
+    };
+  });
+
+  const stage: StageDef = {
+    id: requireString(ctx, 'id', o.id) ?? '',
+    name: requireString(ctx, 'name', o.name) ?? '',
+    cell: requireNumber(ctx, 'cell', o.cell, { min: 1, int: true }) ?? 32,
+    mapRows: readMapRows(ctx, o.mapRows),
+    placementZone,
+    roster: readStringArray(ctx, 'roster', o.roster, 1),
+    enemies,
+    victory: readVictory(ctx, o.victory),
+    defeat: readDefeat(ctx, o.defeat),
+  };
+
+  if (o.intro !== undefined) {
+    const introRaw = requireArray(ctx, 'intro', o.intro) ?? [];
+    stage.intro = introRaw.map((item, i) => {
+      const path = `intro[${i}]`;
+      const l = requireObject(ctx, path, item);
+      return {
+        speaker: (l && requireString(ctx, `${path}.speaker`, l.speaker)) ?? '',
+        lineId: (l && requireString(ctx, `${path}.lineId`, l.lineId)) ?? '',
+      };
+    });
+  }
+
+  return finish(ctx, stage);
+}

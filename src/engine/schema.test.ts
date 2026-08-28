@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   validateBondsFile, validateEnemyDef, validateLinesFile, validateSkillsFile,
-  validateTitlesFile, validateUnitDef,
+  validateStageDef, validateTitlesFile, validateUnitDef,
 } from './schema';
 
 const VALID_UNIT = {
@@ -180,5 +180,122 @@ describe('validateLinesFile', () => {
     const r = validateLinesFile('lines/common.json', { 'skill:roran': 42 });
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.errors[0]?.path).toBe('skill:roran');
+  });
+});
+
+const VALID_STAGE = {
+  id: 'stage1',
+  name: 'はじまりの しま',
+  cell: 32,
+  mapRows: ['####', '#..#', '#..#', '####'],
+  placementZone: [{ pos: { x: 48, y: 48 } }],
+  roster: ['roran', 'ines'],
+  enemies: [{ defId: 'narazumono', pos: { x: 80, y: 80 }, ai: { kind: 'aggressive' } }],
+  victory: { type: 'reach', pos: { x: 80, y: 80 }, radius: 24, by: 'any' },
+  defeat: [{ type: 'unitLost', defIds: ['roran'] }],
+};
+
+describe('validateStageDef', () => {
+  it('正しいステージを受け入れる', () => {
+    const r = validateStageDef('stages/stage1.json', VALID_STAGE);
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value.roster).toEqual(['roran', 'ines']);
+  });
+
+  it('intro は省略できる', () => {
+    const r = validateStageDef('stages/stage1.json', VALID_STAGE);
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value.intro).toBeUndefined();
+  });
+
+  it('mapRows の行の長さが そろっていなければ弾く', () => {
+    const r = validateStageDef('stages/x.json', { ...VALID_STAGE, mapRows: ['####', '#..'] });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors[0]?.path).toBe('mapRows[1]');
+  });
+
+  it('mapRows に . と # 以外の文字があれば弾く', () => {
+    const r = validateStageDef('stages/x.json', { ...VALID_STAGE, mapRows: ['####', '#x.#', '#..#', '####'] });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors[0]?.reason).toContain('#');
+  });
+
+  it('roster が からなら弾く', () => {
+    const r = validateStageDef('stages/x.json', { ...VALID_STAGE, roster: [] });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors[0]?.path).toBe('roster');
+  });
+
+  it('placementZone が からなら弾く', () => {
+    const r = validateStageDef('stages/x.json', { ...VALID_STAGE, placementZone: [] });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors[0]?.path).toBe('placementZone');
+  });
+
+  it('未知の ai.kind を弾く', () => {
+    const r = validateStageDef('stages/x.json', {
+      ...VALID_STAGE,
+      enemies: [{ defId: 'x', pos: { x: 0, y: 0 }, ai: { kind: 'ambush' } }],
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors[0]?.path).toBe('enemies[0].ai.kind');
+  });
+
+  it('sentry には sightRange が いる', () => {
+    const r = validateStageDef('stages/x.json', {
+      ...VALID_STAGE,
+      enemies: [{ defId: 'x', pos: { x: 0, y: 0 }, ai: { kind: 'sentry' } }],
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors[0]?.path).toBe('enemies[0].ai.sightRange');
+  });
+
+  it('guard の post と leash を読む', () => {
+    const r = validateStageDef('stages/x.json', {
+      ...VALID_STAGE,
+      enemies: [{
+        defId: 'x', pos: { x: 0, y: 0 },
+        ai: { kind: 'guard', post: { x: 64, y: 64 }, leash: 120, sightRange: 100 },
+      }],
+    });
+    expect(r.ok).toBe(true);
+    if (r.ok && r.value.enemies[0]?.ai.kind === 'guard') {
+      expect(r.value.enemies[0].ai.leash).toBe(120);
+    }
+  });
+
+  it('aggressive は sightRange を持たない', () => {
+    const r = validateStageDef('stages/x.json', VALID_STAGE);
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value.enemies[0]?.ai).toEqual({ kind: 'aggressive' });
+  });
+
+  it('未知の victory.type を弾く', () => {
+    const r = validateStageDef('stages/x.json', {
+      ...VALID_STAGE, victory: { type: 'annihilate' },
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors[0]?.path).toBe('victory.type');
+  });
+
+  it('defeat が からなら弾く（敗北しないステージは作れない）', () => {
+    const r = validateStageDef('stages/x.json', { ...VALID_STAGE, defeat: [] });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors[0]?.path).toBe('defeat');
+  });
+
+  it('allPlayerUnitsLost は追加のフィールドを要らない', () => {
+    const r = validateStageDef('stages/x.json', {
+      ...VALID_STAGE, defeat: [{ type: 'allPlayerUnitsLost' }],
+    });
+    expect(r.ok).toBe(true);
+  });
+
+  it('intro があれば speaker と lineId を読む', () => {
+    const r = validateStageDef('stages/x.json', {
+      ...VALID_STAGE, intro: [{ speaker: 'roran', lineId: 'stage:stage1:roran' }],
+    });
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value.intro?.[0]?.speaker).toBe('roran');
   });
 });
