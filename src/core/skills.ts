@@ -98,8 +98,6 @@ export function useSkill(state: BattleState, allyId: string, dest?: Vec2): boole
   if (hits === null) return false;
 
   self.skillUsed = true;
-  state.stats[allyId]!.skillUses += 1;
-  state.stats[allyId]!.kakenukeruHits += hits;
-  state.events.push({ type: 'skill', allyId, skill: self.skill });
+  state.events.push({ type: 'skill', allyId, skill: self.skill, hits });
   return true;
 }

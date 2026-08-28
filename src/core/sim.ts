@@ -1,5 +1,6 @@
 import { bondSupporters } from './bonds';
 import { computeDamage, effectiveInterval, hasThreatWithinMelee, nearestWithin } from './combat';
+import { accumulate } from './counters';
 import { FORT_DAMAGE } from './constants';
 import { computeFlowField, distance, flowDirection, hasLineOfSight, isWalkableAt } from './field';
 import { nextFloat } from './rng';
@@ -43,6 +44,7 @@ export function step(state: BattleState, commands: SimCommand[], dt: number): vo
   resolveAllyRetirement(state);
   resolveFort(state);
   updatePhase(state);
+  accumulate(state.counters, state.events);
 }
 
 function applyCommands(state: BattleState, commands: SimCommand[]): Set<string> {
@@ -228,11 +230,12 @@ function resolveAttacks(state: BattleState, dt: number): void {
 
     const supporters = bondSupporters(state.reg, ally.id, ally.pos, state.allies);
     let bonus = 0;
-    for (const s of supporters) {
-      bonus += s.bonus;
-      state.events.push({ type: 'bondSupport', supporterId: s.id, targetId: ally.id });
+    for (const s of supporters) bonus += s.bonus;
+    if (supporters.length > 0) {
+      state.events.push({
+        type: 'bondSupport', targetId: ally.id, supporterIds: supporters.map((s) => s.id),
+      });
     }
-    if (supporters.length > 0) state.stats[ally.id]!.bondSupports += 1;
 
     const neraiuchi = ally.neraiuchiArmed;
     const targetDef = enemyDefOf(state, target);
@@ -299,12 +302,11 @@ function resolveEnemyRemoval(state: BattleState): void {
     }
     if (enemy.hp <= 0) {
       state.events.push({
-        type: 'enemyDefeated', uid: enemy.uid, kind: enemy.kind, byAlly: enemy.lastHitBy,
+        type: 'enemyDefeated',
+        uid: enemy.uid, kind: enemy.kind,
+        byAlly: enemy.lastHitBy,
+        neraiuchi: enemy.lastHitNeraiuchi,
       });
-      if (enemy.lastHitBy) {
-        state.stats[enemy.lastHitBy]!.defeats += 1;
-        if (enemy.lastHitNeraiuchi) state.stats[enemy.lastHitBy]!.neraiuchiKills += 1;
-      }
       continue;
     }
     survivors.push(enemy);

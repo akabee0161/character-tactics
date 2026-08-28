@@ -93,22 +93,14 @@ export type BattlePhase = 'placement' | 'wave' | 'waveCleared' | 'stageCleared' 
 
 export type SimEvent =
   | { type: 'engage'; allyId: string; enemyUid: string; kind: string; firstMeeting: boolean }
-  | { type: 'skill'; allyId: string; skill: string }
+  | { type: 'skill'; allyId: string; skill: string; hits: number }
   | { type: 'pinch'; allyId: string }
   | { type: 'hit'; targetPos: Vec2; amount: number }
-  | { type: 'enemyDefeated'; uid: string; kind: string; byAlly: string | null }
+  | { type: 'enemyDefeated'; uid: string; kind: string; byAlly: string | null; neraiuchi: boolean }
   | { type: 'garumRepelled'; byAlly: string | null }
   | { type: 'allyRetired'; allyId: string }
-  | { type: 'bondSupport'; supporterId: string; targetId: string }
+  | { type: 'bondSupport'; targetId: string; supporterIds: string[] }
   | { type: 'fortDamaged'; amount: number };
-
-export type CharBattleStats = {
-  defeats: number;
-  skillUses: number;
-  neraiuchiKills: number;
-  kakenukeruHits: number;
-  bondSupports: number;
-};
 
 export type BattleState = {
   reg: Registry;
@@ -128,6 +120,6 @@ export type BattleState = {
   /** 直近の step で発生したイベント */
   events: SimEvent[];
   rng: Rng;
-  stats: Record<string, CharBattleStats>;
+  counters: Record<string, number>;
   nextEnemyUid: number;
 };

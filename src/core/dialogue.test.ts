@@ -66,7 +66,7 @@ describe('pickDialogue', () => {
 
   it('スキル・ピンチ・勝利・撤退のセリフが出る', () => {
     const reg = testRegistry();
-    expect(pickDialogue(reg, [{ type: 'skill', allyId: 'ines', skill: 'neraiuchi' }])[0]!.lineId).toBe('skill:ines');
+    expect(pickDialogue(reg, [{ type: 'skill', allyId: 'ines', skill: 'neraiuchi', hits: 0 }])[0]!.lineId).toBe('skill:ines');
     expect(pickDialogue(reg, [{ type: 'pinch', allyId: 'mist' }])[0]!.lineId).toBe('pinch:mist');
     expect(pickDialogue(reg, [{ type: 'garumRepelled', byAlly: 'gau' }])[0]!.lineId).toBe('win:gau');
     expect(pickDialogue(reg, [{ type: 'allyRetired', allyId: 'roran' }])[0]!.lineId).toBe('retire:roran');
@@ -81,9 +81,9 @@ describe('pickDialogue', () => {
     const reg = testRegistry();
     const events: SimEvent[] = [
       { type: 'hit', targetPos: { x: 0, y: 0 }, amount: 3 },
-      { type: 'bondSupport', supporterId: 'ines', targetId: 'roran' },
+      { type: 'bondSupport', targetId: 'roran', supporterIds: ['ines'] },
       { type: 'fortDamaged', amount: 3 },
-      { type: 'enemyDefeated', uid: 'e1', kind: 'narazumono', byAlly: 'gau' },
+      { type: 'enemyDefeated', uid: 'e1', kind: 'narazumono', byAlly: 'gau', neraiuchi: false },
     ];
     expect(pickDialogue(reg, events)).toEqual([]);
   });
@@ -93,7 +93,7 @@ describe('pickDialogue', () => {
     const events: SimEvent[] = [
       { type: 'allyRetired', allyId: 'roran' },
       { type: 'pinch', allyId: 'mist' },
-      { type: 'skill', allyId: 'gau', skill: 'kakenukeru' },
+      { type: 'skill', allyId: 'gau', skill: 'kakenukeru', hits: 0 },
       { type: 'engage', allyId: 'mist', enemyUid: 'e1', kind: 'narazumono', firstMeeting: true },
       { type: 'engage', allyId: 'ines', enemyUid: 'g1', kind: 'garum', firstMeeting: true },
       { type: 'garumRepelled', byAlly: 'gau' },

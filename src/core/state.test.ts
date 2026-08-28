@@ -75,10 +75,10 @@ describe('createBattleState', () => {
     expect(s.enemyField.dist[4]).toBe(ORTHO_COST * 4);
   });
 
-  it('戦績カウンタが 0 で初期化される', () => {
+  it('カウンタは からで しょきかされる', () => {
     const reg = testRegistry();
     const s = createBattleState(reg, STAGE, PROGRESS, 1);
-    expect(s.stats.roran!).toEqual({ defeats: 0, skillUses: 0, neraiuchiKills: 0, kakenukeruHits: 0, bondSupports: 0 });
+    expect(s.counters).toEqual({});
   });
 });
 

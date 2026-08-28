@@ -1,12 +1,5 @@
 import { ALL_CHAR_IDS } from '../content/characters';
-import { emptyCounters, TITLE_LABELS } from '../core/progress';
-import type { Counters } from '../core/progress';
 import type { CharProgress } from '../core/types';
-
-const COUNTER_KEYS: readonly (keyof Counters)[] = [
-  'funbaruUses', 'neraiuchiKills', 'omajinaiUses', 'kakenukeruHits', 'bondSupports',
-];
-const VALID_TITLE_IDS: readonly string[] = Object.keys(TITLE_LABELS);
 
 function isFiniteNonNegInt(v: unknown): boolean {
   return typeof v === 'number' && Number.isInteger(v) && v >= 0;
@@ -24,14 +17,14 @@ export type SaveData = {
   version: number;
   clearedStages: number;
   chars: Record<string, CharProgress>;
-  counters: Counters;
+  counters: Record<string, number>;
   titles: string[];
 };
 
 export function newSave(): SaveData {
   const chars = {} as Record<string, CharProgress>;
   for (const id of ALL_CHAR_IDS) chars[id] = { level: 1, xp: 0 };
-  return { version: SAVE_VERSION, clearedStages: 0, chars, counters: emptyCounters(), titles: [] };
+  return { version: SAVE_VERSION, clearedStages: 0, chars, counters: {}, titles: [] };
 }
 
 function isValid(value: unknown): value is SaveData {
@@ -40,14 +33,12 @@ function isValid(value: unknown): value is SaveData {
   if (v.version !== SAVE_VERSION) return false;
   if (!isFiniteNonNegInt(v.clearedStages)) return false;
   if (!Array.isArray(v.titles)) return false;
-  if (!v.titles.every((t) => typeof t === 'string' && VALID_TITLE_IDS.includes(t))) return false;
-  if (typeof v.counters !== 'object' || v.counters === null) return false;
-  if (typeof v.chars !== 'object' || v.chars === null) return false;
-
-  const counters = v.counters as Record<string, unknown>;
-  for (const key of COUNTER_KEYS) {
-    if (!isFiniteNonNegInt(counters[key])) return false;
+  if (!v.titles.every((t) => typeof t === 'string')) return false;
+  if (typeof v.counters !== 'object' || v.counters === null || Array.isArray(v.counters)) return false;
+  for (const value of Object.values(v.counters as Record<string, unknown>)) {
+    if (!isFiniteNonNegInt(value)) return false;
   }
+  if (typeof v.chars !== 'object' || v.chars === null) return false;
 
   const chars = v.chars as Record<string, unknown>;
   for (const id of ALL_CHAR_IDS) {

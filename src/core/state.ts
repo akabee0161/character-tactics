@@ -3,7 +3,7 @@ import { makeRng } from './rng';
 import { FORT_MAX_HP } from './types';
 import type { Registry } from '../engine/registry';
 import type { UnitDef } from '../engine/schema';
-import type { AllyUnit, BattleState, CharBattleStats, CharProgress, StageDef, Vec2 } from './types';
+import type { AllyUnit, BattleState, CharProgress, StageDef, Vec2 } from './types';
 
 const HP_PER_LEVEL = 3;
 const POWER_PER_LEVEL = 1;
@@ -13,10 +13,6 @@ const REVIVE_HP_RATIO = 0.5;
 export function statsForLevel(def: UnitDef, level: number): { maxHp: number; power: number } {
   const steps = Math.max(0, level - 1);
   return { maxHp: def.maxHp + steps * HP_PER_LEVEL, power: def.power + steps * POWER_PER_LEVEL };
-}
-
-function emptyStats(): CharBattleStats {
-  return { defeats: 0, skillUses: 0, neraiuchiKills: 0, kakenukeruHits: 0, bondSupports: 0 };
 }
 
 function makeAlly(def: UnitDef, level: number, pos: Vec2): AllyUnit {
@@ -53,10 +49,8 @@ export function createBattleState(
   seed: number,
 ): BattleState {
   const grid = makeGrid(stage.cell, stage.mapRows);
-  const stats: Record<string, CharBattleStats> = {};
   const allies: AllyUnit[] = [];
   for (const def of reg.units.values()) {
-    stats[def.id] = emptyStats();
     allies.push(makeAlly(def, progress[def.id]?.level ?? 1, stage.fort));
   }
 
@@ -74,7 +68,7 @@ export function createBattleState(
     pending: [],
     events: [],
     rng: makeRng(seed),
-    stats,
+    counters: {},
     nextEnemyUid: 1,
   };
 }

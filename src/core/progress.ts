@@ -1,38 +1,11 @@
-import type { CharBattleStats, CharProgress } from './types';
+import type { Registry } from '../engine/registry';
+import type { TitleDef } from '../engine/schema';
+import type { CharProgress } from './types';
 
 export const MAX_LEVEL = 5;
 export const XP_BASE = 20;
 export const XP_PER_DEFEAT = 5;
 const XP_PER_LEVEL = 30;
-
-export const TITLE_LABELS: Record<string, string> = {
-  gamanzuyoi: 'がまんづよい',
-  ichigekihissatsu: 'いちげきひっさつ',
-  minnanookaasan: 'みんなの おかあさん',
-  kazenoyouni: 'かぜの ように',
-  nakayoshi: 'なかよし',
-};
-
-/** その称号が誰のものか。null は全員共通 */
-export const TITLE_OWNER: Record<string, string | null> = {
-  gamanzuyoi: 'roran',
-  ichigekihissatsu: 'ines',
-  minnanookaasan: 'mist',
-  kazenoyouni: 'gau',
-  nakayoshi: null,
-};
-
-export type Counters = {
-  funbaruUses: number;
-  neraiuchiKills: number;
-  omajinaiUses: number;
-  kakenukeruHits: number;
-  bondSupports: number;
-};
-
-export function emptyCounters(): Counters {
-  return { funbaruUses: 0, neraiuchiKills: 0, omajinaiUses: 0, kakenukeruHits: 0, bondSupports: 0 };
-}
 
 export function xpGain(defeats: number): number {
   return XP_BASE + defeats * XP_PER_DEFEAT;
@@ -56,33 +29,12 @@ export function applyXp(p: CharProgress, gained: number): CharProgress {
   return { level, xp };
 }
 
-export function accumulateCounters(
-  prev: Counters,
-  stats: Record<string, CharBattleStats>,
-): Counters {
-  let bondSupports = prev.bondSupports;
-  for (const s of Object.values(stats)) bondSupports += s.bondSupports;
-
-  const of = (id: string): CharBattleStats =>
-    stats[id] ?? { defeats: 0, skillUses: 0, neraiuchiKills: 0, kakenukeruHits: 0, bondSupports: 0 };
-
-  return {
-    funbaruUses: prev.funbaruUses + of('roran').skillUses,
-    neraiuchiKills: prev.neraiuchiKills + of('ines').neraiuchiKills,
-    omajinaiUses: prev.omajinaiUses + of('mist').skillUses,
-    kakenukeruHits: prev.kakenukeruHits + of('gau').kakenukeruHits,
-    bondSupports,
-  };
+export function earnedTitles(reg: Registry, counters: Record<string, number>): string[] {
+  return reg.titles.filter((t) => (counters[t.counter] ?? 0) >= t.threshold).map((t) => t.id);
 }
 
-const TITLE_RULES: { id: string; test: (c: Counters) => boolean }[] = [
-  { id: 'gamanzuyoi', test: (c) => c.funbaruUses >= 5 },
-  { id: 'ichigekihissatsu', test: (c) => c.neraiuchiKills >= 3 },
-  { id: 'minnanookaasan', test: (c) => c.omajinaiUses >= 5 },
-  { id: 'kazenoyouni', test: (c) => c.kakenukeruHits >= 8 },
-  { id: 'nakayoshi', test: (c) => c.bondSupports >= 20 },
-];
-
-export function earnedTitles(c: Counters): string[] {
-  return TITLE_RULES.filter((r) => r.test(c)).map((r) => r.id);
+/** そのユニットが表示すべき称号。owner が一致するものと、全員共通（owner === null）のもの */
+export function titlesOf(reg: Registry, owned: string[], defId: string): TitleDef[] {
+  const set = new Set(owned);
+  return reg.titles.filter((t) => set.has(t.id) && (t.owner === defId || t.owner === null));
 }

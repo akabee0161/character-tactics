@@ -68,12 +68,6 @@ describe('writeSave / loadSave', () => {
     expect(loadSave(fakeStorage({ [SAVE_KEY]: 'null' }))).toBeNull();
   });
 
-  it('counters の一部フィールドが欠けていれば null', () => {
-    const broken = newSave() as unknown as Record<string, unknown>;
-    broken.counters = { funbaruUses: 0 };
-    expect(loadSave(fakeStorage({ [SAVE_KEY]: JSON.stringify(broken) }))).toBeNull();
-  });
-
   it('counters のフィールドが数値でなければ null', () => {
     const broken = newSave() as unknown as { counters: Record<string, unknown> };
     broken.counters.bondSupports = 'たくさん';
@@ -108,9 +102,9 @@ describe('writeSave / loadSave', () => {
     expect(loadSave(fakeStorage({ [SAVE_KEY]: JSON.stringify(fractional) }))).toBeNull();
   });
 
-  it('titles に不正な称号 ID が含まれていれば null', () => {
-    const broken = { ...newSave(), titles: ['nazono-shougou'] } as unknown as Record<string, unknown>;
-    expect(loadSave(fakeStorage({ [SAVE_KEY]: JSON.stringify(broken) }))).toBeNull();
+  it('titles が 文字列の 配列であれば OK（レジストリとの照合は Task 11 で追加）', () => {
+    const withTitle = { ...newSave(), titles: ['nazono-shougou'] };
+    expect(loadSave(fakeStorage({ [SAVE_KEY]: JSON.stringify(withTitle) }))).toEqual(withTitle);
   });
 });
 

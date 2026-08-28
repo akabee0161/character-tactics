@@ -1,12 +1,13 @@
 import { ALL_CHAR_IDS, charDef } from '../content/characters';
 import { enemyDef } from '../content/enemies';
 import { STAGES } from '../content/stages';
-import { TITLE_LABELS, TITLE_OWNER, xpToNext } from '../core/progress';
+import { titlesOf, xpToNext } from '../core/progress';
 import { LOGICAL_H, LOGICAL_W, mapToLogical } from '../render/viewport';
 import { BOTTOM_BAR_H, BOTTOM_BAR_Y, BTN, STAGE_BTN, portraitSlot, skillButtonAt } from './layout';
 import { isStageUnlocked } from './flow';
 import type { DialogueRequest } from '../core/dialogue';
 import type { XpGain } from './flow';
+import type { Registry } from '../engine/registry';
 import type { SaveData } from '../save/save';
 import type { BattleState } from '../core/types';
 import type { Rect } from './hit';
@@ -50,7 +51,7 @@ export function drawTitle(ctx: CanvasRenderingContext2D, hasSave: boolean): void
   button(ctx, BTN.titleContinue, 'つづきから', hasSave);
 }
 
-export function drawStageSelect(ctx: CanvasRenderingContext2D, save: SaveData): void {
+export function drawStageSelect(ctx: CanvasRenderingContext2D, save: SaveData, reg: Registry): void {
   clear(ctx);
   ctx.fillStyle = INK;
   ctx.font = '36px sans-serif';
@@ -69,10 +70,10 @@ export function drawStageSelect(ctx: CanvasRenderingContext2D, save: SaveData): 
     ctx.textAlign = 'left';
   });
 
-  drawRoster(ctx, save);
+  drawRoster(ctx, save, reg);
 }
 
-function drawRoster(ctx: CanvasRenderingContext2D, save: SaveData): void {
+function drawRoster(ctx: CanvasRenderingContext2D, save: SaveData, reg: Registry): void {
   ctx.font = '18px sans-serif';
   ALL_CHAR_IDS.forEach((id, i) => {
     const r = portraitSlot(i);
@@ -83,9 +84,9 @@ function drawRoster(ctx: CanvasRenderingContext2D, save: SaveData): void {
     ctx.fill();
     ctx.fillStyle = INK;
     ctx.fillText(`${charDef(id).name} Lv${save.chars[id]!.level}`, r.x + 54, r.y + 26);
-    const own = save.titles.filter((t) => TITLE_OWNER[t] === id || TITLE_OWNER[t] === null);
+    const own = titlesOf(reg, save.titles, id);
     ctx.fillStyle = '#9fb3c4';
-    ctx.fillText(own.map((t) => TITLE_LABELS[t]).join('、'), r.x + 54, r.y + 48);
+    ctx.fillText(own.map((t) => t.label).join('、'), r.x + 54, r.y + 48);
   });
 }
 
@@ -228,11 +229,7 @@ export function drawResult(
     ctx.arc(60, y - 6, 14, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = INK;
-    const st = state.stats[g.id]!;
-    ctx.fillText(
-      `${charDef(g.id).name}  たおした ${st.defeats}  スキル ${st.skillUses}  おうえん ${st.bondSupports}`,
-      90, y,
-    );
+    ctx.fillText(`${charDef(g.id).name}`, 90, y);
     ctx.fillText(`+${g.gained} けいけんち`, 620, y);
     ctx.fillStyle = g.leveledUp ? '#ffd479' : '#9fb3c4';
     ctx.fillText(
@@ -244,7 +241,8 @@ export function drawResult(
   if (newTitles.length > 0) {
     ctx.fillStyle = '#ffd479';
     ctx.font = '22px sans-serif';
-    ctx.fillText(`しょうごう ゲット: ${newTitles.map((t) => TITLE_LABELS[t]).join('、')}`, 60, 350);
+    const label = (id: string): string => state.reg.titles.find((t) => t.id === id)?.label ?? id;
+    ctx.fillText(`しょうごう ゲット: ${newTitles.map(label).join('、')}`, 60, 350);
   }
 
   button(ctx, BTN.next, 'つぎへ');

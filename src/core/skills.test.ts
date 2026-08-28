@@ -70,8 +70,7 @@ describe('ふんばる', () => {
     s.time = 10;
     expect(useSkill(s, 'roran')).toBe(true);
     expect(ally(s, 'roran').funbaruUntil).toBe(10 + FUNBARU_DURATION);
-    expect(s.events).toContainEqual({ type: 'skill', allyId: 'roran', skill: 'funbaru' });
-    expect(s.stats.roran!.skillUses).toBe(1);
+    expect(s.events).toContainEqual({ type: 'skill', allyId: 'roran', skill: 'funbaru', hits: 0 });
   });
 
   it('isFunbaruActive は期限内だけ true', () => {
@@ -149,7 +148,7 @@ describe('かけぬける', () => {
     expect(ally(s, 'gau').pos).toEqual({ x: 200, y: 16 });
     expect(onPath.hp).toBe(12 - KAKENUKERU_DAMAGE);
     expect(offPath.hp).toBe(12);
-    expect(s.stats.gau!.kakenukeruHits).toBe(1);
+    expect(s.events).toContainEqual({ type: 'skill', allyId: 'gau', skill: 'kakenukeru', hits: 1 });
   });
 
   it('目的地の指定がなければ発動しない', () => {

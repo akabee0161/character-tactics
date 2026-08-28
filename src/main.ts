@@ -263,7 +263,7 @@ function update(dt: number): void {
   } else if (battle.phase === 'waveCleared') {
     phase = 'waveCleared';
   } else if (battle.phase === 'stageCleared') {
-    const r = applyStageClear(save, stageIndex, battle.stats);
+    const r = applyStageClear(registry, save, stageIndex, battle);
     save = r.save;
     hasSave = writeSave(window.localStorage, save) || hasSave;
     result = { gains: r.gains, newTitles: r.newTitles };
@@ -282,7 +282,7 @@ function render(): void {
       drawTitle(ctx, hasSave);
       break;
     case 'select':
-      drawStageSelect(ctx, save);
+      drawStageSelect(ctx, save, registry);
       break;
     case 'placement':
       if (battle) {
