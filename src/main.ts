@@ -16,7 +16,7 @@ import { resolveMapGesture } from './ui/input';
 import type { PointerStart } from './ui/input';
 import { BTN, STAGE_BTN, portraitSlot, skillButtonAt } from './ui/layout';
 import {
-  drawBottomBar, drawBubble, drawDefeat, drawPlacement, drawResult,
+  drawBottomBar, drawBubble, drawDefeat, drawLoadErrors, drawPlacement, drawResult,
   drawSkillButton, drawStageSelect, drawTitle, drawWaveCleared,
 } from './ui/screens';
 import { loadSave, newSave, writeSave } from './save/save';
@@ -31,14 +31,25 @@ type Phase = 'title' | 'select' | 'placement' | 'battle' | 'waveCleared' | 'resu
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d')!;
 
-const regResult = loadRegistry(SKILL_EFFECT_IDS);
-if (!regResult.ok) {
-  throw new Error(
-    'assets の よみこみに しっぱい:\n' +
-      regResult.errors.map((e) => `  ${e.file} ${e.path}: ${e.reason}`).join('\n'),
-  );
+function resize(): void {
+  const scale = Math.min(window.innerWidth / LOGICAL_W, window.innerHeight / LOGICAL_H);
+  canvas.width = Math.floor(LOGICAL_W * scale * window.devicePixelRatio);
+  canvas.height = Math.floor(LOGICAL_H * scale * window.devicePixelRatio);
+  canvas.style.width = `${Math.floor(LOGICAL_W * scale)}px`;
+  canvas.style.height = `${Math.floor(LOGICAL_H * scale)}px`;
 }
-const registry = regResult.value;
+window.addEventListener('resize', resize);
+resize();
+
+const loadResult = loadRegistry(SKILL_EFFECT_IDS);
+if (!loadResult.ok) {
+  // 部分的に読めたぶんで続行しない。アセットを足したその場で事故に気づけることを優先する
+  const vp = computeViewport(canvas.width, canvas.height);
+  ctx.setTransform(vp.scale, 0, 0, vp.scale, vp.offsetX, vp.offsetY);
+  drawLoadErrors(ctx, loadResult.errors);
+  throw new Error(`assets の よみこみに しっぱい: ${loadResult.errors.length} けん`);
+}
+const registry = loadResult.value;
 
 const loaded = loadSave(window.localStorage);
 let save: SaveData = loaded ?? newSave();
@@ -57,16 +68,6 @@ const effects = makeEffectState();
 const commands: SimCommand[] = [];
 let accumulator = 0;
 let lastTime = performance.now();
-
-function resize(): void {
-  const scale = Math.min(window.innerWidth / LOGICAL_W, window.innerHeight / LOGICAL_H);
-  canvas.width = Math.floor(LOGICAL_W * scale * window.devicePixelRatio);
-  canvas.height = Math.floor(LOGICAL_H * scale * window.devicePixelRatio);
-  canvas.style.width = `${Math.floor(LOGICAL_W * scale)}px`;
-  canvas.style.height = `${Math.floor(LOGICAL_H * scale)}px`;
-}
-window.addEventListener('resize', resize);
-resize();
 
 function toLogical(ev: PointerEvent): Vec2 {
   const rect = canvas.getBoundingClientRect();
@@ -282,31 +283,31 @@ function render(): void {
       drawTitle(ctx, hasSave);
       break;
     case 'select':
-      drawStageSelect(ctx, save, registry);
+      drawStageSelect(ctx, registry, save);
       break;
     case 'placement':
       if (battle) {
-        drawBattle(ctx, battle, selected, effects);
+        drawBattle(ctx, registry, battle, selected, effects);
         drawPlacement(ctx, battle);
-        drawBottomBar(ctx, battle, selected);
+        drawBottomBar(ctx, registry, battle, selected);
       }
       break;
     case 'battle':
       if (battle) {
-        drawBattle(ctx, battle, selected, effects);
-        drawBottomBar(ctx, battle, selected);
-        if (selected) drawSkillButton(ctx, battle, selected);
+        drawBattle(ctx, registry, battle, selected, effects);
+        drawBottomBar(ctx, registry, battle, selected);
+        if (selected) drawSkillButton(ctx, registry, battle, selected);
       }
       break;
     case 'waveCleared':
       if (battle) {
-        drawBattle(ctx, battle, selected, effects);
-        drawBottomBar(ctx, battle, selected);
+        drawBattle(ctx, registry, battle, selected, effects);
+        drawBottomBar(ctx, registry, battle, selected);
         drawWaveCleared(ctx, battle);
       }
       break;
     case 'result':
-      if (battle && result) drawResult(ctx, battle, result.gains, result.newTitles);
+      if (result) drawResult(ctx, registry, result.gains, result.newTitles);
       break;
     case 'defeat':
       drawDefeat(ctx);
@@ -318,11 +319,11 @@ function render(): void {
   if (battle && dragPhaseOk && dragChar !== null && dragMap !== null) {
     const ally = battle.allies.find((a) => a.id === dragChar)!;
     const blocked = !isWalkableAt(battle.grid, dragMap);
-    drawDragPreview(ctx, ally.pos, dragMap, dragChar, blocked);
+    drawDragPreview(ctx, registry, ally.pos, dragMap, dragChar, blocked);
   }
 
   const bubble = currentBubble(bubbles);
-  if (bubble) drawBubble(ctx, bubble);
+  if (bubble) drawBubble(ctx, registry, bubble);
 }
 
 function loop(now: number): void {

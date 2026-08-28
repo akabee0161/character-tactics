@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { SAVE_KEY, SAVE_VERSION, loadSave, newSave, writeSave } from './save';
+import { ALL_CHAR_IDS, SAVE_KEY, SAVE_VERSION, loadSave, newSave, writeSave } from './save';
 import type { StorageLike } from './save';
-import { ALL_CHAR_IDS } from '../content/characters';
 
 function fakeStorage(initial: Record<string, string> = {}): StorageLike & { data: Record<string, string> } {
   const data = { ...initial };

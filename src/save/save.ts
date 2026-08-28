@@ -1,5 +1,11 @@
-import { ALL_CHAR_IDS } from '../content/characters';
 import type { CharProgress } from '../core/types';
+
+/**
+ * Task 10 で src/content/characters.ts が消えたための暫定の固定リスト。
+ * newSave/isValid は Registry を受け取らないので、まだこれに頼っている。
+ * Task 11（セーブを version 2 へ）で Registry ベースの検証に置き換える。
+ */
+export const ALL_CHAR_IDS: readonly string[] = ['roran', 'ines', 'mist', 'gau'];
 
 function isFiniteNonNegInt(v: unknown): boolean {
   return typeof v === 'number' && Number.isInteger(v) && v >= 0;

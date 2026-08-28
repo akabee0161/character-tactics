@@ -1,8 +1,8 @@
-import { charDef } from '../content/characters';
-import { enemyDef } from '../content/enemies';
 import { bondSupporters } from '../core/bonds';
 import { isFunbaruActive } from '../core/skills';
 import { FORT_MAX_HP } from '../core/types';
+import { lookupDef } from '../engine/registry';
+import type { Registry } from '../engine/registry';
 import { LOGICAL_H, LOGICAL_W, mapToLogical } from './viewport';
 import { HIT_EFFECT_DURATION } from './effects';
 import type { EffectState } from './effects';
@@ -23,8 +23,18 @@ const COLORS = {
 
 const UNIT_R = 11;
 
+function defOf(reg: Registry, defId: string): { name: string; color: string } {
+  return lookupDef(reg, defId) ?? { name: defId, color: '#888888' };
+}
+
+/** EnemyDef.maxHp から見た目の半径を導く。ID を直書きしない */
+function enemyRadius(maxHp: number): number {
+  return maxHp >= 40 ? UNIT_R + 3 : UNIT_R;
+}
+
 export function drawBattle(
   ctx: CanvasRenderingContext2D,
+  reg: Registry,
   state: BattleState,
   selected: string | null,
   effects: EffectState,
@@ -35,10 +45,10 @@ export function drawBattle(
 
   drawTerrain(ctx, state);
   drawFort(ctx, state);
-  drawGoalMarkers(ctx, state, selected);
+  drawGoalMarkers(ctx, reg, state, selected);
   drawBonds(ctx, state);
-  drawEnemies(ctx, state);
-  drawAllies(ctx, state, selected);
+  drawEnemies(ctx, reg, state);
+  drawAllies(ctx, reg, state, selected);
   drawEffects(ctx, effects);
   drawTopBar(ctx, state);
   ctx.restore();
@@ -103,15 +113,16 @@ function drawHpBar(ctx: CanvasRenderingContext2D, p: Vec2, ratio: number, color:
   ctx.fillRect(p.x - w / 2, p.y - UNIT_R - 9, w * Math.max(0, Math.min(1, ratio)), 4);
 }
 
-function drawEnemies(ctx: CanvasRenderingContext2D, state: BattleState): void {
+function drawEnemies(ctx: CanvasRenderingContext2D, reg: Registry, state: BattleState): void {
   for (const enemy of state.enemies) {
     const p = mapToLogical(enemy.pos);
-    const def = enemyDef(enemy.kind);
+    const def = defOf(reg, enemy.kind);
     ctx.fillStyle = def.color;
     ctx.beginPath();
-    ctx.arc(p.x, p.y, enemy.kind === 'garum' ? UNIT_R + 3 : UNIT_R, 0, Math.PI * 2);
+    ctx.arc(p.x, p.y, enemyRadius(enemy.maxHp), 0, Math.PI * 2);
     ctx.fill();
-    if (enemy.kind === 'tatemochi') {
+    const fullDef = reg.enemies.get(enemy.kind);
+    if (fullDef && fullDef.bowDamageCap !== null) {
       ctx.fillStyle = '#c8ccd4';
       ctx.fillRect(p.x - 14, p.y - 8, 5, 16);
     }
@@ -119,11 +130,16 @@ function drawEnemies(ctx: CanvasRenderingContext2D, state: BattleState): void {
   }
 }
 
-function drawAllies(ctx: CanvasRenderingContext2D, state: BattleState, selected: string | null): void {
+function drawAllies(
+  ctx: CanvasRenderingContext2D,
+  reg: Registry,
+  state: BattleState,
+  selected: string | null,
+): void {
   for (const ally of state.allies) {
     if (ally.retired) continue;
     const p = mapToLogical(ally.pos);
-    ctx.fillStyle = charDef(ally.id).color;
+    ctx.fillStyle = defOf(reg, ally.id).color;
     ctx.beginPath();
     ctx.arc(p.x, p.y, UNIT_R, 0, Math.PI * 2);
     ctx.fill();
@@ -187,6 +203,7 @@ function drawTopBar(ctx: CanvasRenderingContext2D, state: BattleState): void {
 /** 4人ぶんの移動先を常に出す。誰がどこへ向かっているかを盤面だけで読めるようにする */
 export function drawGoalMarkers(
   ctx: CanvasRenderingContext2D,
+  reg: Registry,
   state: BattleState,
   selected: string | null,
 ): void {
@@ -194,7 +211,7 @@ export function drawGoalMarkers(
     if (ally.retired || !ally.goalPos) continue;
     const a = mapToLogical(ally.pos);
     const g = mapToLogical(ally.goalPos);
-    const color = charDef(ally.id).color;
+    const color = defOf(reg, ally.id).color;
     const isSelected = ally.id === selected;
 
     // 交戦中は足が止まっているので薄くする。交戦が解けたら再開するため消しはしない
@@ -226,14 +243,15 @@ export function drawGoalMarkers(
 /** ドラッグ中に、離したらどうなるかを先に見せる */
 export function drawDragPreview(
   ctx: CanvasRenderingContext2D,
+  reg: Registry,
   fromMap: Vec2,
   toMap: Vec2,
-  charId: string,
+  defId: string,
   blocked: boolean,
 ): void {
   const a = mapToLogical(fromMap);
   const b = mapToLogical(toMap);
-  const color = blocked ? COLORS.hpEnemy : charDef(charId).color;
+  const color = blocked ? COLORS.hpEnemy : defOf(reg, defId).color;
 
   ctx.strokeStyle = color;
   ctx.lineWidth = 2;
