@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createBattleState, startWave } from './state';
-import { canUseSkill, isFunbaruActive, useSkill, FUNBARU_DURATION, OMAJINAI_HEAL, KAKENUKERU_DAMAGE } from './skills';
+import { canUseSkill, isFunbaruActive, useSkill, FUNBARU_DURATION, OMAJINAI_HEAL, KAKENUKERU_DAMAGE, SKILL_EFFECTS, SKILL_EFFECT_IDS } from './skills';
 import { testRegistry } from './testing';
 import type { BattleState, CharProgress, EnemyUnit, StageDef } from './types';
 
@@ -196,3 +196,36 @@ describe('かけぬける', () => {
     expect(ally(s, 'gau').engagedWith).toBeNull();
   });
 });
+
+describe('SKILL_EFFECTS', () => {
+  it('skills.json の すべての id に こうかの じっそうが ある', () => {
+    const reg = testRegistry();
+    for (const id of reg.skills.keys()) {
+      expect(`${id} => ${SKILL_EFFECTS[id] !== undefined}`).toContain('true');
+    }
+  });
+
+  it('SKILL_EFFECT_IDS は SKILL_EFFECTS の キーと 一致する', () => {
+    expect([...SKILL_EFFECT_IDS].sort()).toEqual(Object.keys(SKILL_EFFECTS).sort());
+  });
+
+  it('しらない skillId の ユニットは スキルを つかえない', () => {
+    const s = fresh();
+    const roran = ally(s, 'roran');
+    roran.skill = 'sonzaishinai';
+    expect(useSkill(s, 'roran')).toBe(false);
+    expect(roran.skillUsed).toBe(false);
+  });
+
+  it('ふんばりの もちじかんを skills.json から よむ', () => {
+    const s = fresh();
+    useSkill(s, 'roran');
+    expect(ally(s, 'roran').funbaruUntil).toBe(s.time + s.reg.skills.get('funbaru')!.params.duration!);
+  });
+});
+
+function fresh(): BattleState {
+  const s = createBattleState(testRegistry(), STAGE, LV1, 1);
+  startWave(s);
+  return s;
+}
