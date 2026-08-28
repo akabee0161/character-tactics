@@ -1,0 +1,10 @@
+{
+  "id": "tatemochi", "name": "たてもち", "role": "てき",
+  "combat": true,
+  "maxHp": 20, "power": 5, "guard": 3,
+  "attack": "melee", "range": 24,
+  "attackInterval": 1.8, "speed": 35,
+  "skillId": null,
+  "color": "#6b6b7a",
+  "xpReward": 8, "bowDamageCap": 1, "fleeAtHpRatio": null
+}

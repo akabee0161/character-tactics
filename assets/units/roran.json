@@ -1,0 +1,9 @@
+{
+  "id": "roran", "name": "ロラン", "role": "たて",
+  "combat": true,
+  "maxHp": 30, "power": 6, "guard": 5,
+  "attack": "melee", "range": 24,
+  "attackInterval": 1.6, "speed": 60,
+  "skillId": "funbaru",
+  "color": "#4a80c8"
+}

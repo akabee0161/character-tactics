@@ -1,0 +1,9 @@
+{
+  "id": "gau", "name": "ガウ", "role": "ものみ",
+  "combat": true,
+  "maxHp": 24, "power": 7, "guard": 3,
+  "attack": "melee", "range": 24,
+  "attackInterval": 1.6, "speed": 100,
+  "skillId": "kakenukeru",
+  "color": "#e0a03c"
+}

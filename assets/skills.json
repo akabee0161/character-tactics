@@ -1,0 +1,6 @@
+[
+  { "id": "funbaru",    "label": "ふんばる",   "params": { "duration": 5 } },
+  { "id": "neraiuchi",  "label": "ねらいうち", "params": {} },
+  { "id": "omajinai",   "label": "おまじない", "params": { "heal": 12, "range": 200 } },
+  { "id": "kakenukeru", "label": "かけぬける", "params": { "damage": 5 } }
+]

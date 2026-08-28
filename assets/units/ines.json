@@ -1,0 +1,9 @@
+{
+  "id": "ines", "name": "イネス", "role": "ゆみ",
+  "combat": true,
+  "maxHp": 20, "power": 8, "guard": 2,
+  "attack": "bow", "range": 160,
+  "attackInterval": 2.2, "speed": 60,
+  "skillId": "neraiuchi",
+  "color": "#3faa6a"
+}

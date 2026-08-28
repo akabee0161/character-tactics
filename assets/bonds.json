@@ -1,0 +1,5 @@
+[
+  { "a": "roran", "b": "ines", "bonus": 2 },
+  { "a": "mist",  "b": "gau",  "bonus": 2 },
+  { "a": "roran", "b": "mist", "bonus": 1 }
+]
