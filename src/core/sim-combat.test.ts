@@ -215,6 +215,26 @@ describe('砦とフェーズ遷移', () => {
     expect(e.hp).toBeGreaterThan(0);
   });
 
+  it('敵の種類によって砦ダメージが変わる（たてもち）', () => {
+    const s = fresh();
+    const e = addEnemy(s, 'tatemochi', 20, 16);
+    step(s, [], 0.01);
+    expect(s.fortHp).toBe(30 - 5);
+    expect(s.enemies).toHaveLength(0);
+    expect(s.events).toContainEqual({ type: 'fortDamaged', amount: 5 });
+    expect(e.hp).toBeGreaterThan(0);
+  });
+
+  it('敵の種類によって砦ダメージが変わる（ガルム）', () => {
+    const s = fresh();
+    const e = addEnemy(s, 'garum', 20, 16);
+    step(s, [], 0.01);
+    expect(s.fortHp).toBe(30 - 10);
+    expect(s.enemies).toHaveLength(0);
+    expect(s.events).toContainEqual({ type: 'fortDamaged', amount: 10 });
+    expect(e.hp).toBeGreaterThan(0);
+  });
+
   it('砦 HP が 0 で defeat', () => {
     const s = fresh();
     s.fortHp = 2;

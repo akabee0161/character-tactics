@@ -185,6 +185,7 @@ describe('step: 交戦の成立と解除', () => {
 
   it('レンジから外れると交戦が解除される', () => {
     const s = fresh();
+    for (const a of s.allies) if (a.id !== 'roran') a.pos = { x: 900, y: 900 };
     const e = addEnemy(s, 30, 80);
     step(s, [], 0.1);
     e.pos = { x: 900, y: 900 };
