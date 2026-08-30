@@ -17,7 +17,7 @@ export type Registry = {
   lines: Map<string, string>;
 };
 
-/** 'assets/units/roran.json' → 'roran' */
+/** 'assets/units/<id>.json' → '<id>' */
 function baseName(path: string): string {
   const last = path.split('/').pop() ?? '';
   return last.replace(/\.json$/, '');
