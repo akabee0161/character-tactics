@@ -2,6 +2,7 @@ import { bondSupporters } from './bonds';
 import { computeDamage, effectiveInterval, hasThreatWithinMelee, nearestWithin } from './combat';
 import { accumulate } from './counters';
 import { computeFlowField, distance, flowDirection, hasLineOfSight, isWalkableAt } from './field';
+import { dropUnitField, fieldToStatic } from './fields';
 import { updateObjectives } from './objectives';
 import { isFunbaruActive, useSkill } from './skills';
 import type { BattleState, Unit, Vec2 } from './types';
@@ -128,8 +129,9 @@ function moveUnits(state: BattleState, dt: number): void {
     if (u.controller === 'player') {
       moveTowardGoal(state, u, dt);
     } else {
-      // フェーズ 6 でここが AI の決定に置き換わる
-      const dir = flowDirection(state.grid, state.enemyField, u.pos);
+      // フェーズ 6 でここが AI の決定に置き換わる（Task 19）。暫定で placementZone[0] を目指す
+      const field = fieldToStatic(state.fields, state.grid, state.stage.placementZone[0]!.pos);
+      const dir = flowDirection(state.grid, field, u.pos);
       if (!dir) continue;
       u.pos = { x: u.pos.x + dir.x * u.speed * dt, y: u.pos.y + dir.y * u.speed * dt };
     }
@@ -219,6 +221,7 @@ function resolveRemoval(state: BattleState): void {
     }
 
     if (u.retired) {
+      dropUnitField(state.fields, u.uid);
       u.engagedWith = null;
       u.goalField = null;
       u.goalPos = null;

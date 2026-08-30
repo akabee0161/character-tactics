@@ -3,6 +3,7 @@ export type { AiDef, DefeatCond, EnemyPlacement, StageDef, VictoryCond } from '.
 
 import type { Registry } from '../engine/registry';
 import type { AiDef, AttackKind, StageDef, Vec2 } from '../engine/schema';
+import type { FieldCache } from './fields';
 
 export type Grid = {
   cols: number;
@@ -91,8 +92,8 @@ export type BattleState = {
   reg: Registry;
   stage: StageDef;
   grid: Grid;
-  /** 味方の初期配置地点をゴールとするフローフィールド。Task 17 でキャッシュに置き換わる */
-  enemyField: FlowField;
+  /** フローフィールドのキャッシュ（core/fields.ts） */
+  fields: FieldCache;
   time: number;
   phase: BattlePhase;
   units: Unit[];

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { cellIndexAt } from './field';
+import { fieldToStatic } from './fields';
 import { beginBattle, createBattleState, placeUnit, PLACEMENT_RADIUS, statsForLevel } from './state';
 import { testRegistry } from './testing';
 import type { Registry } from '../engine/registry';
@@ -91,11 +92,18 @@ describe('createBattleState: ステージからの はいち', () => {
     expect(roran.power).toBe(8);
   });
 
-  it('味方の初期配置地点へのフローフィールドが計算されている', () => {
+  it('フィールドキャッシュは からで しょきかされる', () => {
+    const { state } = fresh();
+    expect(state.fields.byUnit.size).toBe(0);
+    expect(state.fields.static.size).toBe(0);
+  });
+
+  it('味方の初期配置地点への フローフィールドを キャッシュから ひける', () => {
     const { stage, state } = fresh();
     const goal = stage.placementZone[0]!.pos;
     const idx = cellIndexAt(state.grid, goal);
-    expect(state.enemyField.dist[idx]).toBe(0);
+    const field = fieldToStatic(state.fields, state.grid, goal);
+    expect(field.dist[idx]).toBe(0);
   });
 });
 

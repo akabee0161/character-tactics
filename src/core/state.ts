@@ -1,4 +1,5 @@
-import { computeFlowField, distance, isWalkableAt, makeGrid } from './field';
+import { distance, isWalkableAt, makeGrid } from './field';
+import { makeFieldCache } from './fields';
 import { makeRng } from './rng';
 import type { Registry } from '../engine/registry';
 import type { AiDef, EnemyDef, StageDef, UnitDef } from '../engine/schema';
@@ -82,8 +83,8 @@ export function createBattleState(
     reg,
     stage,
     grid,
-    // フェーズ 6 まで、敵は全員このフィールドを降りてくる。ゴールは味方の初期配置地点
-    enemyField: computeFlowField(grid, stage.placementZone[0]!.pos),
+    // フェーズ 6 まで、敵は全員 placementZone[0] を目指す。フローフィールドは fields でキャッシュする
+    fields: makeFieldCache(),
     time: 0,
     phase: 'placement',
     units: [...roster, ...enemies],
