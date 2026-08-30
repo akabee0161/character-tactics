@@ -1,22 +1,22 @@
 import { describe, expect, it } from 'vitest';
 import { isWalkableAt } from './field';
-import { createBattleState, startWave } from './state';
+import { beginBattle, createBattleState } from './state';
 import { step } from './sim';
 import { testRegistry } from './testing';
-import type { BattleState, CharProgress, EnemyUnit, StageDef } from './types';
+import type { BattleState, CharProgress, EnemyUnit, StageDef, Vec2 } from './types';
 
+// enemies に常時 1 体だけ入れておく。updatePhase は敵が 0 体になった瞬間に victory へ
+// 進めてしまうので（フェーズ 5 で updateObjectives に置き換わるまでの暫定挙動）、
+// このテストファイルの「移動」系テストが途中で phase を失って固まらないよう、
+// ゴールから遠く離れた位置に置いて自然には撃破されない状態にしておく
 const STAGE: StageDef = {
-  id: 1, name: 'テスト', cell: 32,
+  id: 'teststage', name: 'テスト', cell: 32,
   mapRows: ['..........', '..........', '..........'],
-  fort: { x: 16, y: 16 },
-  landings: [{ x: 304, y: 16 }],
-  garumFlees: true,
-  waves: [{
-    spawns: [
-      { at: 0, kind: 'narazumono', from: { x: 304, y: 16 } },
-      { at: 2, kind: 'narazumono', from: { x: 304, y: 16 } },
-    ],
-  }],
+  placementZone: [{ pos: { x: 16, y: 16 } }],
+  roster: ['roran', 'ines', 'mist', 'gau'],
+  enemies: [{ defId: 'narazumono', pos: { x: 304, y: 16 }, ai: { kind: 'aggressive' } }],
+  victory: { type: 'reach', pos: { x: 304, y: 16 }, radius: 40, by: 'any' },
+  defeat: [{ type: 'unitLost', defIds: ['roran'] }],
 };
 
 const LV1: Record<string, CharProgress> = {
@@ -26,7 +26,7 @@ const LV1: Record<string, CharProgress> = {
 
 function fresh(stage: StageDef = STAGE): BattleState {
   const s = createBattleState(testRegistry(), stage, LV1, 42);
-  startWave(s);
+  beginBattle(s);
   // 邪魔にならない場所へ全員どける
   for (const a of s.allies) a.pos = { x: 16, y: 80 };
   return s;
@@ -34,11 +34,12 @@ function fresh(stage: StageDef = STAGE): BattleState {
 
 const ally = (s: BattleState, id: string) => s.allies.find((a) => a.id === id)!;
 
-function addEnemy(s: BattleState, x: number, y: number, hp = 12): EnemyUnit {
+function spawnEnemy(s: BattleState, kind: string, pos: Vec2): EnemyUnit {
+  const def = s.reg.enemies.get(kind)!;
   const e: EnemyUnit = {
-    uid: `t${s.nextEnemyUid++}`, kind: 'narazumono',
-    pos: { x, y }, hp, maxHp: 12, engagedWith: null, attackCooldown: 0,
-    lastHitBy: null, lastHitNeraiuchi: false,
+    uid: `t${s.nextEnemyUid++}`, kind, ai: { kind: 'aggressive' },
+    pos: { ...pos }, hp: def.maxHp, maxHp: def.maxHp,
+    engagedWith: null, attackCooldown: 0, lastHitBy: null, lastHitNeraiuchi: false,
   };
   s.enemies.push(e);
   return e;
@@ -59,45 +60,13 @@ describe('step: 時間とイベント', () => {
     expect(s.events).toEqual([]);
   });
 
-  it('wave フェーズでなければ何も進まない', () => {
+  it('battle フェーズでなければ何も進まない', () => {
     const s = fresh();
-    s.phase = 'waveCleared';
+    const before = s.enemies[0]!.pos.x;
+    s.phase = 'victory';
     step(s, [], 1);
     expect(s.time).toBe(0);
-    expect(s.enemies).toHaveLength(0);
-  });
-});
-
-describe('step: 出現', () => {
-  it('時刻が来たスポーンが敵になる', () => {
-    const s = fresh();
-    step(s, [], 0.1);
-    expect(s.enemies).toHaveLength(1);
-    expect(s.pending).toHaveLength(1);
-  });
-
-  it('後のスポーンはその時刻まで出ない', () => {
-    const s = fresh();
-    step(s, [], 1.0);
-    expect(s.enemies).toHaveLength(1);
-    step(s, [], 1.5);
-    expect(s.enemies).toHaveLength(2);
-    expect(s.pending).toHaveLength(0);
-  });
-
-  it('出現位置は指定地点の近く（ばらつきは 12px 以内）', () => {
-    const s = fresh();
-    step(s, [], 0.1);
-    const e = s.enemies[0]!;
-    expect(Math.abs(e.pos.x - 304)).toBeLessThanOrEqual(12);
-    expect(Math.abs(e.pos.y - 16)).toBeLessThanOrEqual(12);
-  });
-
-  it('敵の HP は定義どおり', () => {
-    const s = fresh();
-    step(s, [], 0.1);
-    expect(s.enemies[0]!.hp).toBe(12);
-    expect(s.enemies[0]!.maxHp).toBe(12);
+    expect(s.enemies[0]!.pos.x).toBe(before);
   });
 });
 
@@ -130,9 +99,9 @@ describe('step: 移動', () => {
     expect(ally(s, 'roran').pos).toEqual({ x: 16, y: 80 });
   });
 
-  it('敵は砦に向かって進む', () => {
+  it('敵は味方の初期配置地点に向かって進む', () => {
     const s = fresh();
-    const e = addEnemy(s, 304, 16);
+    const e = spawnEnemy(s, 'narazumono', { x: 304, y: 16 });
     step(s, [], 1);
     expect(e.pos.x).toBeLessThan(304);
   });
@@ -140,7 +109,7 @@ describe('step: 移動', () => {
   it('交戦中の味方は移動しない', () => {
     const s = fresh();
     for (const a of s.allies) if (a.id !== 'roran') a.pos = { x: 900, y: 900 };
-    const e = addEnemy(s, 20, 80);
+    const e = spawnEnemy(s, 'narazumono', { x: 20, y: 80 });
     step(s, [], 0.1);
     const pos = { ...ally(s, 'roran').pos };
     step(s, [], 1);
@@ -153,7 +122,7 @@ describe('step: 交戦の成立と解除', () => {
   it('レンジ内に入ると交戦が成立し engage イベントが出る', () => {
     const s = fresh();
     for (const a of s.allies) if (a.id !== 'roran') a.pos = { x: 900, y: 900 };
-    const e = addEnemy(s, 30, 80);
+    const e = spawnEnemy(s, 'narazumono', { x: 30, y: 80 });
     step(s, [], 0.1);
     expect(ally(s, 'roran').engagedWith).toBe(e.uid);
     expect(s.events).toContainEqual({
@@ -163,11 +132,11 @@ describe('step: 交戦の成立と解除', () => {
 
   it('同じ敵種の 2 回目は firstMeeting が false', () => {
     const s = fresh();
-    const e1 = addEnemy(s, 30, 80);
+    const e1 = spawnEnemy(s, 'narazumono', { x: 30, y: 80 });
     step(s, [], 0.1);
     e1.pos = { x: 900, y: 900 };
     step(s, [], 0.1);
-    addEnemy(s, 30, 80);
+    spawnEnemy(s, 'narazumono', { x: 30, y: 80 });
     step(s, [], 0.1);
     const engages = s.events.filter((ev) => ev.type === 'engage');
     expect(engages).toHaveLength(1);
@@ -178,7 +147,7 @@ describe('step: 交戦の成立と解除', () => {
     const s = fresh();
     ally(s, 'ines').pos = { x: 16, y: 80 };
     for (const a of s.allies) if (a.id !== 'ines') a.pos = { x: 16, y: 300 };
-    const e = addEnemy(s, 170, 80);
+    const e = spawnEnemy(s, 'narazumono', { x: 170, y: 80 });
     step(s, [], 0.1);
     expect(ally(s, 'ines').engagedWith).toBe(e.uid);
   });
@@ -186,7 +155,7 @@ describe('step: 交戦の成立と解除', () => {
   it('レンジから外れると交戦が解除される', () => {
     const s = fresh();
     for (const a of s.allies) if (a.id !== 'roran') a.pos = { x: 900, y: 900 };
-    const e = addEnemy(s, 30, 80);
+    const e = spawnEnemy(s, 'narazumono', { x: 30, y: 80 });
     step(s, [], 0.1);
     e.pos = { x: 900, y: 900 };
     step(s, [], 0.1);
@@ -196,7 +165,7 @@ describe('step: 交戦の成立と解除', () => {
   it('move コマンドで交戦から離脱できる', () => {
     const s = fresh();
     for (const a of s.allies) if (a.id !== 'roran') a.pos = { x: 900, y: 900 };
-    addEnemy(s, 30, 80);
+    spawnEnemy(s, 'narazumono', { x: 30, y: 80 });
     step(s, [], 0.1);
     expect(ally(s, 'roran').engagedWith).not.toBeNull();
     step(s, [{ type: 'move', allyId: 'roran', dest: { x: 300, y: 80 } }], 0.1);
@@ -206,9 +175,9 @@ describe('step: 交戦の成立と解除', () => {
   it('一度成立した交戦相手は、より近い敵が来ても入れ替わらない', () => {
     const s = fresh();
     for (const a of s.allies) if (a.id !== 'roran') a.pos = { x: 900, y: 900 };
-    const first = addEnemy(s, 40, 80);
+    const first = spawnEnemy(s, 'narazumono', { x: 40, y: 80 });
     step(s, [], 0.1);
-    addEnemy(s, 18, 80);
+    spawnEnemy(s, 'narazumono', { x: 18, y: 80 });
     step(s, [], 0.1);
     expect(ally(s, 'roran').engagedWith).toBe(first.uid);
   });
@@ -290,5 +259,49 @@ describe('移動: 直線ショートカットと到達', () => {
       expect(isWalkableAt(s.grid, a.pos)).toBe(true);
     }
     expect(a.pos).toEqual(dest);
+  });
+});
+
+describe('ウェーブの さくじょ', () => {
+  function realStageFresh() {
+    const reg = testRegistry();
+    const stage = reg.stages[0]!;
+    const progress: Record<string, CharProgress> = {};
+    for (const id of reg.units.keys()) progress[id] = { level: 1, xp: 0 };
+    return { stage, state: createBattleState(reg, stage, progress, 1) };
+  }
+
+  it('step は battle フェーズでだけ すすむ', () => {
+    const { state } = realStageFresh();
+    const before = state.enemies[0]!.pos.x;
+    step(state, [], 0.5); // placement のまま
+    expect(state.enemies[0]!.pos.x).toBe(before);
+    beginBattle(state);
+    step(state, [], 0.5);
+    expect(state.enemies[0]!.pos.x).not.toBe(before);
+  });
+
+  it('じかんが たっても 敵が ふえない', () => {
+    const { state } = realStageFresh();
+    beginBattle(state);
+    const n = state.enemies.length;
+    for (let i = 0; i < 600; i++) step(state, [], 1 / 60);
+    expect(state.enemies.length).toBeLessThanOrEqual(n);
+  });
+
+  it('敵が ぜんめつしたら victory', () => {
+    const { state } = realStageFresh();
+    beginBattle(state);
+    state.enemies = [];
+    step(state, [], 1 / 60);
+    expect(state.phase).toBe('victory');
+  });
+
+  it('とりでが やぶられたら defeat', () => {
+    const { state } = realStageFresh();
+    beginBattle(state);
+    state.fortHp = 0;
+    step(state, [], 1 / 60);
+    expect(state.phase).toBe('defeat');
   });
 });

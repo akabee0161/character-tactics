@@ -1,5 +1,5 @@
 import type { Registry } from '../engine/registry';
-import type { Speaker, StageDef, SimEvent } from './types';
+import type { Speaker, SimEvent, StageDef } from './types';
 
 export type DialogueRequest = { speaker: Speaker; lineId: string; text: string };
 
@@ -42,7 +42,7 @@ export function pickDialogue(reg: Registry, events: SimEvent[]): DialogueRequest
       case 'pinch':
         push('pinch', make(reg, ally(ev.allyId), `pinch:${ev.allyId}`));
         break;
-      case 'garumRepelled':
+      case 'unitFled':
         if (ev.byAlly) push('win', make(reg, ally(ev.byAlly), `win:${ev.byAlly}`));
         break;
       case 'allyRetired':
@@ -59,17 +59,12 @@ export function pickDialogue(reg: Registry, events: SimEvent[]): DialogueRequest
     .map((f) => f.req);
 }
 
-/** ウェーブ開始時の会話を、そのウェーブの `intro` 定義どおりの順番で返す */
-export function pickWaveIntro(
-  reg: Registry,
-  stage: Pick<StageDef, 'waves'>,
-  waveIndex: number,
-): DialogueRequest[] {
-  const wave = stage.waves[waveIndex];
-  if (!wave?.intro) return [];
+/** ステージ開始時の会話を、stage.intro の順番どおりに返す */
+export function pickStageIntro(reg: Registry, stage: StageDef): DialogueRequest[] {
   const found: DialogueRequest[] = [];
-  for (const { speaker, lineId } of wave.intro) {
-    const req = make(reg, speaker, lineId);
+  for (const { speaker, lineId } of stage.intro ?? []) {
+    const side = reg.units.has(speaker) ? 'ally' : 'enemy';
+    const req = make(reg, { side, id: speaker }, lineId);
     if (req) found.push(req);
   }
   return found;

@@ -82,7 +82,7 @@ export const SKILL_EFFECTS: Record<string, SkillEffect> = {
 export const SKILL_EFFECT_IDS: readonly string[] = Object.keys(SKILL_EFFECTS);
 
 export function canUseSkill(state: BattleState, allyId: string): boolean {
-  if (state.phase !== 'wave') return false;
+  if (state.phase !== 'battle') return false;
   const ally = state.allies.find((a) => a.id === allyId);
   if (!ally) return false;
   return !ally.retired && !ally.skillUsed;

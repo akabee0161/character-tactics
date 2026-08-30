@@ -1,6 +1,8 @@
 export type { AttackKind, Vec2 } from '../engine/schema';
+export type { AiDef, DefeatCond, EnemyPlacement, StageDef, VictoryCond } from '../engine/schema';
+
 import type { Registry } from '../engine/registry';
-import type { AttackKind, Vec2 } from '../engine/schema';
+import type { AiDef, AttackKind, StageDef, Vec2 } from '../engine/schema';
 
 export type Grid = {
   cols: number;
@@ -56,6 +58,8 @@ export type AllyUnit = {
 export type EnemyUnit = {
   uid: string;
   kind: string;
+  /** 配置ごとの AI 定義。フェーズ 6 まで読まれない */
+  ai: AiDef;
   pos: Vec2;
   hp: number;
   maxHp: number;
@@ -69,27 +73,7 @@ export type EnemyUnit = {
 
 export type Speaker = { side: 'ally' | 'enemy'; id: string };
 
-export type SpawnEntry = { at: number; kind: string; from: Vec2 };
-export type WaveDef = {
-  spawns: SpawnEntry[];
-  /** ウェーブ開始時に順番に表示する会話。省略時は何も表示しない */
-  intro?: { speaker: Speaker; lineId: string }[];
-};
-
-export type StageDef = {
-  id: number;
-  name: string;
-  cell: number;
-  /** '.' = 歩ける / '#' = 歩けない */
-  mapRows: string[];
-  fort: Vec2;
-  landings: Vec2[];
-  waves: WaveDef[];
-  /** false ならガルムは撤退せず最後まで戦う（ステージ3） */
-  garumFlees: boolean;
-};
-
-export type BattlePhase = 'placement' | 'wave' | 'waveCleared' | 'stageCleared' | 'defeat';
+export type BattlePhase = 'placement' | 'battle' | 'victory' | 'defeat';
 
 export type SimEvent =
   | { type: 'engage'; allyId: string; enemyUid: string; kind: string; firstMeeting: boolean }
@@ -97,7 +81,7 @@ export type SimEvent =
   | { type: 'pinch'; allyId: string }
   | { type: 'hit'; targetPos: Vec2; amount: number }
   | { type: 'enemyDefeated'; uid: string; kind: string; byAlly: string | null; neraiuchi: boolean }
-  | { type: 'garumRepelled'; byAlly: string | null }
+  | { type: 'unitFled'; uid: string; kind: string; byAlly: string | null }
   | { type: 'allyRetired'; allyId: string }
   | { type: 'bondSupport'; targetId: string; supporterIds: string[] }
   | { type: 'fortDamaged'; amount: number };
@@ -106,20 +90,15 @@ export type BattleState = {
   reg: Registry;
   stage: StageDef;
   grid: Grid;
-  /** 砦をゴールとするフローフィールド。全敵で共有する */
+  /** 味方の初期配置地点をゴールとするフローフィールド。Task 17 でキャッシュに置き換わる */
   enemyField: FlowField;
   fortHp: number;
-  waveIndex: number;
-  /** ウェーブ開始からの経過秒 */
   time: number;
   phase: BattlePhase;
   allies: AllyUnit[];
   enemies: EnemyUnit[];
-  /** まだ出現していないスポーン */
-  pending: SpawnEntry[];
-  /** 直近の step で発生したイベント */
   events: SimEvent[];
-  rng: Rng;
   counters: Record<string, number>;
+  rng: Rng;
   nextEnemyUid: number;
 };

@@ -1,14 +1,13 @@
-import { computeFlowField, isWalkableAt, makeGrid } from './field';
+import { computeFlowField, distance, isWalkableAt, makeGrid } from './field';
 import { makeRng } from './rng';
 import { FORT_MAX_HP } from './types';
 import type { Registry } from '../engine/registry';
-import type { UnitDef } from '../engine/schema';
-import type { AllyUnit, BattleState, CharProgress, StageDef, Vec2 } from './types';
+import type { EnemyDef, EnemyPlacement, StageDef, UnitDef } from '../engine/schema';
+import type { AllyUnit, BattleState, CharProgress, EnemyUnit, Vec2 } from './types';
 
 const HP_PER_LEVEL = 3;
 const POWER_PER_LEVEL = 1;
-const WAVE_HEAL_RATIO = 0.3;
-const REVIVE_HP_RATIO = 0.5;
+export const PLACEMENT_RADIUS = 64;
 
 export function statsForLevel(def: UnitDef, level: number): { maxHp: number; power: number } {
   const steps = Math.max(0, level - 1);
@@ -42,6 +41,21 @@ function makeAlly(def: UnitDef, level: number, pos: Vec2): AllyUnit {
   };
 }
 
+function makeEnemy(uid: string, def: EnemyDef, placement: EnemyPlacement): EnemyUnit {
+  return {
+    uid,
+    kind: def.id,
+    ai: placement.ai,
+    pos: { ...placement.pos },
+    hp: def.maxHp,
+    maxHp: def.maxHp,
+    engagedWith: null,
+    attackCooldown: 0,
+    lastHitBy: null,
+    lastHitNeraiuchi: false,
+  };
+}
+
 export function createBattleState(
   reg: Registry,
   stage: StageDef,
@@ -49,33 +63,44 @@ export function createBattleState(
   seed: number,
 ): BattleState {
   const grid = makeGrid(stage.cell, stage.mapRows);
-  const allies: AllyUnit[] = [];
-  for (const def of reg.units.values()) {
-    allies.push(makeAlly(def, progress[def.id]?.level ?? 1, stage.fort));
-  }
+
+  const allies = stage.roster.map((defId, i) => {
+    const def = reg.units.get(defId);
+    if (!def) throw new Error(`roster に しらない ユニット: ${defId}`);
+    const zone = stage.placementZone[i % stage.placementZone.length]!;
+    return makeAlly(def, progress[defId]?.level ?? 1, zone.pos);
+  });
+
+  let nextEnemyUid = 1;
+  const enemies = stage.enemies.map((placement) => {
+    const def = reg.enemies.get(placement.defId);
+    if (!def) throw new Error(`はいちに しらない てき: ${placement.defId}`);
+    return makeEnemy(`e${nextEnemyUid++}`, def, placement);
+  });
 
   return {
     reg,
     stage,
     grid,
-    enemyField: computeFlowField(grid, stage.fort),
+    // フェーズ 6 まで、敵は全員このフィールドを降りてくる。ゴールは味方の初期配置地点
+    enemyField: computeFlowField(grid, stage.placementZone[0]!.pos),
     fortHp: FORT_MAX_HP,
-    waveIndex: 0,
     time: 0,
     phase: 'placement',
     allies,
-    enemies: [],
-    pending: [],
+    enemies,
     events: [],
-    rng: makeRng(seed),
     counters: {},
-    nextEnemyUid: 1,
+    rng: makeRng(seed),
+    nextEnemyUid,
   };
 }
 
-export function placeAlly(state: BattleState, id: string, pos: Vec2): boolean {
+export function placeUnit(state: BattleState, defId: string, pos: Vec2): boolean {
   if (!isWalkableAt(state.grid, pos)) return false;
-  const ally = state.allies.find((a) => a.id === id);
+  const inZone = state.stage.placementZone.some((z) => distance(z.pos, pos) <= PLACEMENT_RADIUS);
+  if (!inZone) return false;
+  const ally = state.allies.find((a) => a.id === defId);
   if (!ally) return false;
   ally.pos = { ...pos };
   ally.goalField = null;
@@ -83,28 +108,15 @@ export function placeAlly(state: BattleState, id: string, pos: Vec2): boolean {
   return true;
 }
 
-export function startWave(state: BattleState): void {
+/** 配置フェーズから戦闘へ。ウェーブが無いので、これはステージ中に1度しか呼ばれない */
+export function beginBattle(state: BattleState): void {
   for (const ally of state.allies) {
-    if (ally.retired) {
-      ally.retired = false;
-      ally.hp = Math.max(1, Math.floor(ally.maxHp * REVIVE_HP_RATIO));
-    } else {
-      ally.hp = Math.min(ally.maxHp, ally.hp + Math.floor(ally.maxHp * WAVE_HEAL_RATIO));
-    }
-    ally.skillUsed = false;
-    ally.pinchShown = false;
     ally.engagedWith = null;
     ally.attackCooldown = 0;
     ally.goalField = null;
     ally.goalPos = null;
-    ally.funbaruUntil = -1;
-    ally.neraiuchiArmed = false;
   }
-
-  const wave = state.stage.waves[state.waveIndex];
-  state.pending = wave ? wave.spawns.map((s) => ({ ...s, from: { ...s.from } })) : [];
-  state.enemies = [];
   state.events = [];
   state.time = 0;
-  state.phase = 'wave';
+  state.phase = 'battle';
 }

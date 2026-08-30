@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { pickDialogue, pickWaveIntro } from './dialogue';
+import { pickDialogue, pickStageIntro } from './dialogue';
 import { testRegistry } from './testing';
-import type { Speaker, SimEvent } from './types';
+import type { SimEvent } from './types';
 
 describe('lines', () => {
   it('すべてのセリフが ひらがな・カタカナ のみ', () => {
@@ -68,13 +68,13 @@ describe('pickDialogue', () => {
     const reg = testRegistry();
     expect(pickDialogue(reg, [{ type: 'skill', allyId: 'ines', skill: 'neraiuchi', hits: 0 }])[0]!.lineId).toBe('skill:ines');
     expect(pickDialogue(reg, [{ type: 'pinch', allyId: 'mist' }])[0]!.lineId).toBe('pinch:mist');
-    expect(pickDialogue(reg, [{ type: 'garumRepelled', byAlly: 'gau' }])[0]!.lineId).toBe('win:gau');
+    expect(pickDialogue(reg, [{ type: 'unitFled', uid: 'g1', kind: 'garum', byAlly: 'gau' }])[0]!.lineId).toBe('win:gau');
     expect(pickDialogue(reg, [{ type: 'allyRetired', allyId: 'roran' }])[0]!.lineId).toBe('retire:roran');
   });
 
   it('だれが倒したか分からない撃退ではセリフを出さない', () => {
     const reg = testRegistry();
-    expect(pickDialogue(reg, [{ type: 'garumRepelled', byAlly: null }])).toEqual([]);
+    expect(pickDialogue(reg, [{ type: 'unitFled', uid: 'g1', kind: 'garum', byAlly: null }])).toEqual([]);
   });
 
   it('セリフの出ないイベントは無視する', () => {
@@ -96,7 +96,7 @@ describe('pickDialogue', () => {
       { type: 'skill', allyId: 'gau', skill: 'kakenukeru', hits: 0 },
       { type: 'engage', allyId: 'mist', enemyUid: 'e1', kind: 'narazumono', firstMeeting: true },
       { type: 'engage', allyId: 'ines', enemyUid: 'g1', kind: 'garum', firstMeeting: true },
-      { type: 'garumRepelled', byAlly: 'gau' },
+      { type: 'unitFled', uid: 'g1', kind: 'garum', byAlly: 'gau' },
     ];
     expect(pickDialogue(reg, events).map((d) => d.lineId)).toEqual([
       'rival:ines',
@@ -109,36 +109,19 @@ describe('pickDialogue', () => {
   });
 });
 
-describe('pickWaveIntro', () => {
+describe('pickStageIntro', () => {
   it('intro が定義されていなければ空配列', () => {
     const reg = testRegistry();
-    const stage = { waves: [{ spawns: [] }] };
-    expect(pickWaveIntro(reg, stage, 0)).toEqual([]);
+    const stage = { ...reg.stages[0]!, intro: undefined };
+    expect(pickStageIntro(reg, stage)).toEqual([]);
   });
 
   it('intro の順番どおりに DialogueRequest を返す', () => {
     const reg = testRegistry();
-    const intro: { speaker: Speaker; lineId: string }[] = [
-      { speaker: { side: 'ally', id: 'roran' }, lineId: 'rival:roran' },
-      { speaker: { side: 'enemy', id: 'garum' }, lineId: 'rival:roran' },
-    ];
-    const stage = {
-      waves: [
-        {
-          spawns: [],
-          intro,
-        },
-      ],
-    };
-    expect(pickWaveIntro(reg, stage, 0)).toEqual([
-      { speaker: { side: 'ally', id: 'roran' }, lineId: 'rival:roran', text: reg.lines.get('rival:roran') },
-      { speaker: { side: 'enemy', id: 'garum' }, lineId: 'rival:roran', text: reg.lines.get('rival:roran') },
+    const stage = reg.stages[0]!;
+    expect(pickStageIntro(reg, stage)).toEqual([
+      { speaker: { side: 'ally', id: 'roran' }, lineId: 'stage:stage1:roran', text: reg.lines.get('stage:stage1:roran') },
+      { speaker: { side: 'ally', id: 'gau' }, lineId: 'stage:stage1:gau', text: reg.lines.get('stage:stage1:gau') },
     ]);
-  });
-
-  it('存在しない waveIndex では空配列', () => {
-    const reg = testRegistry();
-    const stage = { waves: [{ spawns: [] }] };
-    expect(pickWaveIntro(reg, stage, 5)).toEqual([]);
   });
 });

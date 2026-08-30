@@ -1,14 +1,11 @@
 import { bondSupporters } from './bonds';
 import { computeDamage, effectiveInterval, hasThreatWithinMelee, nearestWithin } from './combat';
 import { accumulate } from './counters';
-import { FORT_DAMAGE } from './constants';
 import { computeFlowField, distance, flowDirection, hasLineOfSight, isWalkableAt } from './field';
-import { nextFloat } from './rng';
 import { isFunbaruActive, useSkill } from './skills';
 import type { EnemyDef } from '../engine/schema';
 import type { AllyUnit, BattleState, EnemyUnit, Vec2 } from './types';
 
-export const SPAWN_JITTER = 12;
 export const FORT_RADIUS = 24;
 export const PINCH_RATIO = 0.3;
 
@@ -18,25 +15,17 @@ function enemyDefOf(state: BattleState, enemy: EnemyUnit): EnemyDef {
   return def;
 }
 
-/** 敵が砦に到達したときのダメージ。理由は core/constants.ts の FORT_DAMAGE を参照 */
-function fortDamageOf(enemy: EnemyUnit): number {
-  const amount = FORT_DAMAGE[enemy.kind];
-  if (amount === undefined) throw new Error(`しらない てき: ${enemy.kind}`);
-  return amount;
-}
-
 export type SimCommand =
   | { type: 'move'; allyId: string; dest: Vec2 }
   | { type: 'skill'; allyId: string; dest?: Vec2 };
 
 export function step(state: BattleState, commands: SimCommand[], dt: number): void {
   state.events = [];
-  if (state.phase !== 'wave') return;
+  if (state.phase !== 'battle') return;
 
   state.time += dt;
 
   const movedThisTick = applyCommands(state, commands);
-  spawnDueEnemies(state);
   updateEngagements(state, movedThisTick);
   moveUnits(state, dt);
   resolveAttacks(state, dt);
@@ -64,32 +53,6 @@ function applyCommands(state: BattleState, commands: SimCommand[]): Set<string> 
     }
   }
   return movedThisTick;
-}
-
-function spawnDueEnemies(state: BattleState): void {
-  const remaining: typeof state.pending = [];
-  for (const entry of state.pending) {
-    if (entry.at > state.time) {
-      remaining.push(entry);
-      continue;
-    }
-    const def = state.reg.enemies.get(entry.kind);
-    if (!def) throw new Error(`しらない てき: ${entry.kind}`);
-    const jitter = () => (nextFloat(state.rng) * 2 - 1) * SPAWN_JITTER;
-    const enemy: EnemyUnit = {
-      uid: `e${state.nextEnemyUid++}`,
-      kind: entry.kind,
-      pos: { x: entry.from.x + jitter(), y: entry.from.y + jitter() },
-      hp: def.maxHp,
-      maxHp: def.maxHp,
-      engagedWith: null,
-      attackCooldown: 0,
-      lastHitBy: null,
-      lastHitNeraiuchi: false,
-    };
-    state.enemies.push(enemy);
-  }
-  state.pending = remaining;
 }
 
 function activeAllies(state: BattleState): AllyUnit[] {
@@ -291,13 +254,10 @@ function resolveEnemyRemoval(state: BattleState): void {
   const survivors: EnemyUnit[] = [];
   for (const enemy of state.enemies) {
     const def = enemyDefOf(state, enemy);
-    const flees =
-      def.fleeAtHpRatio !== null &&
-      state.stage.garumFlees &&
-      enemy.hp / enemy.maxHp < def.fleeAtHpRatio;
-
-    if (flees) {
-      state.events.push({ type: 'garumRepelled', byAlly: enemy.lastHitBy });
+    if (def.fleeAtHpRatio !== null && enemy.hp / enemy.maxHp < def.fleeAtHpRatio) {
+      state.events.push({
+        type: 'unitFled', uid: enemy.uid, kind: enemy.kind, byAlly: enemy.lastHitBy,
+      });
       continue;
     }
     if (enemy.hp <= 0) {
@@ -336,14 +296,15 @@ function resolveAllyRetirement(state: BattleState): void {
 }
 
 function resolveFort(state: BattleState): void {
+  const goal = state.stage.placementZone[0]!.pos;
   const survivors: EnemyUnit[] = [];
   for (const enemy of state.enemies) {
-    // 交戦中の敵はその場で足止めされているので、たまたま砦の近くで戦っていても
-    // 砦への到達扱いにはしない
-    if (enemy.engagedWith === null && distance(enemy.pos, state.stage.fort) <= FORT_RADIUS) {
-      const amount = fortDamageOf(enemy);
-      state.fortHp -= amount;
-      state.events.push({ type: 'fortDamaged', amount });
+    // 交戦中の敵はその場で足止めされているので、たまたま到達地点の近くで戦っていても
+    // 到達扱いにはしない
+    if (enemy.engagedWith === null && distance(enemy.pos, goal) <= FORT_RADIUS) {
+      // フェーズ 5 でこの処理ごと消える。それまでの暫定として一律 5 ダメージにする
+      state.fortHp -= 5;
+      state.events.push({ type: 'fortDamaged', amount: 5 });
       continue;
     }
     survivors.push(enemy);
@@ -357,8 +318,6 @@ function updatePhase(state: BattleState): void {
     state.phase = 'defeat';
     return;
   }
-  if (state.enemies.length === 0 && state.pending.length === 0) {
-    const isLast = state.waveIndex >= state.stage.waves.length - 1;
-    state.phase = isLast ? 'stageCleared' : 'waveCleared';
-  }
+  // フェーズ 5 で updateObjectives に置き換わる
+  if (state.enemies.length === 0) state.phase = 'victory';
 }
