@@ -1,11 +1,12 @@
+import { AI_BEHAVIORS } from './ai';
 import { bondSupporters } from './bonds';
 import { computeDamage, effectiveInterval, hasThreatWithinMelee, nearestWithin } from './combat';
 import { accumulate } from './counters';
 import { computeFlowField, distance, flowDirection, hasLineOfSight, isWalkableAt } from './field';
-import { dropUnitField, fieldToStatic } from './fields';
+import { dropUnitField, fieldToStatic, fieldToUnit } from './fields';
 import { updateObjectives } from './objectives';
 import { isFunbaruActive, useSkill } from './skills';
-import type { BattleState, Unit, Vec2 } from './types';
+import type { BattleState, FlowField, Unit, Vec2 } from './types';
 
 export const PINCH_RATIO = 0.3;
 
@@ -25,6 +26,18 @@ export type SimCommand =
   | { type: 'move'; uid: string; dest: Vec2 }
   | { type: 'skill'; uid: string; dest?: Vec2 };
 
+function updateAi(state: BattleState): void {
+  for (const u of state.units) {
+    if (u.retired || u.controller !== 'ai' || u.ai === null) continue;
+    const behavior = AI_BEHAVIORS[u.ai.def.kind];
+    if (!behavior) continue;
+    const decision = behavior({ self: u, hostiles: hostilesOf(state, u), grid: state.grid });
+    u.ai.mode = decision.mode;
+    u.ai.targetUid = decision.targetUid;
+    u.goalPos = decision.goal;
+  }
+}
+
 export function step(state: BattleState, commands: SimCommand[], dt: number): void {
   state.events = [];
   if (state.phase !== 'battle') return;
@@ -32,6 +45,7 @@ export function step(state: BattleState, commands: SimCommand[], dt: number): vo
   state.time += dt;
 
   const movedThisTick = applyCommands(state, commands);
+  updateAi(state);
   updateEngagements(state, movedThisTick);
   moveUnits(state, dt);
   resolveAttacks(state, dt);
@@ -97,6 +111,20 @@ function updateEngagements(state: BattleState, movedThisTick: Set<string>): void
   }
 }
 
+/**
+ * そのユニットが今つかうフローフィールド。
+ * 追跡中は相手の位置（相手がセルを移ったときだけ再計算）、それ以外は動かないゴール。
+ */
+function fieldFor(state: BattleState, u: Unit): FlowField | null {
+  if (u.controller === 'player') return u.goalField;
+  if (u.ai === null) return null;
+  if (u.ai.targetUid !== null) {
+    const target = unitByUid(state, u.ai.targetUid);
+    if (target && !target.retired) return fieldToUnit(state.fields, state.grid, target);
+  }
+  return u.goalPos ? fieldToStatic(state.fields, state.grid, u.goalPos) : null;
+}
+
 function moveTowardGoal(state: BattleState, u: Unit, dt: number): void {
   const goal = u.goalPos;
   if (!goal) return;
@@ -105,19 +133,27 @@ function moveTowardGoal(state: BattleState, u: Unit, dt: number): void {
   const stepLen = u.speed * dt;
   if (remaining <= stepLen) {
     u.pos = { ...goal };
-    u.goalPos = null;
-    u.goalField = null;
+    // 追跡中は相手が動くので目的地を消さない。消すのは自分で指示された移動だけ
+    if (u.controller === 'player') {
+      u.goalPos = null;
+      u.goalField = null;
+    }
     return;
   }
 
   // 目的地まで見通せるならフローフィールドを使わず直行する
   const dir = hasLineOfSight(state.grid, u.pos, goal)
     ? { x: (goal.x - u.pos.x) / remaining, y: (goal.y - u.pos.y) / remaining }
-    : u.goalField && flowDirection(state.grid, u.goalField, u.pos);
+    : (() => {
+        const field = fieldFor(state, u);
+        return field ? flowDirection(state.grid, field, u.pos) : null;
+      })();
 
   if (!dir) {
-    u.goalPos = null;
-    u.goalField = null;
+    if (u.controller === 'player') {
+      u.goalPos = null;
+      u.goalField = null;
+    }
     return;
   }
   u.pos = { x: u.pos.x + dir.x * stepLen, y: u.pos.y + dir.y * stepLen };
@@ -126,15 +162,7 @@ function moveTowardGoal(state: BattleState, u: Unit, dt: number): void {
 function moveUnits(state: BattleState, dt: number): void {
   for (const u of state.units) {
     if (u.retired || u.engagedWith !== null) continue;
-    if (u.controller === 'player') {
-      moveTowardGoal(state, u, dt);
-    } else {
-      // フェーズ 6 でここが AI の決定に置き換わる（Task 19）。暫定で placementZone[0] を目指す
-      const field = fieldToStatic(state.fields, state.grid, state.stage.placementZone[0]!.pos);
-      const dir = flowDirection(state.grid, field, u.pos);
-      if (!dir) continue;
-      u.pos = { x: u.pos.x + dir.x * u.speed * dt, y: u.pos.y + dir.y * u.speed * dt };
-    }
+    moveTowardGoal(state, u, dt);
   }
 }
 

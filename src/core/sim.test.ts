@@ -1,9 +1,25 @@
 import { describe, expect, it } from 'vitest';
-import { isWalkableAt } from './field';
+import type { EnemyDef } from '../engine/schema';
+import { distance, isWalkableAt } from './field';
 import { hostilesOf, step } from './sim';
 import { beginBattle, createBattleState } from './state';
 import { testRegistry } from './testing';
-import type { BattleState, CharProgress, StageDef, Unit } from './types';
+import type { AiDef, BattleState, CharProgress, StageDef, Unit, Vec2 } from './types';
+
+function makeTestUnit(s: BattleState, def: EnemyDef, pos: Vec2, ai: AiDef): Unit {
+  return {
+    uid: `t${s.units.length + 1}`, defId: def.id, side: 'enemy', controller: 'ai',
+    combat: def.combat, pos: { ...pos },
+    hp: def.maxHp, maxHp: def.maxHp, power: def.power, guard: def.guard,
+    attack: def.attack, range: def.range, attackInterval: def.attackInterval, speed: def.speed,
+    bowDamageCap: def.bowDamageCap, skillId: def.skillId,
+    level: 1, xp: 0,
+    goalPos: null, goalField: null, engagedWith: null, attackCooldown: 0, retired: false,
+    ai: { def: ai, mode: 'idle', targetUid: null, home: { ...pos } },
+    skillUsed: false, funbaruUntil: -1, neraiuchiArmed: false, pinchShown: false,
+    seenDefIds: [], lastHitBy: null, lastHitNeraiuchi: false,
+  };
+}
 
 // このテストファイルの「移動」系テストが途中で phase を失って固まらないよう、
 // ゴールから遠く離れた位置に置いて自然には撃破されない状態にしておく
@@ -20,6 +36,18 @@ const STAGE: StageDef = {
 const LV1: Record<string, CharProgress> = {
   roran: { level: 1, xp: 0 }, ines: { level: 1, xp: 0 },
   mist: { level: 1, xp: 0 }, gau: { level: 1, xp: 0 },
+};
+
+// AI の くみこみテストは x:400 前後 〜 y:400 前後の座標を つかうため、
+// STAGE(10x3セル)には おさまらない。テストぶんだけ ひろい へやを べつに もつ
+const AI_STAGE: StageDef = {
+  id: 'ai-teststage', name: 'AIテスト', cell: 32,
+  mapRows: Array.from({ length: 15 }, () => '.'.repeat(30)),
+  placementZone: [{ pos: { x: 16, y: 16 } }],
+  roster: ['roran', 'ines', 'mist', 'gau'],
+  enemies: [],
+  victory: { type: 'reach', pos: { x: 848, y: 240 }, radius: 40, by: 'any' },
+  defeat: [{ type: 'unitLost', defIds: ['roran'] }],
 };
 
 function fresh(stage: StageDef = STAGE): { stage: StageDef; state: BattleState } {
@@ -375,5 +403,73 @@ describe('ユニット型の とうごう', () => {
     const before = p.hp;
     for (let i = 0; i < 300; i++) step(state, [], 1 / 60);
     expect(p.hp).toBeLessThan(before);
+  });
+});
+
+describe('AI の くみこみ', () => {
+  function withAi(kind: AiDef, enemyPos: Vec2) {
+    const { state } = fresh(AI_STAGE);
+    beginBattle(state);
+    // 敵を1体だけにして、その1体の ふるまいを 見る
+    state.units = state.units.filter((u) => u.side === 'player');
+    // victory.pos ({x:848,y:240}, radius 40) と かさならない いちに おく
+    for (const p of state.units) p.pos = { x: 848, y: 112 };
+    const def = state.reg.enemies.get('narazumono')!;
+    const e = makeTestUnit(state, def, enemyPos, kind);
+    state.units.push(e);
+    return { state, e };
+  }
+
+  it('sentry は だれも みえなければ うごかない', () => {
+    const { state, e } = withAi({ kind: 'sentry', sightRange: 60 }, { x: 300, y: 240 });
+    const before = { ...e.pos };
+    for (let i = 0; i < 120; i++) step(state, [], 1 / 60);
+    expect(e.pos).toEqual(before);
+  });
+
+  it('sentry は さくてき はんいに はいると ちかづく', () => {
+    const { state, e } = withAi({ kind: 'sentry', sightRange: 600 }, { x: 300, y: 240 });
+    const before = e.pos.x;
+    for (let i = 0; i < 120; i++) step(state, [], 1 / 60);
+    expect(e.pos.x).toBeGreaterThan(before);
+  });
+
+  it('aggressive は とおくても ちかづく', () => {
+    const { state, e } = withAi({ kind: 'aggressive' }, { x: 300, y: 240 });
+    const before = e.pos.x;
+    for (let i = 0; i < 120; i++) step(state, [], 1 / 60);
+    expect(e.pos.x).toBeGreaterThan(before);
+  });
+
+  it('guard は leash を こえたら post に もどる', () => {
+    const post = { x: 300, y: 240 };
+    const { state, e } = withAi(
+      { kind: 'guard', post, leash: 40, sightRange: 600 }, { x: 400, y: 240 },
+    );
+    for (let i = 0; i < 300; i++) step(state, [], 1 / 60);
+    expect(distance(e.pos, post)).toBeLessThan(40);
+  });
+
+  it('ai の mode が じょうたいに かきもどされる', () => {
+    const { state, e } = withAi({ kind: 'aggressive' }, { x: 300, y: 240 });
+    step(state, [], 1 / 60);
+    expect(e.ai!.mode).toBe('chase');
+    expect(e.ai!.targetUid).not.toBeNull();
+  });
+
+  it('たおれた 敵の AI は うごかない', () => {
+    const { state, e } = withAi({ kind: 'aggressive' }, { x: 300, y: 240 });
+    e.retired = true;
+    const before = { ...e.pos };
+    for (let i = 0; i < 120; i++) step(state, [], 1 / 60);
+    expect(e.pos).toEqual(before);
+  });
+
+  it('BFS の かいすうが 敵の かずに ひれいしない', () => {
+    const { state } = fresh();
+    beginBattle(state);
+    for (let i = 0; i < 60; i++) step(state, [], 1 / 60);
+    // ユニットごとに 1まい ＋ 静的ゴールぶん。敵の かず × フレームすう には ならない
+    expect(state.fields.byUnit.size).toBeLessThanOrEqual(state.units.length);
   });
 });
