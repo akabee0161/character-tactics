@@ -119,6 +119,7 @@ export function drawBottomBar(
   reg: Registry,
   state: BattleState,
   selected: string | null,
+  escorts: Set<string>,
 ): void {
   ctx.fillStyle = 'rgba(16, 24, 32, 0.92)';
   ctx.fillRect(0, BOTTOM_BAR_Y, LOGICAL_W, BOTTOM_BAR_H);
@@ -156,6 +157,16 @@ export function drawBottomBar(
         ctx.fillStyle = '#ff9a9a';
         ctx.font = '15px sans-serif';
         ctx.fillText('たいきゃく', r.x + 50, r.y + 56);
+      }
+
+      if (escorts.has(unit.defId)) {
+        ctx.fillStyle = '#ffd479';
+        ctx.beginPath();
+        ctx.moveTo(r.x + 12, r.y + 14);
+        ctx.lineTo(r.x + 6, r.y + 24);
+        ctx.lineTo(r.x + 18, r.y + 24);
+        ctx.closePath();
+        ctx.fill();
       }
     });
 }

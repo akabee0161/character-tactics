@@ -6,6 +6,7 @@ import { beginBattle, createBattleState, placeUnit } from './core/state';
 import { playerUnits, step } from './core/sim';
 import type { SimCommand } from './core/sim';
 import { drawBattle, drawDragPreview } from './render/draw';
+import { escortDefIds } from './render/objectives-view';
 import { isWalkableAt } from './core/field';
 import { makeEffectState, spawnHitEffects, tickEffects } from './render/effects';
 import { LOGICAL_H, LOGICAL_W, computeViewport, logicalToMap, mapToLogical, screenToLogical } from './render/viewport';
@@ -64,6 +65,8 @@ let pointerStart: PointerStart | null = null;
 let dragMap: Vec2 | null = null;
 let pendingSkill: string | null = null;
 let result: { gains: XpGain[]; newTitles: string[] } | null = null;
+/** 護衛対象の defId。beginStage で1度だけ作る */
+let escorts: Set<string> = new Set();
 const bubbles = makeBubbleQueue();
 const effects = makeEffectState();
 const commands: SimCommand[] = [];
@@ -80,6 +83,7 @@ function beginStage(index: number): void {
   stageIndex = index;
   stageId = registry.stages[index]!.id;
   battle = createBattleState(registry, registry.stages[index]!, save.units, Date.now() % 100000);
+  escorts = new Set(escortDefIds(battle.stage));
   selected = null;
   pendingSkill = null;
   bubbles.items.length = 0;
@@ -277,13 +281,13 @@ function render(): void {
       if (battle) {
         drawBattle(ctx, registry, battle, selected, effects);
         drawPlacement(ctx, battle);
-        drawBottomBar(ctx, registry, battle, selected);
+        drawBottomBar(ctx, registry, battle, selected, escorts);
       }
       break;
     case 'battle':
       if (battle) {
         drawBattle(ctx, registry, battle, selected, effects);
-        drawBottomBar(ctx, registry, battle, selected);
+        drawBottomBar(ctx, registry, battle, selected, escorts);
         if (selected) drawSkillButton(ctx, registry, battle, selected);
       }
       break;

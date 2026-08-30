@@ -3,6 +3,8 @@ import { isFunbaruActive } from '../core/skills';
 import { playerUnits } from '../core/sim';
 import { lookupDef } from '../engine/registry';
 import type { Registry } from '../engine/registry';
+import type { StageDef } from '../engine/schema';
+import { escortDefIds, sightCircles } from './objectives-view';
 import { LOGICAL_H, LOGICAL_W, mapToLogical } from './viewport';
 import { HIT_EFFECT_DURATION } from './effects';
 import type { EffectState } from './effects';
@@ -18,6 +20,10 @@ const COLORS = {
   hpAlly: '#5ad06a',
   hpEnemy: '#d05a5a',
   bond: 'rgba(255, 190, 220, 0.55)',
+  goal: '#ffd479',
+  sight: 'rgba(255, 140, 120, 0.30)',
+  sightAlert: 'rgba(255, 90, 90, 0.60)',
+  escort: '#ffd479',
 };
 
 const UNIT_R = 11;
@@ -43,9 +49,12 @@ export function drawBattle(
   ctx.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
 
   drawTerrain(ctx, state);
+  drawSightRanges(ctx, state);
+  drawVictoryMarker(ctx, state.stage);
   drawGoalMarkers(ctx, reg, state, selected);
   drawBonds(ctx, state);
   drawUnits(ctx, reg, state, selected);
+  drawEscortMarks(ctx, state, new Set(escortDefIds(state.stage)));
   drawEffects(ctx, effects);
   drawTopBar(ctx, state);
   ctx.restore();
@@ -59,6 +68,53 @@ function drawTerrain(ctx: CanvasRenderingContext2D, state: BattleState): void {
     const p = mapToLogical({ x: cx * grid.cell, y: cy * grid.cell });
     ctx.fillStyle = grid.walkable[i] ? COLORS.ground : COLORS.rock;
     ctx.fillRect(p.x, p.y, grid.cell, grid.cell);
+  }
+}
+
+function drawSightRanges(ctx: CanvasRenderingContext2D, state: BattleState): void {
+  ctx.lineWidth = 2;
+  for (const c of sightCircles(state.units)) {
+    const p = mapToLogical(c.pos);
+    ctx.strokeStyle = c.alerted ? COLORS.sightAlert : COLORS.sight;
+    ctx.setLineDash(c.alerted ? [] : [6, 5]);
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, c.radius, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  ctx.setLineDash([]);
+}
+
+function drawVictoryMarker(ctx: CanvasRenderingContext2D, stage: StageDef): void {
+  const p = mapToLogical(stage.victory.pos);
+  ctx.strokeStyle = COLORS.goal;
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, stage.victory.radius, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // はた。ここが ゴールだと ひと目で わかるように
+  ctx.fillStyle = COLORS.goal;
+  ctx.fillRect(p.x - 2, p.y - 26, 4, 26);
+  ctx.beginPath();
+  ctx.moveTo(p.x + 2, p.y - 26);
+  ctx.lineTo(p.x + 22, p.y - 19);
+  ctx.lineTo(p.x + 2, p.y - 12);
+  ctx.closePath();
+  ctx.fill();
+}
+
+/** 護衛対象の頭上に印を出す。倒れたら即敗北するのがどれかを盤面で示す */
+function drawEscortMarks(ctx: CanvasRenderingContext2D, state: BattleState, escorts: Set<string>): void {
+  ctx.fillStyle = COLORS.escort;
+  for (const u of state.units) {
+    if (u.retired || u.side !== 'player' || !escorts.has(u.defId)) continue;
+    const p = mapToLogical(u.pos);
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y - UNIT_R - 14);
+    ctx.lineTo(p.x - 6, p.y - UNIT_R - 24);
+    ctx.lineTo(p.x + 6, p.y - UNIT_R - 24);
+    ctx.closePath();
+    ctx.fill();
   }
 }
 
