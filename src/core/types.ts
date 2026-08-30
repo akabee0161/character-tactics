@@ -20,8 +20,6 @@ export type FlowField = {
 
 import type { Rng } from './rng';
 
-export const FORT_MAX_HP = 30;
-
 export type CharProgress = { level: number; xp: number };
 
 export type AiState = {
@@ -87,8 +85,7 @@ export type SimEvent =
   | { type: 'unitDefeated'; uid: string; defId: string; byUid: string | null; byDefId: string | null; neraiuchi: boolean }
   | { type: 'unitFled'; uid: string; defId: string; byUid: string | null; byDefId: string | null }
   | { type: 'unitRetired'; uid: string; defId: string }
-  | { type: 'bondSupport'; targetUid: string; targetDefId: string; supporterUids: string[] }
-  | { type: 'fortDamaged'; amount: number };
+  | { type: 'bondSupport'; targetUid: string; targetDefId: string; supporterUids: string[] };
 
 export type BattleState = {
   reg: Registry;
@@ -96,7 +93,6 @@ export type BattleState = {
   grid: Grid;
   /** 味方の初期配置地点をゴールとするフローフィールド。Task 17 でキャッシュに置き換わる */
   enemyField: FlowField;
-  fortHp: number;
   time: number;
   phase: BattlePhase;
   units: Unit[];

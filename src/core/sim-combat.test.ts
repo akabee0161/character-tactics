@@ -6,9 +6,8 @@ import { testRegistry } from './testing';
 import type { StageDef, Unit } from './types';
 import type { BattleState, CharProgress, Vec2 } from './types';
 
-// units のうち敵側に常時 1 体だけ入れておく。updatePhase は敵が 0 体になった瞬間に victory へ
-// 進めてしまうので（フェーズ 5 で updateObjectives に置き換わるまでの暫定挙動）、
-// ゴールから遠く離れた位置に置いて自然には撃破されない状態にしておく
+// units のうち敵側に常時 1 体だけ入れておく。ゴールから遠く離れた位置に置いて
+// 自然には撃破されない状態にしておく
 const STAGE: StageDef = {
   id: 'teststage', name: 'テスト', cell: 32,
   mapRows: ['..........', '..........', '..........'],
@@ -230,33 +229,3 @@ describe('撃破と撤退', () => {
   });
 });
 
-describe('とりでとフェーズ遷移', () => {
-  it('敵が味方の初期配置地点に着くと とりで HP が減り、その敵は消える', () => {
-    const s = fresh();
-    const e = spawnEnemy(s, 'narazumono', { x: 20, y: 16 });
-    step(s, [], 0.01);
-    expect(s.fortHp).toBe(30 - 5);
-    expect(e.retired).toBe(true);
-    expect(s.events).toContainEqual({ type: 'fortDamaged', amount: 5 });
-  });
-
-  it('とりで HP が 0 で defeat', () => {
-    const s = fresh();
-    s.fortHp = 2;
-    spawnEnemy(s, 'narazumono', { x: 20, y: 16 });
-    step(s, [], 0.01);
-    expect(s.fortHp).toBeLessThanOrEqual(0);
-    expect(s.phase).toBe('defeat');
-  });
-
-  it('敵が全滅すると victory', () => {
-    const s = fresh();
-    const roran = unitOf(s, 'roran');
-    roran.pos = { x: 16, y: 16 };
-    // ステージ既定の背景敵も含め、この場に居合わせるすべての敵を全滅させる
-    for (const u of s.units) if (u.side === 'enemy') u.retired = true;
-    spawnEnemy(s, 'narazumono', { x: 30, y: 16 }, 3);
-    engageAndAttack(s, 1.7);
-    expect(s.phase).toBe('victory');
-  });
-});

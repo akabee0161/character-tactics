@@ -1,6 +1,5 @@
 import { computeFlowField, distance, isWalkableAt, makeGrid } from './field';
 import { makeRng } from './rng';
-import { FORT_MAX_HP } from './types';
 import type { Registry } from '../engine/registry';
 import type { AiDef, EnemyDef, StageDef, UnitDef } from '../engine/schema';
 import type { BattleState, CharProgress, Unit, Vec2 } from './types';
@@ -85,7 +84,6 @@ export function createBattleState(
     grid,
     // フェーズ 6 まで、敵は全員このフィールドを降りてくる。ゴールは味方の初期配置地点
     enemyField: computeFlowField(grid, stage.placementZone[0]!.pos),
-    fortHp: FORT_MAX_HP,
     time: 0,
     phase: 'placement',
     units: [...roster, ...enemies],

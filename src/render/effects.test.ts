@@ -12,7 +12,7 @@ describe('spawnHitEffects', () => {
 
   it('hit 以外のイベントは無視する', () => {
     const state = makeEffectState();
-    const events: SimEvent[] = [{ type: 'fortDamaged', amount: 3 }];
+    const events: SimEvent[] = [{ type: 'unitRetired', uid: 'p1', defId: 'roran' }];
     spawnHitEffects(state, events);
     expect(state.items).toEqual([]);
   });

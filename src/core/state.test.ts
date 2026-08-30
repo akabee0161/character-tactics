@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { cellIndexAt } from './field';
 import { beginBattle, createBattleState, placeUnit, PLACEMENT_RADIUS, statsForLevel } from './state';
 import { testRegistry } from './testing';
-import { FORT_MAX_HP } from './types';
 import type { Registry } from '../engine/registry';
 import type { StageDef } from '../engine/schema';
 import type { BattleState, CharProgress } from './types';
@@ -73,11 +72,6 @@ describe('createBattleState: ステージからの はいち', () => {
   it('はじめは placement フェーズ', () => {
     const { state } = fresh();
     expect(state.phase).toBe('placement');
-  });
-
-  it('砦 HP は満タン', () => {
-    const { state } = fresh();
-    expect(state.fortHp).toBe(FORT_MAX_HP);
   });
 
   it('カウンタは からで しょきかされる', () => {

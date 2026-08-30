@@ -2,10 +2,10 @@ import { bondSupporters } from './bonds';
 import { computeDamage, effectiveInterval, hasThreatWithinMelee, nearestWithin } from './combat';
 import { accumulate } from './counters';
 import { computeFlowField, distance, flowDirection, hasLineOfSight, isWalkableAt } from './field';
+import { updateObjectives } from './objectives';
 import { isFunbaruActive, useSkill } from './skills';
 import type { BattleState, Unit, Vec2 } from './types';
 
-export const FORT_RADIUS = 24;
 export const PINCH_RATIO = 0.3;
 
 export function playerUnits(state: BattleState): Unit[] {
@@ -35,8 +35,7 @@ export function step(state: BattleState, commands: SimCommand[], dt: number): vo
   moveUnits(state, dt);
   resolveAttacks(state, dt);
   resolveRemoval(state);
-  resolveFort(state);
-  updatePhase(state);
+  updateObjectives(state);
   accumulate(state.counters, state.events);
 }
 
@@ -230,34 +229,3 @@ function resolveRemoval(state: BattleState): void {
   }
 }
 
-function resolveFort(state: BattleState): void {
-  const goal = state.stage.placementZone[0]!.pos;
-  for (const u of state.units) {
-    if (u.side !== 'enemy' || u.retired) continue;
-    // 交戦中の敵はその場で足止めされているので、たまたま到達地点の近くで戦っていても
-    // 到達扱いにはしない
-    if (u.engagedWith === null && distance(u.pos, goal) <= FORT_RADIUS) {
-      // フェーズ 5 でこの処理ごと消える。それまでの暫定として一律 5 ダメージにする
-      state.fortHp -= 5;
-      state.events.push({ type: 'fortDamaged', amount: 5 });
-      u.retired = true;
-      u.engagedWith = null;
-      u.goalField = null;
-      u.goalPos = null;
-      for (const other of state.units) {
-        if (other.engagedWith === u.uid) other.engagedWith = null;
-      }
-    }
-  }
-}
-
-function updatePhase(state: BattleState): void {
-  if (state.fortHp <= 0) {
-    state.fortHp = 0;
-    state.phase = 'defeat';
-    return;
-  }
-  // フェーズ 5 で updateObjectives に置き換わる
-  const enemiesLeft = state.units.some((u) => u.side === 'enemy' && !u.retired);
-  if (!enemiesLeft) state.phase = 'victory';
-}

@@ -1,6 +1,5 @@
 import { bondSupporters } from '../core/bonds';
 import { isFunbaruActive } from '../core/skills';
-import { FORT_MAX_HP } from '../core/types';
 import { playerUnits } from '../core/sim';
 import { lookupDef } from '../engine/registry';
 import type { Registry } from '../engine/registry';
@@ -13,7 +12,6 @@ const COLORS = {
   sea: '#12303f',
   ground: '#3f5d3a',
   rock: '#2b3a44',
-  fort: '#d8c98a',
   bar: '#101820',
   text: '#f2efe4',
   hpBack: '#000000',
@@ -45,7 +43,6 @@ export function drawBattle(
   ctx.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
 
   drawTerrain(ctx, state);
-  drawFort(ctx, state);
   drawGoalMarkers(ctx, reg, state, selected);
   drawBonds(ctx, state);
   drawUnits(ctx, reg, state, selected);
@@ -63,14 +60,6 @@ function drawTerrain(ctx: CanvasRenderingContext2D, state: BattleState): void {
     ctx.fillStyle = grid.walkable[i] ? COLORS.ground : COLORS.rock;
     ctx.fillRect(p.x, p.y, grid.cell, grid.cell);
   }
-}
-
-function drawFort(ctx: CanvasRenderingContext2D, state: BattleState): void {
-  const p = mapToLogical(state.stage.placementZone[0]!.pos);
-  ctx.fillStyle = COLORS.fort;
-  ctx.fillRect(p.x - 18, p.y - 18, 36, 36);
-  ctx.fillStyle = COLORS.bar;
-  ctx.fillRect(p.x - 4, p.y - 10, 8, 20);
 }
 
 function drawBonds(ctx: CanvasRenderingContext2D, state: BattleState): void {
@@ -189,7 +178,6 @@ function drawTopBar(ctx: CanvasRenderingContext2D, state: BattleState): void {
   ctx.fillStyle = COLORS.text;
   ctx.font = '20px sans-serif';
   ctx.textBaseline = 'middle';
-  ctx.fillText(`とりで ${state.fortHp} / ${FORT_MAX_HP}`, 16, 23);
   ctx.fillText(state.stage.name, 280, 23);
 }
 

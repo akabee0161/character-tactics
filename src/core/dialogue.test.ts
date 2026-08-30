@@ -90,7 +90,6 @@ describe('pickDialogue', () => {
     const events: SimEvent[] = [
       { type: 'hit', targetPos: { x: 0, y: 0 }, amount: 3 },
       { type: 'bondSupport', targetUid: 'p1', targetDefId: 'roran', supporterUids: ['p2'] },
-      { type: 'fortDamaged', amount: 3 },
       { type: 'unitDefeated', uid: 'e1', defId: 'narazumono', byUid: 'p4', byDefId: 'gau', neraiuchi: false },
     ];
     expect(pickDialogue(reg, events)).toEqual([]);

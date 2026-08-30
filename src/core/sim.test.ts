@@ -5,8 +5,6 @@ import { beginBattle, createBattleState } from './state';
 import { testRegistry } from './testing';
 import type { BattleState, CharProgress, StageDef, Unit } from './types';
 
-// units のうち敵側に常時 1 体だけ入れておく。updatePhase は敵が 0 体になった瞬間に victory へ
-// 進めてしまうので（フェーズ 5 で updateObjectives に置き換わるまでの暫定挙動）、
 // このテストファイルの「移動」系テストが途中で phase を失って固まらないよう、
 // ゴールから遠く離れた位置に置いて自然には撃破されない状態にしておく
 const STAGE: StageDef = {
@@ -308,21 +306,6 @@ describe('ウェーブの さくじょ', () => {
     expect(state.units.filter((u) => u.side === 'enemy' && !u.retired).length).toBeLessThanOrEqual(n);
   });
 
-  it('敵が ぜんめつしたら victory', () => {
-    const { state } = realStageFresh();
-    beginBattle(state);
-    for (const u of state.units) if (u.side === 'enemy') u.retired = true;
-    step(state, [], 1 / 60);
-    expect(state.phase).toBe('victory');
-  });
-
-  it('とりでが やぶられたら defeat', () => {
-    const { state } = realStageFresh();
-    beginBattle(state);
-    state.fortHp = 0;
-    step(state, [], 1 / 60);
-    expect(state.phase).toBe('defeat');
-  });
 });
 
 describe('ユニット型の とうごう', () => {
@@ -386,6 +369,8 @@ describe('ユニット型の とうごう', () => {
     const p = state.units.find((u) => u.side === 'player')!;
     const e = state.units.find((u) => u.side === 'enemy')!;
     p.combat = false;
+    // 到達勝利の はんいの そとで こうせんさせる（そうでないと すぐ victory になり すすまない）
+    e.pos = { x: 16, y: 80 };
     p.pos = { ...e.pos };
     const before = p.hp;
     for (let i = 0; i < 300; i++) step(state, [], 1 / 60);

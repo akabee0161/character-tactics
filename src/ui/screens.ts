@@ -211,7 +211,7 @@ export function drawResult(
   ctx.fillStyle = INK;
   ctx.font = '44px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('しまを まもった！', LOGICAL_W / 2, 90);
+  ctx.fillText('てきの ほんきょちに とうたつ！', LOGICAL_W / 2, 90);
   ctx.textAlign = 'left';
 
   ctx.font = '19px sans-serif';
@@ -247,7 +247,7 @@ export function drawDefeat(ctx: CanvasRenderingContext2D): void {
   ctx.fillStyle = INK;
   ctx.font = '44px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('とりでが やぶられた', LOGICAL_W / 2, 240);
+  ctx.fillText('なかまを まもれなかった', LOGICAL_W / 2, 240);
   ctx.textAlign = 'left';
   button(ctx, BTN.retry, 'もういちど');
   button(ctx, BTN.toSelect, 'しまを えらぶ');
