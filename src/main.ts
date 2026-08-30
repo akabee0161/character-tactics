@@ -165,9 +165,13 @@ function onPointerDown(ev: PointerEvent): void {
 
 function beginMapPointer(state: BattleState, p: Vec2, ev: PointerEvent): void {
   if (pointerStart !== null) return; // 別の指のジェスチャが進行中は新しいジェスチャを始めない
+  // drawBottomBar と同じ無フィルタ配列でインデックスを解決する。playerUnits() は retired を
+  // 除外して再インデックスするため、これと混ぜるとポートレートの見た目とタップ対象がずれる
+  const portraitUnits = state.units.filter((u) => u.side === 'player').slice(0, 4);
   for (let i = 0; i < 4; i++) {
     if (hitRect(portraitSlot(i), p)) {
-      const uid = playerUnits(state)[i]?.uid ?? null;
+      const unit = portraitUnits[i];
+      const uid = unit && !unit.retired ? unit.uid : null;
       if (uid !== null) selected = selected === uid ? null : uid;
       pointerStart = null;
       return;
