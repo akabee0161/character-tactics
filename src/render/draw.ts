@@ -1,6 +1,7 @@
 import { bondSupporters } from '../core/bonds';
 import { isFunbaruActive } from '../core/skills';
 import { FORT_MAX_HP } from '../core/types';
+import { playerUnits } from '../core/sim';
 import { lookupDef } from '../engine/registry';
 import type { Registry } from '../engine/registry';
 import { LOGICAL_H, LOGICAL_W, mapToLogical } from './viewport';
@@ -47,8 +48,7 @@ export function drawBattle(
   drawFort(ctx, state);
   drawGoalMarkers(ctx, reg, state, selected);
   drawBonds(ctx, state);
-  drawEnemies(ctx, reg, state);
-  drawAllies(ctx, reg, state, selected);
+  drawUnits(ctx, reg, state, selected);
   drawEffects(ctx, effects);
   drawTopBar(ctx, state);
   ctx.restore();
@@ -76,12 +76,14 @@ function drawFort(ctx: CanvasRenderingContext2D, state: BattleState): void {
 function drawBonds(ctx: CanvasRenderingContext2D, state: BattleState): void {
   ctx.lineWidth = 3;
   ctx.strokeStyle = COLORS.bond;
-  for (const ally of state.allies) {
-    if (ally.retired || ally.engagedWith === null) continue;
-    for (const s of bondSupporters(state.reg, ally.id, ally.pos, state.allies)) {
-      const other = state.allies.find((a) => a.id === s.id);
+  const units = playerUnits(state);
+  const supportersList = units.map((u) => ({ id: u.defId, pos: u.pos, retired: u.retired, uid: u.uid }));
+  for (const unit of units) {
+    if (unit.engagedWith === null) continue;
+    for (const s of bondSupporters(state.reg, unit.defId, unit.pos, supportersList)) {
+      const other = units.find((u) => u.uid === s.uid);
       if (!other) continue;
-      const a = mapToLogical(ally.pos);
+      const a = mapToLogical(unit.pos);
       const b = mapToLogical(other.pos);
       ctx.beginPath();
       ctx.moveTo(a.x, a.y);
@@ -113,67 +115,59 @@ function drawHpBar(ctx: CanvasRenderingContext2D, p: Vec2, ratio: number, color:
   ctx.fillRect(p.x - w / 2, p.y - UNIT_R - 9, w * Math.max(0, Math.min(1, ratio)), 4);
 }
 
-function drawEnemies(ctx: CanvasRenderingContext2D, reg: Registry, state: BattleState): void {
-  for (const enemy of state.enemies) {
-    const p = mapToLogical(enemy.pos);
-    const def = defOf(reg, enemy.kind);
-    ctx.fillStyle = def.color;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, enemyRadius(enemy.maxHp), 0, Math.PI * 2);
-    ctx.fill();
-    const fullDef = reg.enemies.get(enemy.kind);
-    if (fullDef && fullDef.bowDamageCap !== null) {
-      ctx.fillStyle = '#c8ccd4';
-      ctx.fillRect(p.x - 14, p.y - 8, 5, 16);
-    }
-    drawHpBar(ctx, p, enemy.hp / enemy.maxHp, COLORS.hpEnemy);
-  }
-}
-
-function drawAllies(
+function drawUnits(
   ctx: CanvasRenderingContext2D,
   reg: Registry,
   state: BattleState,
   selected: string | null,
 ): void {
-  for (const ally of state.allies) {
-    if (ally.retired) continue;
-    const p = mapToLogical(ally.pos);
-    ctx.fillStyle = defOf(reg, ally.id).color;
+  for (const unit of state.units) {
+    if (unit.retired) continue;
+    const isAlly = unit.side === 'player';
+    const p = mapToLogical(unit.pos);
+    const radius = isAlly ? UNIT_R : enemyRadius(unit.maxHp);
+    ctx.fillStyle = defOf(reg, unit.defId).color;
     ctx.beginPath();
-    ctx.arc(p.x, p.y, UNIT_R, 0, Math.PI * 2);
+    ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
     ctx.fill();
 
-    // はた（キャラだとわかるように）
-    ctx.fillStyle = COLORS.text;
-    ctx.fillRect(p.x + UNIT_R - 2, p.y - UNIT_R - 6, 2, 10);
-    ctx.fillRect(p.x + UNIT_R, p.y - UNIT_R - 6, 7, 5);
-
-    if (ally.id === selected) {
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 3;
-      ctx.setLineDash([4, 3]);
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, UNIT_R + 10, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.setLineDash([]);
+    if (unit.bowDamageCap !== null) {
+      ctx.fillStyle = '#c8ccd4';
+      ctx.fillRect(p.x - 14, p.y - 8, 5, 16);
     }
 
-    if (isFunbaruActive(ally, state.time)) {
+    if (isAlly) {
+      // はた（キャラだとわかるように）
+      ctx.fillStyle = COLORS.text;
+      ctx.fillRect(p.x + UNIT_R - 2, p.y - UNIT_R - 6, 2, 10);
+      ctx.fillRect(p.x + UNIT_R, p.y - UNIT_R - 6, 7, 5);
+
+      if (unit.uid === selected) {
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 3;
+        ctx.setLineDash([4, 3]);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, UNIT_R + 10, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+    }
+
+    if (isFunbaruActive(unit, state.time)) {
       ctx.strokeStyle = '#ffe27a';
       ctx.lineWidth = 3;
       ctx.beginPath();
       ctx.arc(p.x, p.y, UNIT_R + 4, 0, Math.PI * 2);
       ctx.stroke();
     }
-    if (ally.neraiuchiArmed) {
+    if (unit.neraiuchiArmed) {
       ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.arc(p.x, p.y, UNIT_R + 7, 0, Math.PI * 2);
       ctx.stroke();
     }
-    drawHpBar(ctx, p, ally.hp / ally.maxHp, COLORS.hpAlly);
+    drawHpBar(ctx, p, unit.hp / unit.maxHp, isAlly ? COLORS.hpAlly : COLORS.hpEnemy);
   }
 }
 
@@ -206,15 +200,15 @@ export function drawGoalMarkers(
   state: BattleState,
   selected: string | null,
 ): void {
-  for (const ally of state.allies) {
-    if (ally.retired || !ally.goalPos) continue;
-    const a = mapToLogical(ally.pos);
-    const g = mapToLogical(ally.goalPos);
-    const color = defOf(reg, ally.id).color;
-    const isSelected = ally.id === selected;
+  for (const unit of state.units) {
+    if (unit.side !== 'player' || unit.retired || !unit.goalPos) continue;
+    const a = mapToLogical(unit.pos);
+    const g = mapToLogical(unit.goalPos);
+    const color = defOf(reg, unit.defId).color;
+    const isSelected = unit.uid === selected;
 
     // 交戦中は足が止まっているので薄くする。交戦が解けたら再開するため消しはしない
-    ctx.globalAlpha = ally.engagedWith !== null ? 0.35 : 1;
+    ctx.globalAlpha = unit.engagedWith !== null ? 0.35 : 1;
     ctx.strokeStyle = color;
 
     if (isSelected) {

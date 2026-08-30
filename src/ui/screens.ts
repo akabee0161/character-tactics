@@ -123,39 +123,41 @@ export function drawBottomBar(
   ctx.fillStyle = 'rgba(16, 24, 32, 0.92)';
   ctx.fillRect(0, BOTTOM_BAR_Y, LOGICAL_W, BOTTOM_BAR_H);
 
-  state.allies.forEach((ally, i) => {
-    const id = ally.id;
-    const r = portraitSlot(i);
-    panel(ctx, r, selected === id ? '#3a5f7d' : '#18222c');
+  state.units
+    .filter((u) => u.side === 'player')
+    .slice(0, 4)
+    .forEach((unit, i) => {
+      const r = portraitSlot(i);
+      panel(ctx, r, selected === unit.uid ? '#3a5f7d' : '#18222c');
 
-    const def = lookupDef(reg, id) ?? { name: id, color: '#888888' };
-    ctx.globalAlpha = ally.retired ? 0.4 : 1;
-    ctx.fillStyle = def.color;
-    ctx.beginPath();
-    ctx.arc(r.x + 26, r.y + 32, 15, 0, Math.PI * 2);
-    ctx.fill();
+      const def = lookupDef(reg, unit.defId) ?? { name: unit.defId, color: '#888888' };
+      ctx.globalAlpha = unit.retired ? 0.4 : 1;
+      ctx.fillStyle = def.color;
+      ctx.beginPath();
+      ctx.arc(r.x + 26, r.y + 32, 15, 0, Math.PI * 2);
+      ctx.fill();
 
-    ctx.fillStyle = INK;
-    ctx.font = '17px sans-serif';
-    ctx.fillText(def.name, r.x + 50, r.y + 24);
+      ctx.fillStyle = INK;
+      ctx.font = '17px sans-serif';
+      ctx.fillText(def.name, r.x + 50, r.y + 24);
 
-    ctx.fillStyle = '#000';
-    ctx.fillRect(r.x + 50, r.y + 34, 120, 8);
-    ctx.fillStyle = ally.retired ? '#666' : '#5ad06a';
-    ctx.fillRect(r.x + 50, r.y + 34, 120 * Math.max(0, ally.hp / ally.maxHp), 8);
+      ctx.fillStyle = '#000';
+      ctx.fillRect(r.x + 50, r.y + 34, 120, 8);
+      ctx.fillStyle = unit.retired ? '#666' : '#5ad06a';
+      ctx.fillRect(r.x + 50, r.y + 34, 120 * Math.max(0, unit.hp / unit.maxHp), 8);
 
-    ctx.fillStyle = ally.skillUsed || ally.retired ? '#555' : '#ffd479';
-    ctx.beginPath();
-    ctx.arc(r.x + 198, r.y + 32, 10, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.globalAlpha = 1;
+      ctx.fillStyle = unit.skillUsed || unit.retired ? '#555' : '#ffd479';
+      ctx.beginPath();
+      ctx.arc(r.x + 198, r.y + 32, 10, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
 
-    if (ally.retired) {
-      ctx.fillStyle = '#ff9a9a';
-      ctx.font = '15px sans-serif';
-      ctx.fillText('たいきゃく', r.x + 50, r.y + 56);
-    }
-  });
+      if (unit.retired) {
+        ctx.fillStyle = '#ff9a9a';
+        ctx.font = '15px sans-serif';
+        ctx.fillText('たいきゃく', r.x + 50, r.y + 56);
+      }
+    });
 }
 
 export function drawSkillButton(
@@ -164,10 +166,10 @@ export function drawSkillButton(
   state: BattleState,
   selected: string,
 ): Rect | null {
-  const ally = state.allies.find((a) => a.id === selected);
-  if (!ally || ally.retired || ally.skillUsed) return null;
-  const r = skillButtonAt(mapToLogical(ally.pos));
-  const label = reg.skills.get(ally.skill)?.label ?? 'スキル';
+  const unit = state.units.find((u) => u.uid === selected);
+  if (!unit || unit.retired || unit.skillUsed) return null;
+  const r = skillButtonAt(mapToLogical(unit.pos));
+  const label = reg.skills.get(unit.skillId ?? '')?.label ?? 'スキル';
   button(ctx, r, label);
   return r;
 }

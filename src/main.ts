@@ -1,8 +1,9 @@
 import { loadRegistry } from './engine/loader';
+import { skillParam } from './engine/registry';
 import { pickDialogue, pickStageIntro } from './core/dialogue';
 import { SKILL_EFFECT_IDS } from './core/skills';
 import { beginBattle, createBattleState, placeUnit } from './core/state';
-import { step } from './core/sim';
+import { playerUnits, step } from './core/sim';
 import type { SimCommand } from './core/sim';
 import { drawBattle, drawDragPreview } from './render/draw';
 import { isWalkableAt } from './core/field';
@@ -10,7 +11,7 @@ import { makeEffectState, spawnHitEffects, tickEffects } from './render/effects'
 import { LOGICAL_H, LOGICAL_W, computeViewport, logicalToMap, mapToLogical, screenToLogical } from './render/viewport';
 import { advanceBubble, currentBubble, enqueue, isBlocking, makeBubbleQueue } from './ui/bubbles';
 import { applyStageClear, isStageUnlocked } from './ui/flow';
-import { hitRect, pickAlly } from './ui/hit';
+import { hitRect, pickUnit } from './ui/hit';
 import { resolveMapGesture } from './ui/input';
 import type { PointerStart } from './ui/input';
 import { BTN, STAGE_BTN, portraitSlot, skillButtonAt } from './ui/layout';
@@ -133,17 +134,17 @@ function onPointerDown(ev: PointerEvent): void {
       if (!battle) return;
       if (pendingSkill) {
         pointerStart = null;
-        commands.push({ type: 'skill', allyId: pendingSkill, dest: logicalToMap(p) });
+        commands.push({ type: 'skill', uid: pendingSkill, dest: logicalToMap(p) });
         pendingSkill = null;
         return;
       }
       if (selected) {
-        const ally = battle.allies.find((a) => a.id === selected)!;
-        const canTap = !ally.retired && !ally.skillUsed;
-        if (canTap && hitRect(skillButtonAt(mapToLogical(ally.pos)), p)) {
+        const unit = battle.units.find((u) => u.uid === selected)!;
+        const canTap = !unit.retired && !unit.skillUsed;
+        if (canTap && hitRect(skillButtonAt(mapToLogical(unit.pos)), p)) {
           pointerStart = null;
-          if (ally.skill === 'kakenukeru') pendingSkill = selected;
-          else commands.push({ type: 'skill', allyId: selected });
+          if (skillParam(battle.reg, unit.skillId ?? '', 'needsDest', 0) === 1) pendingSkill = selected;
+          else commands.push({ type: 'skill', uid: selected });
           return;
         }
       }
@@ -166,24 +167,24 @@ function beginMapPointer(state: BattleState, p: Vec2, ev: PointerEvent): void {
   if (pointerStart !== null) return; // 別の指のジェスチャが進行中は新しいジェスチャを始めない
   for (let i = 0; i < 4; i++) {
     if (hitRect(portraitSlot(i), p)) {
-      const id = state.allies[i]!.id;
-      selected = selected === id ? null : id;
+      const uid = playerUnits(state)[i]?.uid ?? null;
+      if (uid !== null) selected = selected === uid ? null : uid;
       pointerStart = null;
       return;
     }
   }
   const startMap = logicalToMap(p);
-  const charId = pickAlly(state.allies, startMap);
+  const uid = pickUnit(playerUnits(state), startMap);
   pointerStart = {
-    charId,
+    uid,
     startMap,
-    wasSelected: charId !== null && selected === charId,
+    wasSelected: uid !== null && selected === uid,
     pointerId: ev.pointerId,
   };
   dragMap = startMap;
   canvas.setPointerCapture(ev.pointerId);
-  if (charId !== null) {
-    selected = charId; // 掴んだ時点で見た目に反映する。解除は pointerup で判定する
+  if (uid !== null) {
+    selected = uid; // 掴んだ時点で見た目に反映する。解除は pointerup で判定する
   }
 }
 
@@ -204,14 +205,14 @@ function onPointerUp(ev: PointerEvent): void {
   const g = resolveMapGesture(start, endMap, selected);
   switch (g.type) {
     case 'select':
-      selected = g.charId;
+      selected = g.uid;
       return;
     case 'deselect':
       selected = null;
       return;
-    case 'moveChar':
-      if (phase === 'battle') commands.push({ type: 'move', allyId: g.charId, dest: g.dest });
-      else placeUnit(battle, g.charId, g.dest);
+    case 'moveUnit':
+      if (phase === 'battle') commands.push({ type: 'move', uid: g.uid, dest: g.dest });
+      else placeUnit(battle, g.uid, g.dest);
       return;
     case 'none':
       return;
@@ -290,12 +291,12 @@ function render(): void {
       break;
   }
 
-  const dragChar = pointerStart?.charId ?? null;
+  const dragUid = pointerStart?.uid ?? null;
   const dragPhaseOk = phase === 'placement' || phase === 'battle';
-  if (battle && dragPhaseOk && dragChar !== null && dragMap !== null) {
-    const ally = battle.allies.find((a) => a.id === dragChar)!;
+  if (battle && dragPhaseOk && dragUid !== null && dragMap !== null) {
+    const unit = battle.units.find((u) => u.uid === dragUid)!;
     const blocked = !isWalkableAt(battle.grid, dragMap);
-    drawDragPreview(ctx, registry, ally.pos, dragMap, dragChar, blocked);
+    drawDragPreview(ctx, registry, unit.pos, dragMap, unit.defId, blocked);
   }
 
   const bubble = currentBubble(bubbles);

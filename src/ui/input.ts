@@ -6,7 +6,7 @@ export const TAP_SLOP = 12;
 
 export type PointerStart = {
   /** ポインターを下ろした位置にいた味方。地面なら null */
-  charId: string | null;
+  uid: string | null;
   startMap: Vec2;
   /** 下ろした時点で、その味方がすでに選択されていたか */
   wasSelected: boolean;
@@ -16,13 +16,13 @@ export type PointerStart = {
 
 export type MapGesture =
   | { type: 'none' }
-  | { type: 'select'; charId: string }
+  | { type: 'select'; uid: string }
   | { type: 'deselect' }
-  | { type: 'moveChar'; charId: string; dest: Vec2 };
+  | { type: 'moveUnit'; uid: string; dest: Vec2 };
 
 /**
  * マップ上のポインター操作を、フェーズに依存しないジェスチャへ変換する。
- * moveChar をコマンドにするか再配置にするかは呼び出し側が決める。
+ * moveUnit をコマンドにするか再配置にするかは呼び出し側が決める。
  */
 export function resolveMapGesture(
   start: PointerStart,
@@ -31,11 +31,11 @@ export function resolveMapGesture(
 ): MapGesture {
   const moved = distance(start.startMap, endMap) > TAP_SLOP;
 
-  if (start.charId !== null) {
-    if (moved) return { type: 'moveChar', charId: start.charId, dest: endMap };
-    return start.wasSelected ? { type: 'deselect' } : { type: 'select', charId: start.charId };
+  if (start.uid !== null) {
+    if (moved) return { type: 'moveUnit', uid: start.uid, dest: endMap };
+    return start.wasSelected ? { type: 'deselect' } : { type: 'select', uid: start.uid };
   }
 
   if (moved || selected === null) return { type: 'none' };
-  return { type: 'moveChar', charId: selected, dest: endMap };
+  return { type: 'moveUnit', uid: selected, dest: endMap };
 }
