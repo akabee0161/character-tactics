@@ -66,7 +66,7 @@ function drawTerrain(ctx: CanvasRenderingContext2D, state: BattleState): void {
 }
 
 function drawFort(ctx: CanvasRenderingContext2D, state: BattleState): void {
-  const p = mapToLogical(state.stage.fort);
+  const p = mapToLogical(state.stage.placementZone[0]!.pos);
   ctx.fillStyle = COLORS.fort;
   ctx.fillRect(p.x - 18, p.y - 18, 36, 36);
   ctx.fillStyle = COLORS.bar;
@@ -196,8 +196,7 @@ function drawTopBar(ctx: CanvasRenderingContext2D, state: BattleState): void {
   ctx.font = '20px sans-serif';
   ctx.textBaseline = 'middle';
   ctx.fillText(`とりで ${state.fortHp} / ${FORT_MAX_HP}`, 16, 23);
-  ctx.fillText(`しゅうげき ${state.waveIndex + 1} / ${state.stage.waves.length}`, 280, 23);
-  ctx.fillText(state.stage.name, 500, 23);
+  ctx.fillText(state.stage.name, 280, 23);
 }
 
 /** 4人ぶんの移動先を常に出す。誰がどこへ向かっているかを盤面だけで読めるようにする */

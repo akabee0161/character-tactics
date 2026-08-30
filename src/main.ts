@@ -1,8 +1,7 @@
-import { STAGES } from './content/stages';
 import { loadRegistry } from './engine/loader';
-import { pickDialogue, pickWaveIntro } from './core/dialogue';
+import { pickDialogue, pickStageIntro } from './core/dialogue';
 import { SKILL_EFFECT_IDS } from './core/skills';
-import { createBattleState, placeAlly, startWave } from './core/state';
+import { beginBattle, createBattleState, placeUnit } from './core/state';
 import { step } from './core/sim';
 import type { SimCommand } from './core/sim';
 import { drawBattle, drawDragPreview } from './render/draw';
@@ -17,7 +16,7 @@ import type { PointerStart } from './ui/input';
 import { BTN, STAGE_BTN, portraitSlot, skillButtonAt } from './ui/layout';
 import {
   drawBottomBar, drawBubble, drawDefeat, drawLoadErrors, drawPlacement, drawResult,
-  drawSkillButton, drawStageSelect, drawTitle, drawWaveCleared,
+  drawSkillButton, drawStageSelect, drawTitle,
 } from './ui/screens';
 import { loadSave, newSave, writeSave } from './save/save';
 import type { SaveData } from './save/save';
@@ -26,7 +25,7 @@ import type { BattleState, Vec2 } from './core/types';
 
 const FIXED_DT = 1 / 60;
 
-type Phase = 'title' | 'select' | 'placement' | 'battle' | 'waveCleared' | 'result' | 'defeat';
+type Phase = 'title' | 'select' | 'placement' | 'battle' | 'result' | 'defeat';
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d')!;
@@ -79,7 +78,7 @@ function toLogical(ev: PointerEvent): Vec2 {
 function beginStage(index: number): void {
   stageIndex = index;
   stageId = registry.stages[index]!.id;
-  battle = createBattleState(registry, STAGES[index]!, save.units, Date.now() % 100000);
+  battle = createBattleState(registry, registry.stages[index]!, save.units, Date.now() % 100000);
   selected = null;
   pendingSkill = null;
   bubbles.items.length = 0;
@@ -121,8 +120,8 @@ function onPointerDown(ev: PointerEvent): void {
       if (hitRect(BTN.start, p)) {
         pointerStart = null;
         writeSave(window.localStorage, save); // ステージ開始時点を保存する
-        startWave(battle);
-        enqueue(bubbles, pickWaveIntro(battle.reg, battle.stage, battle.waveIndex));
+        beginBattle(battle);
+        enqueue(bubbles, pickStageIntro(registry, battle.stage));
         phase = 'battle';
         return;
       }
@@ -148,22 +147,6 @@ function onPointerDown(ev: PointerEvent): void {
           return;
         }
       }
-      beginMapPointer(battle, p, ev);
-      return;
-    }
-
-    case 'waveCleared': {
-      if (!battle) return;
-      if (hitRect(BTN.next, p)) {
-        pointerStart = null;
-        battle.waveIndex += 1;
-        effects.items.length = 0;
-        startWave(battle);
-        enqueue(bubbles, pickWaveIntro(battle.reg, battle.stage, battle.waveIndex));
-        phase = 'battle';
-        return;
-      }
-      // しゅうげきの あいだは 再配置できる
       beginMapPointer(battle, p, ev);
       return;
     }
@@ -215,7 +198,7 @@ function onPointerUp(ev: PointerEvent): void {
   pointerStart = null;
   dragMap = null;
   if (!battle) return;
-  if (phase !== 'placement' && phase !== 'battle' && phase !== 'waveCleared') return;
+  if (phase !== 'placement' && phase !== 'battle') return;
 
   const endMap = logicalToMap(toLogical(ev));
   const g = resolveMapGesture(start, endMap, selected);
@@ -228,7 +211,7 @@ function onPointerUp(ev: PointerEvent): void {
       return;
     case 'moveChar':
       if (phase === 'battle') commands.push({ type: 'move', allyId: g.charId, dest: g.dest });
-      else placeAlly(battle, g.charId, g.dest);
+      else placeUnit(battle, g.charId, g.dest);
       return;
     case 'none':
       return;
@@ -263,9 +246,7 @@ function update(dt: number): void {
 
   if (battle.phase === 'defeat') {
     phase = 'defeat';
-  } else if (battle.phase === 'waveCleared') {
-    phase = 'waveCleared';
-  } else if (battle.phase === 'stageCleared') {
+  } else if (battle.phase === 'victory') {
     const r = applyStageClear(registry, save, stageId, battle);
     save = r.save;
     hasSave = writeSave(window.localStorage, save) || hasSave;
@@ -301,13 +282,6 @@ function render(): void {
         if (selected) drawSkillButton(ctx, registry, battle, selected);
       }
       break;
-    case 'waveCleared':
-      if (battle) {
-        drawBattle(ctx, registry, battle, selected, effects);
-        drawBottomBar(ctx, registry, battle, selected);
-        drawWaveCleared(ctx, battle);
-      }
-      break;
     case 'result':
       if (result) drawResult(ctx, registry, result.gains, result.newTitles);
       break;
@@ -317,7 +291,7 @@ function render(): void {
   }
 
   const dragChar = pointerStart?.charId ?? null;
-  const dragPhaseOk = phase === 'placement' || phase === 'battle' || phase === 'waveCleared';
+  const dragPhaseOk = phase === 'placement' || phase === 'battle';
   if (battle && dragPhaseOk && dragChar !== null && dragMap !== null) {
     const ally = battle.allies.find((a) => a.id === dragChar)!;
     const blocked = !isWalkableAt(battle.grid, dragMap);

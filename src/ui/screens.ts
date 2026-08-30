@@ -1,5 +1,6 @@
 import { lookupDef } from '../engine/registry';
 import { titlesOf, xpToNext } from '../core/progress';
+import { PLACEMENT_RADIUS } from '../core/state';
 import { LOGICAL_H, LOGICAL_W, mapToLogical } from '../render/viewport';
 import { BOTTOM_BAR_H, BOTTOM_BAR_Y, BTN, STAGE_BTN, portraitSlot, skillButtonAt } from './layout';
 import { isStageUnlocked } from './flow';
@@ -95,20 +96,21 @@ export function drawPlacement(ctx: CanvasRenderingContext2D, state: BattleState)
   ctx.fillStyle = 'rgba(16, 24, 32, 0.35)';
   ctx.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
 
-  ctx.fillStyle = '#ffd479';
-  for (const l of state.stage.landings) {
-    const p = mapToLogical(l);
+  // 置ける はんいを 見せる。ここに おけないと プレイヤーが しれない と こまる
+  ctx.strokeStyle = '#ffd479';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([5, 4]);
+  for (const z of state.stage.placementZone) {
+    const p = mapToLogical(z.pos);
     ctx.beginPath();
-    ctx.moveTo(p.x + 26, p.y);
-    ctx.lineTo(p.x - 6, p.y - 16);
-    ctx.lineTo(p.x - 6, p.y + 16);
-    ctx.closePath();
-    ctx.fill();
+    ctx.arc(p.x, p.y, PLACEMENT_RADIUS, 0, Math.PI * 2);
+    ctx.stroke();
   }
+  ctx.setLineDash([]);
 
   ctx.fillStyle = INK;
   ctx.font = '24px sans-serif';
-  ctx.fillText('なかまを ドラッグして おこう', 40, 380);
+  ctx.fillText('きいろい わくの なかに なかまを おこう', 40, 380);
   button(ctx, BTN.start, 'はじめる');
 }
 
@@ -195,19 +197,6 @@ export function drawBubble(ctx: CanvasRenderingContext2D, reg: Registry, req: Di
   ctx.textAlign = 'right';
   ctx.fillText('タップで つぎへ', r.x + r.w - 20, r.y + r.h - 18);
   ctx.textAlign = 'left';
-}
-
-export function drawWaveCleared(ctx: CanvasRenderingContext2D, state: BattleState): void {
-  ctx.fillStyle = 'rgba(16, 24, 32, 0.6)';
-  ctx.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
-  ctx.fillStyle = INK;
-  ctx.font = '40px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('つぎの しゅうげきが くるよ', LOGICAL_W / 2, 260);
-  ctx.font = '20px sans-serif';
-  ctx.fillText(`しゅうげき ${state.waveIndex + 2} / ${state.stage.waves.length}`, LOGICAL_W / 2, 306);
-  ctx.textAlign = 'left';
-  button(ctx, BTN.next, 'つぎへ');
 }
 
 export function drawResult(
