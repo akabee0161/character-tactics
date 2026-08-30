@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { COUNTER_DEFEAT_BY } from './counters';
 import { step } from './sim';
 import { beginBattle, createBattleState } from './state';
 import { testRegistry } from './testing';
@@ -165,7 +164,7 @@ describe('ピンチ', () => {
 });
 
 describe('撃破と撤退', () => {
-  it('敵を倒すと消え、unitDefeated が出て戦績が増える', () => {
+  it('敵を倒すと消え、unitDefeated が出て とどめを さした ユニットに けいけんちが はいる', () => {
     const s = fresh();
     const roran = unitOf(s, 'roran');
     roran.pos = { x: 16, y: 16 };
@@ -175,7 +174,7 @@ describe('撃破と撤退', () => {
     expect(s.events).toContainEqual({
       type: 'unitDefeated', uid: e.uid, defId: 'narazumono', byUid: roran.uid, byDefId: 'roran', neraiuchi: false,
     });
-    expect(s.counters[COUNTER_DEFEAT_BY('roran')]).toBe(1);
+    expect(roran.xp).toBe(s.reg.enemies.get('narazumono')!.xpReward);
   });
 
   it('ねらいうちで倒すと kill:neraiuchi が増える', () => {
@@ -188,7 +187,7 @@ describe('撃破と撤退', () => {
     expect(s.counters['kill:neraiuchi']).toBe(1);
   });
 
-  it('かけぬけるで倒すと defeats が増え、unitDefeated イベントに byDefId が入る', () => {
+  it('かけぬけるで倒すと unitDefeated イベントに byDefId が入り、けいけんちが はいる', () => {
     const s = fresh();
     const gau = unitOf(s, 'gau');
     gau.pos = { x: 16, y: 16 };
@@ -198,7 +197,7 @@ describe('撃破と撤退', () => {
     expect(s.events).toContainEqual({
       type: 'unitDefeated', uid: e.uid, defId: 'narazumono', byUid: gau.uid, byDefId: 'gau', neraiuchi: false,
     });
-    expect(s.counters[COUNTER_DEFEAT_BY('gau')]).toBe(1);
+    expect(gau.xp).toBe(s.reg.enemies.get('narazumono')!.xpReward);
   });
 
   it('ガルムは 30% を切ると撤退し unitFled が出る', () => {
@@ -211,7 +210,7 @@ describe('撃破と撤退', () => {
     expect(s.events).toContainEqual({
       type: 'unitFled', uid: e.uid, defId: 'garum', byUid: roran.uid, byDefId: 'roran',
     });
-    expect(s.counters[COUNTER_DEFEAT_BY('roran')]).toBeUndefined();
+    expect(roran.xp).toBe(0);
   });
 
   it('味方は HP 0 でたいきゃくし、交戦が解除される', () => {

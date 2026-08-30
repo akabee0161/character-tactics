@@ -1,9 +1,6 @@
 import type { TitleDef } from '../engine/schema';
 import type { SimEvent } from './types';
 
-/** ステージ内だけで使うカウンタ。経験値の計算に使い、セーブへは持ち越さない */
-export const COUNTER_DEFEAT_BY = (defId: string): string => `defeat:by:${defId}`;
-
 export function bump(counters: Record<string, number>, key: string, amount: number): void {
   counters[key] = (counters[key] ?? 0) + amount;
 }
@@ -21,7 +18,6 @@ export function accumulate(counters: Record<string, number>, events: SimEvent[])
         break;
       case 'unitDefeated':
         if (ev.byDefId === null) break;
-        bump(counters, COUNTER_DEFEAT_BY(ev.byDefId), 1);
         if (ev.neraiuchi) bump(counters, 'kill:neraiuchi', 1);
         break;
       case 'bondSupport':

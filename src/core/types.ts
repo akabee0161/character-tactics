@@ -86,7 +86,8 @@ export type SimEvent =
   | { type: 'unitDefeated'; uid: string; defId: string; byUid: string | null; byDefId: string | null; neraiuchi: boolean }
   | { type: 'unitFled'; uid: string; defId: string; byUid: string | null; byDefId: string | null }
   | { type: 'unitRetired'; uid: string; defId: string }
-  | { type: 'bondSupport'; targetUid: string; targetDefId: string; supporterUids: string[] };
+  | { type: 'bondSupport'; targetUid: string; targetDefId: string; supporterUids: string[] }
+  | { type: 'levelUp'; uid: string; defId: string; level: number };
 
 export type BattleState = {
   reg: Registry;

@@ -4,6 +4,7 @@ import { computeDamage, effectiveInterval, hasThreatWithinMelee, nearestWithin }
 import { accumulate } from './counters';
 import { computeFlowField, distance, flowDirection, hasLineOfSight, isWalkableAt } from './field';
 import { dropUnitField, fieldToStatic, fieldToUnit } from './fields';
+import { awardXpForDefeats } from './growth';
 import { updateObjectives } from './objectives';
 import { isFunbaruActive, useSkill } from './skills';
 import type { BattleState, FlowField, Unit, Vec2 } from './types';
@@ -50,6 +51,7 @@ export function step(state: BattleState, commands: SimCommand[], dt: number): vo
   moveUnits(state, dt);
   resolveAttacks(state, dt);
   resolveRemoval(state);
+  awardXpForDefeats(state);
   updateObjectives(state);
   accumulate(state.counters, state.events);
 }

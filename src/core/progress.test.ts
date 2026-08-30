@@ -1,13 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { applyXp, earnedTitles, MAX_LEVEL, titlesOf, xpGain, xpToNext } from './progress';
+import { applyXp, earnedTitles, MAX_LEVEL, titlesOf, xpToNext } from './progress';
 import { testRegistry } from './testing';
 
-describe('xpGain / xpToNext', () => {
-  it('クリア基礎 20 + 撃破数 x 5', () => {
-    expect(xpGain(0)).toBe(20);
-    expect(xpGain(4)).toBe(40);
-  });
-
+describe('xpToNext', () => {
   it('次のレベルに必要な経験値は レベル x 30', () => {
     expect(xpToNext(1)).toBe(30);
     expect(xpToNext(4)).toBe(120);

@@ -217,18 +217,19 @@ export function drawResult(
   ctx.font = '19px sans-serif';
   gains.forEach((g, i) => {
     const y = 150 + i * 46;
-    const def = reg.units.get(g.id) ?? { name: g.id, color: '#888888' };
+    const def = lookupDef(reg, g.id) ?? { name: g.id, color: '#888888' };
     ctx.fillStyle = def.color;
     ctx.beginPath();
     ctx.arc(60, y - 6, 14, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = INK;
-    ctx.fillText(def.name, 90, y);
-    ctx.fillText(`+${g.gained} けいけんち`, 620, y);
+    ctx.fillText(`${lookupDef(reg, g.id)?.name ?? g.id}`, 90, y);
     ctx.fillStyle = g.leveledUp ? '#ffd479' : '#9fb3c4';
     ctx.fillText(
-      g.leveledUp ? `レベルアップ！ Lv${g.after.level}` : `Lv${g.after.level} (${g.after.xp}/${xpToNext(g.after.level)})`,
-      770, y,
+      g.leveledUp
+        ? `レベルアップ！ Lv${g.before.level} → Lv${g.after.level}`
+        : `Lv${g.after.level} (${g.after.xp}/${xpToNext(g.after.level)})`,
+      620, y,
     );
   });
 

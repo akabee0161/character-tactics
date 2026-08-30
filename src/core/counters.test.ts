@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { accumulate, COUNTER_DEFEAT_BY, mergeCounters } from './counters';
+import { accumulate, mergeCounters } from './counters';
 import type { SimEvent } from './types';
 import type { TitleDef } from '../engine/schema';
 
@@ -40,14 +40,6 @@ describe('accumulate', () => {
     expect(c['kill:neraiuchi']).toBe(1);
   });
 
-  it('げきはを defeat:by:<defId> に つむ', () => {
-    const c: Record<string, number> = {};
-    accumulate(c, [
-      { type: 'unitDefeated', uid: 'e1', defId: 'x', byUid: 'p4', byDefId: 'gau', neraiuchi: false },
-    ]);
-    expect(c[COUNTER_DEFEAT_BY('gau')]).toBe(1);
-  });
-
   it('だれの てがらでも ない げきはは つまない', () => {
     const c: Record<string, number> = {};
     accumulate(c, [
@@ -68,7 +60,7 @@ describe('accumulate', () => {
 describe('mergeCounters', () => {
   it('しょうごうが さんしょうする キーだけを もちこす', () => {
     const prev = { 'skill:funbaru:uses': 2, 'bond:supports': 1 };
-    const battle = { 'skill:funbaru:uses': 3, 'bond:supports': 4, [COUNTER_DEFEAT_BY('gau')]: 9 };
+    const battle = { 'skill:funbaru:uses': 3, 'bond:supports': 4, 'temp:key': 9 };
     const merged = mergeCounters(prev, battle, TITLES);
     expect(merged).toEqual({ 'skill:funbaru:uses': 5, 'bond:supports': 5 });
   });

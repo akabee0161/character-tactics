@@ -3,13 +3,7 @@ import type { TitleDef } from '../engine/schema';
 import type { CharProgress } from './types';
 
 export const MAX_LEVEL = 5;
-export const XP_BASE = 20;
-export const XP_PER_DEFEAT = 5;
 const XP_PER_LEVEL = 30;
-
-export function xpGain(defeats: number): number {
-  return XP_BASE + defeats * XP_PER_DEFEAT;
-}
 
 export function xpToNext(level: number): number {
   return level * XP_PER_LEVEL;
