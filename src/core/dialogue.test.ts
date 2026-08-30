@@ -116,6 +116,29 @@ describe('pickDialogue', () => {
   });
 });
 
+describe('levelUp の トリガ', () => {
+  it('レベルアップで セリフが でる', () => {
+    const reg = testRegistry();
+    const got = pickDialogue(reg, [{ type: 'levelUp', uid: 'p1', defId: 'roran', level: 2 }]);
+    expect(got.map((d) => d.lineId)).toEqual(['levelup:roran']);
+  });
+
+  it('セリフが ない ユニットなら なにも でない', () => {
+    const reg = testRegistry();
+    expect(pickDialogue(reg, [{ type: 'levelUp', uid: 'e1', defId: 'garum', level: 2 }])).toEqual([]);
+  });
+
+  it('ゆうせん じゅんは skill の あと、pinch の まえ', () => {
+    const reg = testRegistry();
+    const got = pickDialogue(reg, [
+      { type: 'pinch', uid: 'p1', defId: 'roran' },
+      { type: 'levelUp', uid: 'p1', defId: 'roran', level: 2 },
+      { type: 'skill', uid: 'p1', defId: 'roran', skillId: 'funbaru', hits: 0 },
+    ]);
+    expect(got.map((d) => d.lineId)).toEqual(['skill:roran', 'levelup:roran', 'pinch:roran']);
+  });
+});
+
 describe('pickStageIntro', () => {
   it('intro が定義されていなければ空配列', () => {
     const reg = testRegistry();

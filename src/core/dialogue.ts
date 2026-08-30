@@ -6,7 +6,7 @@ export type DialogueRequest = { speaker: Speaker; lineId: string; text: string }
 const RIVAL_SPEAKERS: readonly string[] = ['roran', 'ines'];
 
 /** 小さいほど先に表示する */
-const PRIORITY = ['rival', 'first', 'skill', 'pinch', 'win', 'retire'] as const;
+const PRIORITY = ['rival', 'first', 'skill', 'levelup', 'pinch', 'win', 'retire'] as const;
 
 function ally(id: string): Speaker {
   return { side: 'ally', id };
@@ -38,6 +38,9 @@ export function pickDialogue(reg: Registry, events: SimEvent[]): DialogueRequest
       }
       case 'skill':
         push('skill', make(reg, ally(ev.defId), `skill:${ev.defId}`));
+        break;
+      case 'levelUp':
+        push('levelup', make(reg, { side: 'ally', id: ev.defId }, `levelup:${ev.defId}`));
         break;
       case 'pinch':
         push('pinch', make(reg, ally(ev.defId), `pinch:${ev.defId}`));
