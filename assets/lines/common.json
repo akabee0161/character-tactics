@@ -10,8 +10,8 @@
   "first:gau:tatemochi": "かたい！\nまわりこめば いける？",
   "first:gau:garum": "うわ、\nつよそうなのが きた！",
 
-  "rival:roran": "ガルム……\nまた きたんだね",
-  "rival:ines": "また あんたか！\nこんどこそ おいかえす",
+  "rival:roran:garum": "ガルム……\nまた きたんだね",
+  "rival:ines:garum": "また あんたか！\nこんどこそ おいかえす",
 
   "skill:roran": "ここは とおさない！",
   "skill:ines": "うごかないで……\nいまっ！",

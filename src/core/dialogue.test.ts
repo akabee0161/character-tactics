@@ -38,32 +38,6 @@ describe('pickDialogue', () => {
     expect(pickDialogue(reg, events)).toEqual([]);
   });
 
-  it('ロランがガルムと会うと いんねん のセリフになる', () => {
-    const reg = testRegistry();
-    const events: SimEvent[] = [
-      { type: 'engage', uid: 'p1', defId: 'roran', targetUid: 'g1', targetDefId: 'garum', firstMeeting: true },
-    ];
-    expect(pickDialogue(reg, events)).toEqual([
-      { speaker: { side: 'ally', id: 'roran' }, lineId: 'rival:roran', text: reg.lines.get('rival:roran') },
-    ]);
-  });
-
-  it('ミストがガルムと会うと ふつうの はじめまして', () => {
-    const reg = testRegistry();
-    const events: SimEvent[] = [
-      { type: 'engage', uid: 'p1', defId: 'mist', targetUid: 'g1', targetDefId: 'garum', firstMeeting: true },
-    ];
-    expect(pickDialogue(reg, events)[0]!.lineId).toBe('first:mist:garum');
-  });
-
-  it('対応するセリフがなければ出さない', () => {
-    const reg = testRegistry();
-    const events: SimEvent[] = [
-      { type: 'engage', uid: 'p1', defId: 'roran', targetUid: 'g1', targetDefId: 'garum', firstMeeting: false },
-    ];
-    expect(pickDialogue(reg, events)).toEqual([]);
-  });
-
   it('スキル・ピンチ・勝利・撤退のセリフが出る', () => {
     const reg = testRegistry();
     expect(pickDialogue(reg, [
@@ -106,13 +80,43 @@ describe('pickDialogue', () => {
       { type: 'unitFled', uid: 'g1', defId: 'garum', byUid: 'p4', byDefId: 'gau' },
     ];
     expect(pickDialogue(reg, events).map((d) => d.lineId)).toEqual([
-      'rival:ines',
+      'rival:ines:garum',
       'first:mist:narazumono',
       'skill:gau',
       'pinch:mist',
       'win:gau',
       'retire:roran',
     ]);
+  });
+});
+
+describe('しょそうぐうの セリフ', () => {
+  const reg = testRegistry();
+  const engage = (defId: string, targetDefId: string) => ({
+    type: 'engage' as const, uid: 'p1', defId, targetUid: 'e1', targetDefId, firstMeeting: true,
+  });
+
+  it('rival: が あれば そちらを つかう', () => {
+    expect(pickDialogue(reg, [engage('roran', 'garum')]).map((d) => d.lineId))
+      .toEqual(['rival:roran:garum']);
+  });
+
+  it('rival: が なければ first: に おちる', () => {
+    expect(pickDialogue(reg, [engage('mist', 'garum')]).map((d) => d.lineId))
+      .toEqual(['first:mist:garum']);
+  });
+
+  it('どちらも なければ なにも でない', () => {
+    expect(pickDialogue(reg, [engage('roran', 'yuurei')])).toEqual([]);
+  });
+
+  it('rival は first より さきに でる', () => {
+    const got = pickDialogue(reg, [engage('mist', 'garum'), engage('roran', 'garum')]);
+    expect(got.map((d) => d.lineId)).toEqual(['rival:roran:garum', 'first:mist:garum']);
+  });
+
+  it('firstMeeting でなければ でない', () => {
+    expect(pickDialogue(reg, [{ ...engage('roran', 'garum'), firstMeeting: false }])).toEqual([]);
   });
 });
 

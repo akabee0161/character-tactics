@@ -3,8 +3,6 @@ import type { Speaker, SimEvent, StageDef } from './types';
 
 export type DialogueRequest = { speaker: Speaker; lineId: string; text: string };
 
-const RIVAL_SPEAKERS: readonly string[] = ['roran', 'ines'];
-
 /** 小さいほど先に表示する */
 const PRIORITY = ['rival', 'first', 'skill', 'levelup', 'pinch', 'win', 'retire'] as const;
 
@@ -29,11 +27,11 @@ export function pickDialogue(reg: Registry, events: SimEvent[]): DialogueRequest
     switch (ev.type) {
       case 'engage': {
         if (!ev.firstMeeting) break;
-        if (ev.targetDefId === 'garum' && RIVAL_SPEAKERS.includes(ev.defId)) {
-          push('rival', make(reg, ally(ev.defId), `rival:${ev.defId}`));
-        } else {
-          push('first', make(reg, ally(ev.defId), `first:${ev.defId}:${ev.targetDefId}`));
-        }
+        // rival があればそちらを優先し、なければ first に落ちる。
+        // 特定の敵やキャラを名指しする分岐はここに書かない
+        const rival = make(reg, ally(ev.defId), `rival:${ev.defId}:${ev.targetDefId}`);
+        if (rival) push('rival', rival);
+        else push('first', make(reg, ally(ev.defId), `first:${ev.defId}:${ev.targetDefId}`));
         break;
       }
       case 'skill':
