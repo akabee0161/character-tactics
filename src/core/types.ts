@@ -24,8 +24,22 @@ export const FORT_MAX_HP = 30;
 
 export type CharProgress = { level: number; xp: number };
 
-export type AllyUnit = {
-  id: string;
+export type AiState = {
+  def: AiDef;
+  mode: 'idle' | 'chase' | 'return';
+  targetUid: string | null;
+  /** 初期位置。sentry の帰還先 */
+  home: Vec2;
+};
+
+export type Unit = {
+  uid: string;
+  defId: string;
+  side: 'player' | 'enemy';
+  controller: 'player' | 'ai';
+  /** false なら攻撃しない。狙われはする */
+  combat: boolean;
+
   pos: Vec2;
   hp: number;
   maxHp: number;
@@ -35,39 +49,29 @@ export type AllyUnit = {
   range: number;
   attackInterval: number;
   speed: number;
-  skill: string;
-  /** 移動先へのフローフィールド。null なら移動しない */
-  goalField: FlowField | null;
-  /** 移動先として指定されたマップ座標。null なら移動しない */
+  bowDamageCap: number | null;
+  skillId: string | null;
+
+  level: number;
+  xp: number;
+
   goalPos: Vec2 | null;
-  /** 交戦中の敵の uid。null なら非交戦 */
+  goalField: FlowField | null;
+  /** 交戦中の相手の uid。null なら非交戦 */
   engagedWith: string | null;
   attackCooldown: number;
-  /** このウェーブでスキルを使ったか */
-  skillUsed: boolean;
   retired: boolean;
-  /** ふんばりの効果が切れる時刻（state.time 基準）。過去の値なら効果なし */
+
+  /** controller === 'ai' のときだけ入る */
+  ai: AiState | null;
+
+  skillUsed: boolean;
   funbaruUntil: number;
   neraiuchiArmed: boolean;
-  /** このウェーブでピンチのセリフを出したか */
   pinchShown: boolean;
-  /** このステージで交戦したことのある敵の defId */
+  /** このステージで交戦したことのある相手の defId */
   seenDefIds: string[];
-};
-
-export type EnemyUnit = {
-  uid: string;
-  kind: string;
-  /** 配置ごとの AI 定義。フェーズ 6 まで読まれない */
-  ai: AiDef;
-  pos: Vec2;
-  hp: number;
-  maxHp: number;
-  engagedWith: string | null;
-  attackCooldown: number;
-  /** 最後にこの敵を攻撃した味方。撃破の手柄をつけるのに使う */
   lastHitBy: string | null;
-  /** 最後に受けた攻撃がねらいうちだったか */
   lastHitNeraiuchi: boolean;
 };
 
@@ -76,14 +80,14 @@ export type Speaker = { side: 'ally' | 'enemy'; id: string };
 export type BattlePhase = 'placement' | 'battle' | 'victory' | 'defeat';
 
 export type SimEvent =
-  | { type: 'engage'; allyId: string; enemyUid: string; kind: string; firstMeeting: boolean }
-  | { type: 'skill'; allyId: string; skill: string; hits: number }
-  | { type: 'pinch'; allyId: string }
+  | { type: 'engage'; uid: string; defId: string; targetUid: string; targetDefId: string; firstMeeting: boolean }
+  | { type: 'skill'; uid: string; defId: string; skillId: string; hits: number }
+  | { type: 'pinch'; uid: string; defId: string }
   | { type: 'hit'; targetPos: Vec2; amount: number }
-  | { type: 'enemyDefeated'; uid: string; kind: string; byAlly: string | null; neraiuchi: boolean }
-  | { type: 'unitFled'; uid: string; kind: string; byAlly: string | null }
-  | { type: 'allyRetired'; allyId: string }
-  | { type: 'bondSupport'; targetId: string; supporterIds: string[] }
+  | { type: 'unitDefeated'; uid: string; defId: string; byUid: string | null; byDefId: string | null; neraiuchi: boolean }
+  | { type: 'unitFled'; uid: string; defId: string; byUid: string | null; byDefId: string | null }
+  | { type: 'unitRetired'; uid: string; defId: string }
+  | { type: 'bondSupport'; targetUid: string; targetDefId: string; supporterUids: string[] }
   | { type: 'fortDamaged'; amount: number };
 
 export type BattleState = {
@@ -95,8 +99,7 @@ export type BattleState = {
   fortHp: number;
   time: number;
   phase: BattlePhase;
-  allies: AllyUnit[];
-  enemies: EnemyUnit[];
+  units: Unit[];
   events: SimEvent[];
   counters: Record<string, number>;
   rng: Rng;

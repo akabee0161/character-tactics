@@ -29,24 +29,24 @@ export function pickDialogue(reg: Registry, events: SimEvent[]): DialogueRequest
     switch (ev.type) {
       case 'engage': {
         if (!ev.firstMeeting) break;
-        if (ev.kind === 'garum' && RIVAL_SPEAKERS.includes(ev.allyId)) {
-          push('rival', make(reg, ally(ev.allyId), `rival:${ev.allyId}`));
+        if (ev.targetDefId === 'garum' && RIVAL_SPEAKERS.includes(ev.defId)) {
+          push('rival', make(reg, ally(ev.defId), `rival:${ev.defId}`));
         } else {
-          push('first', make(reg, ally(ev.allyId), `first:${ev.allyId}:${ev.kind}`));
+          push('first', make(reg, ally(ev.defId), `first:${ev.defId}:${ev.targetDefId}`));
         }
         break;
       }
       case 'skill':
-        push('skill', make(reg, ally(ev.allyId), `skill:${ev.allyId}`));
+        push('skill', make(reg, ally(ev.defId), `skill:${ev.defId}`));
         break;
       case 'pinch':
-        push('pinch', make(reg, ally(ev.allyId), `pinch:${ev.allyId}`));
+        push('pinch', make(reg, ally(ev.defId), `pinch:${ev.defId}`));
         break;
       case 'unitFled':
-        if (ev.byAlly) push('win', make(reg, ally(ev.byAlly), `win:${ev.byAlly}`));
+        if (ev.byDefId) push('win', make(reg, ally(ev.byDefId), `win:${ev.byDefId}`));
         break;
-      case 'allyRetired':
-        push('retire', make(reg, ally(ev.allyId), `retire:${ev.allyId}`));
+      case 'unitRetired':
+        push('retire', make(reg, ally(ev.defId), `retire:${ev.defId}`));
         break;
       default:
         break;

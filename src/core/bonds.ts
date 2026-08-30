@@ -4,7 +4,7 @@ import type { Vec2 } from './types';
 
 export const BOND_RANGE = 200;
 
-export type BondSupporter = { id: string; pos: Vec2; retired: boolean };
+export type BondSupporter = { uid: string; id: string; pos: Vec2; retired: boolean };
 
 function bonusBetween(reg: Registry, a: string, b: string): number {
   for (const bond of reg.bonds) {
@@ -18,14 +18,14 @@ export function bondSupporters(
   selfId: string,
   selfPos: Vec2,
   others: BondSupporter[],
-): { id: string; bonus: number }[] {
-  const result: { id: string; bonus: number }[] = [];
+): { uid: string; id: string; bonus: number }[] {
+  const result: { uid: string; id: string; bonus: number }[] = [];
   for (const other of others) {
     if (other.id === selfId || other.retired) continue;
     const bonus = bonusBetween(reg, selfId, other.id);
     if (bonus === 0) continue;
     if (distance(selfPos, other.pos) > BOND_RANGE) continue;
-    result.push({ id: other.id, bonus });
+    result.push({ uid: other.uid, id: other.id, bonus });
   }
   return result;
 }

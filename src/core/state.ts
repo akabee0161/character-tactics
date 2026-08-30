@@ -2,8 +2,8 @@ import { computeFlowField, distance, isWalkableAt, makeGrid } from './field';
 import { makeRng } from './rng';
 import { FORT_MAX_HP } from './types';
 import type { Registry } from '../engine/registry';
-import type { EnemyDef, EnemyPlacement, StageDef, UnitDef } from '../engine/schema';
-import type { AllyUnit, BattleState, CharProgress, EnemyUnit, Vec2 } from './types';
+import type { AiDef, EnemyDef, StageDef, UnitDef } from '../engine/schema';
+import type { BattleState, CharProgress, Unit, Vec2 } from './types';
 
 const HP_PER_LEVEL = 3;
 const POWER_PER_LEVEL = 1;
@@ -14,45 +14,40 @@ export function statsForLevel(def: UnitDef, level: number): { maxHp: number; pow
   return { maxHp: def.maxHp + steps * HP_PER_LEVEL, power: def.power + steps * POWER_PER_LEVEL };
 }
 
-function makeAlly(def: UnitDef, level: number, pos: Vec2): AllyUnit {
-  const { maxHp, power } = statsForLevel(def, level);
-  return {
-    id: def.id,
-    pos: { ...pos },
-    hp: maxHp,
-    maxHp,
-    power,
-    guard: def.guard,
-    attack: def.attack,
-    range: def.range,
-    attackInterval: def.attackInterval,
-    speed: def.speed,
-    skill: def.skillId ?? '',
-    goalField: null,
-    goalPos: null,
-    engagedWith: null,
-    attackCooldown: 0,
-    skillUsed: false,
-    retired: false,
-    funbaruUntil: -1,
-    neraiuchiArmed: false,
-    pinchShown: false,
-    seenDefIds: [],
-  };
-}
+type MakeUnitArgs = {
+  uid: string;
+  def: UnitDef | EnemyDef;
+  side: 'player' | 'enemy';
+  controller: 'player' | 'ai';
+  pos: Vec2;
+  level: number;
+  xp: number;
+  ai: AiDef | null;
+};
 
-function makeEnemy(uid: string, def: EnemyDef, placement: EnemyPlacement): EnemyUnit {
+function makeUnit(a: MakeUnitArgs): Unit {
+  const { maxHp, power } = statsForLevel(a.def, a.level);
+  const enemyDef = 'bowDamageCap' in a.def ? a.def : null;
   return {
-    uid,
-    kind: def.id,
-    ai: placement.ai,
-    pos: { ...placement.pos },
-    hp: def.maxHp,
-    maxHp: def.maxHp,
-    engagedWith: null,
-    attackCooldown: 0,
-    lastHitBy: null,
-    lastHitNeraiuchi: false,
+    uid: a.uid,
+    defId: a.def.id,
+    side: a.side,
+    controller: a.controller,
+    combat: a.def.combat,
+    pos: { ...a.pos },
+    hp: maxHp, maxHp, power,
+    guard: a.def.guard,
+    attack: a.def.attack,
+    range: a.def.range,
+    attackInterval: a.def.attackInterval,
+    speed: a.def.speed,
+    bowDamageCap: enemyDef?.bowDamageCap ?? null,
+    skillId: a.def.skillId,
+    level: a.level, xp: a.xp,
+    goalPos: null, goalField: null, engagedWith: null, attackCooldown: 0, retired: false,
+    ai: a.ai === null ? null : { def: a.ai, mode: 'idle', targetUid: null, home: { ...a.pos } },
+    skillUsed: false, funbaruUntil: -1, neraiuchiArmed: false, pinchShown: false,
+    seenDefIds: [], lastHitBy: null, lastHitNeraiuchi: false,
   };
 }
 
@@ -64,18 +59,24 @@ export function createBattleState(
 ): BattleState {
   const grid = makeGrid(stage.cell, stage.mapRows);
 
-  const allies = stage.roster.map((defId, i) => {
+  const roster = stage.roster.map((defId, i) => {
     const def = reg.units.get(defId);
     if (!def) throw new Error(`roster に しらない ユニット: ${defId}`);
     const zone = stage.placementZone[i % stage.placementZone.length]!;
-    return makeAlly(def, progress[defId]?.level ?? 1, zone.pos);
+    return makeUnit({
+      uid: `p${i + 1}`, def, side: 'player', controller: 'player', pos: zone.pos,
+      level: progress[defId]?.level ?? 1, xp: progress[defId]?.xp ?? 0, ai: null,
+    });
   });
 
   let nextEnemyUid = 1;
   const enemies = stage.enemies.map((placement) => {
     const def = reg.enemies.get(placement.defId);
     if (!def) throw new Error(`はいちに しらない てき: ${placement.defId}`);
-    return makeEnemy(`e${nextEnemyUid++}`, def, placement);
+    return makeUnit({
+      uid: `e${nextEnemyUid++}`, def, side: 'enemy', controller: 'ai', pos: placement.pos,
+      level: 1, xp: 0, ai: placement.ai,
+    });
   });
 
   return {
@@ -87,8 +88,7 @@ export function createBattleState(
     fortHp: FORT_MAX_HP,
     time: 0,
     phase: 'placement',
-    allies,
-    enemies,
+    units: [...roster, ...enemies],
     events: [],
     counters: {},
     rng: makeRng(seed),
@@ -96,25 +96,26 @@ export function createBattleState(
   };
 }
 
-export function placeUnit(state: BattleState, defId: string, pos: Vec2): boolean {
+export function placeUnit(state: BattleState, uid: string, pos: Vec2): boolean {
   if (!isWalkableAt(state.grid, pos)) return false;
   const inZone = state.stage.placementZone.some((z) => distance(z.pos, pos) <= PLACEMENT_RADIUS);
   if (!inZone) return false;
-  const ally = state.allies.find((a) => a.id === defId);
-  if (!ally) return false;
-  ally.pos = { ...pos };
-  ally.goalField = null;
-  ally.goalPos = null;
+  const unit = state.units.find((u) => u.uid === uid && u.side === 'player');
+  if (!unit) return false;
+  unit.pos = { ...pos };
+  unit.goalField = null;
+  unit.goalPos = null;
   return true;
 }
 
 /** 配置フェーズから戦闘へ。ウェーブが無いので、これはステージ中に1度しか呼ばれない */
 export function beginBattle(state: BattleState): void {
-  for (const ally of state.allies) {
-    ally.engagedWith = null;
-    ally.attackCooldown = 0;
-    ally.goalField = null;
-    ally.goalPos = null;
+  for (const unit of state.units) {
+    if (unit.side !== 'player') continue;
+    unit.engagedWith = null;
+    unit.attackCooldown = 0;
+    unit.goalField = null;
+    unit.goalPos = null;
   }
   state.events = [];
   state.time = 0;

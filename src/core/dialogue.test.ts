@@ -23,7 +23,7 @@ describe('pickDialogue', () => {
   it('はじめての交戦でセリフが出る', () => {
     const reg = testRegistry();
     const events: SimEvent[] = [
-      { type: 'engage', allyId: 'gau', enemyUid: 'e1', kind: 'narazumono', firstMeeting: true },
+      { type: 'engage', uid: 'p1', defId: 'gau', targetUid: 'e1', targetDefId: 'narazumono', firstMeeting: true },
     ];
     expect(pickDialogue(reg, events)).toEqual([
       { speaker: { side: 'ally', id: 'gau' }, lineId: 'first:gau:narazumono', text: reg.lines.get('first:gau:narazumono') },
@@ -33,7 +33,7 @@ describe('pickDialogue', () => {
   it('2 回目の交戦ではセリフが出ない', () => {
     const reg = testRegistry();
     const events: SimEvent[] = [
-      { type: 'engage', allyId: 'gau', enemyUid: 'e1', kind: 'narazumono', firstMeeting: false },
+      { type: 'engage', uid: 'p1', defId: 'gau', targetUid: 'e1', targetDefId: 'narazumono', firstMeeting: false },
     ];
     expect(pickDialogue(reg, events)).toEqual([]);
   });
@@ -41,7 +41,7 @@ describe('pickDialogue', () => {
   it('ロランがガルムと会うと いんねん のセリフになる', () => {
     const reg = testRegistry();
     const events: SimEvent[] = [
-      { type: 'engage', allyId: 'roran', enemyUid: 'g1', kind: 'garum', firstMeeting: true },
+      { type: 'engage', uid: 'p1', defId: 'roran', targetUid: 'g1', targetDefId: 'garum', firstMeeting: true },
     ];
     expect(pickDialogue(reg, events)).toEqual([
       { speaker: { side: 'ally', id: 'roran' }, lineId: 'rival:roran', text: reg.lines.get('rival:roran') },
@@ -51,7 +51,7 @@ describe('pickDialogue', () => {
   it('ミストがガルムと会うと ふつうの はじめまして', () => {
     const reg = testRegistry();
     const events: SimEvent[] = [
-      { type: 'engage', allyId: 'mist', enemyUid: 'g1', kind: 'garum', firstMeeting: true },
+      { type: 'engage', uid: 'p1', defId: 'mist', targetUid: 'g1', targetDefId: 'garum', firstMeeting: true },
     ];
     expect(pickDialogue(reg, events)[0]!.lineId).toBe('first:mist:garum');
   });
@@ -59,31 +59,39 @@ describe('pickDialogue', () => {
   it('対応するセリフがなければ出さない', () => {
     const reg = testRegistry();
     const events: SimEvent[] = [
-      { type: 'engage', allyId: 'roran', enemyUid: 'g1', kind: 'garum', firstMeeting: false },
+      { type: 'engage', uid: 'p1', defId: 'roran', targetUid: 'g1', targetDefId: 'garum', firstMeeting: false },
     ];
     expect(pickDialogue(reg, events)).toEqual([]);
   });
 
   it('スキル・ピンチ・勝利・撤退のセリフが出る', () => {
     const reg = testRegistry();
-    expect(pickDialogue(reg, [{ type: 'skill', allyId: 'ines', skill: 'neraiuchi', hits: 0 }])[0]!.lineId).toBe('skill:ines');
-    expect(pickDialogue(reg, [{ type: 'pinch', allyId: 'mist' }])[0]!.lineId).toBe('pinch:mist');
-    expect(pickDialogue(reg, [{ type: 'unitFled', uid: 'g1', kind: 'garum', byAlly: 'gau' }])[0]!.lineId).toBe('win:gau');
-    expect(pickDialogue(reg, [{ type: 'allyRetired', allyId: 'roran' }])[0]!.lineId).toBe('retire:roran');
+    expect(pickDialogue(reg, [
+      { type: 'skill', uid: 'p2', defId: 'ines', skillId: 'neraiuchi', hits: 0 },
+    ])[0]!.lineId).toBe('skill:ines');
+    expect(pickDialogue(reg, [{ type: 'pinch', uid: 'p3', defId: 'mist' }])[0]!.lineId).toBe('pinch:mist');
+    expect(pickDialogue(reg, [
+      { type: 'unitFled', uid: 'g1', defId: 'garum', byUid: 'p4', byDefId: 'gau' },
+    ])[0]!.lineId).toBe('win:gau');
+    expect(pickDialogue(reg, [
+      { type: 'unitRetired', uid: 'p1', defId: 'roran' },
+    ])[0]!.lineId).toBe('retire:roran');
   });
 
   it('だれが倒したか分からない撃退ではセリフを出さない', () => {
     const reg = testRegistry();
-    expect(pickDialogue(reg, [{ type: 'unitFled', uid: 'g1', kind: 'garum', byAlly: null }])).toEqual([]);
+    expect(pickDialogue(reg, [
+      { type: 'unitFled', uid: 'g1', defId: 'garum', byUid: null, byDefId: null },
+    ])).toEqual([]);
   });
 
   it('セリフの出ないイベントは無視する', () => {
     const reg = testRegistry();
     const events: SimEvent[] = [
       { type: 'hit', targetPos: { x: 0, y: 0 }, amount: 3 },
-      { type: 'bondSupport', targetId: 'roran', supporterIds: ['ines'] },
+      { type: 'bondSupport', targetUid: 'p1', targetDefId: 'roran', supporterUids: ['p2'] },
       { type: 'fortDamaged', amount: 3 },
-      { type: 'enemyDefeated', uid: 'e1', kind: 'narazumono', byAlly: 'gau', neraiuchi: false },
+      { type: 'unitDefeated', uid: 'e1', defId: 'narazumono', byUid: 'p4', byDefId: 'gau', neraiuchi: false },
     ];
     expect(pickDialogue(reg, events)).toEqual([]);
   });
@@ -91,12 +99,12 @@ describe('pickDialogue', () => {
   it('複数同時なら 優先度順（いんねん → はじめまして → スキル → ピンチ → 勝利 → たいきゃく）', () => {
     const reg = testRegistry();
     const events: SimEvent[] = [
-      { type: 'allyRetired', allyId: 'roran' },
-      { type: 'pinch', allyId: 'mist' },
-      { type: 'skill', allyId: 'gau', skill: 'kakenukeru', hits: 0 },
-      { type: 'engage', allyId: 'mist', enemyUid: 'e1', kind: 'narazumono', firstMeeting: true },
-      { type: 'engage', allyId: 'ines', enemyUid: 'g1', kind: 'garum', firstMeeting: true },
-      { type: 'unitFled', uid: 'g1', kind: 'garum', byAlly: 'gau' },
+      { type: 'unitRetired', uid: 'p1', defId: 'roran' },
+      { type: 'pinch', uid: 'p3', defId: 'mist' },
+      { type: 'skill', uid: 'p4', defId: 'gau', skillId: 'kakenukeru', hits: 0 },
+      { type: 'engage', uid: 'p3', defId: 'mist', targetUid: 'e1', targetDefId: 'narazumono', firstMeeting: true },
+      { type: 'engage', uid: 'p2', defId: 'ines', targetUid: 'g1', targetDefId: 'garum', firstMeeting: true },
+      { type: 'unitFled', uid: 'g1', defId: 'garum', byUid: 'p4', byDefId: 'gau' },
     ];
     expect(pickDialogue(reg, events).map((d) => d.lineId)).toEqual([
       'rival:ines',

@@ -4,7 +4,7 @@ import { testRegistry } from './testing';
 import type { BondSupporter } from './bonds';
 
 const at = (id: BondSupporter['id'], x: number, retired = false): BondSupporter => ({
-  id, pos: { x, y: 0 }, retired,
+  uid: `u:${id}`, id, pos: { x, y: 0 }, retired,
 });
 
 describe('レジストリの bonds', () => {
@@ -64,8 +64,8 @@ describe('bondSupporters', () => {
     const reg = testRegistry();
     const r = bondSupporters(reg, 'roran', { x: 0, y: 0 }, [at('ines', 50), at('mist', 80), at('gau', 10)]);
     expect(r).toEqual([
-      { id: 'ines', bonus: 2 },
-      { id: 'mist', bonus: 1 },
+      { uid: 'u:ines', id: 'ines', bonus: 2 },
+      { uid: 'u:mist', id: 'mist', bonus: 1 },
     ]);
   });
 

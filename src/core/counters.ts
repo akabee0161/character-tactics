@@ -16,12 +16,12 @@ export function accumulate(counters: Record<string, number>, events: SimEvent[])
   for (const ev of events) {
     switch (ev.type) {
       case 'skill':
-        bump(counters, `skill:${ev.skill}:uses`, 1);
-        bump(counters, `skill:${ev.skill}:hits`, ev.hits);
+        bump(counters, `skill:${ev.skillId}:uses`, 1);
+        bump(counters, `skill:${ev.skillId}:hits`, ev.hits);
         break;
-      case 'enemyDefeated':
-        if (ev.byAlly === null) break;
-        bump(counters, COUNTER_DEFEAT_BY(ev.byAlly), 1);
+      case 'unitDefeated':
+        if (ev.byDefId === null) break;
+        bump(counters, COUNTER_DEFEAT_BY(ev.byDefId), 1);
         if (ev.neraiuchi) bump(counters, 'kill:neraiuchi', 1);
         break;
       case 'bondSupport':
