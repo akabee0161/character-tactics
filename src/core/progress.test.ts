@@ -37,12 +37,12 @@ describe('applyXp', () => {
 describe('earnedTitles', () => {
   it('しきいちに とどいた しょうごうだけを かえす', () => {
     const reg = testRegistry();
-    expect(earnedTitles(reg, { 'skill:funbaru:uses': 5 })).toEqual(['gamanzuyoi']);
+    expect(earnedTitles(reg, { 'skill:funbaru:uses': 3 })).toEqual(['gamanzuyoi']);
   });
 
   it('しきいちの 1つ てまえでは かえさない', () => {
     const reg = testRegistry();
-    expect(earnedTitles(reg, { 'skill:funbaru:uses': 4 })).toEqual([]);
+    expect(earnedTitles(reg, { 'skill:funbaru:uses': 2 })).toEqual([]);
   });
 
   it('カウンタが なければ かえさない', () => {
@@ -52,7 +52,7 @@ describe('earnedTitles', () => {
 
   it('ふくすうの しょうごうを どうじに かえす', () => {
     const reg = testRegistry();
-    const got = earnedTitles(reg, { 'skill:funbaru:uses': 5, 'bond:supports': 20 });
+    const got = earnedTitles(reg, { 'skill:funbaru:uses': 3, 'bond:supports': 20 });
     expect(got.sort()).toEqual(['gamanzuyoi', 'nakayoshi']);
   });
 });

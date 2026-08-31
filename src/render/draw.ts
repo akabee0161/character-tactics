@@ -4,7 +4,7 @@ import { playerUnits } from '../core/sim';
 import { lookupDef } from '../engine/registry';
 import type { Registry } from '../engine/registry';
 import type { StageDef } from '../engine/schema';
-import { escortDefIds, sightCircles } from './objectives-view';
+import { sightCircles } from './objectives-view';
 import { LOGICAL_H, LOGICAL_W, mapToLogical } from './viewport';
 import { HIT_EFFECT_DURATION } from './effects';
 import type { EffectState } from './effects';
@@ -43,6 +43,7 @@ export function drawBattle(
   state: BattleState,
   selected: string | null,
   effects: EffectState,
+  escorts: Set<string>,
 ): void {
   ctx.save();
   ctx.fillStyle = COLORS.sea;
@@ -54,7 +55,7 @@ export function drawBattle(
   drawGoalMarkers(ctx, reg, state, selected);
   drawBonds(ctx, state);
   drawUnits(ctx, reg, state, selected);
-  drawEscortMarks(ctx, state, new Set(escortDefIds(state.stage)));
+  drawEscortMarks(ctx, state, escorts);
   drawEffects(ctx, effects);
   drawTopBar(ctx, state);
   ctx.restore();

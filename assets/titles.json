@@ -1,7 +1,7 @@
 [
-  { "id": "gamanzuyoi",       "label": "がまんづよい",       "owner": "roran", "counter": "skill:funbaru:uses",    "threshold": 5 },
+  { "id": "gamanzuyoi",       "label": "がまんづよい",       "owner": "roran", "counter": "skill:funbaru:uses",    "threshold": 3 },
   { "id": "ichigekihissatsu", "label": "いちげきひっさつ",   "owner": "ines",  "counter": "kill:neraiuchi",        "threshold": 3 },
-  { "id": "minnanookaasan",   "label": "みんなの おかあさん", "owner": "mist",  "counter": "skill:omajinai:uses",   "threshold": 5 },
-  { "id": "kazenoyouni",      "label": "かぜの ように",       "owner": "gau",   "counter": "skill:kakenukeru:hits", "threshold": 8 },
+  { "id": "minnanookaasan",   "label": "みんなの おかあさん", "owner": "mist",  "counter": "skill:omajinai:uses",   "threshold": 3 },
+  { "id": "kazenoyouni",      "label": "かぜの ように",       "owner": "gau",   "counter": "skill:kakenukeru:hits", "threshold": 5 },
   { "id": "nakayoshi",        "label": "なかよし",           "owner": null,    "counter": "bond:supports",         "threshold": 20 }
 ]

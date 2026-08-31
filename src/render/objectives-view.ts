@@ -25,10 +25,8 @@ export function sightCircles(units: Unit[]): SightCircle[] {
     if (u.retired || u.ai === null) continue;
     const def = u.ai.def;
     const alerted = u.ai.mode === 'chase';
-    if (def.kind === 'sentry') {
-      out.push({ pos: { ...u.ai.home }, radius: def.sightRange, alerted });
-    } else if (def.kind === 'guard') {
-      out.push({ pos: { ...def.post }, radius: def.sightRange, alerted });
+    if (def.kind === 'sentry' || def.kind === 'guard') {
+      out.push({ pos: { ...u.pos }, radius: def.sightRange, alerted });
     }
   }
   return out;

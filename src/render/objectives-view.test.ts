@@ -38,19 +38,19 @@ function enemy(uid: string, x: number, y: number, ai: Unit['ai']): Unit {
 }
 
 describe('sightCircles', () => {
-  it('sentry は home を ちゅうしんに した えん', () => {
+  it('sentry は げんざいいちを ちゅうしんに した えん', () => {
     const u = enemy('e1', 200, 100, {
       def: { kind: 'sentry', sightRange: 90 }, mode: 'idle', targetUid: null, home: { x: 100, y: 100 },
     });
-    expect(sightCircles([u])).toEqual([{ pos: { x: 100, y: 100 }, radius: 90, alerted: false }]);
+    expect(sightCircles([u])).toEqual([{ pos: { x: 200, y: 100 }, radius: 90, alerted: false }]);
   });
 
-  it('guard は post を ちゅうしんに した えん', () => {
+  it('guard は げんざいいちを ちゅうしんに した えん', () => {
     const u = enemy('e1', 200, 100, {
       def: { kind: 'guard', post: { x: 50, y: 60 }, leash: 120, sightRange: 80 },
       mode: 'idle', targetUid: null, home: { x: 200, y: 100 },
     });
-    expect(sightCircles([u])).toEqual([{ pos: { x: 50, y: 60 }, radius: 80, alerted: false }]);
+    expect(sightCircles([u])).toEqual([{ pos: { x: 200, y: 100 }, radius: 80, alerted: false }]);
   });
 
   it('aggressive は えんを もたない', () => {

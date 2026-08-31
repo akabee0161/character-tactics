@@ -2,7 +2,7 @@ import { lookupDef } from '../engine/registry';
 import { titlesOf, xpToNext } from '../core/progress';
 import { PLACEMENT_RADIUS } from '../core/state';
 import { LOGICAL_H, LOGICAL_W, mapToLogical } from '../render/viewport';
-import { BOTTOM_BAR_H, BOTTOM_BAR_Y, BTN, STAGE_BTN, portraitSlot, skillButtonAt } from './layout';
+import { BOTTOM_BAR_H, BOTTOM_BAR_Y, BTN, portraitSlot, skillButtonAt, stageSlot } from './layout';
 import { isStageUnlocked } from './flow';
 import type { DialogueRequest } from '../core/dialogue';
 import type { XpGain } from './flow';
@@ -45,7 +45,7 @@ export function drawTitle(ctx: CanvasRenderingContext2D, hasSave: boolean): void
   ctx.textAlign = 'center';
   ctx.fillText('とりでの なかまたち', LOGICAL_W / 2, 180);
   ctx.font = '22px sans-serif';
-  ctx.fillText('4にんの なかまで しまを まもろう', LOGICAL_W / 2, 232);
+  ctx.fillText('4にんの なかまで てきの ほんきょちへ せめこもう', LOGICAL_W / 2, 232);
   ctx.textAlign = 'left';
   button(ctx, BTN.titleNew, 'はじめから');
   button(ctx, BTN.titleContinue, 'つづきから', hasSave);
@@ -55,10 +55,10 @@ export function drawStageSelect(ctx: CanvasRenderingContext2D, reg: Registry, sa
   clear(ctx);
   ctx.fillStyle = INK;
   ctx.font = '36px sans-serif';
-  ctx.fillText('どの しまを まもる？', 40, 100);
+  ctx.fillText('どの ステージに いく？', 40, 100);
 
   reg.stages.forEach((stage, i) => {
-    const r = STAGE_BTN[i]!;
+    const r = stageSlot(i);
     const unlocked = isStageUnlocked(reg, save, i);
     panel(ctx, r, unlocked ? '#2c4a63' : '#2a2f35');
     ctx.fillStyle = unlocked ? INK : '#78808a';
@@ -234,7 +234,7 @@ export function drawResult(
     ctx.arc(60, y - 6, 14, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = INK;
-    ctx.fillText(`${lookupDef(reg, g.id)?.name ?? g.id}`, 90, y);
+    ctx.fillText(def.name, 90, y);
     ctx.fillStyle = g.leveledUp ? '#ffd479' : '#9fb3c4';
     ctx.fillText(
       g.leveledUp

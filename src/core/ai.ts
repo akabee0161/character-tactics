@@ -1,5 +1,6 @@
 import { nearestWithin } from './combat';
 import { distance, hasLineOfSight } from './field';
+import type { AiDef } from '../engine/schema';
 import type { AiState, Grid, Unit, Vec2 } from './types';
 
 /** 帰還先に着いたとみなす距離 */
@@ -35,7 +36,7 @@ function settleAt(self: Unit, goal: Vec2): AiDecision {
   return distance(self.pos, goal) <= HOME_EPS ? IDLE : returnTo(goal);
 }
 
-export const AI_BEHAVIORS: Record<string, AiBehavior> = {
+export const AI_BEHAVIORS: Record<AiDef['kind'], AiBehavior> = {
   sentry: (ctx) => {
     const def = ctx.self.ai?.def;
     if (def?.kind !== 'sentry') return IDLE;
@@ -52,10 +53,15 @@ export const AI_BEHAVIORS: Record<string, AiBehavior> = {
   },
 
   guard: (ctx) => {
-    const def = ctx.self.ai?.def;
+    const ai = ctx.self.ai;
+    const def = ai?.def;
     if (def?.kind !== 'guard') return IDLE;
+    const distToPost = distance(ctx.self.pos, def.post);
+    // 一度 leash を抜けて撤退モードに入ったら、post に着くまで再追跡しない（ラッチ）。
+    // これがないと leash の境界付近で 追跡打ち切り→1歩戻って再追跡 を毎tick繰り返し振動する
+    if (ai!.mode === 'return' && distToPost > HOME_EPS) return returnTo(def.post);
     // leash を超えていたら、相手が見えていても追跡を打ち切る
-    if (distance(ctx.self.pos, def.post) > def.leash) return returnTo(def.post);
+    if (distToPost > def.leash) return returnTo(def.post);
     const target = spot(ctx, def.sightRange);
     if (target) return chase(target);
     return settleAt(ctx.self, def.post);

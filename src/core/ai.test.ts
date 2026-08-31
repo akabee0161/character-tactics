@@ -22,8 +22,8 @@ function unit(uid: string, x: number, y: number, def: AiDef | null, home = { x, 
   } as unknown as Unit;
 }
 
-function run(kind: string, self: Unit, hostiles: Unit[]) {
-  return AI_BEHAVIORS[kind]!({ self, hostiles, grid: GRID });
+function run(kind: AiDef['kind'], self: Unit, hostiles: Unit[]) {
+  return AI_BEHAVIORS[kind]({ self, hostiles, grid: GRID });
 }
 
 describe('sentry', () => {
@@ -145,6 +145,16 @@ describe('guard', () => {
     const self = unit('e1', 200, 48, def);   // post から 100 <= leash 120
     const p = unit('p1', 240, 48, null);
     expect(run('guard', self, [p]).mode).toBe('chase');
+  });
+
+  it('いちど return に なったら post に つくまで ふたたび みえても chase に もどらない（ラッチ）', () => {
+    const self = unit('e1', 200, 48, def);   // post から 100 <= leash 120 (leash じたいは こえていない)
+    self.ai!.mode = 'return';                // まえの tick で すでに ついせきを うちきっている
+    const p = unit('p1', 220, 48, null);     // さくてき はんいに はいっている
+    const d = run('guard', self, [p]);
+    expect(d.mode).toBe('return');
+    expect(d.targetUid).toBeNull();
+    expect(d.goal).toEqual({ x: 100, y: 48 });
   });
 
   it('post は home と べつに もてる', () => {

@@ -13,9 +13,12 @@ export const BTN = {
   toSelect: { x: 510, y: 380, w: 200, h: 72 } as Rect,
 } as const;
 
-export const STAGE_BTN: Rect[] = [0, 1, 2].map((i) => ({
-  x: 96 + i * 264, y: 200, w: 240, h: 160,
-}));
+/** ステージ選択ボタン。3れつ×なんぎょうの グリッド。ステージ数は assets/stages/*.json ぶんだけ ふえる */
+export function stageSlot(index: number): Rect {
+  const col = index % 3;
+  const row = Math.floor(index / 3);
+  return { x: 96 + col * 264, y: 200 + row * 180, w: 240, h: 160 };
+}
 
 export function portraitSlot(index: number): Rect {
   return { x: index * 240 + 8, y: BOTTOM_BAR_Y, w: 224, h: BOTTOM_BAR_H };

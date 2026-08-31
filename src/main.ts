@@ -15,7 +15,7 @@ import { applyStageClear, isStageUnlocked } from './ui/flow';
 import { hitRect, pickUnit } from './ui/hit';
 import { resolveMapGesture } from './ui/input';
 import type { PointerStart } from './ui/input';
-import { BTN, STAGE_BTN, portraitSlot, skillButtonAt } from './ui/layout';
+import { BTN, portraitSlot, skillButtonAt, stageSlot } from './ui/layout';
 import {
   drawBottomBar, drawBubble, drawDefeat, drawLoadErrors, drawPlacement, drawResult,
   drawSkillButton, drawStageSelect, drawTitle,
@@ -115,8 +115,8 @@ function onPointerDown(ev: PointerEvent): void {
       return;
 
     case 'select':
-      for (let i = 0; i < STAGE_BTN.length; i++) {
-        if (hitRect(STAGE_BTN[i]!, p) && isStageUnlocked(registry, save, i)) beginStage(i);
+      for (let i = 0; i < registry.stages.length; i++) {
+        if (hitRect(stageSlot(i), p) && isStageUnlocked(registry, save, i)) beginStage(i);
       }
       return;
 
@@ -279,14 +279,14 @@ function render(): void {
       break;
     case 'placement':
       if (battle) {
-        drawBattle(ctx, registry, battle, selected, effects);
+        drawBattle(ctx, registry, battle, selected, effects, escorts);
         drawPlacement(ctx, battle);
         drawBottomBar(ctx, registry, battle, selected, escorts);
       }
       break;
     case 'battle':
       if (battle) {
-        drawBattle(ctx, registry, battle, selected, effects);
+        drawBattle(ctx, registry, battle, selected, effects, escorts);
         drawBottomBar(ctx, registry, battle, selected, escorts);
         if (selected) drawSkillButton(ctx, registry, battle, selected);
       }
