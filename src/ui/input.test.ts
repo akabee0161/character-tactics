@@ -4,14 +4,14 @@ import type { PointerStart } from './input';
 
 const at = (x: number, y: number) => ({ x, y });
 
-function start(charId: PointerStart['charId'], wasSelected = false): PointerStart {
-  return { charId, startMap: at(100, 100), wasSelected, pointerId: 0 };
+function start(uid: PointerStart['uid'], wasSelected = false): PointerStart {
+  return { uid, startMap: at(100, 100), wasSelected, pointerId: 0 };
 }
 
 describe('resolveMapGesture', () => {
   it('キャラを短くタップしたら選択する', () => {
     expect(resolveMapGesture(start('roran'), at(103, 101), null))
-      .toEqual({ type: 'select', charId: 'roran' });
+      .toEqual({ type: 'select', uid: 'roran' });
   });
 
   it('選択中のキャラを短くタップしたら選択を外す', () => {
@@ -21,12 +21,12 @@ describe('resolveMapGesture', () => {
 
   it('キャラを掴んで動かしたら、そのキャラへの移動になる', () => {
     expect(resolveMapGesture(start('roran'), at(300, 100), null))
-      .toEqual({ type: 'moveChar', charId: 'roran', dest: at(300, 100) });
+      .toEqual({ type: 'moveUnit', uid: 'roran', dest: at(300, 100) });
   });
 
   it('地面を短くタップしたら、選択中のキャラへの移動になる', () => {
     expect(resolveMapGesture(start(null), at(103, 101), 'ines'))
-      .toEqual({ type: 'moveChar', charId: 'ines', dest: at(103, 101) });
+      .toEqual({ type: 'moveUnit', uid: 'ines', dest: at(103, 101) });
   });
 
   it('選択中のキャラがいなければ、地面のタップは何もしない', () => {
@@ -40,6 +40,6 @@ describe('resolveMapGesture', () => {
   it('しきい値ちょうどはタップ扱い', () => {
     const end = at(100 + TAP_SLOP, 100);
     expect(resolveMapGesture(start(null), end, 'ines'))
-      .toEqual({ type: 'moveChar', charId: 'ines', dest: end });
+      .toEqual({ type: 'moveUnit', uid: 'ines', dest: end });
   });
 });

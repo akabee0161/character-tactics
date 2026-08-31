@@ -1,169 +1,161 @@
 import { describe, expect, it } from 'vitest';
-import { ORTHO_COST } from './field';
-import { createBattleState, placeAlly, startWave, statsForLevel } from './state';
-import { CHAR_IDS, FORT_MAX_HP } from './types';
-import type { CharId, CharProgress, StageDef } from './types';
+import { cellIndexAt } from './field';
+import { fieldToStatic } from './fields';
+import { beginBattle, createBattleState, placeUnit, PLACEMENT_RADIUS, statsForLevel } from './state';
+import { testRegistry } from './testing';
+import type { Registry } from '../engine/registry';
+import type { StageDef } from '../engine/schema';
+import type { BattleState, CharProgress } from './types';
 
-const STAGE: StageDef = {
-  id: 1,
-  name: 'テストの しま',
-  cell: 32,
-  mapRows: ['.....', '.....', '.....'],
-  fort: { x: 16, y: 16 },
-  landings: [{ x: 144, y: 16 }],
-  garumFlees: true,
-  waves: [
-    { spawns: [{ at: 0, kind: 'narazumono', from: { x: 144, y: 16 } }] },
-    { spawns: [{ at: 1, kind: 'narazumono', from: { x: 144, y: 16 } }] },
-  ],
-};
+function fresh(): { reg: Registry; stage: StageDef; state: BattleState } {
+  const reg = testRegistry();
+  const stage = reg.stages[0]!;
+  const progress: Record<string, CharProgress> = {};
+  for (const id of reg.units.keys()) progress[id] = { level: 1, xp: 0 };
+  return { reg, stage, state: createBattleState(reg, stage, progress, 1) };
+}
 
-const LV1: Record<CharId, CharProgress> = {
-  roran: { level: 1, xp: 0 },
-  ines: { level: 1, xp: 0 },
-  mist: { level: 1, xp: 0 },
-  gau: { level: 1, xp: 0 },
-};
+function unitOf(s: BattleState, defId: string) {
+  const u = s.units.find((x) => x.defId === defId && x.side === 'player');
+  if (!u) throw new Error(`いない: ${defId}`);
+  return u;
+}
 
 describe('statsForLevel', () => {
   it('レベル1 は基礎値どおり', () => {
-    expect(statsForLevel('roran', 1)).toEqual({ maxHp: 30, power: 6 });
+    const reg = testRegistry();
+    expect(statsForLevel(reg.units.get('roran')!, 1)).toEqual({ maxHp: 30, power: 6 });
   });
 
   it('レベルが上がると HP+3 / ちから+1', () => {
-    expect(statsForLevel('roran', 3)).toEqual({ maxHp: 36, power: 8 });
+    const reg = testRegistry();
+    expect(statsForLevel(reg.units.get('roran')!, 3)).toEqual({ maxHp: 36, power: 8 });
   });
 });
 
-describe('createBattleState', () => {
-  it('4人ぶんのユニットが作られる', () => {
-    const s = createBattleState(STAGE, LV1, 1);
-    expect(s.allies.map((a) => a.id).sort()).toEqual([...CHAR_IDS].sort());
+describe('createBattleState: ステージからの はいち', () => {
+  it('ステージの roster ぶんだけ 味方を つくる', () => {
+    const { stage, state } = fresh();
+    const playerDefIds = state.units.filter((u) => u.side === 'player').map((u) => u.defId);
+    expect(playerDefIds).toEqual(stage.roster);
   });
 
-  it('砦 HP は満タン、フェーズは placement', () => {
-    const s = createBattleState(STAGE, LV1, 1);
-    expect(s.fortHp).toBe(FORT_MAX_HP);
-    expect(s.phase).toBe('placement');
+  it('味方を placementZone の うえに おく', () => {
+    const { stage, state } = fresh();
+    for (const u of state.units) {
+      if (u.side !== 'player') continue;
+      const near = stage.placementZone.some(
+        (z) => Math.hypot(z.pos.x - u.pos.x, z.pos.y - u.pos.y) <= PLACEMENT_RADIUS,
+      );
+      expect(`${u.defId} => ${near}`).toContain('true');
+    }
   });
 
-  it('敵はまだ出ていない', () => {
-    const s = createBattleState(STAGE, LV1, 1);
-    expect(s.enemies).toEqual([]);
-    expect(s.pending).toEqual([]);
+  it('敵を ステージ定義の ざひょうに はいちずみで つくる', () => {
+    const { stage, state } = fresh();
+    const enemies = state.units.filter((u) => u.side === 'enemy');
+    expect(enemies.length).toBe(stage.enemies.length);
+    expect(enemies[0]!.pos).toEqual(stage.enemies[0]!.pos);
+    expect(enemies[0]!.defId).toBe(stage.enemies[0]!.defId);
+  });
+
+  it('敵は それぞれの ai ていぎを もつ', () => {
+    const { stage, state } = fresh();
+    const enemies = state.units.filter((u) => u.side === 'enemy');
+    expect(enemies[0]!.ai!.def).toEqual(stage.enemies[0]!.ai);
+  });
+
+  it('uid は かぶらない', () => {
+    const { state } = fresh();
+    expect(new Set(state.units.map((u) => u.uid)).size).toBe(state.units.length);
+  });
+
+  it('はじめは placement フェーズ', () => {
+    const { state } = fresh();
+    expect(state.phase).toBe('placement');
+  });
+
+  it('カウンタは からで しょきかされる', () => {
+    const { state } = fresh();
+    expect(state.counters).toEqual({});
   });
 
   it('レベルが反映される', () => {
-    const s = createBattleState(STAGE, { ...LV1, roran: { level: 3, xp: 0 } }, 1);
-    const roran = s.allies.find((a) => a.id === 'roran')!;
+    const reg = testRegistry();
+    const stage = reg.stages[0]!;
+    const progress: Record<string, CharProgress> = { roran: { level: 3, xp: 0 } };
+    for (const id of reg.units.keys()) progress[id] ??= { level: 1, xp: 0 };
+    const state = createBattleState(reg, stage, progress, 1);
+    const roran = unitOf(state, 'roran');
     expect(roran.maxHp).toBe(36);
     expect(roran.hp).toBe(36);
     expect(roran.power).toBe(8);
   });
 
-  it('砦へのフローフィールドが計算されている', () => {
-    const s = createBattleState(STAGE, LV1, 1);
-    expect(s.enemyField.dist[0]).toBe(0);
-    expect(s.enemyField.dist[4]).toBe(ORTHO_COST * 4);
+  it('フィールドキャッシュは からで しょきかされる', () => {
+    const { state } = fresh();
+    expect(state.fields.byUnit.size).toBe(0);
+    expect(state.fields.static.size).toBe(0);
   });
 
-  it('戦績カウンタが 0 で初期化される', () => {
-    const s = createBattleState(STAGE, LV1, 1);
-    expect(s.stats.roran).toEqual({ defeats: 0, skillUses: 0, neraiuchiKills: 0, kakenukeruHits: 0, bondSupports: 0 });
-  });
-});
-
-describe('placeAlly', () => {
-  it('歩ける場所には置ける', () => {
-    const s = createBattleState(STAGE, LV1, 1);
-    placeAlly(s, 'roran', { x: 80, y: 48 });
-    expect(s.allies.find((a) => a.id === 'roran')!.pos).toEqual({ x: 80, y: 48 });
-  });
-
-  it('歩けない場所には置けない（位置が変わらない）', () => {
-    const stage: StageDef = { ...STAGE, mapRows: ['.....', '.#...', '.....'] };
-    const s = createBattleState(stage, LV1, 1);
-    const before = { ...s.allies.find((a) => a.id === 'roran')!.pos };
-    placeAlly(s, 'roran', { x: 48, y: 48 });
-    expect(s.allies.find((a) => a.id === 'roran')!.pos).toEqual(before);
+  it('味方の初期配置地点への フローフィールドを キャッシュから ひける', () => {
+    const { stage, state } = fresh();
+    const goal = stage.placementZone[0]!.pos;
+    const idx = cellIndexAt(state.grid, goal);
+    const field = fieldToStatic(state.fields, state.grid, goal);
+    expect(field.dist[idx]).toBe(0);
   });
 });
 
-describe('placeAlly の戻り値', () => {
-  it('歩ける場所なら true を返して移動する', () => {
-    const s = createBattleState(STAGE, LV1, 1);
-    expect(placeAlly(s, 'roran', { x: 48, y: 48 })).toBe(true);
-    expect(s.allies.find((a) => a.id === 'roran')!.pos).toEqual({ x: 48, y: 48 });
+describe('placeUnit', () => {
+  it('placementZone の ちかくなら おける', () => {
+    const { stage, state } = fresh();
+    const zone = stage.placementZone[0]!.pos;
+    const uid = unitOf(state, 'roran').uid;
+    expect(placeUnit(state, uid, { ...zone })).toBe(true);
+    expect(unitOf(state, 'roran').pos).toEqual(zone);
   });
 
-  it('歩けない場所なら false を返して動かさない', () => {
-    const stage = { ...STAGE, mapRows: ['..........', '..####....', '..........'] };
-    const s = createBattleState(stage, LV1, 1);
-    const before = { ...s.allies.find((a) => a.id === 'roran')!.pos };
-    expect(placeAlly(s, 'roran', { x: 80, y: 48 })).toBe(false);
-    expect(s.allies.find((a) => a.id === 'roran')!.pos).toEqual(before);
+  it('placementZone から とおければ おけない', () => {
+    const { stage, state } = fresh();
+    const far = { x: stage.victory.pos.x, y: stage.victory.pos.y };
+    const uid = unitOf(state, 'roran').uid;
+    const before = { ...unitOf(state, 'roran').pos };
+    expect(placeUnit(state, uid, far)).toBe(false);
+    expect(unitOf(state, 'roran').pos).toEqual(before);
+  });
+
+  it('あるけない マスには おけない', () => {
+    const { state } = fresh();
+    const uid = unitOf(state, 'roran').uid;
+    expect(placeUnit(state, uid, { x: 0, y: 0 })).toBe(false);
+  });
+
+  it('しらない uid なら false', () => {
+    const { state } = fresh();
+    expect(placeUnit(state, 'yuurei', { x: 112, y: 208 })).toBe(false);
   });
 });
 
-describe('startWave', () => {
-  it('フェーズが wave になり、時刻がリセットされる', () => {
-    const s = createBattleState(STAGE, LV1, 1);
-    s.time = 99;
-    startWave(s);
-    expect(s.phase).toBe('wave');
-    expect(s.time).toBe(0);
+describe('beginBattle', () => {
+  it('battle フェーズに する', () => {
+    const { state } = fresh();
+    beginBattle(state);
+    expect(state.phase).toBe('battle');
   });
 
-  it('そのウェーブのスポーンが pending に積まれる', () => {
-    const s = createBattleState(STAGE, LV1, 1);
-    startWave(s);
-    expect(s.pending).toHaveLength(1);
-    expect(s.pending[0]!.kind).toBe('narazumono');
+  it('じかんと クールダウンを リセットする', () => {
+    const { state } = fresh();
+    state.time = 99;
+    unitOf(state, state.stage.roster[0]!).attackCooldown = 5;
+    beginBattle(state);
+    expect(state.time).toBe(0);
+    expect(unitOf(state, state.stage.roster[0]!).attackCooldown).toBe(0);
   });
 
-  it('生き残りは最大 HP の 30% 回復する', () => {
-    const s = createBattleState(STAGE, LV1, 1);
-    const roran = s.allies.find((a) => a.id === 'roran')!;
-    roran.hp = 10;
-    startWave(s);
-    expect(roran.hp).toBe(19); // 10 + floor(30 * 0.3)
-  });
-
-  it('回復しても最大 HP を超えない', () => {
-    const s = createBattleState(STAGE, LV1, 1);
-    const roran = s.allies.find((a) => a.id === 'roran')!;
-    roran.hp = 29;
-    startWave(s);
-    expect(roran.hp).toBe(30);
-  });
-
-  it('たいきゃく中の味方は最大 HP の 50% で復帰し、30% 回復は重ねない', () => {
-    const s = createBattleState(STAGE, LV1, 1);
-    const roran = s.allies.find((a) => a.id === 'roran')!;
-    roran.retired = true;
-    roran.hp = 0;
-    startWave(s);
-    expect(roran.retired).toBe(false);
-    expect(roran.hp).toBe(15);
-  });
-
-  it('スキル使用フラグとピンチ表示フラグがリセットされる', () => {
-    const s = createBattleState(STAGE, LV1, 1);
-    const roran = s.allies.find((a) => a.id === 'roran')!;
-    roran.skillUsed = true;
-    roran.pinchShown = true;
-    roran.engagedWith = 'e1';
-    startWave(s);
-    expect(roran.skillUsed).toBe(false);
-    expect(roran.pinchShown).toBe(false);
-    expect(roran.engagedWith).toBeNull();
-  });
-
-  it('2 回目の startWave は次のウェーブを読む', () => {
-    const s = createBattleState(STAGE, LV1, 1);
-    startWave(s);
-    s.waveIndex = 1;
-    startWave(s);
-    expect(s.pending[0]!.at).toBe(1);
+  it('敵は そのまま のこる（ウェーブごとに わきなおさない）', () => {
+    const { stage, state } = fresh();
+    beginBattle(state);
+    expect(state.units.filter((u) => u.side === 'enemy').length).toBe(stage.enemies.length);
   });
 });

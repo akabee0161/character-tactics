@@ -1,5 +1,5 @@
 import { distance } from './field';
-import { MELEE_RANGE } from '../content/characters';
+import { MELEE_RANGE } from './constants';
 import type { AttackKind, Vec2 } from './types';
 
 export type DamageParams = {

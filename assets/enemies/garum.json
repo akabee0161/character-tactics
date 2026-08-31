@@ -1,0 +1,10 @@
+{
+  "id": "garum", "name": "ガルム", "role": "てき",
+  "combat": true,
+  "maxHp": 40, "power": 9, "guard": 4,
+  "attack": "melee", "range": 24,
+  "attackInterval": 1.4, "speed": 55,
+  "skillId": null,
+  "color": "#b03a3a",
+  "xpReward": 20, "bowDamageCap": null, "fleeAtHpRatio": 0.3
+}

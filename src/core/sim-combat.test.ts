@@ -1,40 +1,56 @@
 import { describe, expect, it } from 'vitest';
-import { createBattleState, startWave } from './state';
 import { step } from './sim';
-import type { BattleState, CharId, CharProgress, EnemyKind, EnemyUnit, StageDef } from './types';
+import { beginBattle, createBattleState } from './state';
+import { testRegistry } from './testing';
+import type { StageDef, Unit } from './types';
+import type { BattleState, CharProgress, Vec2 } from './types';
 
+// units のうち敵側に常時 1 体だけ入れておく。ゴールから遠く離れた位置に置いて
+// 自然には撃破されない状態にしておく
 const STAGE: StageDef = {
-  id: 1, name: 'テスト', cell: 32,
+  id: 'teststage', name: 'テスト', cell: 32,
   mapRows: ['..........', '..........', '..........'],
-  fort: { x: 16, y: 16 },
-  landings: [{ x: 304, y: 16 }],
-  garumFlees: true,
-  waves: [{ spawns: [] }, { spawns: [] }],
+  placementZone: [{ pos: { x: 16, y: 16 } }],
+  roster: ['roran', 'ines', 'mist', 'gau'],
+  enemies: [{ defId: 'narazumono', pos: { x: 304, y: 16 }, ai: { kind: 'aggressive' } }],
+  victory: { type: 'reach', pos: { x: 304, y: 16 }, radius: 40, by: 'any' },
+  defeat: [{ type: 'unitLost', defIds: ['roran'] }],
 };
 
-const LV1: Record<CharId, CharProgress> = {
+const LV1: Record<string, CharProgress> = {
   roran: { level: 1, xp: 0 }, ines: { level: 1, xp: 0 },
   mist: { level: 1, xp: 0 }, gau: { level: 1, xp: 0 },
 };
 
 function fresh(stage: StageDef = STAGE): BattleState {
-  const s = createBattleState(stage, LV1, 42);
-  startWave(s);
-  for (const a of s.allies) a.pos = { x: 16, y: 300 }; // マップ外の遠くへ退避
+  const s = createBattleState(testRegistry(), stage, LV1, 42);
+  beginBattle(s);
+  for (const u of s.units) if (u.side === 'player') u.pos = { x: 16, y: 300 }; // マップ外の遠くへ退避
   return s;
 }
 
-const ally = (s: BattleState, id: CharId) => s.allies.find((a) => a.id === id)!;
+function unitOf(s: BattleState, defId: string): Unit {
+  const u = s.units.find((x) => x.defId === defId && x.side === 'player');
+  if (!u) throw new Error(`いない: ${defId}`);
+  return u;
+}
 
-function addEnemy(s: BattleState, kind: EnemyKind, x: number, y: number, hp?: number): EnemyUnit {
-  const maxHp = { narazumono: 12, tatemochi: 20, garum: 40 }[kind];
-  const e: EnemyUnit = {
-    uid: `t${s.nextEnemyUid++}`, kind, pos: { x, y },
-    hp: hp ?? maxHp, maxHp, engagedWith: null, attackCooldown: 0,
-    lastHitBy: null, lastHitNeraiuchi: false,
+function spawnEnemy(s: BattleState, defId: string, pos: Vec2, hp?: number): Unit {
+  const def = s.reg.enemies.get(defId)!;
+  const uid = `t${s.nextEnemyUid++}`;
+  const u: Unit = {
+    uid, defId, side: 'enemy', controller: 'ai', combat: def.combat,
+    pos: { ...pos }, hp: hp ?? def.maxHp, maxHp: def.maxHp, power: def.power, guard: def.guard,
+    attack: def.attack, range: def.range, attackInterval: def.attackInterval, speed: def.speed,
+    bowDamageCap: def.bowDamageCap, skillId: def.skillId,
+    level: 1, xp: 0,
+    goalPos: null, goalField: null, engagedWith: null, attackCooldown: 0, retired: false,
+    ai: { def: { kind: 'aggressive' }, mode: 'idle', targetUid: null, home: { ...pos } },
+    skillUsed: false, funbaruUntil: -1, neraiuchiArmed: false, pinchShown: false,
+    seenDefIds: [], lastHitBy: null, lastHitNeraiuchi: false,
   };
-  s.enemies.push(e);
-  return e;
+  s.units.push(u);
+  return u;
 }
 
 /** 交戦させて 1 回攻撃が入るところまで進める */
@@ -46,8 +62,8 @@ function engageAndAttack(s: BattleState, dt = 1.7): void {
 describe('攻撃の解決', () => {
   it('攻撃間隔ごとに 1 回ダメージが入る', () => {
     const s = fresh();
-    ally(s, 'roran').pos = { x: 16, y: 16 };
-    const e = addEnemy(s, 'narazumono', 30, 16);
+    unitOf(s, 'roran').pos = { x: 16, y: 16 };
+    const e = spawnEnemy(s, 'narazumono', { x: 30, y: 16 });
     step(s, [], 0.01);
     expect(e.hp).toBe(12);      // 交戦成立の直後はまだ攻撃していない
     step(s, [], 1.7);
@@ -56,8 +72,8 @@ describe('攻撃の解決', () => {
 
   it('攻撃間隔が来るまでは追加ダメージが入らない', () => {
     const s = fresh();
-    ally(s, 'roran').pos = { x: 16, y: 16 };
-    const e = addEnemy(s, 'narazumono', 30, 16);
+    unitOf(s, 'roran').pos = { x: 16, y: 16 };
+    const e = spawnEnemy(s, 'narazumono', { x: 30, y: 16 });
     step(s, [], 0.01);
     step(s, [], 1.7);
     step(s, [], 0.5);
@@ -66,20 +82,26 @@ describe('攻撃の解決', () => {
 
   it('なかよし支援が乗り、bondSupport イベントが出る', () => {
     const s = fresh();
-    ally(s, 'roran').pos = { x: 16, y: 16 };
-    ally(s, 'ines').pos = { x: 100, y: 16 };
-    const e = addEnemy(s, 'narazumono', 30, 16);
+    const roran = unitOf(s, 'roran');
+    roran.pos = { x: 16, y: 16 };
+    // イネスの弓レンジ(160)の外、なかよしレンジ(200)の内に置き、
+    // イネス自身が交戦を横取りせず支援だけする状況にする
+    const ines = unitOf(s, 'ines');
+    ines.pos = { x: 200, y: 16 };
+    const e = spawnEnemy(s, 'narazumono', { x: 30, y: 16 });
     step(s, [], 0.01);
     step(s, [], 1.7);
     expect(e.hp).toBe(12 - 7); // (6+2)-1
-    expect(s.events).toContainEqual({ type: 'bondSupport', supporterId: 'ines', targetId: 'roran' });
-    expect(s.stats.roran.bondSupports).toBe(1);
+    expect(s.events).toContainEqual({
+      type: 'bondSupport', targetUid: roran.uid, targetDefId: 'roran', supporterUids: [ines.uid],
+    });
+    expect(s.counters['bond:supports']).toBe(1);
   });
 
   it('イネスはたてもちに 1 しか通らない', () => {
     const s = fresh();
-    ally(s, 'ines').pos = { x: 16, y: 16 };
-    const e = addEnemy(s, 'tatemochi', 100, 16);
+    unitOf(s, 'ines').pos = { x: 16, y: 16 };
+    const e = spawnEnemy(s, 'tatemochi', { x: 100, y: 16 });
     step(s, [], 0.01);
     step(s, [], 2.3);
     expect(e.hp).toBe(19);
@@ -87,18 +109,19 @@ describe('攻撃の解決', () => {
 
   it('ねらいうちならたてもちにも通る', () => {
     const s = fresh();
-    ally(s, 'ines').pos = { x: 16, y: 16 };
-    const e = addEnemy(s, 'tatemochi', 100, 16);
-    step(s, [{ type: 'skill', allyId: 'ines' }], 0.01);
+    const ines = unitOf(s, 'ines');
+    ines.pos = { x: 16, y: 16 };
+    const e = spawnEnemy(s, 'tatemochi', { x: 100, y: 16 });
+    step(s, [{ type: 'skill', uid: ines.uid }], 0.01);
     step(s, [], 2.3);
     expect(e.hp).toBe(20 - 10); // (8-3)*2
-    expect(ally(s, 'ines').neraiuchiArmed).toBe(false);
+    expect(unitOf(s, 'ines').neraiuchiArmed).toBe(false);
   });
 
   it('イネスは密着されると攻撃間隔が倍になる', () => {
     const s = fresh();
-    ally(s, 'ines').pos = { x: 16, y: 16 };
-    const e = addEnemy(s, 'narazumono', 32, 16);
+    unitOf(s, 'ines').pos = { x: 16, y: 16 };
+    const e = spawnEnemy(s, 'narazumono', { x: 32, y: 16 });
     step(s, [], 0.01);
     step(s, [], 2.3);
     expect(e.hp).toBe(12); // まだ撃てない
@@ -108,140 +131,100 @@ describe('攻撃の解決', () => {
 
   it('敵の攻撃で味方の HP が減る', () => {
     const s = fresh();
-    ally(s, 'roran').pos = { x: 16, y: 16 };
-    addEnemy(s, 'garum', 30, 16);
+    unitOf(s, 'roran').pos = { x: 16, y: 16 };
+    spawnEnemy(s, 'garum', { x: 30, y: 16 });
     engageAndAttack(s, 1.5);
-    expect(ally(s, 'roran').hp).toBe(30 - 4); // 9 - 5
+    expect(unitOf(s, 'roran').hp).toBe(30 - 4); // 9 - 5
   });
 
   it('ふんばり中はダメージが半分になる', () => {
     const s = fresh();
-    ally(s, 'roran').pos = { x: 16, y: 16 };
-    addEnemy(s, 'garum', 30, 16);
-    step(s, [{ type: 'skill', allyId: 'roran' }], 0.01);
+    const roran = unitOf(s, 'roran');
+    roran.pos = { x: 16, y: 16 };
+    spawnEnemy(s, 'garum', { x: 30, y: 16 });
+    step(s, [{ type: 'skill', uid: roran.uid }], 0.01);
     step(s, [], 1.5);
-    expect(ally(s, 'roran').hp).toBe(30 - 2);
+    expect(unitOf(s, 'roran').hp).toBe(30 - 2);
   });
 });
 
 describe('ピンチ', () => {
   it('HP が 30% を切った瞬間に 1 回だけ pinch イベントが出る', () => {
     const s = fresh();
-    ally(s, 'roran').pos = { x: 16, y: 16 };
-    ally(s, 'roran').hp = 11;
-    addEnemy(s, 'garum', 30, 16);
+    const roran = unitOf(s, 'roran');
+    roran.pos = { x: 16, y: 16 };
+    roran.hp = 11;
+    spawnEnemy(s, 'garum', { x: 30, y: 16 });
     engageAndAttack(s, 1.5);
-    expect(ally(s, 'roran').hp).toBe(7);
-    expect(s.events).toContainEqual({ type: 'pinch', allyId: 'roran' });
+    expect(unitOf(s, 'roran').hp).toBe(7);
+    expect(s.events).toContainEqual({ type: 'pinch', uid: roran.uid, defId: 'roran' });
     step(s, [], 1.5);
     expect(s.events.filter((e) => e.type === 'pinch')).toHaveLength(0);
   });
 });
 
 describe('撃破と撤退', () => {
-  it('敵を倒すと消え、enemyDefeated が出て戦績が増える', () => {
+  it('敵を倒すと消え、unitDefeated が出て とどめを さした ユニットに けいけんちが はいる', () => {
     const s = fresh();
-    ally(s, 'roran').pos = { x: 16, y: 16 };
-    const e = addEnemy(s, 'narazumono', 30, 16, 3);
+    const roran = unitOf(s, 'roran');
+    roran.pos = { x: 16, y: 16 };
+    const e = spawnEnemy(s, 'narazumono', { x: 30, y: 16 }, 3);
     engageAndAttack(s, 1.7);
-    expect(s.enemies).toHaveLength(0);
-    expect(s.events).toContainEqual({ type: 'enemyDefeated', uid: e.uid, kind: 'narazumono', byAlly: 'roran' });
-    expect(s.stats.roran.defeats).toBe(1);
+    expect(e.retired).toBe(true);
+    expect(s.events).toContainEqual({
+      type: 'unitDefeated', uid: e.uid, defId: 'narazumono', byUid: roran.uid, byDefId: 'roran', neraiuchi: false,
+    });
+    expect(roran.xp).toBe(s.reg.enemies.get('narazumono')!.xpReward);
   });
 
-  it('ねらいうちで倒すと neraiuchiKills が増える', () => {
+  it('ねらいうちで倒すと kill:neraiuchi が増える', () => {
     const s = fresh();
-    ally(s, 'ines').pos = { x: 16, y: 16 };
-    addEnemy(s, 'narazumono', 100, 16, 5);
-    step(s, [{ type: 'skill', allyId: 'ines' }], 0.01);
+    const ines = unitOf(s, 'ines');
+    ines.pos = { x: 16, y: 16 };
+    spawnEnemy(s, 'narazumono', { x: 100, y: 16 }, 5);
+    step(s, [{ type: 'skill', uid: ines.uid }], 0.01);
     step(s, [], 2.3);
-    expect(s.stats.ines.neraiuchiKills).toBe(1);
+    expect(s.counters['kill:neraiuchi']).toBe(1);
   });
 
-  it('かけぬけるで倒すと defeats が増え、enemyDefeated イベントに byAlly が入る', () => {
+  it('かけぬけるで倒すと unitDefeated イベントに byDefId が入り、けいけんちが はいる', () => {
     const s = fresh();
-    ally(s, 'gau').pos = { x: 16, y: 16 };
-    const e = addEnemy(s, 'narazumono', 100, 16, 3);
-    step(s, [{ type: 'skill', allyId: 'gau', dest: { x: 200, y: 16 } }], 0.01);
-    expect(s.enemies).toHaveLength(0);
-    expect(s.events).toContainEqual({ type: 'enemyDefeated', uid: e.uid, kind: 'narazumono', byAlly: 'gau' });
-    expect(s.stats.gau.defeats).toBe(1);
+    const gau = unitOf(s, 'gau');
+    gau.pos = { x: 16, y: 16 };
+    const e = spawnEnemy(s, 'narazumono', { x: 100, y: 16 }, 3);
+    step(s, [{ type: 'skill', uid: gau.uid, dest: { x: 200, y: 16 } }], 0.01);
+    expect(e.retired).toBe(true);
+    expect(s.events).toContainEqual({
+      type: 'unitDefeated', uid: e.uid, defId: 'narazumono', byUid: gau.uid, byDefId: 'gau', neraiuchi: false,
+    });
+    expect(gau.xp).toBe(s.reg.enemies.get('narazumono')!.xpReward);
   });
 
-  it('ガルムは 30% を切ると撤退する（garumFlees が true のとき）', () => {
+  it('ガルムは 30% を切ると撤退し unitFled が出る', () => {
     const s = fresh();
-    ally(s, 'roran').pos = { x: 16, y: 16 };
-    addEnemy(s, 'garum', 30, 16, 12);
+    const roran = unitOf(s, 'roran');
+    roran.pos = { x: 16, y: 16 };
+    const e = spawnEnemy(s, 'garum', { x: 30, y: 16 }, 12);
     engageAndAttack(s, 1.7);
-    expect(s.enemies).toHaveLength(0);
-    expect(s.events).toContainEqual({ type: 'garumRepelled', byAlly: 'roran' });
-    expect(s.stats.roran.defeats).toBe(0);
-  });
-
-  it('garumFlees が false なら撤退せず最後まで戦う', () => {
-    const s = fresh({ ...STAGE, garumFlees: false });
-    ally(s, 'roran').pos = { x: 16, y: 16 };
-    const g = addEnemy(s, 'garum', 30, 16, 12);
-    engageAndAttack(s, 1.7);
-    expect(s.enemies).toHaveLength(1);
-    expect(g.hp).toBe(10);
+    expect(e.retired).toBe(true);
+    expect(s.events).toContainEqual({
+      type: 'unitFled', uid: e.uid, defId: 'garum', byUid: roran.uid, byDefId: 'roran',
+    });
+    expect(roran.xp).toBe(0);
   });
 
   it('味方は HP 0 でたいきゃくし、交戦が解除される', () => {
     const s = fresh();
-    ally(s, 'roran').pos = { x: 16, y: 16 };
-    ally(s, 'roran').hp = 2;
-    const e = addEnemy(s, 'garum', 30, 16);
+    const roran = unitOf(s, 'roran');
+    roran.pos = { x: 16, y: 16 };
+    roran.hp = 2;
+    const e = spawnEnemy(s, 'garum', { x: 30, y: 16 });
     engageAndAttack(s, 1.5);
-    expect(ally(s, 'roran').retired).toBe(true);
-    expect(ally(s, 'roran').hp).toBe(0);
-    expect(ally(s, 'roran').engagedWith).toBeNull();
+    expect(unitOf(s, 'roran').retired).toBe(true);
+    expect(unitOf(s, 'roran').hp).toBe(0);
+    expect(unitOf(s, 'roran').engagedWith).toBeNull();
     expect(e.engagedWith).toBeNull();
-    expect(s.events).toContainEqual({ type: 'allyRetired', allyId: 'roran' });
+    expect(s.events).toContainEqual({ type: 'unitRetired', uid: roran.uid, defId: 'roran' });
   });
 });
 
-describe('砦とフェーズ遷移', () => {
-  it('敵が砦に着くと砦 HP が減り、その敵は消える', () => {
-    const s = fresh();
-    const e = addEnemy(s, 'narazumono', 20, 16);
-    step(s, [], 0.01);
-    expect(s.fortHp).toBe(30 - 3);
-    expect(s.enemies).toHaveLength(0);
-    expect(s.events).toContainEqual({ type: 'fortDamaged', amount: 3 });
-    expect(e.hp).toBeGreaterThan(0);
-  });
-
-  it('砦 HP が 0 で defeat', () => {
-    const s = fresh();
-    s.fortHp = 2;
-    addEnemy(s, 'narazumono', 20, 16);
-    step(s, [], 0.01);
-    expect(s.fortHp).toBeLessThanOrEqual(0);
-    expect(s.phase).toBe('defeat');
-  });
-
-  it('敵が全滅し pending も空なら waveCleared', () => {
-    const s = fresh();
-    ally(s, 'roran').pos = { x: 16, y: 16 };
-    addEnemy(s, 'narazumono', 30, 16, 3);
-    engageAndAttack(s, 1.7);
-    expect(s.phase).toBe('waveCleared');
-  });
-
-  it('最終ウェーブなら stageCleared', () => {
-    const s = fresh();
-    s.waveIndex = 1;
-    ally(s, 'roran').pos = { x: 16, y: 16 };
-    addEnemy(s, 'narazumono', 30, 16, 3);
-    engageAndAttack(s, 1.7);
-    expect(s.phase).toBe('stageCleared');
-  });
-
-  it('まだ pending が残っていれば wave のまま', () => {
-    const s = fresh();
-    s.pending = [{ at: 99, kind: 'narazumono', from: { x: 304, y: 16 } }];
-    step(s, [], 0.01);
-    expect(s.phase).toBe('wave');
-  });
-});

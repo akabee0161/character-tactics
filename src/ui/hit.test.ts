@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { MIN_TAP, hitRect, pickAlly } from './hit';
-import type { AllyUnit } from '../core/types';
+import { MIN_TAP, hitRect, pickUnit } from './hit';
+import type { Unit } from '../core/types';
 
-const unit = (id: AllyUnit['id'], x: number, y: number, retired = false) =>
-  ({ id, pos: { x, y }, retired } as unknown as AllyUnit);
+const unit = (uid: string, x: number, y: number, retired = false) =>
+  ({ uid, pos: { x, y }, retired } as unknown as Unit);
 
 describe('hitRect', () => {
   const r = { x: 10, y: 20, w: 100, h: 50 };
@@ -32,33 +32,33 @@ describe('MIN_TAP', () => {
   });
 });
 
-describe('pickAlly', () => {
-  const allies = [unit('roran', 100, 100), unit('ines', 140, 100), unit('gau', 300, 300, true)];
+describe('pickUnit', () => {
+  const units = [unit('u-roran', 100, 100), unit('u-ines', 140, 100), unit('u-gau', 300, 300, true)];
 
   it('近い味方を返す', () => {
-    expect(pickAlly(allies, { x: 105, y: 100 })).toBe('roran');
+    expect(pickUnit(units, { x: 105, y: 100 })).toBe('u-roran');
   });
 
   it('どちらにも近いときは いちばん近いほう', () => {
-    expect(pickAlly(allies, { x: 132, y: 100 })).toBe('ines');
+    expect(pickUnit(units, { x: 132, y: 100 })).toBe('u-ines');
   });
 
   it('遠ければ null', () => {
-    expect(pickAlly(allies, { x: 500, y: 500 })).toBeNull();
+    expect(pickUnit(units, { x: 500, y: 500 })).toBeNull();
   });
 
   it('たいきゃく中の味方は選べない', () => {
-    expect(pickAlly(allies, { x: 300, y: 300 })).toBeNull();
+    expect(pickUnit(units, { x: 300, y: 300 })).toBeNull();
   });
 
   it('半径を指定できる', () => {
-    expect(pickAlly(allies, { x: 100, y: 160 }, 70)).toBe('roran');
-    expect(pickAlly(allies, { x: 100, y: 160 }, 40)).toBeNull();
+    expect(pickUnit(units, { x: 100, y: 160 }, 70)).toBe('u-roran');
+    expect(pickUnit(units, { x: 100, y: 160 }, 40)).toBeNull();
   });
 
   it('既定の判定半径は 32 まで拾う', () => {
-    const list = [unit('roran', 100, 100)];
-    expect(pickAlly(list, { x: 132, y: 100 })).toBe('roran');
-    expect(pickAlly(list, { x: 133, y: 100 })).toBeNull();
+    const list = [unit('u-roran', 100, 100)];
+    expect(pickUnit(list, { x: 132, y: 100 })).toBe('u-roran');
+    expect(pickUnit(list, { x: 133, y: 100 })).toBeNull();
   });
 });

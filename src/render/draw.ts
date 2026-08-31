@@ -1,44 +1,61 @@
-import { CHARACTERS } from '../content/characters';
-import { ENEMIES } from '../content/enemies';
 import { bondSupporters } from '../core/bonds';
 import { isFunbaruActive } from '../core/skills';
-import { FORT_MAX_HP } from '../core/types';
+import { playerUnits } from '../core/sim';
+import { lookupDef } from '../engine/registry';
+import type { Registry } from '../engine/registry';
+import type { StageDef } from '../engine/schema';
+import { sightCircles } from './objectives-view';
 import { LOGICAL_H, LOGICAL_W, mapToLogical } from './viewport';
 import { HIT_EFFECT_DURATION } from './effects';
 import type { EffectState } from './effects';
-import type { BattleState, CharId, Vec2 } from '../core/types';
+import type { BattleState, Vec2 } from '../core/types';
 
 const COLORS = {
   sea: '#12303f',
   ground: '#3f5d3a',
   rock: '#2b3a44',
-  fort: '#d8c98a',
   bar: '#101820',
   text: '#f2efe4',
   hpBack: '#000000',
   hpAlly: '#5ad06a',
   hpEnemy: '#d05a5a',
   bond: 'rgba(255, 190, 220, 0.55)',
+  goal: '#ffd479',
+  sight: 'rgba(255, 140, 120, 0.30)',
+  sightAlert: 'rgba(255, 90, 90, 0.60)',
+  escort: '#ffd479',
 };
 
 const UNIT_R = 11;
 
+function defOf(reg: Registry, defId: string): { name: string; color: string } {
+  return lookupDef(reg, defId) ?? { name: defId, color: '#888888' };
+}
+
+/** EnemyDef.maxHp から見た目の半径を導く。ID を直書きしない */
+function enemyRadius(maxHp: number): number {
+  return maxHp >= 40 ? UNIT_R + 3 : UNIT_R;
+}
+
 export function drawBattle(
   ctx: CanvasRenderingContext2D,
+  reg: Registry,
   state: BattleState,
-  selected: CharId | null,
+  selected: string | null,
   effects: EffectState,
+  escorts: Set<string>,
 ): void {
   ctx.save();
   ctx.fillStyle = COLORS.sea;
   ctx.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
 
   drawTerrain(ctx, state);
-  drawFort(ctx, state);
-  drawGoalMarkers(ctx, state, selected);
+  drawSightRanges(ctx, state);
+  drawVictoryMarker(ctx, state.stage);
+  drawGoalMarkers(ctx, reg, state, selected);
   drawBonds(ctx, state);
-  drawEnemies(ctx, state);
-  drawAllies(ctx, state, selected);
+  drawUnits(ctx, reg, state, selected);
+  drawEscortMarks(ctx, state, escorts);
   drawEffects(ctx, effects);
   drawTopBar(ctx, state);
   ctx.restore();
@@ -55,23 +72,64 @@ function drawTerrain(ctx: CanvasRenderingContext2D, state: BattleState): void {
   }
 }
 
-function drawFort(ctx: CanvasRenderingContext2D, state: BattleState): void {
-  const p = mapToLogical(state.stage.fort);
-  ctx.fillStyle = COLORS.fort;
-  ctx.fillRect(p.x - 18, p.y - 18, 36, 36);
-  ctx.fillStyle = COLORS.bar;
-  ctx.fillRect(p.x - 4, p.y - 10, 8, 20);
+function drawSightRanges(ctx: CanvasRenderingContext2D, state: BattleState): void {
+  ctx.lineWidth = 2;
+  for (const c of sightCircles(state.units)) {
+    const p = mapToLogical(c.pos);
+    ctx.strokeStyle = c.alerted ? COLORS.sightAlert : COLORS.sight;
+    ctx.setLineDash(c.alerted ? [] : [6, 5]);
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, c.radius, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  ctx.setLineDash([]);
+}
+
+function drawVictoryMarker(ctx: CanvasRenderingContext2D, stage: StageDef): void {
+  const p = mapToLogical(stage.victory.pos);
+  ctx.strokeStyle = COLORS.goal;
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, stage.victory.radius, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // はた。ここが ゴールだと ひと目で わかるように
+  ctx.fillStyle = COLORS.goal;
+  ctx.fillRect(p.x - 2, p.y - 26, 4, 26);
+  ctx.beginPath();
+  ctx.moveTo(p.x + 2, p.y - 26);
+  ctx.lineTo(p.x + 22, p.y - 19);
+  ctx.lineTo(p.x + 2, p.y - 12);
+  ctx.closePath();
+  ctx.fill();
+}
+
+/** 護衛対象の頭上に印を出す。倒れたら即敗北するのがどれかを盤面で示す */
+function drawEscortMarks(ctx: CanvasRenderingContext2D, state: BattleState, escorts: Set<string>): void {
+  ctx.fillStyle = COLORS.escort;
+  for (const u of state.units) {
+    if (u.retired || u.side !== 'player' || !escorts.has(u.defId)) continue;
+    const p = mapToLogical(u.pos);
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y - UNIT_R - 14);
+    ctx.lineTo(p.x - 6, p.y - UNIT_R - 24);
+    ctx.lineTo(p.x + 6, p.y - UNIT_R - 24);
+    ctx.closePath();
+    ctx.fill();
+  }
 }
 
 function drawBonds(ctx: CanvasRenderingContext2D, state: BattleState): void {
   ctx.lineWidth = 3;
   ctx.strokeStyle = COLORS.bond;
-  for (const ally of state.allies) {
-    if (ally.retired || ally.engagedWith === null) continue;
-    for (const s of bondSupporters(ally.id, ally.pos, state.allies)) {
-      const other = state.allies.find((a) => a.id === s.id);
+  const units = playerUnits(state);
+  const supportersList = units.map((u) => ({ id: u.defId, pos: u.pos, retired: u.retired, uid: u.uid }));
+  for (const unit of units) {
+    if (unit.engagedWith === null) continue;
+    for (const s of bondSupporters(state.reg, unit.uid, unit.defId, unit.pos, supportersList)) {
+      const other = units.find((u) => u.uid === s.uid);
       if (!other) continue;
-      const a = mapToLogical(ally.pos);
+      const a = mapToLogical(unit.pos);
       const b = mapToLogical(other.pos);
       ctx.beginPath();
       ctx.moveTo(a.x, a.y);
@@ -103,61 +161,59 @@ function drawHpBar(ctx: CanvasRenderingContext2D, p: Vec2, ratio: number, color:
   ctx.fillRect(p.x - w / 2, p.y - UNIT_R - 9, w * Math.max(0, Math.min(1, ratio)), 4);
 }
 
-function drawEnemies(ctx: CanvasRenderingContext2D, state: BattleState): void {
-  for (const enemy of state.enemies) {
-    const p = mapToLogical(enemy.pos);
-    const def = ENEMIES[enemy.kind];
-    ctx.fillStyle = def.color;
+function drawUnits(
+  ctx: CanvasRenderingContext2D,
+  reg: Registry,
+  state: BattleState,
+  selected: string | null,
+): void {
+  for (const unit of state.units) {
+    if (unit.retired) continue;
+    const isAlly = unit.side === 'player';
+    const p = mapToLogical(unit.pos);
+    const radius = isAlly ? UNIT_R : enemyRadius(unit.maxHp);
+    ctx.fillStyle = defOf(reg, unit.defId).color;
     ctx.beginPath();
-    ctx.arc(p.x, p.y, enemy.kind === 'garum' ? UNIT_R + 3 : UNIT_R, 0, Math.PI * 2);
+    ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
     ctx.fill();
-    if (enemy.kind === 'tatemochi') {
+
+    if (unit.bowDamageCap !== null) {
       ctx.fillStyle = '#c8ccd4';
       ctx.fillRect(p.x - 14, p.y - 8, 5, 16);
     }
-    drawHpBar(ctx, p, enemy.hp / enemy.maxHp, COLORS.hpEnemy);
-  }
-}
 
-function drawAllies(ctx: CanvasRenderingContext2D, state: BattleState, selected: CharId | null): void {
-  for (const ally of state.allies) {
-    if (ally.retired) continue;
-    const p = mapToLogical(ally.pos);
-    ctx.fillStyle = CHARACTERS[ally.id].color;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, UNIT_R, 0, Math.PI * 2);
-    ctx.fill();
+    if (isAlly) {
+      // はた（キャラだとわかるように）
+      ctx.fillStyle = COLORS.text;
+      ctx.fillRect(p.x + UNIT_R - 2, p.y - UNIT_R - 6, 2, 10);
+      ctx.fillRect(p.x + UNIT_R, p.y - UNIT_R - 6, 7, 5);
 
-    // はた（キャラだとわかるように）
-    ctx.fillStyle = COLORS.text;
-    ctx.fillRect(p.x + UNIT_R - 2, p.y - UNIT_R - 6, 2, 10);
-    ctx.fillRect(p.x + UNIT_R, p.y - UNIT_R - 6, 7, 5);
-
-    if (ally.id === selected) {
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 3;
-      ctx.setLineDash([4, 3]);
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, UNIT_R + 10, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.setLineDash([]);
+      if (unit.uid === selected) {
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 3;
+        ctx.setLineDash([4, 3]);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, UNIT_R + 10, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
     }
 
-    if (isFunbaruActive(ally, state.time)) {
+    if (isFunbaruActive(unit, state.time)) {
       ctx.strokeStyle = '#ffe27a';
       ctx.lineWidth = 3;
       ctx.beginPath();
       ctx.arc(p.x, p.y, UNIT_R + 4, 0, Math.PI * 2);
       ctx.stroke();
     }
-    if (ally.neraiuchiArmed) {
+    if (unit.neraiuchiArmed) {
       ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.arc(p.x, p.y, UNIT_R + 7, 0, Math.PI * 2);
       ctx.stroke();
     }
-    drawHpBar(ctx, p, ally.hp / ally.maxHp, COLORS.hpAlly);
+    drawHpBar(ctx, p, unit.hp / unit.maxHp, isAlly ? COLORS.hpAlly : COLORS.hpEnemy);
   }
 }
 
@@ -179,26 +235,25 @@ function drawTopBar(ctx: CanvasRenderingContext2D, state: BattleState): void {
   ctx.fillStyle = COLORS.text;
   ctx.font = '20px sans-serif';
   ctx.textBaseline = 'middle';
-  ctx.fillText(`とりで ${state.fortHp} / ${FORT_MAX_HP}`, 16, 23);
-  ctx.fillText(`しゅうげき ${state.waveIndex + 1} / ${state.stage.waves.length}`, 280, 23);
-  ctx.fillText(state.stage.name, 500, 23);
+  ctx.fillText(state.stage.name, 280, 23);
 }
 
 /** 4人ぶんの移動先を常に出す。誰がどこへ向かっているかを盤面だけで読めるようにする */
 export function drawGoalMarkers(
   ctx: CanvasRenderingContext2D,
+  reg: Registry,
   state: BattleState,
-  selected: CharId | null,
+  selected: string | null,
 ): void {
-  for (const ally of state.allies) {
-    if (ally.retired || !ally.goalPos) continue;
-    const a = mapToLogical(ally.pos);
-    const g = mapToLogical(ally.goalPos);
-    const color = CHARACTERS[ally.id].color;
-    const isSelected = ally.id === selected;
+  for (const unit of state.units) {
+    if (unit.side !== 'player' || unit.retired || !unit.goalPos) continue;
+    const a = mapToLogical(unit.pos);
+    const g = mapToLogical(unit.goalPos);
+    const color = defOf(reg, unit.defId).color;
+    const isSelected = unit.uid === selected;
 
     // 交戦中は足が止まっているので薄くする。交戦が解けたら再開するため消しはしない
-    ctx.globalAlpha = ally.engagedWith !== null ? 0.35 : 1;
+    ctx.globalAlpha = unit.engagedWith !== null ? 0.35 : 1;
     ctx.strokeStyle = color;
 
     if (isSelected) {
@@ -226,14 +281,15 @@ export function drawGoalMarkers(
 /** ドラッグ中に、離したらどうなるかを先に見せる */
 export function drawDragPreview(
   ctx: CanvasRenderingContext2D,
+  reg: Registry,
   fromMap: Vec2,
   toMap: Vec2,
-  charId: CharId,
+  defId: string,
   blocked: boolean,
 ): void {
   const a = mapToLogical(fromMap);
   const b = mapToLogical(toMap);
-  const color = blocked ? COLORS.hpEnemy : CHARACTERS[charId].color;
+  const color = blocked ? COLORS.hpEnemy : defOf(reg, defId).color;
 
   ctx.strokeStyle = color;
   ctx.lineWidth = 2;

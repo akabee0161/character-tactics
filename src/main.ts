@@ -1,52 +1,36 @@
-import { STAGES } from './content/stages';
-import { pickDialogue, pickWaveIntro } from './core/dialogue';
-import { createBattleState, placeAlly, startWave } from './core/state';
-import { step } from './core/sim';
+import { loadRegistry } from './engine/loader';
+import { skillParam } from './engine/registry';
+import { pickDialogue, pickStageIntro } from './core/dialogue';
+import { SKILL_EFFECT_IDS } from './core/skills';
+import { beginBattle, createBattleState, placeUnit } from './core/state';
+import { playerUnits, step } from './core/sim';
 import type { SimCommand } from './core/sim';
 import { drawBattle, drawDragPreview } from './render/draw';
+import { escortDefIds } from './render/objectives-view';
 import { isWalkableAt } from './core/field';
 import { makeEffectState, spawnHitEffects, tickEffects } from './render/effects';
 import { LOGICAL_H, LOGICAL_W, computeViewport, logicalToMap, mapToLogical, screenToLogical } from './render/viewport';
 import { advanceBubble, currentBubble, enqueue, isBlocking, makeBubbleQueue } from './ui/bubbles';
 import { applyStageClear, isStageUnlocked } from './ui/flow';
-import { hitRect, pickAlly } from './ui/hit';
+import { hitRect, pickUnit } from './ui/hit';
 import { resolveMapGesture } from './ui/input';
 import type { PointerStart } from './ui/input';
-import { BTN, STAGE_BTN, portraitSlot, skillButtonAt } from './ui/layout';
+import { BTN, portraitSlot, skillButtonAt, stageSlot } from './ui/layout';
 import {
-  drawBottomBar, drawBubble, drawDefeat, drawPlacement, drawResult,
-  drawSkillButton, drawStageSelect, drawTitle, drawWaveCleared,
+  drawBottomBar, drawBubble, drawDefeat, drawLoadErrors, drawPlacement, drawResult,
+  drawSkillButton, drawStageSelect, drawTitle,
 } from './ui/screens';
 import { loadSave, newSave, writeSave } from './save/save';
 import type { SaveData } from './save/save';
 import type { XpGain } from './ui/flow';
-import type { TitleId } from './core/progress';
-import type { BattleState, CharId, Vec2 } from './core/types';
+import type { BattleState, Vec2 } from './core/types';
 
 const FIXED_DT = 1 / 60;
 
-type Phase = 'title' | 'select' | 'placement' | 'battle' | 'waveCleared' | 'result' | 'defeat';
+type Phase = 'title' | 'select' | 'placement' | 'battle' | 'result' | 'defeat';
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d')!;
-
-const loaded = loadSave(window.localStorage);
-let save: SaveData = loaded ?? newSave();
-let hasSave = loaded !== null;
-let phase: Phase = 'title';
-let stageIndex = 0;
-let battle: BattleState | null = null;
-let selected: CharId | null = null;
-let pointerStart: PointerStart | null = null;
-/** ドラッグ中の指の位置（マップ座標）。プレビュー描画が読む */
-let dragMap: Vec2 | null = null;
-let pendingSkill: CharId | null = null;
-let result: { gains: XpGain[]; newTitles: TitleId[] } | null = null;
-const bubbles = makeBubbleQueue();
-const effects = makeEffectState();
-const commands: SimCommand[] = [];
-let accumulator = 0;
-let lastTime = performance.now();
 
 function resize(): void {
   const scale = Math.min(window.innerWidth / LOGICAL_W, window.innerHeight / LOGICAL_H);
@@ -58,6 +42,37 @@ function resize(): void {
 window.addEventListener('resize', resize);
 resize();
 
+const loadResult = loadRegistry(SKILL_EFFECT_IDS);
+if (!loadResult.ok) {
+  // 部分的に読めたぶんで続行しない。アセットを足したその場で事故に気づけることを優先する
+  const vp = computeViewport(canvas.width, canvas.height);
+  ctx.setTransform(vp.scale, 0, 0, vp.scale, vp.offsetX, vp.offsetY);
+  drawLoadErrors(ctx, loadResult.errors);
+  throw new Error(`assets の よみこみに しっぱい: ${loadResult.errors.length} けん`);
+}
+const registry = loadResult.value;
+
+const loaded = loadSave(window.localStorage, registry);
+let save: SaveData = loaded ?? newSave(registry);
+let hasSave = loaded !== null;
+let phase: Phase = 'title';
+let stageIndex = 0;
+let stageId = registry.stages[0]!.id;
+let battle: BattleState | null = null;
+let selected: string | null = null;
+let pointerStart: PointerStart | null = null;
+/** ドラッグ中の指の位置（マップ座標）。プレビュー描画が読む */
+let dragMap: Vec2 | null = null;
+let pendingSkill: string | null = null;
+let result: { gains: XpGain[]; newTitles: string[] } | null = null;
+/** 護衛対象の defId。beginStage で1度だけ作る */
+let escorts: Set<string> = new Set();
+const bubbles = makeBubbleQueue();
+const effects = makeEffectState();
+const commands: SimCommand[] = [];
+let accumulator = 0;
+let lastTime = performance.now();
+
 function toLogical(ev: PointerEvent): Vec2 {
   const rect = canvas.getBoundingClientRect();
   const vp = computeViewport(rect.width, rect.height);
@@ -66,7 +81,9 @@ function toLogical(ev: PointerEvent): Vec2 {
 
 function beginStage(index: number): void {
   stageIndex = index;
-  battle = createBattleState(STAGES[index]!, save.chars, Date.now() % 100000);
+  stageId = registry.stages[index]!.id;
+  battle = createBattleState(registry, registry.stages[index]!, save.units, Date.now() % 100000);
+  escorts = new Set(escortDefIds(battle.stage));
   selected = null;
   pendingSkill = null;
   bubbles.items.length = 0;
@@ -89,7 +106,7 @@ function onPointerDown(ev: PointerEvent): void {
   switch (phase) {
     case 'title':
       if (hitRect(BTN.titleNew, p)) {
-        save = newSave();
+        save = newSave(registry);
         hasSave = writeSave(window.localStorage, save) || hasSave;
         phase = 'select';
       } else if (hasSave && hitRect(BTN.titleContinue, p)) {
@@ -98,8 +115,8 @@ function onPointerDown(ev: PointerEvent): void {
       return;
 
     case 'select':
-      for (let i = 0; i < STAGE_BTN.length; i++) {
-        if (hitRect(STAGE_BTN[i]!, p) && isStageUnlocked(save, i)) beginStage(i);
+      for (let i = 0; i < registry.stages.length; i++) {
+        if (hitRect(stageSlot(i), p) && isStageUnlocked(registry, save, i)) beginStage(i);
       }
       return;
 
@@ -108,8 +125,8 @@ function onPointerDown(ev: PointerEvent): void {
       if (hitRect(BTN.start, p)) {
         pointerStart = null;
         writeSave(window.localStorage, save); // ステージ開始時点を保存する
-        startWave(battle);
-        enqueue(bubbles, pickWaveIntro(battle.stage, battle.waveIndex));
+        beginBattle(battle);
+        enqueue(bubbles, pickStageIntro(registry, battle.stage));
         phase = 'battle';
         return;
       }
@@ -121,36 +138,20 @@ function onPointerDown(ev: PointerEvent): void {
       if (!battle) return;
       if (pendingSkill) {
         pointerStart = null;
-        commands.push({ type: 'skill', allyId: pendingSkill, dest: logicalToMap(p) });
+        commands.push({ type: 'skill', uid: pendingSkill, dest: logicalToMap(p) });
         pendingSkill = null;
         return;
       }
       if (selected) {
-        const ally = battle.allies.find((a) => a.id === selected)!;
-        const canTap = !ally.retired && !ally.skillUsed;
-        if (canTap && hitRect(skillButtonAt(mapToLogical(ally.pos)), p)) {
+        const unit = battle.units.find((u) => u.uid === selected)!;
+        const canTap = !unit.retired && !unit.skillUsed;
+        if (canTap && hitRect(skillButtonAt(mapToLogical(unit.pos)), p)) {
           pointerStart = null;
-          if (ally.skill === 'kakenukeru') pendingSkill = selected;
-          else commands.push({ type: 'skill', allyId: selected });
+          if (skillParam(battle.reg, unit.skillId ?? '', 'needsDest', 0) === 1) pendingSkill = selected;
+          else commands.push({ type: 'skill', uid: selected });
           return;
         }
       }
-      beginMapPointer(battle, p, ev);
-      return;
-    }
-
-    case 'waveCleared': {
-      if (!battle) return;
-      if (hitRect(BTN.next, p)) {
-        pointerStart = null;
-        battle.waveIndex += 1;
-        effects.items.length = 0;
-        startWave(battle);
-        enqueue(bubbles, pickWaveIntro(battle.stage, battle.waveIndex));
-        phase = 'battle';
-        return;
-      }
-      // しゅうげきの あいだは 再配置できる
       beginMapPointer(battle, p, ev);
       return;
     }
@@ -168,26 +169,30 @@ function onPointerDown(ev: PointerEvent): void {
 
 function beginMapPointer(state: BattleState, p: Vec2, ev: PointerEvent): void {
   if (pointerStart !== null) return; // 別の指のジェスチャが進行中は新しいジェスチャを始めない
+  // drawBottomBar と同じ無フィルタ配列でインデックスを解決する。playerUnits() は retired を
+  // 除外して再インデックスするため、これと混ぜるとポートレートの見た目とタップ対象がずれる
+  const portraitUnits = state.units.filter((u) => u.side === 'player').slice(0, 4);
   for (let i = 0; i < 4; i++) {
     if (hitRect(portraitSlot(i), p)) {
-      const id = state.allies[i]!.id;
-      selected = selected === id ? null : id;
+      const unit = portraitUnits[i];
+      const uid = unit && !unit.retired ? unit.uid : null;
+      if (uid !== null) selected = selected === uid ? null : uid;
       pointerStart = null;
       return;
     }
   }
   const startMap = logicalToMap(p);
-  const charId = pickAlly(state.allies, startMap);
+  const uid = pickUnit(playerUnits(state), startMap);
   pointerStart = {
-    charId,
+    uid,
     startMap,
-    wasSelected: charId !== null && selected === charId,
+    wasSelected: uid !== null && selected === uid,
     pointerId: ev.pointerId,
   };
   dragMap = startMap;
   canvas.setPointerCapture(ev.pointerId);
-  if (charId !== null) {
-    selected = charId; // 掴んだ時点で見た目に反映する。解除は pointerup で判定する
+  if (uid !== null) {
+    selected = uid; // 掴んだ時点で見た目に反映する。解除は pointerup で判定する
   }
 }
 
@@ -202,20 +207,20 @@ function onPointerUp(ev: PointerEvent): void {
   pointerStart = null;
   dragMap = null;
   if (!battle) return;
-  if (phase !== 'placement' && phase !== 'battle' && phase !== 'waveCleared') return;
+  if (phase !== 'placement' && phase !== 'battle') return;
 
   const endMap = logicalToMap(toLogical(ev));
   const g = resolveMapGesture(start, endMap, selected);
   switch (g.type) {
     case 'select':
-      selected = g.charId;
+      selected = g.uid;
       return;
     case 'deselect':
       selected = null;
       return;
-    case 'moveChar':
-      if (phase === 'battle') commands.push({ type: 'move', allyId: g.charId, dest: g.dest });
-      else placeAlly(battle, g.charId, g.dest);
+    case 'moveUnit':
+      if (phase === 'battle') commands.push({ type: 'move', uid: g.uid, dest: g.dest });
+      else placeUnit(battle, g.uid, g.dest);
       return;
     case 'none':
       return;
@@ -244,16 +249,14 @@ function update(dt: number): void {
     const batch = commands.splice(0, commands.length);
     step(battle, batch, FIXED_DT);
     spawnHitEffects(effects, battle.events);
-    enqueue(bubbles, pickDialogue(battle.events));
+    enqueue(bubbles, pickDialogue(battle.reg, battle.events));
     if (isBlocking(bubbles)) break;
   }
 
   if (battle.phase === 'defeat') {
     phase = 'defeat';
-  } else if (battle.phase === 'waveCleared') {
-    phase = 'waveCleared';
-  } else if (battle.phase === 'stageCleared') {
-    const r = applyStageClear(save, stageIndex, battle.stats);
+  } else if (battle.phase === 'victory') {
+    const r = applyStageClear(registry, save, stageId, battle);
     save = r.save;
     hasSave = writeSave(window.localStorage, save) || hasSave;
     result = { gains: r.gains, newTitles: r.newTitles };
@@ -272,47 +275,40 @@ function render(): void {
       drawTitle(ctx, hasSave);
       break;
     case 'select':
-      drawStageSelect(ctx, save);
+      drawStageSelect(ctx, registry, save);
       break;
     case 'placement':
       if (battle) {
-        drawBattle(ctx, battle, selected, effects);
+        drawBattle(ctx, registry, battle, selected, effects, escorts);
         drawPlacement(ctx, battle);
-        drawBottomBar(ctx, battle, selected);
+        drawBottomBar(ctx, registry, battle, selected, escorts);
       }
       break;
     case 'battle':
       if (battle) {
-        drawBattle(ctx, battle, selected, effects);
-        drawBottomBar(ctx, battle, selected);
-        if (selected) drawSkillButton(ctx, battle, selected);
-      }
-      break;
-    case 'waveCleared':
-      if (battle) {
-        drawBattle(ctx, battle, selected, effects);
-        drawBottomBar(ctx, battle, selected);
-        drawWaveCleared(ctx, battle);
+        drawBattle(ctx, registry, battle, selected, effects, escorts);
+        drawBottomBar(ctx, registry, battle, selected, escorts);
+        if (selected) drawSkillButton(ctx, registry, battle, selected);
       }
       break;
     case 'result':
-      if (battle && result) drawResult(ctx, battle, result.gains, result.newTitles);
+      if (result) drawResult(ctx, registry, result.gains, result.newTitles);
       break;
     case 'defeat':
       drawDefeat(ctx);
       break;
   }
 
-  const dragChar = pointerStart?.charId ?? null;
-  const dragPhaseOk = phase === 'placement' || phase === 'battle' || phase === 'waveCleared';
-  if (battle && dragPhaseOk && dragChar !== null && dragMap !== null) {
-    const ally = battle.allies.find((a) => a.id === dragChar)!;
+  const dragUid = pointerStart?.uid ?? null;
+  const dragPhaseOk = phase === 'placement' || phase === 'battle';
+  if (battle && dragPhaseOk && dragUid !== null && dragMap !== null) {
+    const unit = battle.units.find((u) => u.uid === dragUid)!;
     const blocked = !isWalkableAt(battle.grid, dragMap);
-    drawDragPreview(ctx, ally.pos, dragMap, dragChar, blocked);
+    drawDragPreview(ctx, registry, unit.pos, dragMap, unit.defId, blocked);
   }
 
   const bubble = currentBubble(bubbles);
-  if (bubble) drawBubble(ctx, bubble);
+  if (bubble) drawBubble(ctx, registry, bubble);
 }
 
 function loop(now: number): void {

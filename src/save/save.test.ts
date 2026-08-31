@@ -1,133 +1,122 @@
 import { describe, expect, it } from 'vitest';
-import { SAVE_KEY, SAVE_VERSION, loadSave, newSave, writeSave } from './save';
+import { loadSave, newSave, SAVE_KEY, SAVE_VERSION, writeSave } from './save';
+import { testRegistry } from '../core/testing';
 import type { StorageLike } from './save';
-import { CHAR_IDS } from '../core/types';
 
-function fakeStorage(initial: Record<string, string> = {}): StorageLike & { data: Record<string, string> } {
-  const data = { ...initial };
+function memoryStorage(initial?: string): StorageLike & { raw: string | null } {
   return {
-    data,
-    getItem: (k) => (k in data ? data[k]! : null),
-    setItem: (k, v) => { data[k] = v; },
+    raw: initial ?? null,
+    getItem(_key: string) { return this.raw; },
+    setItem(_key: string, value: string) { this.raw = value; },
   };
 }
 
 describe('newSave', () => {
-  it('全員レベル1、クリア 0 ステージ、称号なし', () => {
-    const s = newSave();
+  it('レジストリの すべての ユニットを レベル1で いれる', () => {
+    const reg = testRegistry();
+    const s = newSave(reg);
+    expect(Object.keys(s.units).sort()).toEqual([...reg.units.keys()].sort());
+    expect(s.units.roran).toEqual({ level: 1, xp: 0 });
     expect(s.version).toBe(SAVE_VERSION);
-    expect(s.clearedStages).toBe(0);
-    expect(s.titles).toEqual([]);
-    for (const id of CHAR_IDS) {
-      expect(s.chars[id]).toEqual({ level: 1, xp: 0 });
-    }
+    expect(s.clearedStageIds).toEqual([]);
   });
 });
 
-describe('writeSave / loadSave', () => {
-  it('書いたものが読み戻せる', () => {
-    const st = fakeStorage();
-    const data = newSave();
-    data.clearedStages = 2;
-    data.chars.roran = { level: 3, xp: 17 };
-    data.counters.funbaruUses = 9;
-    data.titles = ['gamanzuyoi'];
+describe('loadSave', () => {
+  const reg = testRegistry();
+  const valid = {
+    version: 2,
+    clearedStageIds: ['stage1'],
+    units: { roran: { level: 3, xp: 10 }, ines: { level: 2, xp: 0 }, mist: { level: 1, xp: 5 }, gau: { level: 1, xp: 0 } },
+    counters: { 'bond:supports': 4 },
+    titles: ['nakayoshi'],
+  };
 
-    writeSave(st, data);
-    expect(loadSave(st)).toEqual(data);
+  it('ただしい セーブを よむ', () => {
+    const s = loadSave(memoryStorage(JSON.stringify(valid)), reg);
+    expect(s?.units.roran).toEqual({ level: 3, xp: 10 });
+    expect(s?.clearedStageIds).toEqual(['stage1']);
   });
 
-  it('決まったキーに書く', () => {
-    const st = fakeStorage();
-    writeSave(st, newSave());
-    expect(Object.keys(st.data)).toEqual([SAVE_KEY]);
+  it('セーブが なければ null', () => {
+    expect(loadSave(memoryStorage(), reg)).toBeNull();
   });
 
-  it('セーブがなければ null', () => {
-    expect(loadSave(fakeStorage())).toBeNull();
+  it('こわれた JSON なら null', () => {
+    expect(loadSave(memoryStorage('{{{'), reg)).toBeNull();
   });
 
-  it('壊れた JSON なら null', () => {
-    expect(loadSave(fakeStorage({ [SAVE_KEY]: '{{{' }))).toBeNull();
+  it('version 1 の きゅうセーブは よみすてる', () => {
+    const old = { version: 1, clearedStages: 2, chars: {}, counters: {}, titles: [] };
+    expect(loadSave(memoryStorage(JSON.stringify(old)), reg)).toBeNull();
   });
 
-  it('バージョンが違えば null', () => {
-    const old = JSON.stringify({ ...newSave(), version: SAVE_VERSION + 1 });
-    expect(loadSave(fakeStorage({ [SAVE_KEY]: old }))).toBeNull();
+  it('レジストリに ない ユニットの エントリは むしする', () => {
+    const raw = { ...valid, units: { ...valid.units, yuurei: { level: 9, xp: 0 } } };
+    const s = loadSave(memoryStorage(JSON.stringify(raw)), reg);
+    expect(s?.units.yuurei).toBeUndefined();
+    expect(s?.units.roran).toEqual({ level: 3, xp: 10 });
   });
 
-  it('キャラが欠けていれば null', () => {
-    const broken = newSave() as unknown as Record<string, unknown>;
-    delete (broken.chars as Record<string, unknown>).gau;
-    expect(loadSave(fakeStorage({ [SAVE_KEY]: JSON.stringify(broken) }))).toBeNull();
+  it('レジストリに あって セーブに ない ユニットは レベル1で おぎなう', () => {
+    const { gau: _drop, ...units } = valid.units;
+    const s = loadSave(memoryStorage(JSON.stringify({ ...valid, units })), reg);
+    expect(s?.units.gau).toEqual({ level: 1, xp: 0 });
+    expect(s?.units.roran).toEqual({ level: 3, xp: 10 });
   });
 
-  it('JSON が配列やプリミティブなら null', () => {
-    expect(loadSave(fakeStorage({ [SAVE_KEY]: '[]' }))).toBeNull();
-    expect(loadSave(fakeStorage({ [SAVE_KEY]: '42' }))).toBeNull();
-    expect(loadSave(fakeStorage({ [SAVE_KEY]: 'null' }))).toBeNull();
+  it('かたが こわれた エントリだけを すてて、ほかは のこす', () => {
+    const raw = { ...valid, units: { ...valid.units, ines: { level: 'つよい', xp: 0 } } };
+    const s = loadSave(memoryStorage(JSON.stringify(raw)), reg);
+    expect(s?.units.ines).toEqual({ level: 1, xp: 0 });
+    expect(s?.units.roran).toEqual({ level: 3, xp: 10 });
   });
 
-  it('counters の一部フィールドが欠けていれば null', () => {
-    const broken = newSave() as unknown as Record<string, unknown>;
-    broken.counters = { funbaruUses: 0 };
-    expect(loadSave(fakeStorage({ [SAVE_KEY]: JSON.stringify(broken) }))).toBeNull();
+  it('level が 0 いかの エントリは こわれた ちとして すてる', () => {
+    const raw = { ...valid, units: { ...valid.units, ines: { level: 0, xp: 0 } } };
+    const s = loadSave(memoryStorage(JSON.stringify(raw)), reg);
+    expect(s?.units.ines).toEqual({ level: 1, xp: 0 });
+    expect(s?.units.roran).toEqual({ level: 3, xp: 10 });
   });
 
-  it('counters のフィールドが数値でなければ null', () => {
-    const broken = newSave() as unknown as { counters: Record<string, unknown> };
-    broken.counters.bondSupports = 'たくさん';
-    expect(loadSave(fakeStorage({ [SAVE_KEY]: JSON.stringify(broken) }))).toBeNull();
+  it('レジストリに ない ステージ id は clearedStageIds から おとす', () => {
+    const raw = { ...valid, clearedStageIds: ['stage1', 'kesareta'] };
+    expect(loadSave(memoryStorage(JSON.stringify(raw)), reg)?.clearedStageIds).toEqual(['stage1']);
   });
 
-  it('counters のフィールドが負の数や小数なら null', () => {
-    const negative = newSave() as unknown as { counters: Record<string, unknown> };
-    negative.counters.bondSupports = -1;
-    expect(loadSave(fakeStorage({ [SAVE_KEY]: JSON.stringify(negative) }))).toBeNull();
-
-    const fractional = newSave() as unknown as { counters: Record<string, unknown> };
-    fractional.counters.bondSupports = 1.5;
-    expect(loadSave(fakeStorage({ [SAVE_KEY]: JSON.stringify(fractional) }))).toBeNull();
+  it('レジストリに ない しょうごうは おとす', () => {
+    const raw = { ...valid, titles: ['nakayoshi', 'kesareta'] };
+    expect(loadSave(memoryStorage(JSON.stringify(raw)), reg)?.titles).toEqual(['nakayoshi']);
   });
 
-  it('chars の level / xp が負の数や小数なら null', () => {
-    const negative = newSave();
-    negative.chars.roran = { level: -1, xp: 0 };
-    expect(loadSave(fakeStorage({ [SAVE_KEY]: JSON.stringify(negative) }))).toBeNull();
-
-    const fractional = newSave();
-    fractional.chars.roran = { level: 1, xp: 0.5 };
-    expect(loadSave(fakeStorage({ [SAVE_KEY]: JSON.stringify(fractional) }))).toBeNull();
+  it('カウンタの あたいが せいすうで なければ その キーだけ おとす', () => {
+    const raw = { ...valid, counters: { 'bond:supports': 4, 'kill:neraiuchi': -1 } };
+    expect(loadSave(memoryStorage(JSON.stringify(raw)), reg)?.counters).toEqual({ 'bond:supports': 4 });
   });
 
-  it('clearedStages が負の数や小数なら null', () => {
-    const negative = { ...newSave(), clearedStages: -1 };
-    expect(loadSave(fakeStorage({ [SAVE_KEY]: JSON.stringify(negative) }))).toBeNull();
-
-    const fractional = { ...newSave(), clearedStages: 1.5 };
-    expect(loadSave(fakeStorage({ [SAVE_KEY]: JSON.stringify(fractional) }))).toBeNull();
-  });
-
-  it('titles に不正な称号 ID が含まれていれば null', () => {
-    const broken = { ...newSave(), titles: ['nazono-shougou'] } as unknown as Record<string, unknown>;
-    expect(loadSave(fakeStorage({ [SAVE_KEY]: JSON.stringify(broken) }))).toBeNull();
+  it('units が オブジェクトで なければ null', () => {
+    expect(loadSave(memoryStorage(JSON.stringify({ ...valid, units: [] })), reg)).toBeNull();
   });
 });
 
-describe('writeSave の失敗', () => {
-  it('setItem が例外を投げても writeSave は例外を投げず false を返す', () => {
-    const throwingStorage: StorageLike = {
+describe('writeSave', () => {
+  it('かきこめたら true', () => {
+    const reg = testRegistry();
+    const st = memoryStorage();
+    expect(writeSave(st, newSave(reg))).toBe(true);
+    expect(JSON.parse(st.raw!).version).toBe(2);
+  });
+
+  it('れいがいを なげる ストレージでは false', () => {
+    const reg = testRegistry();
+    const st: StorageLike = {
       getItem: () => null,
-      setItem: () => {
-        throw new Error('QuotaExceededError');
-      },
+      setItem: () => { throw new Error('いっぱい'); },
     };
-    expect(() => writeSave(throwingStorage, newSave())).not.toThrow();
-    expect(writeSave(throwingStorage, newSave())).toBe(false);
+    expect(writeSave(st, newSave(reg))).toBe(false);
   });
 
-  it('setItem が成功すれば true を返す', () => {
-    const st = fakeStorage();
-    expect(writeSave(st, newSave())).toBe(true);
+  it('SAVE_KEY は かわらない', () => {
+    expect(SAVE_KEY).toBe('character-tactics/save');
   });
 });
