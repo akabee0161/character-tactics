@@ -43,11 +43,11 @@ describe('canUseSkill', () => {
     s = fresh();
   });
 
-  it('ウェーブ中で未使用なら使える', () => {
+  it('バトル中で未使用なら使える', () => {
     expect(canUseSkill(s, unitOf(s, 'roran').uid)).toBe(true);
   });
 
-  it('一度使うと同じウェーブでは使えない', () => {
+  it('一度使うと同じステージでは使えない', () => {
     const uid = unitOf(s, 'roran').uid;
     useSkill(s, uid);
     expect(canUseSkill(s, uid)).toBe(false);
@@ -219,7 +219,7 @@ describe('SKILL_EFFECTS', () => {
   it('skills.json の すべての id に こうかの じっそうが ある', () => {
     const reg = testRegistry();
     for (const id of reg.skills.keys()) {
-      expect(`${id} => ${SKILL_EFFECTS[id] !== undefined}`).toContain('true');
+      expect(SKILL_EFFECTS[id], `こうかの じっそうが ない skillId: ${id}`).toBeDefined();
     }
   });
 

@@ -394,33 +394,55 @@ function readStringArray(ctx: Ctx, path: string, v: unknown, min: number): strin
   return out;
 }
 
+function isWalkableCell(cell: number, mapRows: string[], pos: Vec2): boolean {
+  const cx = Math.floor(pos.x / cell);
+  const cy = Math.floor(pos.y / cell);
+  const row = mapRows[cy];
+  return row !== undefined && cx >= 0 && cx < row.length && row[cx] === '.';
+}
+
 export function validateStageDef(file: string, raw: unknown): Validated<StageDef> {
   const ctx = makeCtx(file);
   const o = requireObject(ctx, '', raw);
   if (!o) return { ok: false, errors: ctx.errors };
 
+  // walkable 検証に つかうので、mapRows/cell を さきに よむ
+  const cell = requireNumber(ctx, 'cell', o.cell, { min: 1, int: true }) ?? 32;
+  const mapRows = readMapRows(ctx, o.mapRows);
+  const checkWalkable = (path: string, pos: Vec2): void => {
+    if (mapRows.length > 0 && !isWalkableCell(cell, mapRows, pos)) {
+      fail(ctx, path, 'あるけない マスに ある');
+    }
+  };
+
   const zoneRaw = requireArray(ctx, 'placementZone', o.placementZone, { min: 1 }) ?? [];
   const placementZone = zoneRaw.map((item, i) => {
     const z = requireObject(ctx, `placementZone[${i}]`, item);
-    return { pos: (z && requireVec2(ctx, `placementZone[${i}].pos`, z.pos)) ?? { x: 0, y: 0 } };
+    const pos = (z && requireVec2(ctx, `placementZone[${i}].pos`, z.pos)) ?? { x: 0, y: 0 };
+    checkWalkable(`placementZone[${i}].pos`, pos);
+    return { pos };
   });
 
   const enemiesRaw = requireArray(ctx, 'enemies', o.enemies) ?? [];
   const enemies = enemiesRaw.map((item, i) => {
     const path = `enemies[${i}]`;
     const e = requireObject(ctx, path, item);
+    const pos = (e && requireVec2(ctx, `${path}.pos`, e.pos)) ?? { x: 0, y: 0 };
+    checkWalkable(`${path}.pos`, pos);
+    const ai = readAiDef(ctx, `${path}.ai`, e?.ai);
+    if (ai.kind === 'guard') checkWalkable(`${path}.ai.post`, ai.post);
     return {
       defId: (e && requireString(ctx, `${path}.defId`, e.defId)) ?? '',
-      pos: (e && requireVec2(ctx, `${path}.pos`, e.pos)) ?? { x: 0, y: 0 },
-      ai: readAiDef(ctx, `${path}.ai`, e?.ai),
+      pos,
+      ai,
     };
   });
 
   const stage: StageDef = {
     id: requireString(ctx, 'id', o.id) ?? '',
     name: requireString(ctx, 'name', o.name) ?? '',
-    cell: requireNumber(ctx, 'cell', o.cell, { min: 1, int: true }) ?? 32,
-    mapRows: readMapRows(ctx, o.mapRows),
+    cell,
+    mapRows,
     placementZone,
     roster: readStringArray(ctx, 'roster', o.roster, 1),
     enemies,

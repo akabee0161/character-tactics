@@ -46,9 +46,21 @@ export function buildRegistry(
   for (const path of Object.keys(files).sort()) {
     const raw = files[path];
     if (inDir(path, 'units')) {
-      take(validateUnitDef(path, raw), (d) => reg.units.set(d.id, d));
+      take(validateUnitDef(path, raw), (d) => {
+        if (reg.units.has(d.id)) {
+          errors.push({ file: path, path: 'id', reason: `id が じゅうふくしている: ${d.id}` });
+        } else {
+          reg.units.set(d.id, d);
+        }
+      });
     } else if (inDir(path, 'enemies')) {
-      take(validateEnemyDef(path, raw), (d) => reg.enemies.set(d.id, d));
+      take(validateEnemyDef(path, raw), (d) => {
+        if (reg.enemies.has(d.id)) {
+          errors.push({ file: path, path: 'id', reason: `id が じゅうふくしている: ${d.id}` });
+        } else {
+          reg.enemies.set(d.id, d);
+        }
+      });
     } else if (inDir(path, 'stages')) {
       take(validateStageDef(path, raw), (d) => {
         if (d.id !== baseName(path)) {
@@ -58,7 +70,13 @@ export function buildRegistry(
       });
     } else if (inDir(path, 'lines')) {
       take(validateLinesFile(path, raw), (d) => {
-        for (const [k, v] of Object.entries(d)) reg.lines.set(k, v);
+        for (const [k, v] of Object.entries(d)) {
+          if (reg.lines.has(k)) {
+            errors.push({ file: path, path: k, reason: `lines の id が じゅうふくしている: ${k}` });
+          } else {
+            reg.lines.set(k, v);
+          }
+        }
       });
     } else if (baseName(path) === 'skills') {
       take(validateSkillsFile(path, raw), (d) => {

@@ -235,16 +235,46 @@ describe('validateStageDef', () => {
   it('未知の ai.kind を弾く', () => {
     const r = validateStageDef('stages/x.json', {
       ...VALID_STAGE,
-      enemies: [{ defId: 'x', pos: { x: 0, y: 0 }, ai: { kind: 'ambush' } }],
+      enemies: [{ defId: 'x', pos: { x: 48, y: 48 }, ai: { kind: 'ambush' } }],
     });
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.errors[0]?.path).toBe('enemies[0].ai.kind');
   });
 
+  it('placementZone が かべの なかなら弾く', () => {
+    const r = validateStageDef('stages/x.json', {
+      ...VALID_STAGE,
+      placementZone: [{ pos: { x: 0, y: 0 } }],
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors[0]?.path).toBe('placementZone[0].pos');
+  });
+
+  it('enemies の pos が マップの そとなら弾く', () => {
+    const r = validateStageDef('stages/x.json', {
+      ...VALID_STAGE,
+      enemies: [{ defId: 'x', pos: { x: 999, y: 999 }, ai: { kind: 'aggressive' } }],
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors[0]?.path).toBe('enemies[0].pos');
+  });
+
+  it('guard の post が かべの なかなら弾く', () => {
+    const r = validateStageDef('stages/x.json', {
+      ...VALID_STAGE,
+      enemies: [{
+        defId: 'x', pos: { x: 48, y: 48 },
+        ai: { kind: 'guard', post: { x: 0, y: 0 }, leash: 120, sightRange: 100 },
+      }],
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors[0]?.path).toBe('enemies[0].ai.post');
+  });
+
   it('sentry には sightRange が いる', () => {
     const r = validateStageDef('stages/x.json', {
       ...VALID_STAGE,
-      enemies: [{ defId: 'x', pos: { x: 0, y: 0 }, ai: { kind: 'sentry' } }],
+      enemies: [{ defId: 'x', pos: { x: 48, y: 48 }, ai: { kind: 'sentry' } }],
     });
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.errors[0]?.path).toBe('enemies[0].ai.sightRange');
@@ -254,7 +284,7 @@ describe('validateStageDef', () => {
     const r = validateStageDef('stages/x.json', {
       ...VALID_STAGE,
       enemies: [{
-        defId: 'x', pos: { x: 0, y: 0 },
+        defId: 'x', pos: { x: 48, y: 48 },
         ai: { kind: 'guard', post: { x: 64, y: 64 }, leash: 120, sightRange: 100 },
       }],
     });

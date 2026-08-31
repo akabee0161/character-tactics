@@ -184,7 +184,7 @@ function resolveAttacks(state: BattleState, dt: number): void {
 
     // 絆は味方どうしの支援なので、同じ side の生存ユニットだけを見る
     const allies = state.units.filter((o) => o.side === u.side);
-    const supporters = bondSupporters(state.reg, u.defId, u.pos, allies.map((o) => ({
+    const supporters = bondSupporters(state.reg, u.uid, u.defId, u.pos, allies.map((o) => ({
       id: o.defId, pos: o.pos, retired: o.retired, uid: o.uid,
     })));
     let bonus = 0;

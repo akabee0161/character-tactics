@@ -15,13 +15,14 @@ function bonusBetween(reg: Registry, a: string, b: string): number {
 
 export function bondSupporters(
   reg: Registry,
+  selfUid: string,
   selfId: string,
   selfPos: Vec2,
   others: BondSupporter[],
 ): { uid: string; id: string; bonus: number }[] {
   const result: { uid: string; id: string; bonus: number }[] = [];
   for (const other of others) {
-    if (other.id === selfId || other.retired) continue;
+    if (other.uid === selfUid || other.retired) continue;
     const bonus = bonusBetween(reg, selfId, other.id);
     if (bonus === 0) continue;
     if (distance(selfPos, other.pos) > BOND_RANGE) continue;
@@ -30,6 +31,8 @@ export function bondSupporters(
   return result;
 }
 
-export function bondBonus(reg: Registry, selfId: string, selfPos: Vec2, others: BondSupporter[]): number {
-  return bondSupporters(reg, selfId, selfPos, others).reduce((sum, s) => sum + s.bonus, 0);
+export function bondBonus(
+  reg: Registry, selfUid: string, selfId: string, selfPos: Vec2, others: BondSupporter[],
+): number {
+  return bondSupporters(reg, selfUid, selfId, selfPos, others).reduce((sum, s) => sum + s.bonus, 0);
 }

@@ -186,6 +186,30 @@ describe('buildRegistry', () => {
     if (!r.ok) expect(r.errors[0]?.reason).toContain('ステージ');
   });
 
+  it('同じ id の unitDef が 2つ あれば弾く（サイレント上書き防止）', () => {
+    const r = buildRegistry(files({
+      'assets/units/roran2.json': { ...UNIT },
+    }), KNOWN_SKILLS);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors.some((e) => e.reason.includes('じゅうふく'))).toBe(true);
+  });
+
+  it('同じ id の enemyDef が 2つ あれば弾く（サイレント上書き防止）', () => {
+    const r = buildRegistry(files({
+      'assets/enemies/narazumono2.json': { ...ENEMY },
+    }), KNOWN_SKILLS);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors.some((e) => e.reason.includes('じゅうふく'))).toBe(true);
+  });
+
+  it('複数の lines ファイルで id が かぶったら弾く（サイレント上書き防止）', () => {
+    const r = buildRegistry(files({
+      'assets/lines/stage1.json': { 'skill:roran': 'べつの せりふ' },
+    }), KNOWN_SKILLS);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors.some((e) => e.reason.includes('じゅうふく'))).toBe(true);
+  });
+
   it('形の エラーが あるときは 相互さんしょうを 見ない（レジストリが 未完成なため）', () => {
     const r = buildRegistry(files({
       'assets/units/roran.json': { ...UNIT, maxHp: 'ダメ' },

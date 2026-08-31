@@ -21,6 +21,11 @@ function isFiniteNonNegInt(v: unknown): boolean {
   return typeof v === 'number' && Number.isInteger(v) && v >= 0;
 }
 
+/** level は 1 はじまりの せっけいなので、0 は こわれた ちとして あつかう */
+function isFinitePositiveInt(v: unknown): boolean {
+  return typeof v === 'number' && Number.isInteger(v) && v >= 1;
+}
+
 function isPlainObject(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null && !Array.isArray(v);
 }
@@ -42,7 +47,7 @@ function reconcile(raw: Record<string, unknown>, reg: Registry): SaveData {
   const rawUnits = isPlainObject(raw.units) ? raw.units : {};
   for (const id of reg.units.keys()) {
     const p = rawUnits[id];
-    if (!isPlainObject(p) || !isFiniteNonNegInt(p.level) || !isFiniteNonNegInt(p.xp)) continue;
+    if (!isPlainObject(p) || !isFinitePositiveInt(p.level) || !isFiniteNonNegInt(p.xp)) continue;
     save.units[id] = { level: p.level as number, xp: p.xp as number };
   }
 

@@ -126,7 +126,7 @@ function drawBonds(ctx: CanvasRenderingContext2D, state: BattleState): void {
   const supportersList = units.map((u) => ({ id: u.defId, pos: u.pos, retired: u.retired, uid: u.uid }));
   for (const unit of units) {
     if (unit.engagedWith === null) continue;
-    for (const s of bondSupporters(state.reg, unit.defId, unit.pos, supportersList)) {
+    for (const s of bondSupporters(state.reg, unit.uid, unit.defId, unit.pos, supportersList)) {
       const other = units.find((u) => u.uid === s.uid);
       if (!other) continue;
       const a = mapToLogical(unit.pos);

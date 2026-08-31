@@ -20,49 +20,62 @@ describe('レジストリの bonds', () => {
 describe('bondBonus', () => {
   it('なかよし相手が範囲内にいると加算される', () => {
     const reg = testRegistry();
-    expect(bondBonus(reg, 'roran', { x: 0, y: 0 }, [at('ines', 100)])).toBe(2);
+    expect(bondBonus(reg, 'u:roran', 'roran', { x: 0, y: 0 }, [at('ines', 100)])).toBe(2);
   });
 
   it('範囲外なら 0', () => {
     const reg = testRegistry();
-    expect(bondBonus(reg, 'roran', { x: 0, y: 0 }, [at('ines', 201)])).toBe(0);
+    expect(bondBonus(reg, 'u:roran', 'roran', { x: 0, y: 0 }, [at('ines', 201)])).toBe(0);
   });
 
   it('ちょうど 200px は範囲内', () => {
     const reg = testRegistry();
-    expect(bondBonus(reg, 'roran', { x: 0, y: 0 }, [at('ines', BOND_RANGE)])).toBe(2);
+    expect(bondBonus(reg, 'u:roran', 'roran', { x: 0, y: 0 }, [at('ines', BOND_RANGE)])).toBe(2);
   });
 
   it('なかよしでない相手は加算されない', () => {
     const reg = testRegistry();
-    expect(bondBonus(reg, 'ines', { x: 0, y: 0 }, [at('gau', 50)])).toBe(0);
+    expect(bondBonus(reg, 'u:ines', 'ines', { x: 0, y: 0 }, [at('gau', 50)])).toBe(0);
   });
 
   it('複数のなかよし相手がいれば合計する', () => {
     const reg = testRegistry();
-    expect(bondBonus(reg, 'roran', { x: 0, y: 0 }, [at('ines', 50), at('mist', 80)])).toBe(3);
+    expect(bondBonus(reg, 'u:roran', 'roran', { x: 0, y: 0 }, [at('ines', 50), at('mist', 80)])).toBe(3);
   });
 
   it('たいきゃく中の相手は支援しない', () => {
     const reg = testRegistry();
-    expect(bondBonus(reg, 'roran', { x: 0, y: 0 }, [at('ines', 50, true)])).toBe(0);
+    expect(bondBonus(reg, 'u:roran', 'roran', { x: 0, y: 0 }, [at('ines', 50, true)])).toBe(0);
   });
 
   it('自分自身は数えない', () => {
     const reg = testRegistry();
-    expect(bondBonus(reg, 'roran', { x: 0, y: 0 }, [at('roran', 0)])).toBe(0);
+    expect(bondBonus(reg, 'u:roran', 'roran', { x: 0, y: 0 }, [at('roran', 0)])).toBe(0);
+  });
+
+  it('自分自身の はんていは uid で する（defId が おなじ べつの あいてを のぞかない）', () => {
+    const reg = testRegistry();
+    // uid が じぶんと おなじ エントリだけを のぞく。defId が おなじでも uid が ちがえば あいてに なる
+    const r = bondBonus(reg, 'u:roran-1', 'roran', { x: 0, y: 0 }, [
+      { uid: 'u:roran-1', id: 'ines', pos: { x: 0, y: 0 }, retired: false },
+      { uid: 'u:roran-2', id: 'ines', pos: { x: 0, y: 0 }, retired: false },
+    ]);
+    // 1つめは uid が じぶんと おなじなので のぞかれ、2つめだけ かさんされる
+    expect(r).toBe(2);
   });
 
   it('ペアはどちら向きでも成立する', () => {
     const reg = testRegistry();
-    expect(bondBonus(reg, 'ines', { x: 0, y: 0 }, [at('roran', 50)])).toBe(2);
+    expect(bondBonus(reg, 'u:ines', 'ines', { x: 0, y: 0 }, [at('roran', 50)])).toBe(2);
   });
 });
 
 describe('bondSupporters', () => {
   it('支援している相手の一覧を返す', () => {
     const reg = testRegistry();
-    const r = bondSupporters(reg, 'roran', { x: 0, y: 0 }, [at('ines', 50), at('mist', 80), at('gau', 10)]);
+    const r = bondSupporters(
+      reg, 'u:roran', 'roran', { x: 0, y: 0 }, [at('ines', 50), at('mist', 80), at('gau', 10)],
+    );
     expect(r).toEqual([
       { uid: 'u:ines', id: 'ines', bonus: 2 },
       { uid: 'u:mist', id: 'mist', bonus: 1 },
@@ -71,6 +84,6 @@ describe('bondSupporters', () => {
 
   it('誰もいなければ空配列', () => {
     const reg = testRegistry();
-    expect(bondSupporters(reg, 'gau', { x: 0, y: 0 }, [at('ines', 10)])).toEqual([]);
+    expect(bondSupporters(reg, 'u:gau', 'gau', { x: 0, y: 0 }, [at('ines', 10)])).toEqual([]);
   });
 });

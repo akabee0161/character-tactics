@@ -72,6 +72,13 @@ describe('loadSave', () => {
     expect(s?.units.roran).toEqual({ level: 3, xp: 10 });
   });
 
+  it('level が 0 いかの エントリは こわれた ちとして すてる', () => {
+    const raw = { ...valid, units: { ...valid.units, ines: { level: 0, xp: 0 } } };
+    const s = loadSave(memoryStorage(JSON.stringify(raw)), reg);
+    expect(s?.units.ines).toEqual({ level: 1, xp: 0 });
+    expect(s?.units.roran).toEqual({ level: 3, xp: 10 });
+  });
+
   it('レジストリに ない ステージ id は clearedStageIds から おとす', () => {
     const raw = { ...valid, clearedStageIds: ['stage1', 'kesareta'] };
     expect(loadSave(memoryStorage(JSON.stringify(raw)), reg)?.clearedStageIds).toEqual(['stage1']);

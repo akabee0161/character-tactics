@@ -385,6 +385,10 @@ describe('ユニット型の とうごう', () => {
     const p = state.units.find((u) => u.side === 'player')!;
     const e = state.units.find((u) => u.side === 'enemy')!;
     p.combat = false;
+    // ほかの みかたが かわりに こうげきしないよう とおざける
+    for (const u of state.units) if (u.side === 'player' && u.uid !== p.uid) u.pos = { x: 900, y: 900 };
+    // 到達勝利の はんいの そとで こうせんさせる（そうでないと すぐ victory になり すすまない）
+    e.pos = { x: 16, y: 80 };
     p.pos = { ...e.pos };
     const before = e.hp;
     for (let i = 0; i < 300; i++) step(state, [], 1 / 60);
