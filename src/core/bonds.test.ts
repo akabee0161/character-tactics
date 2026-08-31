@@ -54,14 +54,16 @@ describe('bondBonus', () => {
   });
 
   it('自分自身の はんていは uid で する（defId が おなじ べつの あいてを のぞかない）', () => {
-    const reg = testRegistry();
-    // uid が じぶんと おなじ エントリだけを のぞく。defId が おなじでも uid が ちがえば あいてに なる
+    // roran どうしの きずなを もつ れじすとりを つくり、defId だけでは
+    // くべつできない じょうきょうを さいげんする
+    const base = testRegistry();
+    const reg = { ...base, bonds: [...base.bonds, { a: 'roran', b: 'roran', bonus: 5 }] };
     const r = bondBonus(reg, 'u:roran-1', 'roran', { x: 0, y: 0 }, [
-      { uid: 'u:roran-1', id: 'ines', pos: { x: 0, y: 0 }, retired: false },
-      { uid: 'u:roran-2', id: 'ines', pos: { x: 0, y: 0 }, retired: false },
+      { uid: 'u:roran-1', id: 'roran', pos: { x: 0, y: 0 }, retired: false }, // じぶん自身（のぞかれる）
+      { uid: 'u:roran-2', id: 'roran', pos: { x: 0, y: 0 }, retired: false }, // おなじ defId の べつの ユニット
     ]);
     // 1つめは uid が じぶんと おなじなので のぞかれ、2つめだけ かさんされる
-    expect(r).toBe(2);
+    expect(r).toBe(5);
   });
 
   it('ペアはどちら向きでも成立する', () => {
