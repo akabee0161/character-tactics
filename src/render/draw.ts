@@ -6,7 +6,7 @@ import type { Registry } from '../engine/registry';
 import type { StageDef } from '../engine/schema';
 import { sightCircles } from './objectives-view';
 import { LOGICAL_H, LOGICAL_W, mapToLogical } from './viewport';
-import { HIT_EFFECT_DURATION } from './effects';
+import { DAMAGE_TEXT_DURATION, HEAL_TEXT_DURATION, HIT_EFFECT_DURATION } from './effects';
 import type { EffectState } from './effects';
 import type { BattleState, Vec2 } from '../core/types';
 
@@ -220,12 +220,41 @@ function drawUnits(
 function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void {
   for (const e of effects.items) {
     const p = mapToLogical(e.pos);
-    const ratio = Math.max(0, e.ttl / HIT_EFFECT_DURATION);
-    ctx.strokeStyle = `rgba(255, 235, 150, ${ratio})`;
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, UNIT_R + (1 - ratio) * 14, 0, Math.PI * 2);
-    ctx.stroke();
+    switch (e.kind) {
+      case 'hit': {
+        const ratio = Math.max(0, e.ttl / HIT_EFFECT_DURATION);
+        ctx.strokeStyle = e.critical ? `rgba(255, 120, 60, ${ratio})` : `rgba(255, 235, 150, ${ratio})`;
+        ctx.lineWidth = e.critical ? 4 : 3;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, UNIT_R + (1 - ratio) * (e.critical ? 20 : 14), 0, Math.PI * 2);
+        ctx.stroke();
+        break;
+      }
+      case 'damageText': {
+        const ratio = Math.max(0, e.ttl / DAMAGE_TEXT_DURATION);
+        const rise = (1 - ratio) * 20;
+        ctx.globalAlpha = ratio;
+        ctx.fillStyle = e.critical ? '#ff8a3c' : '#ffffff';
+        ctx.font = e.critical ? 'bold 18px sans-serif' : '15px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`${e.amount}`, p.x, p.y - UNIT_R - 14 - rise);
+        ctx.globalAlpha = 1;
+        ctx.textAlign = 'left';
+        break;
+      }
+      case 'healText': {
+        const ratio = Math.max(0, e.ttl / HEAL_TEXT_DURATION);
+        const rise = (1 - ratio) * 20;
+        ctx.globalAlpha = ratio;
+        ctx.fillStyle = '#8fffb0';
+        ctx.font = '15px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`+${e.amount}`, p.x, p.y - UNIT_R - 14 - rise);
+        ctx.globalAlpha = 1;
+        ctx.textAlign = 'left';
+        break;
+      }
+    }
   }
 }
 

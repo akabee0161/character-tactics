@@ -8,7 +8,7 @@ import type { SimCommand } from './core/sim';
 import { drawBattle, drawDragPreview } from './render/draw';
 import { escortDefIds } from './render/objectives-view';
 import { isWalkableAt } from './core/field';
-import { makeEffectState, spawnHitEffects, tickEffects } from './render/effects';
+import { makeEffectState, spawnEffects, tickEffects } from './render/effects';
 import { LOGICAL_H, LOGICAL_W, computeViewport, logicalToMap, mapToLogical, screenToLogical } from './render/viewport';
 import { advanceBubble, currentBubble, enqueue, isBlocking, makeBubbleQueue } from './ui/bubbles';
 import { applyStageClear, isStageUnlocked } from './ui/flow';
@@ -248,7 +248,7 @@ function update(dt: number): void {
     accumulator -= FIXED_DT;
     const batch = commands.splice(0, commands.length);
     step(battle, batch, FIXED_DT);
-    spawnHitEffects(effects, battle.events);
+    spawnEffects(effects, battle.events);
     enqueue(bubbles, pickDialogue(battle.reg, battle.events));
     if (isBlocking(bubbles)) break;
   }

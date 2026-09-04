@@ -1,51 +1,74 @@
 import { describe, expect, it } from 'vitest';
-import { HIT_EFFECT_DURATION, makeEffectState, spawnHitEffects, tickEffects } from './effects';
+import {
+  DAMAGE_TEXT_DURATION, HEAL_TEXT_DURATION, HIT_EFFECT_DURATION,
+  makeEffectState, spawnEffects, tickEffects,
+} from './effects';
+import type { EffectState } from './effects';
 import type { SimEvent } from '../core/types';
 
-describe('spawnHitEffects', () => {
-  it('hit イベントからエフェクトを1つ追加する', () => {
+function hitEvent(overrides: Partial<Extract<SimEvent, { type: 'hit' }>> = {}): SimEvent {
+  return {
+    type: 'hit', targetUid: 'e1', targetPos: { x: 10, y: 20 }, amount: 3,
+    sourceUid: 'p1', sourceDefId: 'roran', attackKind: 'melee',
+    sourcePos: { x: 0, y: 0 }, neraiuchi: false,
+    ...overrides,
+  };
+}
+
+describe('spawnEffects', () => {
+  it('hit イベントから hit と damageText を追加する', () => {
     const state = makeEffectState();
-    const events: SimEvent[] = [{
-      type: 'hit', targetUid: 'e1', targetPos: { x: 10, y: 20 }, amount: 3,
-      sourceUid: 'p1', sourceDefId: 'roran', attackKind: 'melee', sourcePos: { x: 0, y: 0 }, neraiuchi: false,
-    }];
-    spawnHitEffects(state, events);
-    expect(state.items).toEqual([{ pos: { x: 10, y: 20 }, ttl: HIT_EFFECT_DURATION }]);
+    spawnEffects(state, [hitEvent()]);
+    expect(state.items).toEqual([
+      { kind: 'hit', pos: { x: 10, y: 20 }, ttl: HIT_EFFECT_DURATION, critical: false },
+      { kind: 'damageText', pos: { x: 10, y: 20 }, ttl: DAMAGE_TEXT_DURATION, amount: 3, critical: false },
+    ]);
   });
 
-  it('hit 以外のイベントは無視する', () => {
+  it('neraiuchi な hit は critical フラグが立つ', () => {
+    const state = makeEffectState();
+    spawnEffects(state, [hitEvent({ neraiuchi: true })]);
+    expect(state.items[0]).toMatchObject({ kind: 'hit', critical: true });
+    expect(state.items[1]).toMatchObject({ kind: 'damageText', critical: true });
+  });
+
+  it('heal イベントから healText を追加する', () => {
+    const state = makeEffectState();
+    const events: SimEvent[] = [
+      { type: 'heal', targetPos: { x: 5, y: 5 }, amount: 12, sourceUid: 'p3', sourceDefId: 'mist', sourcePos: { x: 0, y: 0 } },
+    ];
+    spawnEffects(state, events);
+    expect(state.items).toEqual([
+      { kind: 'healText', pos: { x: 5, y: 5 }, ttl: HEAL_TEXT_DURATION, amount: 12 },
+    ]);
+  });
+
+  it('関係ないイベントは無視する', () => {
     const state = makeEffectState();
     const events: SimEvent[] = [{ type: 'unitRetired', uid: 'p1', defId: 'roran' }];
-    spawnHitEffects(state, events);
+    spawnEffects(state, events);
     expect(state.items).toEqual([]);
   });
 
   it('複数の hit をすべて追加する', () => {
     const state = makeEffectState();
-    const events: SimEvent[] = [
-      {
-        type: 'hit', targetUid: 'e1', targetPos: { x: 0, y: 0 }, amount: 1,
-        sourceUid: 'p1', sourceDefId: 'roran', attackKind: 'melee', sourcePos: { x: 0, y: 0 }, neraiuchi: false,
-      },
-      {
-        type: 'hit', targetUid: 'e2', targetPos: { x: 5, y: 5 }, amount: 2,
-        sourceUid: 'p1', sourceDefId: 'roran', attackKind: 'melee', sourcePos: { x: 0, y: 0 }, neraiuchi: false,
-      },
-    ];
-    spawnHitEffects(state, events);
-    expect(state.items).toHaveLength(2);
+    spawnEffects(state, [
+      hitEvent({ targetUid: 'e1', targetPos: { x: 0, y: 0 } }),
+      hitEvent({ targetUid: 'e2', targetPos: { x: 5, y: 5 } }),
+    ]);
+    expect(state.items.filter((i) => i.kind === 'hit')).toHaveLength(2);
   });
 });
 
 describe('tickEffects', () => {
   it('dt の分だけ ttl を減らす', () => {
-    const state = { items: [{ pos: { x: 0, y: 0 }, ttl: 0.25 }] };
+    const state: EffectState = { items: [{ kind: 'hit', pos: { x: 0, y: 0 }, ttl: 0.25, critical: false }] };
     tickEffects(state, 0.1);
     expect(state.items[0]!.ttl).toBeCloseTo(0.15);
   });
 
   it('ttl が 0 以下になったら取り除く', () => {
-    const state = { items: [{ pos: { x: 0, y: 0 }, ttl: 0.05 }] };
+    const state: EffectState = { items: [{ kind: 'hit', pos: { x: 0, y: 0 }, ttl: 0.05, critical: false }] };
     tickEffects(state, 0.1);
     expect(state.items).toEqual([]);
   });
