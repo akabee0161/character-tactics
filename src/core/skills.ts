@@ -54,7 +54,15 @@ export const SKILL_EFFECTS: Record<string, SkillEffect> = {
     for (const c of candidates) {
       if (c.hp / c.maxHp < target.hp / target.maxHp) target = c;
     }
+    const before = target.hp;
     target.hp = Math.min(target.maxHp, target.hp + heal);
+    const healed = target.hp - before;
+    if (healed > 0) {
+      state.events.push({
+        type: 'heal', targetPos: { ...target.pos }, amount: healed,
+        sourceUid: self.uid, sourceDefId: self.defId, sourcePos: { ...self.pos },
+      });
+    }
     return 0;
   },
 

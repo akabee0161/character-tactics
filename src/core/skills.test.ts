@@ -119,6 +119,20 @@ describe('おまじない', () => {
     expect(unitOf(s, 'gau').hp).toBe(20);
   });
 
+  it('回復すると heal イベントが出る', () => {
+    const s = fresh();
+    const mist = unitOf(s, 'mist');
+    mist.pos = { x: 100, y: 16 };
+    const roran = unitOf(s, 'roran');
+    roran.pos = { x: 150, y: 16 };
+    roran.hp = 5;
+    useSkill(s, mist.uid);
+    expect(s.events).toContainEqual({
+      type: 'heal', targetPos: roran.pos, amount: OMAJINAI_HEAL,
+      sourceUid: mist.uid, sourceDefId: 'mist', sourcePos: mist.pos,
+    });
+  });
+
   it('最大 HP を超えて回復しない', () => {
     const s = fresh();
     for (const u of s.units) if (u.side === 'player') u.pos = { x: 100, y: 16 };

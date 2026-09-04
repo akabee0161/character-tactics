@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  ATTACK_LINE_DURATION, DAMAGE_TEXT_DURATION, HEAL_TEXT_DURATION, HIT_EFFECT_DURATION,
+  ATTACK_LINE_DURATION, DAMAGE_TEXT_DURATION, HEAL_BEAM_DURATION, HEAL_RING_DURATION, HEAL_TEXT_DURATION, HIT_EFFECT_DURATION,
   makeEffectState, spawnEffects, tickEffects,
 } from './effects';
 import type { EffectState } from './effects';
@@ -32,7 +32,7 @@ describe('spawnEffects', () => {
     expect(state.items[1]).toMatchObject({ kind: 'damageText', critical: true });
   });
 
-  it('heal イベントから healText を追加する', () => {
+  it('heal イベントから healText / heal / healBeam を追加する', () => {
     const state = makeEffectState();
     const events: SimEvent[] = [
       { type: 'heal', targetPos: { x: 5, y: 5 }, amount: 12, sourceUid: 'p3', sourceDefId: 'mist', sourcePos: { x: 0, y: 0 } },
@@ -40,6 +40,8 @@ describe('spawnEffects', () => {
     spawnEffects(state, events);
     expect(state.items).toEqual([
       { kind: 'healText', pos: { x: 5, y: 5 }, ttl: HEAL_TEXT_DURATION, amount: 12 },
+      { kind: 'heal', pos: { x: 5, y: 5 }, ttl: HEAL_RING_DURATION },
+      { kind: 'healBeam', from: { x: 0, y: 0 }, to: { x: 5, y: 5 }, ttl: HEAL_BEAM_DURATION },
     ]);
   });
 

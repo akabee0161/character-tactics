@@ -6,7 +6,10 @@ import type { Registry } from '../engine/registry';
 import type { StageDef } from '../engine/schema';
 import { sightCircles } from './objectives-view';
 import { LOGICAL_H, LOGICAL_W, mapToLogical } from './viewport';
-import { ATTACK_LINE_DURATION, DAMAGE_TEXT_DURATION, HEAL_TEXT_DURATION, HIT_EFFECT_DURATION } from './effects';
+import {
+  ATTACK_LINE_DURATION, DAMAGE_TEXT_DURATION, HEAL_BEAM_DURATION,
+  HEAL_RING_DURATION, HEAL_TEXT_DURATION, HIT_EFFECT_DURATION,
+} from './effects';
 import type { EffectState } from './effects';
 import type { BattleState, Vec2 } from '../core/types';
 
@@ -261,6 +264,28 @@ function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void 
         const b = mapToLogical(e.to);
         const ratio = Math.max(0, e.ttl / ATTACK_LINE_DURATION);
         ctx.strokeStyle = `rgba(200, 220, 255, ${ratio})`;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.stroke();
+        break;
+      }
+      case 'heal': {
+        const p = mapToLogical(e.pos);
+        const ratio = Math.max(0, e.ttl / HEAL_RING_DURATION);
+        ctx.strokeStyle = `rgba(150, 255, 180, ${ratio})`;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, UNIT_R + (1 - ratio) * 16, 0, Math.PI * 2);
+        ctx.stroke();
+        break;
+      }
+      case 'healBeam': {
+        const a = mapToLogical(e.from);
+        const b = mapToLogical(e.to);
+        const ratio = Math.max(0, e.ttl / HEAL_BEAM_DURATION);
+        ctx.strokeStyle = `rgba(180, 255, 200, ${ratio})`;
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(a.x, a.y);
