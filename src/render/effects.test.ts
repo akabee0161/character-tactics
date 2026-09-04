@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   ATTACK_LINE_DURATION, DAMAGE_TEXT_DURATION, HEAL_BEAM_DURATION, HEAL_RING_DURATION, HEAL_TEXT_DURATION, HIT_EFFECT_DURATION,
+  SKILL_CAST_DURATION, TRAIL_DURATION,
   makeEffectState, spawnEffects, tickEffects,
 } from './effects';
 import type { EffectState } from './effects';
@@ -73,6 +74,42 @@ describe('spawnEffects', () => {
     const state = makeEffectState();
     spawnEffects(state, [hitEvent({ attackKind: 'melee' })]);
     expect(state.items.some((i) => i.kind === 'attackLine')).toBe(false);
+  });
+
+  it('kakenukeru の skill イベントから trail を追加する', () => {
+    const state = makeEffectState();
+    const events: SimEvent[] = [{
+      type: 'skill', uid: 'p4', defId: 'gau', skillId: 'kakenukeru', hits: 1,
+      fromPos: { x: 0, y: 0 }, toPos: { x: 100, y: 0 },
+    }];
+    spawnEffects(state, events);
+    expect(state.items).toEqual([
+      { kind: 'trail', from: { x: 0, y: 0 }, to: { x: 100, y: 0 }, ttl: TRAIL_DURATION },
+    ]);
+  });
+
+  it('funbaru の skill イベントから skillCast を追加する', () => {
+    const state = makeEffectState();
+    const events: SimEvent[] = [{
+      type: 'skill', uid: 'p1', defId: 'roran', skillId: 'funbaru', hits: 0,
+      fromPos: { x: 10, y: 10 }, toPos: { x: 10, y: 10 },
+    }];
+    spawnEffects(state, events);
+    expect(state.items).toEqual([
+      { kind: 'skillCast', skillId: 'funbaru', pos: { x: 10, y: 10 }, ttl: SKILL_CAST_DURATION },
+    ]);
+  });
+
+  it('neraiuchi の skill イベントから skillCast を追加する', () => {
+    const state = makeEffectState();
+    const events: SimEvent[] = [{
+      type: 'skill', uid: 'p2', defId: 'ines', skillId: 'neraiuchi', hits: 0,
+      fromPos: { x: 5, y: 5 }, toPos: { x: 5, y: 5 },
+    }];
+    spawnEffects(state, events);
+    expect(state.items).toEqual([
+      { kind: 'skillCast', skillId: 'neraiuchi', pos: { x: 5, y: 5 }, ttl: SKILL_CAST_DURATION },
+    ]);
   });
 });
 

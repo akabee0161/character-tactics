@@ -7,8 +7,8 @@ import type { StageDef } from '../engine/schema';
 import { sightCircles } from './objectives-view';
 import { LOGICAL_H, LOGICAL_W, mapToLogical } from './viewport';
 import {
-  ATTACK_LINE_DURATION, DAMAGE_TEXT_DURATION, HEAL_BEAM_DURATION,
-  HEAL_RING_DURATION, HEAL_TEXT_DURATION, HIT_EFFECT_DURATION,
+  ATTACK_LINE_DURATION, DAMAGE_TEXT_DURATION, HEAL_BEAM_DURATION, HEAL_RING_DURATION,
+  HEAL_TEXT_DURATION, HIT_EFFECT_DURATION, SKILL_CAST_DURATION, TRAIL_DURATION,
 } from './effects';
 import type { EffectState } from './effects';
 import type { BattleState, Vec2 } from '../core/types';
@@ -287,6 +287,40 @@ function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void 
         const ratio = Math.max(0, e.ttl / HEAL_BEAM_DURATION);
         ctx.strokeStyle = `rgba(180, 255, 200, ${ratio})`;
         ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.stroke();
+        break;
+      }
+      case 'skillCast': {
+        const p = mapToLogical(e.pos);
+        const ratio = Math.max(0, e.ttl / SKILL_CAST_DURATION);
+        if (e.skillId === 'funbaru') {
+          ctx.strokeStyle = `rgba(255, 226, 122, ${ratio})`;
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, (1 - ratio) * 34, 0, Math.PI * 2);
+          ctx.stroke();
+        } else if (e.skillId === 'neraiuchi') {
+          ctx.strokeStyle = `rgba(255, 255, 255, ${ratio})`;
+          ctx.lineWidth = 2;
+          const s = 10 + (1 - ratio) * 6;
+          ctx.beginPath();
+          ctx.moveTo(p.x - s, p.y);
+          ctx.lineTo(p.x + s, p.y);
+          ctx.moveTo(p.x, p.y - s);
+          ctx.lineTo(p.x, p.y + s);
+          ctx.stroke();
+        }
+        break;
+      }
+      case 'trail': {
+        const a = mapToLogical(e.from);
+        const b = mapToLogical(e.to);
+        const ratio = Math.max(0, e.ttl / TRAIL_DURATION);
+        ctx.strokeStyle = `rgba(255, 255, 255, ${ratio})`;
+        ctx.lineWidth = 4;
         ctx.beginPath();
         ctx.moveTo(a.x, a.y);
         ctx.lineTo(b.x, b.y);

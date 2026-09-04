@@ -6,6 +6,8 @@ export const HEAL_TEXT_DURATION = 0.6;
 export const ATTACK_LINE_DURATION = 0.15;
 export const HEAL_RING_DURATION = 0.4;
 export const HEAL_BEAM_DURATION = 0.3;
+export const SKILL_CAST_DURATION = 0.35;
+export const TRAIL_DURATION = 0.25;
 
 export type Effect =
   | { kind: 'hit'; pos: Vec2; ttl: number; critical: boolean }
@@ -13,7 +15,9 @@ export type Effect =
   | { kind: 'healText'; pos: Vec2; ttl: number; amount: number }
   | { kind: 'attackLine'; from: Vec2; to: Vec2; ttl: number }
   | { kind: 'heal'; pos: Vec2; ttl: number }
-  | { kind: 'healBeam'; from: Vec2; to: Vec2; ttl: number };
+  | { kind: 'healBeam'; from: Vec2; to: Vec2; ttl: number }
+  | { kind: 'skillCast'; skillId: string; pos: Vec2; ttl: number }
+  | { kind: 'trail'; from: Vec2; to: Vec2; ttl: number };
 
 export type EffectState = { items: Effect[] };
 
@@ -36,6 +40,12 @@ export function spawnEffects(state: EffectState, events: SimEvent[]): void {
       state.items.push({ kind: 'healText', pos: { ...ev.targetPos }, ttl: HEAL_TEXT_DURATION, amount: ev.amount });
       state.items.push({ kind: 'heal', pos: { ...ev.targetPos }, ttl: HEAL_RING_DURATION });
       state.items.push({ kind: 'healBeam', from: { ...ev.sourcePos }, to: { ...ev.targetPos }, ttl: HEAL_BEAM_DURATION });
+    } else if (ev.type === 'skill') {
+      if (ev.skillId === 'kakenukeru') {
+        state.items.push({ kind: 'trail', from: { ...ev.fromPos }, to: { ...ev.toPos }, ttl: TRAIL_DURATION });
+      } else {
+        state.items.push({ kind: 'skillCast', skillId: ev.skillId, pos: { ...ev.toPos }, ttl: SKILL_CAST_DURATION });
+      }
     }
   }
 }
