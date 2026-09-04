@@ -356,6 +356,11 @@ function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void 
         ctx.stroke();
         break;
       }
+      default: {
+        const _exhaustive: never = e;
+        void _exhaustive;
+        break;
+      }
     }
   }
 }

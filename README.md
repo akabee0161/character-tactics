@@ -54,7 +54,7 @@ npm run build   # 型チェック + 本番ビルド (out/play/character-tactics/
 
 コードが要るもの:
 
-- **新しいスキル** — `src/core/skills.ts` の `SKILL_EFFECTS` に効果を足し、`assets/skills.json` に数値を足す
+- **新しいスキル** — `src/core/skills.ts` の `SKILL_EFFECTS` に効果を足し、`assets/skills.json` に数値を足す。`assets/skills.json` の各スキルには `params.cooldown`（秒）が必須
 - **新しい AI パターン** — `src/core/ai.ts` の `AI_BEHAVIORS` に足し、`src/engine/schema.ts` の `AiDef` と `AI_KINDS` に variant を足す
 - **新しい勝敗条件** — `src/engine/schema.ts` の `VictoryCond` / `DefeatCond` に variant を足し、`src/core/objectives.ts` で判定を書く
 

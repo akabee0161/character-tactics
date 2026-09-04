@@ -35,6 +35,13 @@ export function makeEffectState(): EffectState {
   return { items: [], knockback: new Map(), displayedHp: new Map() };
 }
 
+/** ステージ跨ぎなどで演出状態を完全にクリアする。items だけでなく knockback / displayedHp も空にする */
+export function resetEffects(state: EffectState): void {
+  state.items.length = 0;
+  state.knockback.clear();
+  state.displayedHp.clear();
+}
+
 function knockbackDir(from: Vec2, to: Vec2): Vec2 {
   const dx = to.x - from.x;
   const dy = to.y - from.y;

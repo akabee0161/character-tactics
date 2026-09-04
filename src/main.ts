@@ -8,7 +8,7 @@ import type { SimCommand } from './core/sim';
 import { drawBattle, drawDragPreview } from './render/draw';
 import { escortDefIds } from './render/objectives-view';
 import { isWalkableAt } from './core/field';
-import { makeEffectState, spawnEffects, syncDisplayedHp, tickEffects } from './render/effects';
+import { makeEffectState, resetEffects, spawnEffects, syncDisplayedHp, tickEffects } from './render/effects';
 import { LOGICAL_H, LOGICAL_W, computeViewport, logicalToMap, mapToLogical, screenToLogical } from './render/viewport';
 import { advanceBubble, currentBubble, enqueue, isBlocking, makeBubbleQueue } from './ui/bubbles';
 import { applyStageClear, isStageUnlocked } from './ui/flow';
@@ -87,7 +87,7 @@ function beginStage(index: number): void {
   selected = null;
   pendingSkill = null;
   bubbles.items.length = 0;
-  effects.items.length = 0;
+  resetEffects(effects);
   pointerStart = null;
   dragMap = null;
   commands.length = 0;

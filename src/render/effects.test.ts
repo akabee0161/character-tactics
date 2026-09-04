@@ -3,7 +3,7 @@ import {
   ATTACK_LINE_DURATION, BOND_PULSE_DURATION, DAMAGE_TEXT_DURATION, DEFEAT_DURATION, HEAL_BEAM_DURATION,
   HEAL_RING_DURATION, HEAL_TEXT_DURATION, HIT_EFFECT_DURATION, HP_BAR_CATCHUP_RATE,
   SKILL_CAST_DURATION, TRAIL_DURATION,
-  makeEffectState, spawnEffects, syncDisplayedHp, tickEffects,
+  makeEffectState, resetEffects, spawnEffects, syncDisplayedHp, tickEffects,
 } from './effects';
 import type { EffectState } from './effects';
 import type { SimEvent, Unit } from '../core/types';
@@ -171,6 +171,20 @@ describe('tickEffects', () => {
     const state: EffectState = { items: [], knockback: new Map([['e1', { ttl: 0.05, dir: { x: 1, y: 0 } }]]), displayedHp: new Map() };
     tickEffects(state, 0.1);
     expect(state.knockback.has('e1')).toBe(false);
+  });
+});
+
+describe('resetEffects', () => {
+  it('items / knockback / displayedHp をすべて空にする', () => {
+    const state: EffectState = {
+      items: [{ kind: 'hit', pos: { x: 0, y: 0 }, ttl: 0.25, critical: false }],
+      knockback: new Map([['e1', { ttl: 0.1, dir: { x: 1, y: 0 } }]]),
+      displayedHp: new Map([['p1', 40]]),
+    };
+    resetEffects(state);
+    expect(state.items).toEqual([]);
+    expect(state.knockback.size).toBe(0);
+    expect(state.displayedHp.size).toBe(0);
   });
 });
 
