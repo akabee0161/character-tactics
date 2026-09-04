@@ -8,7 +8,7 @@ import type { SimCommand } from './core/sim';
 import { drawBattle, drawDragPreview } from './render/draw';
 import { escortDefIds } from './render/objectives-view';
 import { isWalkableAt } from './core/field';
-import { makeEffectState, spawnEffects, tickEffects } from './render/effects';
+import { makeEffectState, spawnEffects, syncDisplayedHp, tickEffects } from './render/effects';
 import { LOGICAL_H, LOGICAL_W, computeViewport, logicalToMap, mapToLogical, screenToLogical } from './render/viewport';
 import { advanceBubble, currentBubble, enqueue, isBlocking, makeBubbleQueue } from './ui/bubbles';
 import { applyStageClear, isStageUnlocked } from './ui/flow';
@@ -241,6 +241,7 @@ canvas.addEventListener('pointercancel', onPointerCancel);
 function update(dt: number): void {
   tickEffects(effects, dt);
   if (phase !== 'battle' || !battle) return;
+  syncDisplayedHp(effects, battle.units, dt);
   if (isBlocking(bubbles)) return; // 吹き出し中は時間が止まる
 
   accumulator += dt;

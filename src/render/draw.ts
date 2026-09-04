@@ -7,8 +7,9 @@ import type { StageDef } from '../engine/schema';
 import { sightCircles } from './objectives-view';
 import { LOGICAL_H, LOGICAL_W, mapToLogical } from './viewport';
 import {
-  ATTACK_LINE_DURATION, DAMAGE_TEXT_DURATION, HEAL_BEAM_DURATION, HEAL_RING_DURATION,
-  HEAL_TEXT_DURATION, HIT_EFFECT_DURATION, SKILL_CAST_DURATION, TRAIL_DURATION,
+  ATTACK_LINE_DURATION, BOND_PULSE_DURATION, DAMAGE_TEXT_DURATION, DEFEAT_DURATION,
+  HEAL_BEAM_DURATION, HEAL_RING_DURATION, HEAL_TEXT_DURATION, HIT_EFFECT_DURATION,
+  KNOCKBACK_DURATION, SKILL_CAST_DURATION, TRAIL_DURATION,
 } from './effects';
 import type { EffectState } from './effects';
 import type { BattleState, Vec2 } from '../core/types';
@@ -57,7 +58,7 @@ export function drawBattle(
   drawVictoryMarker(ctx, state.stage);
   drawGoalMarkers(ctx, reg, state, selected);
   drawBonds(ctx, state);
-  drawUnits(ctx, reg, state, selected);
+  drawUnits(ctx, reg, state, selected, effects);
   drawEscortMarks(ctx, state, escorts);
   drawEffects(ctx, effects);
   drawTopBar(ctx, state);
@@ -169,11 +170,16 @@ function drawUnits(
   reg: Registry,
   state: BattleState,
   selected: string | null,
+  effects: EffectState,
 ): void {
   for (const unit of state.units) {
     if (unit.retired) continue;
     const isAlly = unit.side === 'player';
-    const p = mapToLogical(unit.pos);
+    const kb = effects.knockback.get(unit.uid);
+    const kbOffset = kb
+      ? { x: kb.dir.x * (kb.ttl / KNOCKBACK_DURATION) * 6, y: kb.dir.y * (kb.ttl / KNOCKBACK_DURATION) * 6 }
+      : { x: 0, y: 0 };
+    const p = mapToLogical({ x: unit.pos.x + kbOffset.x, y: unit.pos.y + kbOffset.y });
     const radius = isAlly ? UNIT_R : enemyRadius(unit.maxHp);
     ctx.fillStyle = defOf(reg, unit.defId).color;
     ctx.beginPath();
@@ -216,7 +222,8 @@ function drawUnits(
       ctx.arc(p.x, p.y, UNIT_R + 7, 0, Math.PI * 2);
       ctx.stroke();
     }
-    drawHpBar(ctx, p, unit.hp / unit.maxHp, isAlly ? COLORS.hpAlly : COLORS.hpEnemy);
+    const displayedHp = effects.displayedHp.get(unit.uid) ?? unit.hp;
+    drawHpBar(ctx, p, displayedHp / unit.maxHp, isAlly ? COLORS.hpAlly : COLORS.hpEnemy);
   }
 }
 
@@ -324,6 +331,28 @@ function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void 
         ctx.beginPath();
         ctx.moveTo(a.x, a.y);
         ctx.lineTo(b.x, b.y);
+        ctx.stroke();
+        break;
+      }
+      case 'defeat': {
+        const p = mapToLogical(e.pos);
+        const ratio = Math.max(0, e.ttl / DEFEAT_DURATION);
+        ctx.globalAlpha = ratio;
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, UNIT_R + (1 - ratio) * 24, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+        break;
+      }
+      case 'bondPulse': {
+        const p = mapToLogical(e.pos);
+        const ratio = Math.max(0, e.ttl / BOND_PULSE_DURATION);
+        ctx.strokeStyle = `rgba(255, 158, 196, ${ratio})`;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, UNIT_R + (1 - ratio) * 18, 0, Math.PI * 2);
         ctx.stroke();
         break;
       }

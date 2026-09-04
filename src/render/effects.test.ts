@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
-  ATTACK_LINE_DURATION, DAMAGE_TEXT_DURATION, HEAL_BEAM_DURATION, HEAL_RING_DURATION, HEAL_TEXT_DURATION, HIT_EFFECT_DURATION,
+  ATTACK_LINE_DURATION, BOND_PULSE_DURATION, DAMAGE_TEXT_DURATION, DEFEAT_DURATION, HEAL_BEAM_DURATION,
+  HEAL_RING_DURATION, HEAL_TEXT_DURATION, HIT_EFFECT_DURATION,
   SKILL_CAST_DURATION, TRAIL_DURATION,
   makeEffectState, spawnEffects, tickEffects,
 } from './effects';
@@ -111,18 +112,59 @@ describe('spawnEffects', () => {
       { kind: 'skillCast', skillId: 'neraiuchi', pos: { x: 5, y: 5 }, ttl: SKILL_CAST_DURATION },
     ]);
   });
+
+  it('unitDefeated イベントから defeat を追加する', () => {
+    const state = makeEffectState();
+    const events: SimEvent[] = [
+      { type: 'unitDefeated', uid: 'e1', defId: 'narazumono', byUid: 'p1', byDefId: 'roran', neraiuchi: false, pos: { x: 30, y: 40 } },
+    ];
+    spawnEffects(state, events);
+    expect(state.items).toEqual([{ kind: 'defeat', pos: { x: 30, y: 40 }, ttl: DEFEAT_DURATION }]);
+  });
+
+  it('bondSupport イベントから bondPulse を追加する', () => {
+    const state = makeEffectState();
+    const events: SimEvent[] = [
+      { type: 'bondSupport', targetUid: 'p1', targetDefId: 'roran', supporterUids: ['p2'], pos: { x: 1, y: 2 } },
+    ];
+    spawnEffects(state, events);
+    expect(state.items).toEqual([{ kind: 'bondPulse', pos: { x: 1, y: 2 }, ttl: BOND_PULSE_DURATION }]);
+  });
+
+  it('hit で被弾したユニットにノックバックが付く', () => {
+    const state = makeEffectState();
+    spawnEffects(state, [hitEvent({
+      targetUid: 'e1', targetPos: { x: 10, y: 0 }, sourcePos: { x: 0, y: 0 },
+    })]);
+    const kb = state.knockback.get('e1');
+    expect(kb).toBeDefined();
+    expect(kb!.dir.x).toBeCloseTo(1);
+    expect(kb!.dir.y).toBeCloseTo(0);
+  });
 });
 
 describe('tickEffects', () => {
   it('dt の分だけ ttl を減らす', () => {
-    const state: EffectState = { items: [{ kind: 'hit', pos: { x: 0, y: 0 }, ttl: 0.25, critical: false }] };
+    const state: EffectState = {
+      items: [{ kind: 'hit', pos: { x: 0, y: 0 }, ttl: 0.25, critical: false }],
+      knockback: new Map(), displayedHp: new Map(),
+    };
     tickEffects(state, 0.1);
     expect(state.items[0]!.ttl).toBeCloseTo(0.15);
   });
 
   it('ttl が 0 以下になったら取り除く', () => {
-    const state: EffectState = { items: [{ kind: 'hit', pos: { x: 0, y: 0 }, ttl: 0.05, critical: false }] };
+    const state: EffectState = {
+      items: [{ kind: 'hit', pos: { x: 0, y: 0 }, ttl: 0.05, critical: false }],
+      knockback: new Map(), displayedHp: new Map(),
+    };
     tickEffects(state, 0.1);
     expect(state.items).toEqual([]);
+  });
+
+  it('ノックバックの ttl が尽きたら削除する', () => {
+    const state: EffectState = { items: [], knockback: new Map([['e1', { ttl: 0.05, dir: { x: 1, y: 0 } }]]), displayedHp: new Map() };
+    tickEffects(state, 0.1);
+    expect(state.knockback.has('e1')).toBe(false);
   });
 });
