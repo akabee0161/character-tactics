@@ -71,7 +71,10 @@ export const SKILL_EFFECTS: Record<string, SkillEffect> = {
       enemy.lastHitBy = self.uid;
       enemy.lastHitNeraiuchi = false;
       hits++;
-      state.events.push({ type: 'hit', targetPos: { ...enemy.pos }, amount: damage });
+      state.events.push({
+        type: 'hit', targetUid: enemy.uid, targetPos: { ...enemy.pos }, amount: damage,
+        sourceUid: self.uid, sourceDefId: self.defId, attackKind: self.attack, sourcePos: { ...from }, neraiuchi: false,
+      });
     }
     self.pos = { ...dest };
     self.goalField = null;
@@ -96,11 +99,15 @@ export function useSkill(state: BattleState, uid: string, dest?: Vec2): boolean 
   const effect = SKILL_EFFECTS[self.skillId ?? ''];
   if (!effect) return false;
 
+  const fromPos = { ...self.pos };
   const hits = effect({ state, self, dest });
   if (hits === null) return false;
 
   const cooldown = skillParam(state.reg, self.skillId!, 'cooldown', DEFAULT_SKILL_COOLDOWN);
   self.skillCooldownUntil = state.time + cooldown;
-  state.events.push({ type: 'skill', uid: self.uid, defId: self.defId, skillId: self.skillId!, hits });
+  state.events.push({
+    type: 'skill', uid: self.uid, defId: self.defId, skillId: self.skillId!, hits,
+    fromPos, toPos: { ...self.pos },
+  });
   return true;
 }

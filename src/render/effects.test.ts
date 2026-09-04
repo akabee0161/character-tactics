@@ -5,7 +5,10 @@ import type { SimEvent } from '../core/types';
 describe('spawnHitEffects', () => {
   it('hit イベントからエフェクトを1つ追加する', () => {
     const state = makeEffectState();
-    const events: SimEvent[] = [{ type: 'hit', targetPos: { x: 10, y: 20 }, amount: 3 }];
+    const events: SimEvent[] = [{
+      type: 'hit', targetUid: 'e1', targetPos: { x: 10, y: 20 }, amount: 3,
+      sourceUid: 'p1', sourceDefId: 'roran', attackKind: 'melee', sourcePos: { x: 0, y: 0 }, neraiuchi: false,
+    }];
     spawnHitEffects(state, events);
     expect(state.items).toEqual([{ pos: { x: 10, y: 20 }, ttl: HIT_EFFECT_DURATION }]);
   });
@@ -20,8 +23,14 @@ describe('spawnHitEffects', () => {
   it('複数の hit をすべて追加する', () => {
     const state = makeEffectState();
     const events: SimEvent[] = [
-      { type: 'hit', targetPos: { x: 0, y: 0 }, amount: 1 },
-      { type: 'hit', targetPos: { x: 5, y: 5 }, amount: 2 },
+      {
+        type: 'hit', targetUid: 'e1', targetPos: { x: 0, y: 0 }, amount: 1,
+        sourceUid: 'p1', sourceDefId: 'roran', attackKind: 'melee', sourcePos: { x: 0, y: 0 }, neraiuchi: false,
+      },
+      {
+        type: 'hit', targetUid: 'e2', targetPos: { x: 5, y: 5 }, amount: 2,
+        sourceUid: 'p1', sourceDefId: 'roran', attackKind: 'melee', sourcePos: { x: 0, y: 0 }, neraiuchi: false,
+      },
     ];
     spawnHitEffects(state, events);
     expect(state.items).toHaveLength(2);

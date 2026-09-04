@@ -82,6 +82,7 @@ describe('ふんばる', () => {
     expect(unitOf(s, 'roran').funbaruUntil).toBe(10 + FUNBARU_DURATION);
     expect(s.events).toContainEqual({
       type: 'skill', uid: roran.uid, defId: 'roran', skillId: 'funbaru', hits: 0,
+      fromPos: roran.pos, toPos: roran.pos,
     });
   });
 
@@ -162,6 +163,7 @@ describe('かけぬける', () => {
     expect(offPath.hp).toBe(12);
     expect(s.events).toContainEqual({
       type: 'skill', uid: gau.uid, defId: 'gau', skillId: 'kakenukeru', hits: 1,
+      fromPos: { x: 80, y: 208 }, toPos: { x: 260, y: 208 },
     });
   });
 
