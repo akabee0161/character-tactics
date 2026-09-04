@@ -144,7 +144,7 @@ function onPointerDown(ev: PointerEvent): void {
       }
       if (selected) {
         const unit = battle.units.find((u) => u.uid === selected)!;
-        const canTap = !unit.retired && !unit.skillUsed;
+        const canTap = !unit.retired && battle.time >= unit.skillCooldownUntil;
         if (canTap && hitRect(skillButtonAt(mapToLogical(unit.pos)), p)) {
           pointerStart = null;
           if (skillParam(battle.reg, unit.skillId ?? '', 'needsDest', 0) === 1) pendingSkill = selected;
