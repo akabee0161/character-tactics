@@ -9,6 +9,7 @@ import type { BattleState, Unit, Vec2 } from './types';
 export const FUNBARU_DURATION = 5;
 export const OMAJINAI_HEAL = 12;
 export const KAKENUKERU_DAMAGE = 5;
+export const DEFAULT_SKILL_COOLDOWN = 10;
 
 export function isFunbaruActive(unit: Unit, time: number): boolean {
   return time < unit.funbaruUntil;
@@ -53,7 +54,15 @@ export const SKILL_EFFECTS: Record<string, SkillEffect> = {
     for (const c of candidates) {
       if (c.hp / c.maxHp < target.hp / target.maxHp) target = c;
     }
+    const before = target.hp;
     target.hp = Math.min(target.maxHp, target.hp + heal);
+    const healed = target.hp - before;
+    if (healed > 0) {
+      state.events.push({
+        type: 'heal', targetPos: { ...target.pos }, amount: healed,
+        sourceUid: self.uid, sourceDefId: self.defId, sourcePos: { ...self.pos },
+      });
+    }
     return 0;
   },
 
@@ -70,7 +79,10 @@ export const SKILL_EFFECTS: Record<string, SkillEffect> = {
       enemy.lastHitBy = self.uid;
       enemy.lastHitNeraiuchi = false;
       hits++;
-      state.events.push({ type: 'hit', targetPos: { ...enemy.pos }, amount: damage });
+      state.events.push({
+        type: 'hit', targetUid: enemy.uid, targetPos: { ...enemy.pos }, amount: damage,
+        sourceUid: self.uid, sourceDefId: self.defId, attackKind: self.attack, sourcePos: { ...from }, neraiuchi: false,
+      });
     }
     self.pos = { ...dest };
     self.goalField = null;
@@ -86,7 +98,7 @@ export function canUseSkill(state: BattleState, uid: string): boolean {
   if (state.phase !== 'battle') return false;
   const unit = state.units.find((u) => u.uid === uid && u.side === 'player');
   if (!unit) return false;
-  return !unit.retired && !unit.skillUsed;
+  return !unit.retired && state.time >= unit.skillCooldownUntil;
 }
 
 export function useSkill(state: BattleState, uid: string, dest?: Vec2): boolean {
@@ -95,10 +107,15 @@ export function useSkill(state: BattleState, uid: string, dest?: Vec2): boolean 
   const effect = SKILL_EFFECTS[self.skillId ?? ''];
   if (!effect) return false;
 
+  const fromPos = { ...self.pos };
   const hits = effect({ state, self, dest });
   if (hits === null) return false;
 
-  self.skillUsed = true;
-  state.events.push({ type: 'skill', uid: self.uid, defId: self.defId, skillId: self.skillId!, hits });
+  const cooldown = skillParam(state.reg, self.skillId!, 'cooldown', DEFAULT_SKILL_COOLDOWN);
+  self.skillCooldownUntil = state.time + cooldown;
+  state.events.push({
+    type: 'skill', uid: self.uid, defId: self.defId, skillId: self.skillId!, hits,
+    fromPos, toPos: { ...self.pos },
+  });
   return true;
 }

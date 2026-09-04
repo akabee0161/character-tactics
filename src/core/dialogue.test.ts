@@ -41,7 +41,7 @@ describe('pickDialogue', () => {
   it('スキル・ピンチ・勝利・撤退のセリフが出る', () => {
     const reg = testRegistry();
     expect(pickDialogue(reg, [
-      { type: 'skill', uid: 'p2', defId: 'ines', skillId: 'neraiuchi', hits: 0 },
+      { type: 'skill', uid: 'p2', defId: 'ines', skillId: 'neraiuchi', hits: 0, fromPos: { x: 0, y: 0 }, toPos: { x: 0, y: 0 } },
     ])[0]!.lineId).toBe('skill:ines');
     expect(pickDialogue(reg, [{ type: 'pinch', uid: 'p3', defId: 'mist' }])[0]!.lineId).toBe('pinch:mist');
     expect(pickDialogue(reg, [
@@ -62,9 +62,13 @@ describe('pickDialogue', () => {
   it('セリフの出ないイベントは無視する', () => {
     const reg = testRegistry();
     const events: SimEvent[] = [
-      { type: 'hit', targetPos: { x: 0, y: 0 }, amount: 3 },
-      { type: 'bondSupport', targetUid: 'p1', targetDefId: 'roran', supporterUids: ['p2'] },
-      { type: 'unitDefeated', uid: 'e1', defId: 'narazumono', byUid: 'p4', byDefId: 'gau', neraiuchi: false },
+      {
+        type: 'hit', targetUid: 'p1', targetPos: { x: 0, y: 0 }, amount: 3,
+        sourceUid: 'e1', sourceDefId: 'narazumono', attackKind: 'melee',
+        sourcePos: { x: 10, y: 0 }, neraiuchi: false,
+      },
+      { type: 'bondSupport', targetUid: 'p1', targetDefId: 'roran', supporterUids: ['p2'], pos: { x: 0, y: 0 } },
+      { type: 'unitDefeated', uid: 'e1', defId: 'narazumono', byUid: 'p4', byDefId: 'gau', neraiuchi: false, pos: { x: 0, y: 0 } },
     ];
     expect(pickDialogue(reg, events)).toEqual([]);
   });
@@ -74,7 +78,7 @@ describe('pickDialogue', () => {
     const events: SimEvent[] = [
       { type: 'unitRetired', uid: 'p1', defId: 'roran' },
       { type: 'pinch', uid: 'p3', defId: 'mist' },
-      { type: 'skill', uid: 'p4', defId: 'gau', skillId: 'kakenukeru', hits: 0 },
+      { type: 'skill', uid: 'p4', defId: 'gau', skillId: 'kakenukeru', hits: 0, fromPos: { x: 0, y: 0 }, toPos: { x: 0, y: 0 } },
       { type: 'engage', uid: 'p3', defId: 'mist', targetUid: 'e1', targetDefId: 'narazumono', firstMeeting: true },
       { type: 'engage', uid: 'p2', defId: 'ines', targetUid: 'g1', targetDefId: 'garum', firstMeeting: true },
       { type: 'unitFled', uid: 'g1', defId: 'garum', byUid: 'p4', byDefId: 'gau' },
@@ -137,7 +141,7 @@ describe('levelUp の トリガ', () => {
     const got = pickDialogue(reg, [
       { type: 'pinch', uid: 'p1', defId: 'roran' },
       { type: 'levelUp', uid: 'p1', defId: 'roran', level: 2 },
-      { type: 'skill', uid: 'p1', defId: 'roran', skillId: 'funbaru', hits: 0 },
+      { type: 'skill', uid: 'p1', defId: 'roran', skillId: 'funbaru', hits: 0, fromPos: { x: 0, y: 0 }, toPos: { x: 0, y: 0 } },
     ]);
     expect(got.map((d) => d.lineId)).toEqual(['skill:roran', 'levelup:roran', 'pinch:roran']);
   });

@@ -1,6 +1,6 @@
 [
-  { "id": "funbaru",    "label": "ふんばる",   "params": { "duration": 5 } },
-  { "id": "neraiuchi",  "label": "ねらいうち", "params": {} },
-  { "id": "omajinai",   "label": "おまじない", "params": { "heal": 12, "range": 200 } },
-  { "id": "kakenukeru", "label": "かけぬける", "params": { "damage": 5, "needsDest": 1 } }
+  { "id": "funbaru",    "label": "ふんばる",   "params": { "duration": 5, "cooldown": 15 } },
+  { "id": "neraiuchi",  "label": "ねらいうち", "params": { "cooldown": 12 } },
+  { "id": "omajinai",   "label": "おまじない", "params": { "heal": 12, "range": 200, "cooldown": 10 } },
+  { "id": "kakenukeru", "label": "かけぬける", "params": { "damage": 5, "needsDest": 1, "cooldown": 8 } }
 ]

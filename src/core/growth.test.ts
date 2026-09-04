@@ -109,7 +109,7 @@ describe('awardXpForDefeats', () => {
     const reward = s.reg.enemies.get(e.defId)!.xpReward;
     s.events = [{
       type: 'unitDefeated', uid: e.uid, defId: e.defId,
-      byUid: u.uid, byDefId: u.defId, neraiuchi: false,
+      byUid: u.uid, byDefId: u.defId, neraiuchi: false, pos: { x: 0, y: 0 },
     }];
     awardXpForDefeats(s);
     expect(u.xp).toBe(reward);
@@ -120,7 +120,7 @@ describe('awardXpForDefeats', () => {
     const e = s.units.find((x) => x.side === 'enemy')!;
     s.events = [{
       type: 'unitDefeated', uid: e.uid, defId: e.defId,
-      byUid: null, byDefId: null, neraiuchi: false,
+      byUid: null, byDefId: null, neraiuchi: false, pos: { x: 0, y: 0 },
     }];
     awardXpForDefeats(s);
     expect(s.units.filter((u) => u.side === 'player').every((u) => u.xp === 0)).toBe(true);
@@ -142,8 +142,8 @@ describe('awardXpForDefeats', () => {
     const total =
       s.reg.enemies.get(a!.defId)!.xpReward + s.reg.enemies.get(b!.defId)!.xpReward;
     s.events = [
-      { type: 'unitDefeated', uid: a!.uid, defId: a!.defId, byUid: u.uid, byDefId: u.defId, neraiuchi: false },
-      { type: 'unitDefeated', uid: b!.uid, defId: b!.defId, byUid: u.uid, byDefId: u.defId, neraiuchi: false },
+      { type: 'unitDefeated', uid: a!.uid, defId: a!.defId, byUid: u.uid, byDefId: u.defId, neraiuchi: false, pos: { x: 0, y: 0 } },
+      { type: 'unitDefeated', uid: b!.uid, defId: b!.defId, byUid: u.uid, byDefId: u.defId, neraiuchi: false, pos: { x: 0, y: 0 } },
     ];
     awardXpForDefeats(s);
     expect(u.xp).toBe(total);

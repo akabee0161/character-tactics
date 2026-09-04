@@ -8,7 +8,7 @@ import type { SimCommand } from './core/sim';
 import { drawBattle, drawDragPreview } from './render/draw';
 import { escortDefIds } from './render/objectives-view';
 import { isWalkableAt } from './core/field';
-import { makeEffectState, spawnHitEffects, tickEffects } from './render/effects';
+import { makeEffectState, resetEffects, spawnEffects, syncDisplayedHp, tickEffects } from './render/effects';
 import { LOGICAL_H, LOGICAL_W, computeViewport, logicalToMap, mapToLogical, screenToLogical } from './render/viewport';
 import { advanceBubble, currentBubble, enqueue, isBlocking, makeBubbleQueue } from './ui/bubbles';
 import { applyStageClear, isStageUnlocked } from './ui/flow';
@@ -87,7 +87,7 @@ function beginStage(index: number): void {
   selected = null;
   pendingSkill = null;
   bubbles.items.length = 0;
-  effects.items.length = 0;
+  resetEffects(effects);
   pointerStart = null;
   dragMap = null;
   commands.length = 0;
@@ -144,7 +144,7 @@ function onPointerDown(ev: PointerEvent): void {
       }
       if (selected) {
         const unit = battle.units.find((u) => u.uid === selected)!;
-        const canTap = !unit.retired && !unit.skillUsed;
+        const canTap = !unit.retired && battle.time >= unit.skillCooldownUntil;
         if (canTap && hitRect(skillButtonAt(mapToLogical(unit.pos)), p)) {
           pointerStart = null;
           if (skillParam(battle.reg, unit.skillId ?? '', 'needsDest', 0) === 1) pendingSkill = selected;
@@ -241,6 +241,7 @@ canvas.addEventListener('pointercancel', onPointerCancel);
 function update(dt: number): void {
   tickEffects(effects, dt);
   if (phase !== 'battle' || !battle) return;
+  syncDisplayedHp(effects, battle.units, dt);
   if (isBlocking(bubbles)) return; // 吹き出し中は時間が止まる
 
   accumulator += dt;
@@ -248,7 +249,7 @@ function update(dt: number): void {
     accumulator -= FIXED_DT;
     const batch = commands.splice(0, commands.length);
     step(battle, batch, FIXED_DT);
-    spawnHitEffects(effects, battle.events);
+    spawnEffects(effects, battle.events);
     enqueue(bubbles, pickDialogue(battle.reg, battle.events));
     if (isBlocking(bubbles)) break;
   }

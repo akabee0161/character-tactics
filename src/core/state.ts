@@ -46,7 +46,7 @@ function makeUnit(a: MakeUnitArgs): Unit {
     level: a.level, xp: a.xp,
     goalPos: null, goalField: null, engagedWith: null, attackCooldown: 0, retired: false,
     ai: a.ai === null ? null : { def: a.ai, mode: 'idle', targetUid: null, home: { ...a.pos } },
-    skillUsed: false, funbaruUntil: -1, neraiuchiArmed: false, pinchShown: false,
+    skillCooldownUntil: 0, funbaruUntil: -1, neraiuchiArmed: false, pinchShown: false,
     seenDefIds: [], lastHitBy: null, lastHitNeraiuchi: false,
   };
 }

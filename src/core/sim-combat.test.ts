@@ -46,7 +46,7 @@ function spawnEnemy(s: BattleState, defId: string, pos: Vec2, hp?: number): Unit
     level: 1, xp: 0,
     goalPos: null, goalField: null, engagedWith: null, attackCooldown: 0, retired: false,
     ai: { def: { kind: 'aggressive' }, mode: 'idle', targetUid: null, home: { ...pos } },
-    skillUsed: false, funbaruUntil: -1, neraiuchiArmed: false, pinchShown: false,
+    skillCooldownUntil: 0, funbaruUntil: -1, neraiuchiArmed: false, pinchShown: false,
     seenDefIds: [], lastHitBy: null, lastHitNeraiuchi: false,
   };
   s.units.push(u);
@@ -94,6 +94,7 @@ describe('攻撃の解決', () => {
     expect(e.hp).toBe(12 - 7); // (6+2)-1
     expect(s.events).toContainEqual({
       type: 'bondSupport', targetUid: roran.uid, targetDefId: 'roran', supporterUids: [ines.uid],
+      pos: roran.pos,
     });
     expect(s.counters['bond:supports']).toBe(1);
   });
@@ -173,6 +174,7 @@ describe('撃破と撤退', () => {
     expect(e.retired).toBe(true);
     expect(s.events).toContainEqual({
       type: 'unitDefeated', uid: e.uid, defId: 'narazumono', byUid: roran.uid, byDefId: 'roran', neraiuchi: false,
+      pos: e.pos,
     });
     expect(roran.xp).toBe(s.reg.enemies.get('narazumono')!.xpReward);
   });
@@ -196,6 +198,7 @@ describe('撃破と撤退', () => {
     expect(e.retired).toBe(true);
     expect(s.events).toContainEqual({
       type: 'unitDefeated', uid: e.uid, defId: 'narazumono', byUid: gau.uid, byDefId: 'gau', neraiuchi: false,
+      pos: e.pos,
     });
     expect(gau.xp).toBe(s.reg.enemies.get('narazumono')!.xpReward);
   });

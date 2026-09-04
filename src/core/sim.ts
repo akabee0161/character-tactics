@@ -192,7 +192,7 @@ function resolveAttacks(state: BattleState, dt: number): void {
     if (supporters.length > 0) {
       state.events.push({
         type: 'bondSupport', targetUid: u.uid, targetDefId: u.defId,
-        supporterUids: supporters.map((s) => s.uid),
+        supporterUids: supporters.map((s) => s.uid), pos: { ...u.pos },
       });
     }
 
@@ -212,7 +212,10 @@ function resolveAttacks(state: BattleState, dt: number): void {
     target.lastHitNeraiuchi = neraiuchi;
     u.neraiuchiArmed = false;
     u.attackCooldown = interval;
-    state.events.push({ type: 'hit', targetPos: { ...target.pos }, amount: dmg });
+    state.events.push({
+      type: 'hit', targetUid: target.uid, targetPos: { ...target.pos }, amount: dmg,
+      sourceUid: u.uid, sourceDefId: u.defId, attackKind: u.attack, sourcePos: { ...u.pos }, neraiuchi,
+    });
 
     // ピンチのセリフは操作できる味方にだけ出す
     if (target.side === 'player' && target.hp > 0 && !target.pinchShown) {
@@ -241,7 +244,7 @@ function resolveRemoval(state: BattleState): void {
         u.retired = true;
         state.events.push({
           type: 'unitDefeated', uid: u.uid, defId: u.defId, byUid, byDefId,
-          neraiuchi: u.lastHitNeraiuchi,
+          neraiuchi: u.lastHitNeraiuchi, pos: { ...u.pos },
         });
       }
     } else if (u.hp <= 0) {

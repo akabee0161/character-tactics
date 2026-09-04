@@ -1,5 +1,6 @@
-import { lookupDef } from '../engine/registry';
+import { lookupDef, skillParam } from '../engine/registry';
 import { titlesOf, xpToNext } from '../core/progress';
+import { DEFAULT_SKILL_COOLDOWN } from '../core/skills';
 import { PLACEMENT_RADIUS } from '../core/state';
 import { LOGICAL_H, LOGICAL_W, mapToLogical } from '../render/viewport';
 import { BOTTOM_BAR_H, BOTTOM_BAR_Y, BTN, portraitSlot, skillButtonAt, stageSlot } from './layout';
@@ -147,11 +148,17 @@ export function drawBottomBar(
       ctx.fillStyle = unit.retired ? '#666' : '#5ad06a';
       ctx.fillRect(r.x + 50, r.y + 34, 120 * Math.max(0, unit.hp / unit.maxHp), 8);
 
-      ctx.fillStyle = unit.skillUsed || unit.retired ? '#555' : '#ffd479';
-      ctx.beginPath();
-      ctx.arc(r.x + 198, r.y + 32, 10, 0, Math.PI * 2);
-      ctx.fill();
       ctx.globalAlpha = 1;
+
+      if (unit.skillId !== null && !unit.retired) {
+        const total = skillParam(reg, unit.skillId, 'cooldown', DEFAULT_SKILL_COOLDOWN);
+        const remaining = Math.max(0, unit.skillCooldownUntil - state.time);
+        const ratio = total > 0 ? 1 - remaining / total : 1;
+        ctx.fillStyle = '#000';
+        ctx.fillRect(r.x + 50, r.y + 46, 120, 6);
+        ctx.fillStyle = '#ffd479';
+        ctx.fillRect(r.x + 50, r.y + 46, 120 * Math.max(0, Math.min(1, ratio)), 6);
+      }
 
       if (unit.retired) {
         ctx.fillStyle = '#ff9a9a';
@@ -178,7 +185,7 @@ export function drawSkillButton(
   selected: string,
 ): Rect | null {
   const unit = state.units.find((u) => u.uid === selected);
-  if (!unit || unit.retired || unit.skillUsed) return null;
+  if (!unit || unit.retired || state.time < unit.skillCooldownUntil) return null;
   const r = skillButtonAt(mapToLogical(unit.pos));
   const label = reg.skills.get(unit.skillId ?? '')?.label ?? 'スキル';
   button(ctx, r, label);

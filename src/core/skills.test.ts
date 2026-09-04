@@ -24,7 +24,7 @@ function addEnemy(s: BattleState, x: number, y: number, hp = 12): Unit {
     level: 1, xp: 0,
     goalPos: null, goalField: null, engagedWith: null, attackCooldown: 0, retired: false,
     ai: { def: { kind: 'aggressive' }, mode: 'idle', targetUid: null, home: { x, y } },
-    skillUsed: false, funbaruUntil: -1, neraiuchiArmed: false, pinchShown: false,
+    skillCooldownUntil: 0, funbaruUntil: -1, neraiuchiArmed: false, pinchShown: false,
     seenDefIds: [], lastHitBy: null, lastHitNeraiuchi: false,
   };
   s.units.push(e);
@@ -47,10 +47,18 @@ describe('canUseSkill', () => {
     expect(canUseSkill(s, unitOf(s, 'roran').uid)).toBe(true);
   });
 
-  it('一度使うと同じステージでは使えない', () => {
+  it('使うとクールダウン中は使えない', () => {
     const uid = unitOf(s, 'roran').uid;
     useSkill(s, uid);
     expect(canUseSkill(s, uid)).toBe(false);
+  });
+
+  it('クールダウンが明けると再び使える', () => {
+    const uid = unitOf(s, 'roran').uid;
+    useSkill(s, uid);
+    const cooldown = s.reg.skills.get('funbaru')!.params.cooldown!;
+    s.time += cooldown;
+    expect(canUseSkill(s, uid)).toBe(true);
   });
 
   it('たいきゃく中は使えない', () => {
@@ -74,6 +82,7 @@ describe('ふんばる', () => {
     expect(unitOf(s, 'roran').funbaruUntil).toBe(10 + FUNBARU_DURATION);
     expect(s.events).toContainEqual({
       type: 'skill', uid: roran.uid, defId: 'roran', skillId: 'funbaru', hits: 0,
+      fromPos: roran.pos, toPos: roran.pos,
     });
   });
 
@@ -108,6 +117,20 @@ describe('おまじない', () => {
     useSkill(s, unitOf(s, 'mist').uid);
     expect(unitOf(s, 'roran').hp).toBe(5 + OMAJINAI_HEAL);
     expect(unitOf(s, 'gau').hp).toBe(20);
+  });
+
+  it('回復すると heal イベントが出る', () => {
+    const s = fresh();
+    const mist = unitOf(s, 'mist');
+    mist.pos = { x: 100, y: 16 };
+    const roran = unitOf(s, 'roran');
+    roran.pos = { x: 150, y: 16 };
+    roran.hp = 5;
+    useSkill(s, mist.uid);
+    expect(s.events).toContainEqual({
+      type: 'heal', targetPos: roran.pos, amount: OMAJINAI_HEAL,
+      sourceUid: mist.uid, sourceDefId: 'mist', sourcePos: mist.pos,
+    });
   });
 
   it('最大 HP を超えて回復しない', () => {
@@ -154,6 +177,7 @@ describe('かけぬける', () => {
     expect(offPath.hp).toBe(12);
     expect(s.events).toContainEqual({
       type: 'skill', uid: gau.uid, defId: 'gau', skillId: 'kakenukeru', hits: 1,
+      fromPos: { x: 80, y: 208 }, toPos: { x: 260, y: 208 },
     });
   });
 
@@ -232,7 +256,7 @@ describe('SKILL_EFFECTS', () => {
     const roran = unitOf(s, 'roran');
     roran.skillId = 'sonzaishinai';
     expect(useSkill(s, roran.uid)).toBe(false);
-    expect(unitOf(s, 'roran').skillUsed).toBe(false);
+    expect(unitOf(s, 'roran').skillCooldownUntil).toBe(0);
   });
 
   it('ふんばりの もちじかんを skills.json から よむ', () => {
@@ -240,5 +264,13 @@ describe('SKILL_EFFECTS', () => {
     const roran = unitOf(s, 'roran');
     useSkill(s, roran.uid);
     expect(unitOf(s, 'roran').funbaruUntil).toBe(s.time + s.reg.skills.get('funbaru')!.params.duration!);
+  });
+
+  it('ふんばりの クールダウンを skills.json から よむ', () => {
+    const s = fresh();
+    const roran = unitOf(s, 'roran');
+    useSkill(s, roran.uid);
+    expect(unitOf(s, 'roran').skillCooldownUntil)
+      .toBe(s.time + s.reg.skills.get('funbaru')!.params.cooldown!);
   });
 });
