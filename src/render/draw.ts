@@ -6,7 +6,7 @@ import type { Registry } from '../engine/registry';
 import type { StageDef } from '../engine/schema';
 import { sightCircles } from './objectives-view';
 import { LOGICAL_H, LOGICAL_W, mapToLogical } from './viewport';
-import { DAMAGE_TEXT_DURATION, HEAL_TEXT_DURATION, HIT_EFFECT_DURATION } from './effects';
+import { ATTACK_LINE_DURATION, DAMAGE_TEXT_DURATION, HEAL_TEXT_DURATION, HIT_EFFECT_DURATION } from './effects';
 import type { EffectState } from './effects';
 import type { BattleState, Vec2 } from '../core/types';
 
@@ -219,9 +219,9 @@ function drawUnits(
 
 function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void {
   for (const e of effects.items) {
-    const p = mapToLogical(e.pos);
     switch (e.kind) {
       case 'hit': {
+        const p = mapToLogical(e.pos);
         const ratio = Math.max(0, e.ttl / HIT_EFFECT_DURATION);
         ctx.strokeStyle = e.critical ? `rgba(255, 120, 60, ${ratio})` : `rgba(255, 235, 150, ${ratio})`;
         ctx.lineWidth = e.critical ? 4 : 3;
@@ -231,6 +231,7 @@ function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void 
         break;
       }
       case 'damageText': {
+        const p = mapToLogical(e.pos);
         const ratio = Math.max(0, e.ttl / DAMAGE_TEXT_DURATION);
         const rise = (1 - ratio) * 20;
         ctx.globalAlpha = ratio;
@@ -243,6 +244,7 @@ function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void 
         break;
       }
       case 'healText': {
+        const p = mapToLogical(e.pos);
         const ratio = Math.max(0, e.ttl / HEAL_TEXT_DURATION);
         const rise = (1 - ratio) * 20;
         ctx.globalAlpha = ratio;
@@ -252,6 +254,18 @@ function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void 
         ctx.fillText(`+${e.amount}`, p.x, p.y - UNIT_R - 14 - rise);
         ctx.globalAlpha = 1;
         ctx.textAlign = 'left';
+        break;
+      }
+      case 'attackLine': {
+        const a = mapToLogical(e.from);
+        const b = mapToLogical(e.to);
+        const ratio = Math.max(0, e.ttl / ATTACK_LINE_DURATION);
+        ctx.strokeStyle = `rgba(200, 220, 255, ${ratio})`;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.stroke();
         break;
       }
     }

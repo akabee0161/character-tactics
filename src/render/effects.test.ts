@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  DAMAGE_TEXT_DURATION, HEAL_TEXT_DURATION, HIT_EFFECT_DURATION,
+  ATTACK_LINE_DURATION, DAMAGE_TEXT_DURATION, HEAL_TEXT_DURATION, HIT_EFFECT_DURATION,
   makeEffectState, spawnEffects, tickEffects,
 } from './effects';
 import type { EffectState } from './effects';
@@ -57,6 +57,20 @@ describe('spawnEffects', () => {
       hitEvent({ targetUid: 'e2', targetPos: { x: 5, y: 5 } }),
     ]);
     expect(state.items.filter((i) => i.kind === 'hit')).toHaveLength(2);
+  });
+
+  it('bow の hit は attackLine も追加する', () => {
+    const state = makeEffectState();
+    spawnEffects(state, [hitEvent({ attackKind: 'bow', sourcePos: { x: 100, y: 20 }, targetPos: { x: 10, y: 20 } })]);
+    expect(state.items).toContainEqual({
+      kind: 'attackLine', from: { x: 100, y: 20 }, to: { x: 10, y: 20 }, ttl: ATTACK_LINE_DURATION,
+    });
+  });
+
+  it('melee の hit は attackLine を追加しない', () => {
+    const state = makeEffectState();
+    spawnEffects(state, [hitEvent({ attackKind: 'melee' })]);
+    expect(state.items.some((i) => i.kind === 'attackLine')).toBe(false);
   });
 });
 
