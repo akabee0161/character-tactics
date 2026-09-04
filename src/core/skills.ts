@@ -9,6 +9,7 @@ import type { BattleState, Unit, Vec2 } from './types';
 export const FUNBARU_DURATION = 5;
 export const OMAJINAI_HEAL = 12;
 export const KAKENUKERU_DAMAGE = 5;
+export const DEFAULT_SKILL_COOLDOWN = 10;
 
 export function isFunbaruActive(unit: Unit, time: number): boolean {
   return time < unit.funbaruUntil;
@@ -86,7 +87,7 @@ export function canUseSkill(state: BattleState, uid: string): boolean {
   if (state.phase !== 'battle') return false;
   const unit = state.units.find((u) => u.uid === uid && u.side === 'player');
   if (!unit) return false;
-  return !unit.retired && !unit.skillUsed;
+  return !unit.retired && state.time >= unit.skillCooldownUntil;
 }
 
 export function useSkill(state: BattleState, uid: string, dest?: Vec2): boolean {
@@ -98,7 +99,8 @@ export function useSkill(state: BattleState, uid: string, dest?: Vec2): boolean 
   const hits = effect({ state, self, dest });
   if (hits === null) return false;
 
-  self.skillUsed = true;
+  const cooldown = skillParam(state.reg, self.skillId!, 'cooldown', DEFAULT_SKILL_COOLDOWN);
+  self.skillCooldownUntil = state.time + cooldown;
   state.events.push({ type: 'skill', uid: self.uid, defId: self.defId, skillId: self.skillId!, hits });
   return true;
 }

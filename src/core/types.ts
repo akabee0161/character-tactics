@@ -64,7 +64,8 @@ export type Unit = {
   /** controller === 'ai' のときだけ入る */
   ai: AiState | null;
 
-  skillUsed: boolean;
+  /** シム時刻の絶対値。この値未満は使用不可（0 なら開始時点で使用可） */
+  skillCooldownUntil: number;
   funbaruUntil: number;
   neraiuchiArmed: boolean;
   pinchShown: boolean;

@@ -16,7 +16,7 @@ function makeTestUnit(s: BattleState, def: EnemyDef, pos: Vec2, ai: AiDef): Unit
     level: 1, xp: 0,
     goalPos: null, goalField: null, engagedWith: null, attackCooldown: 0, retired: false,
     ai: { def: ai, mode: 'idle', targetUid: null, home: { ...pos } },
-    skillUsed: false, funbaruUntil: -1, neraiuchiArmed: false, pinchShown: false,
+    skillCooldownUntil: 0, funbaruUntil: -1, neraiuchiArmed: false, pinchShown: false,
     seenDefIds: [], lastHitBy: null, lastHitNeraiuchi: false,
   };
 }
@@ -75,7 +75,7 @@ function spawnEnemy(s: BattleState, defId: string, pos: { x: number; y: number }
     level: 1, xp: 0,
     goalPos: null, goalField: null, engagedWith: null, attackCooldown: 0, retired: false,
     ai: { def: { kind: 'aggressive' }, mode: 'idle', targetUid: null, home: { ...pos } },
-    skillUsed: false, funbaruUntil: -1, neraiuchiArmed: false, pinchShown: false,
+    skillCooldownUntil: 0, funbaruUntil: -1, neraiuchiArmed: false, pinchShown: false,
     seenDefIds: [], lastHitBy: null, lastHitNeraiuchi: false,
   };
   s.units.push(u);
@@ -229,7 +229,7 @@ describe('step: skill コマンド', () => {
   it('skill コマンドでスキルが発動する', () => {
     const { state: s } = fresh();
     step(s, [{ type: 'skill', uid: unitOf(s, 'roran').uid }], 0.1);
-    expect(unitOf(s, 'roran').skillUsed).toBe(true);
+    expect(unitOf(s, 'roran').skillCooldownUntil).toBeGreaterThan(0);
   });
 
   it('かけぬけるは dest つきで発動する', () => {
