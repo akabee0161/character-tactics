@@ -151,6 +151,24 @@ describe('buildRegistry', () => {
     if (!r.ok) expect(r.errors[0]?.path).toBe('intro[0].lineId');
   });
 
+  it('speaker が null の 地の文は しらない はなしてとして 弾かれない', () => {
+    const r = buildRegistry(files({
+      'assets/stages/stage1.json': {
+        ...STAGE, intro: [{ speaker: null, text: 'みちの さきに、けむりが みえる。' }],
+      },
+    }), KNOWN_SKILLS);
+    expect(r.ok).toBe(true);
+  });
+
+  it('lineId が null の text ちょくがきは lines に ない id として 弾かれない', () => {
+    const r = buildRegistry(files({
+      'assets/stages/stage1.json': {
+        ...STAGE, intro: [{ speaker: 'roran', text: 'いくよ' }],
+      },
+    }), KNOWN_SKILLS);
+    expect(r.ok).toBe(true);
+  });
+
   it('titles.json の owner が存在しない ユニットなら弾く', () => {
     const r = buildRegistry(files({
       'assets/titles.json': [
@@ -236,7 +254,7 @@ describe('ステージの ならびじゅん', () => {
       'assets/stages/stage1.json': { ...STAGE, id: 'stage1', order: 30 },
       'assets/stages/stage10.json': { ...STAGE, id: 'stage10', order: 10 },
       'assets/stages/stage2.json': { ...STAGE, id: 'stage2', order: 20 },
-    }), ['funbaru']);
+    }), KNOWN_SKILLS);
     expect(r.ok).toBe(true);
     if (r.ok) expect(r.value.stages.map((s) => s.id)).toEqual(['stage10', 'stage2', 'stage1']);
   });
@@ -245,7 +263,7 @@ describe('ステージの ならびじゅん', () => {
     const r = buildRegistry(files({
       'assets/stages/stage1.json': { ...STAGE, id: 'stage1', order: 10 },
       'assets/stages/stage2.json': { ...STAGE, id: 'stage2', order: 900 },
-    }), ['funbaru']);
+    }), KNOWN_SKILLS);
     expect(r.ok).toBe(true);
   });
 
@@ -253,7 +271,7 @@ describe('ステージの ならびじゅん', () => {
     const r = buildRegistry(files({
       'assets/stages/stage1.json': { ...STAGE, id: 'stage1', order: 10 },
       'assets/stages/stage2.json': { ...STAGE, id: 'stage2', order: 10 },
-    }), ['funbaru']);
+    }), KNOWN_SKILLS);
     expect(r.ok).toBe(false);
     if (!r.ok) {
       expect(r.errors.some((e) => e.path === 'order' && e.reason.includes('じゅうふく'))).toBe(true);

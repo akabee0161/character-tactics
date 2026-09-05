@@ -184,12 +184,19 @@ function onPointerDown(ev: PointerEvent): void {
         }
       }
       // 2) 吹き出し。当たったらその1つだけ消す
-      for (const b of bubbles.items.values()) {
-        const unit = battle.units.find((u) => u.uid === b.uid);
-        if (!unit) continue;
-        if (hitRect(bubbleRectAt(mapToLogical(unit.pos), b.text), p)) {
-          dismissBubble(bubbles, b.uid);
-          return;
+      //    ただしユニットのタップ円と重なるときは操作を優先する。吹き出しは自分の丸とは
+      //    重ならない位置に出るが、すぐ上に立っている別のユニットの丸とは重なりうる
+      const overUnit = pickUnit(playerUnits(battle), logicalToMap(p)) !== null;
+      if (!overUnit) {
+        // 描画は items の挿入順（先が下、後が上）。当たり判定も同じ順で見えている
+        // ものを優先するため逆順にする
+        for (const b of [...bubbles.items.values()].reverse()) {
+          const unit = battle.units.find((u) => u.uid === b.uid);
+          if (!unit) continue;
+          if (hitRect(bubbleRectAt(mapToLogical(unit.pos), b.text), p)) {
+            dismissBubble(bubbles, b.uid);
+            return;
+          }
         }
       }
       // 3) マップ操作

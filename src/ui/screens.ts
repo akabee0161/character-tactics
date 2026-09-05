@@ -4,8 +4,8 @@ import { DEFAULT_SKILL_COOLDOWN } from '../core/skills';
 import { PLACEMENT_RADIUS } from '../core/state';
 import { LOGICAL_H, LOGICAL_W, mapToLogical } from '../render/viewport';
 import {
-  BOTTOM_BAR_H, BOTTOM_BAR_Y, BTN, BUBBLE_FONT_PX, BUBBLE_LINE_H, TALK_BODY_X, TALK_FONT,
-  TALK_LINE_H, TALK_PAD, TALK_WINDOW, bubbleRectAt, portraitSlot, skillButtonAt, stageSlot,
+  BOTTOM_BAR_H, BOTTOM_BAR_Y, BTN, BUBBLE_FONT_PX, BUBBLE_LINE_H, BUBBLE_PAD, TALK_BODY_X,
+  TALK_FONT, TALK_LINE_H, TALK_PAD, TALK_WINDOW, bubbleRectAt, portraitSlot, skillButtonAt, stageSlot,
 } from './layout';
 import { currentSpeaker, pageCount, visibleLines } from './talk';
 import { isStageUnlocked } from './flow';
@@ -37,6 +37,7 @@ function button(ctx: CanvasRenderingContext2D, r: Rect, label: string, enabled =
   ctx.textBaseline = 'middle';
   ctx.fillText(label, r.x + r.w / 2, r.y + r.h / 2);
   ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
 }
 
 function clear(ctx: CanvasRenderingContext2D): void {
@@ -213,8 +214,10 @@ export function drawBubble(ctx: CanvasRenderingContext2D, bubble: Bubble, logica
 
   ctx.fillStyle = '#1a1a1a';
   ctx.font = `${BUBBLE_FONT_PX}px sans-serif`;
+  // 1行目のベースラインは、天面のパディング＋フォントの上昇分（実測はできないので概算）
+  const firstBaselineY = r.y + BUBBLE_PAD + BUBBLE_FONT_PX * 0.875;
   bubble.text.split('\n').forEach((line, i) => {
-    ctx.fillText(line, r.x + 10, r.y + 24 + i * BUBBLE_LINE_H);
+    ctx.fillText(line, r.x + BUBBLE_PAD, firstBaselineY + i * BUBBLE_LINE_H);
   });
 }
 
@@ -229,7 +232,6 @@ export function drawTalk(
   ctx.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
 
   if (canSkip) button(ctx, BTN.skip, 'とばす');
-  ctx.textBaseline = 'alphabetic';
 
   const r = TALK_WINDOW;
   panel(ctx, r, '#f7f3e6');

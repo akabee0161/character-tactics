@@ -46,7 +46,12 @@ export function skillButtonAt(logicalPos: { x: number; y: number }): Rect {
 
 export const BUBBLE_FONT_PX = 16;
 export const BUBBLE_LINE_H = 20;
-const BUBBLE_PAD = 10;
+export const BUBBLE_PAD = 10;
+/**
+ * 吹き出しの幅の上限。これを超えても折り返しも省略もしないため、全角で
+ * だいたい18文字を超える行はパネルからはみ出す（今の assets/lines/common.json の
+ * 最長行は16文字で収まっている）。長い行を書くときは要注意
+ */
 const BUBBLE_MAX_W = 320;
 /** キャラの中心から吹き出しの下端までの距離。丸（当たり判定は半径32）と重ならない値 */
 const BUBBLE_LIFT = 44;

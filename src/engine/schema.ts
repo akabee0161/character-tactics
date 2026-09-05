@@ -425,7 +425,8 @@ function readIntroLine(ctx: Ctx, path: string, v: unknown): IntroLine {
   else if (!hasText && !hasLineId) fail(ctx, path, 'text か lineId の どちらかが ひつよう');
 
   return {
-    speaker: o.speaker === undefined ? null : requireString(ctx, `${path}.speaker`, o.speaker),
+    // speaker は「省略」と「明示的な null」を同じ意味（地の文）として扱う
+    speaker: o.speaker == null ? null : requireString(ctx, `${path}.speaker`, o.speaker),
     text: hasText ? requireString(ctx, `${path}.text`, o.text) : null,
     lineId: hasLineId ? requireString(ctx, `${path}.lineId`, o.lineId) : null,
   };

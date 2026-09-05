@@ -47,19 +47,22 @@ function hangPunctuation(lines: string[]): string[] {
 export function wrapText(text: string, measure: Measure, maxWidth: number): string[] {
   const out: string[] = [];
   for (const para of text.split('\n')) {
+    const lines: string[] = [];
     let line = '';
     for (const ch of para) {
       // line が空のときは幅を見ない。見ると1文字も入らない幅で無限ループする
       if (line !== '' && measure(line + ch) > maxWidth) {
-        out.push(line);
+        lines.push(line);
         line = ch;
       } else {
         line += ch;
       }
     }
-    out.push(line);
+    lines.push(line);
+    // 段落ごとに ぶら下げる。段落をまたぐと \n による明示的な改行が壊れるため
+    out.push(...hangPunctuation(lines));
   }
-  return hangPunctuation(out);
+  return out;
 }
 
 /** 折り返した行を maxLines 行ずつのページに切る */

@@ -359,6 +359,14 @@ describe('validateStageDef', () => {
     if (r.ok) expect(r.value.intro![0]).toEqual({ speaker: null, text: 'みちの さきに、けむりが みえる。', lineId: null });
   });
 
+  it('intro の speaker は あきらかに null と かいても 地の文', () => {
+    const r = validateStageDef('stages/x.json', {
+      ...VALID_STAGE, intro: [{ speaker: null, text: 'みちの さきに、けむりが みえる。' }],
+    });
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value.intro![0]).toEqual({ speaker: null, text: 'みちの さきに、けむりが みえる。', lineId: null });
+  });
+
   it('intro に text を ちょくせつ かける', () => {
     const r = validateStageDef('stages/x.json', {
       ...VALID_STAGE, intro: [{ speaker: 'roran', text: 'いくよ' }],

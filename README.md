@@ -50,7 +50,7 @@ npm run build   # 型チェック + 本番ビルド (out/play/character-tactics/
 コードを書き換えずに足せるもの:
 
 - **ステージ** — `assets/stages/<id>.json` を1本置く。ファイル名と `id` を一致させ、`order` に並び順を書く（昇順に並ぶ。欠番は自由、重複は起動時エラー。10, 20, 30 と空けておくと後から間に挟める）
-- **ステージ開始時の会話** — ステージの `intro` に書く。`speaker` を省略すると地の文になり、本文は `text` に直書きするか `lineId` で `assets/lines/` を参照する（両方書くとエラー）
+- **ステージ開始時の会話** — ステージの `intro` に書く。`speaker` を省略すると地の文になり、本文は `text` に直書きするか `lineId` で `assets/lines/` を参照する（両方書いても、どちらも書かなくてもエラー）
 - **味方・同行 NPC** — `assets/units/<id>.json`。`combat: false` にすると攻撃しない同行者になる
 - **敵** — `assets/enemies/<id>.json`
 - **セリフ** — `assets/lines/*.json`
