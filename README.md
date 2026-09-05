@@ -32,6 +32,33 @@ npm test        # ユニットテスト (Vitest)
 npm run build   # 型チェック + 本番ビルド (out/play/character-tactics/)
 ```
 
+### 描画と入力をブラウザで確認する
+
+描画コードにはユニットテストを書かない方針なので、`drawTalk` / `drawBubble` の見た目や
+ポインタ操作は実ブラウザで確かめる。**Playwright パッケージは要らない。** Chromium の
+バイナリさえあれば（`~/.cache/ms-playwright/` に落ちているものでよい）、追加の依存なしで
+CDP から駆動できる。
+
+```bash
+npm run build                       # out/ を任意の静的サーバで配信する
+chrome --headless=new --no-sandbox --disable-gpu \
+       --remote-debugging-port=9222 --window-size=960,540 <URL>
+```
+
+`http://127.0.0.1:9222/json/list` から WebSocket に繋ぎ、`Input.dispatchMouseEvent` で
+タップとドラッグを送り、`Page.captureScreenshot` で画面を撮る。論理座標 960×540 から
+クライアント座標への変換は `computeViewport`（`src/render/viewport.ts`）と同じ式を使う。
+
+判定はスクリーンショットを見るほか、`getImageData` で色の塊を数えると機械的に取れる。
+吹き出しのパネルは `#f7f3e6`、ユニットの丸は各 def の `color`。下部バーのポートレートも
+同じ色なので、マップ領域（論理 y が 46〜470）に絞ること。
+
+**確認しにくいもの:** 交戦中のユニットはその場から動けない（`src/core/sim.ts` の
+`moveUnits`）。吹き出しは交戦で出るため、「吹き出しが出ている最中にドラッグして移動させる」
+を1回の試行で再現するのは難しい。ジェスチャが始まること（ユニットが選択され、スキルボタンが
+出ること）で代替できる。同様に「同じキャラの連続発話で上書き」「画面端での吹き出しの
+はみ出し」は狙って起こしにくい。後者は `src/ui/layout.test.ts` のクランプ試験で担保する。
+
 ## 構成
 
 | ディレクトリ | 責務 |
@@ -40,7 +67,7 @@ npm run build   # 型チェック + 本番ビルド (out/play/character-tactics/
 | `src/engine/` | 定義の型検証・読み込み・索引。`core` を知らない |
 | `src/core/` | 描画・DOM に依存しない純ロジック |
 | `src/render/` | Canvas2D 描画 |
-| `src/ui/` | 画面遷移・入力・吹き出しキュー |
+| `src/ui/` | 画面遷移・入力・会話フェーズ・吹き出し |
 | `src/save/` | localStorage の読み書き |
 
 `src/core/**` と `src/engine/**` は `window` / `document` / `localStorage` を参照しない。
