@@ -10,7 +10,8 @@ export type Measure = (text: string) => number;
 const NO_LINE_START = '。、！？」';
 
 /**
- * 行頭禁則。ぶら下げ方式なので、押し込んだ行は maxWidth を1文字ぶん超えうる。
+ * 行頭禁則。ぶら下げ方式なので、押し込んだ行は maxWidth を複数文字ぶん超えうる。
+ * 行頭の禁則文字をすべて前の行へ連鎖的にぶら下げる。
  * 追い出し（前の行の最後の文字を次へ送る）はしない。日本語として目立つのは
  * 行頭の約物だけで、そこまでやる価値がないため。
  */
@@ -18,10 +19,21 @@ function hangPunctuation(lines: string[]): string[] {
   const out: string[] = [];
   for (const line of lines) {
     const prev = out[out.length - 1];
-    if (prev !== undefined && prev !== '' && line !== '' && NO_LINE_START.includes(line[0]!)) {
-      out[out.length - 1] = prev + line[0];
-      const rest = line.slice(1);
-      if (rest !== '') out.push(rest);
+    if (prev !== undefined && prev !== '' && line !== '') {
+      // Cascade: pull back all leading forbidden characters
+      let currentLine = line;
+      let hanged = '';
+      while (currentLine !== '' && NO_LINE_START.includes(currentLine[0]!)) {
+        hanged += currentLine[0];
+        currentLine = currentLine.slice(1);
+      }
+
+      if (hanged !== '') {
+        out[out.length - 1] = prev + hanged;
+        if (currentLine !== '') out.push(currentLine);
+      } else {
+        out.push(line);
+      }
     } else {
       out.push(line);
     }
@@ -55,6 +67,9 @@ export function splitPages(
   maxWidth: number,
   maxLines: number,
 ): string[][] {
+  if (maxLines <= 0) {
+    throw new Error('maxLines must be positive');
+  }
   const wrapped = wrapText(text, measure, maxWidth);
   const pages: string[][] = [];
   for (let i = 0; i < wrapped.length; i += maxLines) {

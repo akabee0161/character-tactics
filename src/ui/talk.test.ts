@@ -39,6 +39,11 @@ describe('wrapText の ぎょうとう きんそく', () => {
   it('おしこんだ けっか からに なった ぎょうは のこさない', () => {
     expect(wrapText('あいうえお。', measure, 50)).toEqual(['あいうえお。']);
   });
+
+  it('ぎょうとうの やくものが つづいても ぜんぶ おしこむ', () => {
+    // 連続する禁則文字「」。」はカスケード的に全て前行へ
+    expect(wrapText('あいうえおか」。さしすせそ', measure, 60)).toEqual(['あいうえおか」。', 'さしすせ', 'そ']);
+  });
 });
 
 describe('splitPages', () => {
@@ -53,5 +58,13 @@ describe('splitPages', () => {
 
   it('からもじれつでも 1ページ かえす', () => {
     expect(splitPages('', measure, 1000, 3)).toEqual([['']]);
+  });
+
+  it('maxLines が 0 なら エラーに する', () => {
+    expect(() => splitPages('あ', measure, 1000, 0)).toThrow('maxLines must be positive');
+  });
+
+  it('maxLines が ふなら エラーに する', () => {
+    expect(() => splitPages('あ', measure, 1000, -1)).toThrow('maxLines must be positive');
   });
 });
