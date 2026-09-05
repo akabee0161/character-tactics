@@ -11,6 +11,16 @@ export function isStageUnlocked(reg: Registry, save: SaveData, index: number): b
   return prev !== undefined && save.clearedStageIds.includes(prev.id);
 }
 
+export function hasReadIntro(save: SaveData, stageId: string): boolean {
+  return save.readIntroStageIds.includes(stageId);
+}
+
+/** 変化がなければ同じ参照を返す。呼び出し側が無駄な writeSave をしなくて済む */
+export function markIntroRead(save: SaveData, stageId: string): SaveData {
+  if (save.readIntroStageIds.includes(stageId)) return save;
+  return { ...save, readIntroStageIds: [...save.readIntroStageIds, stageId] };
+}
+
 export type XpGain = {
   id: string;
   before: CharProgress;

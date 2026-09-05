@@ -99,6 +99,35 @@ describe('loadSave', () => {
   });
 });
 
+describe('readIntroStageIds', () => {
+  const reg = testRegistry();
+
+  it('あたらしい セーブでは からの はいれつ', () => {
+    expect(newSave(reg).readIntroStageIds).toEqual([]);
+  });
+
+  it('readIntroStageIds の ない きゅうセーブも よめる（バージョンは あげない）', () => {
+    const old = { version: 2, clearedStageIds: ['stage1'], units: {}, counters: {}, titles: [] };
+    const loaded = loadSave(memoryStorage(JSON.stringify(old)), reg);
+    expect(loaded).not.toBeNull();
+    expect(loaded!.readIntroStageIds).toEqual([]);
+    expect(loaded!.clearedStageIds).toEqual(['stage1']);
+  });
+
+  it('レジストリに ない ステージ id は すてる', () => {
+    const raw = { ...newSave(reg), readIntroStageIds: ['stage1', 'nonexistent'] };
+    const loaded = loadSave(memoryStorage(JSON.stringify(raw)), reg);
+    expect(loaded!.readIntroStageIds).toEqual(['stage1']);
+  });
+
+  it('こわれた readIntroStageIds でも ほかの フィールドは のこる', () => {
+    const raw = { ...newSave(reg), readIntroStageIds: 'こわれている', clearedStageIds: ['stage1'] };
+    const loaded = loadSave(memoryStorage(JSON.stringify(raw)), reg)!;
+    expect(loaded.readIntroStageIds).toEqual([]);
+    expect(loaded.clearedStageIds).toEqual(['stage1']);
+  });
+});
+
 describe('writeSave', () => {
   it('かきこめたら true', () => {
     const reg = testRegistry();
