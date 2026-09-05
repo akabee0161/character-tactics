@@ -5,7 +5,8 @@ import { PLACEMENT_RADIUS } from '../core/state';
 import { LOGICAL_H, LOGICAL_W, mapToLogical } from '../render/viewport';
 import {
   BOTTOM_BAR_H, BOTTOM_BAR_Y, BTN, BUBBLE_FONT_PX, BUBBLE_LINE_H, BUBBLE_PAD, TALK_BODY_X,
-  TALK_FONT, TALK_LINE_H, TALK_PAD, TALK_WINDOW, bubbleRectAt, portraitSlot, skillButtonAt, stageSlot,
+  TALK_FONT, TALK_LINE_H, TALK_PAD, TALK_WINDOW, bubbleLines, bubbleRectAt, portraitSlot,
+  skillButtonAt, stageSlot,
 } from './layout';
 import { currentSpeaker, pageCount, visibleLines } from './talk';
 import { isStageUnlocked } from './flow';
@@ -216,7 +217,7 @@ export function drawBubble(ctx: CanvasRenderingContext2D, bubble: Bubble, logica
   ctx.font = `${BUBBLE_FONT_PX}px sans-serif`;
   // 1行目のベースラインは、天面のパディング＋フォントの上昇分（実測はできないので概算）
   const firstBaselineY = r.y + BUBBLE_PAD + BUBBLE_FONT_PX * 0.875;
-  bubble.text.split('\n').forEach((line, i) => {
+  bubbleLines(bubble.text).forEach((line, i) => {
     ctx.fillText(line, r.x + BUBBLE_PAD, firstBaselineY + i * BUBBLE_LINE_H);
   });
 }

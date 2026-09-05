@@ -1,3 +1,4 @@
+import { wrapText } from './talk';
 import type { Rect } from './hit';
 import type { Vec2 } from '../core/types';
 
@@ -47,26 +48,35 @@ export function skillButtonAt(logicalPos: { x: number; y: number }): Rect {
 export const BUBBLE_FONT_PX = 16;
 export const BUBBLE_LINE_H = 20;
 export const BUBBLE_PAD = 10;
-/**
- * 吹き出しの幅の上限。これを超えても折り返しも省略もしないため、全角で
- * だいたい18文字を超える行はパネルからはみ出す（今の assets/lines/common.json の
- * 最長行は16文字で収まっている）。長い行を書くときは要注意
- */
-const BUBBLE_MAX_W = 320;
+/** 吹き出しの本文の折り返し幅。長い台詞はここで折り返す */
+const BUBBLE_CONTENT_W = 300;
 /** キャラの中心から吹き出しの下端までの距離。丸（当たり判定は半径32）と重ならない値 */
 const BUBBLE_LIFT = 44;
 
 /**
+ * 幅の見積り。measureText は使わない。当たり判定側が描画コンテキストを
+ * 持たないため。全角前提なので実測とほぼ合う。
+ */
+const measure = (t: string): number => t.length * BUBBLE_FONT_PX;
+
+/**
+ * 吹き出しに実際に描く行。矩形の計算と描画が必ず同じ行を見るように、
+ * 折り返しはこの1本に通す。別々に折り返すと箱から文字がはみ出す。
+ */
+export function bubbleLines(text: string): string[] {
+  return wrapText(text, measure, BUBBLE_CONTENT_W);
+}
+
+/**
  * キャラの頭上に出す吹き出しの矩形。描画と当たり判定の両方がこれを使う。
  * 別々に書くと必ずずれるため、必ずこの1本を通すこと。
- *
- * 幅は文字数からの概算で、measureText は使わない。当たり判定側が
- * 描画コンテキストを持たないため。全角前提なので実測とほぼ合う。
  */
 export function bubbleRectAt(logicalPos: Vec2, text: string): Rect {
-  const lines = text.split('\n');
+  const lines = bubbleLines(text);
   const longest = lines.reduce((n, l) => Math.max(n, l.length), 0);
-  const w = Math.min(BUBBLE_MAX_W, longest * BUBBLE_FONT_PX + BUBBLE_PAD * 2);
+  // 折り返し幅ではなく実際の行長から出す。行頭禁則のぶら下げで
+  // BUBBLE_CONTENT_W を数文字ぶん超える行がありうるため
+  const w = longest * BUBBLE_FONT_PX + BUBBLE_PAD * 2;
   const h = lines.length * BUBBLE_LINE_H + BUBBLE_PAD * 2;
   // 960 は論理解像度の幅。skillButtonAt と同じ書き方に揃えている
   const x = Math.max(8, Math.min(960 - w - 8, logicalPos.x - w / 2));
