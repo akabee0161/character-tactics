@@ -10,14 +10,14 @@ import { escortDefIds } from './render/objectives-view';
 import { isWalkableAt } from './core/field';
 import { makeEffectState, resetEffects, spawnEffects, syncDisplayedHp, tickEffects } from './render/effects';
 import { LOGICAL_H, LOGICAL_W, computeViewport, logicalToMap, mapToLogical, screenToLogical } from './render/viewport';
-import { advanceBubble, currentBubble, enqueue, isBlocking, makeBubbleQueue } from './ui/bubbles';
+import { clearBubbles, dismissBubble, makeBubbleState, pushBubbles, tickBubbles } from './ui/bubbles';
 import { applyStageClear, hasReadIntro, isStageUnlocked, markIntroRead } from './ui/flow';
 import { hitRect, pickUnit } from './ui/hit';
 import { resolveMapGesture } from './ui/input';
 import type { PointerStart } from './ui/input';
 import {
   BTN, TALK_BODY_X, TALK_FONT, TALK_MAX_LINES, TALK_PAD, TALK_WINDOW,
-  portraitSlot, skillButtonAt, stageSlot,
+  bubbleRectAt, portraitSlot, skillButtonAt, stageSlot,
 } from './ui/layout';
 import {
   drawBottomBar, drawBubble, drawDefeat, drawLoadErrors, drawPlacement, drawResult,
@@ -72,7 +72,7 @@ let pendingSkill: string | null = null;
 let result: { gains: XpGain[]; newTitles: string[] } | null = null;
 /** 護衛対象の defId。beginStage で1度だけ作る */
 let escorts: Set<string> = new Set();
-const bubbles = makeBubbleQueue();
+const bubbles = makeBubbleState();
 let talk: TalkState | null = null;
 /** 会話の文字幅測定。ctx を閉じ込めるので talk.ts 側は Canvas を知らない */
 const talkMeasure: Measure = (t) => {
@@ -101,7 +101,7 @@ function beginStage(index: number): void {
   escorts = new Set(escortDefIds(battle.stage));
   selected = null;
   pendingSkill = null;
-  bubbles.items.length = 0;
+  clearBubbles(bubbles);
   resetEffects(effects);
   pointerStart = null;
   dragMap = null;
@@ -125,11 +125,6 @@ function endTalk(): void {
 
 function onPointerDown(ev: PointerEvent): void {
   const p = toLogical(ev);
-
-  if (isBlocking(bubbles)) {
-    advanceBubble(bubbles);
-    return;
-  }
 
   switch (phase) {
     case 'title':
@@ -177,6 +172,7 @@ function onPointerDown(ev: PointerEvent): void {
         pendingSkill = null;
         return;
       }
+      // 1) スキルボタン。吹き出しと重なりうるので操作を先に見る
       if (selected) {
         const unit = battle.units.find((u) => u.uid === selected)!;
         const canTap = !unit.retired && battle.time >= unit.skillCooldownUntil;
@@ -187,6 +183,16 @@ function onPointerDown(ev: PointerEvent): void {
           return;
         }
       }
+      // 2) 吹き出し。当たったらその1つだけ消す
+      for (const b of bubbles.items.values()) {
+        const unit = battle.units.find((u) => u.uid === b.uid);
+        if (!unit) continue;
+        if (hitRect(bubbleRectAt(mapToLogical(unit.pos), b.text), p)) {
+          dismissBubble(bubbles, b.uid);
+          return;
+        }
+      }
+      // 3) マップ操作
       beginMapPointer(battle, p, ev);
       return;
     }
@@ -281,7 +287,7 @@ function update(dt: number): void {
   }
   if (phase !== 'battle' || !battle) return;
   syncDisplayedHp(effects, battle.units, dt);
-  if (isBlocking(bubbles)) return; // 吹き出し中は時間が止まる
+  tickBubbles(bubbles, dt);
 
   accumulator += dt;
   while (accumulator >= FIXED_DT) {
@@ -289,8 +295,7 @@ function update(dt: number): void {
     const batch = commands.splice(0, commands.length);
     step(battle, batch, FIXED_DT);
     spawnEffects(effects, battle.events);
-    enqueue(bubbles, pickDialogue(battle.reg, battle.events));
-    if (isBlocking(bubbles)) break;
+    pushBubbles(bubbles, pickDialogue(battle.reg, battle.events));
   }
 
   if (battle.phase === 'defeat') {
@@ -334,6 +339,10 @@ function render(): void {
       if (battle) {
         drawBattle(ctx, registry, battle, selected, effects, escorts);
         drawBottomBar(ctx, registry, battle, selected, escorts);
+        for (const b of bubbles.items.values()) {
+          const unit = battle.units.find((u) => u.uid === b.uid);
+          if (unit) drawBubble(ctx, b, mapToLogical(unit.pos));
+        }
         if (selected) drawSkillButton(ctx, registry, battle, selected);
       }
       break;
@@ -352,9 +361,6 @@ function render(): void {
     const blocked = !isWalkableAt(battle.grid, dragMap);
     drawDragPreview(ctx, registry, unit.pos, dragMap, unit.defId, blocked);
   }
-
-  const bubble = currentBubble(bubbles);
-  if (bubble) drawBubble(ctx, registry, bubble);
 }
 
 function loop(now: number): void {

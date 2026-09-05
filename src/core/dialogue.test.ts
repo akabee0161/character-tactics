@@ -27,7 +27,10 @@ describe('pickDialogue', () => {
       { type: 'engage', uid: 'p1', defId: 'gau', targetUid: 'e1', targetDefId: 'narazumono', firstMeeting: true },
     ];
     expect(pickDialogue(reg, events)).toEqual([
-      { speaker: { side: 'ally', id: 'gau' }, lineId: 'first:gau:narazumono', text: reg.lines.get('first:gau:narazumono') },
+      {
+        uid: 'p1', speaker: { side: 'ally', id: 'gau' }, lineId: 'first:gau:narazumono',
+        text: reg.lines.get('first:gau:narazumono'),
+      },
     ]);
   });
 
@@ -41,13 +44,18 @@ describe('pickDialogue', () => {
 
   it('スキル・ピンチ・勝利・撤退のセリフが出る', () => {
     const reg = testRegistry();
-    expect(pickDialogue(reg, [
+    const skillReq = pickDialogue(reg, [
       { type: 'skill', uid: 'p2', defId: 'ines', skillId: 'neraiuchi', hits: 0, fromPos: { x: 0, y: 0 }, toPos: { x: 0, y: 0 } },
-    ])[0]!.lineId).toBe('skill:ines');
+    ])[0]!;
+    expect(skillReq.lineId).toBe('skill:ines');
+    expect(skillReq.uid).toBe('p2');
     expect(pickDialogue(reg, [{ type: 'pinch', uid: 'p3', defId: 'mist' }])[0]!.lineId).toBe('pinch:mist');
-    expect(pickDialogue(reg, [
+    // 喋るのは撃退した側 (byUid) であって、撃退された側 (uid: 'g1') ではない
+    const fledReq = pickDialogue(reg, [
       { type: 'unitFled', uid: 'g1', defId: 'garum', byUid: 'p4', byDefId: 'gau' },
-    ])[0]!.lineId).toBe('win:gau');
+    ])[0]!;
+    expect(fledReq.lineId).toBe('win:gau');
+    expect(fledReq.uid).toBe('p4');
     expect(pickDialogue(reg, [
       { type: 'unitRetired', uid: 'p1', defId: 'roran' },
     ])[0]!.lineId).toBe('retire:roran');

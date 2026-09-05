@@ -4,18 +4,18 @@ import { DEFAULT_SKILL_COOLDOWN } from '../core/skills';
 import { PLACEMENT_RADIUS } from '../core/state';
 import { LOGICAL_H, LOGICAL_W, mapToLogical } from '../render/viewport';
 import {
-  BOTTOM_BAR_H, BOTTOM_BAR_Y, BTN, TALK_BODY_X, TALK_FONT, TALK_LINE_H, TALK_PAD,
-  TALK_WINDOW, portraitSlot, skillButtonAt, stageSlot,
+  BOTTOM_BAR_H, BOTTOM_BAR_Y, BTN, BUBBLE_FONT_PX, BUBBLE_LINE_H, TALK_BODY_X, TALK_FONT,
+  TALK_LINE_H, TALK_PAD, TALK_WINDOW, bubbleRectAt, portraitSlot, skillButtonAt, stageSlot,
 } from './layout';
 import { currentSpeaker, pageCount, visibleLines } from './talk';
 import { isStageUnlocked } from './flow';
-import type { DialogueRequest } from '../core/dialogue';
+import type { Bubble } from './bubbles';
 import type { TalkState } from './talk';
 import type { XpGain } from './flow';
 import type { Registry } from '../engine/registry';
 import type { ValidationError } from '../engine/schema';
 import type { SaveData } from '../save/save';
-import type { BattleState } from '../core/types';
+import type { BattleState, Vec2 } from '../core/types';
 import type { Rect } from './hit';
 
 const INK = '#f2efe4';
@@ -197,31 +197,25 @@ export function drawSkillButton(
   return r;
 }
 
-export function drawBubble(ctx: CanvasRenderingContext2D, reg: Registry, req: DialogueRequest): void {
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
-  ctx.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
-
-  const r: Rect = { x: 120, y: 300, w: 720, h: 150 };
+/** 戦闘中の吹き出し。キャラの頭上に出し、時間は止めない */
+export function drawBubble(ctx: CanvasRenderingContext2D, bubble: Bubble, logicalPos: Vec2): void {
+  const r = bubbleRectAt(logicalPos, bubble.text);
   panel(ctx, r, '#f7f3e6');
-  const info = lookupDef(reg, req.speaker.id) ?? { name: req.speaker.id, color: '#888888' };
-  ctx.fillStyle = info.color;
+
+  // 吹き出しの尻尾。キャラの方を指す
+  ctx.fillStyle = '#f7f3e6';
   ctx.beginPath();
-  ctx.arc(r.x + 54, r.y + 60, 30, 0, Math.PI * 2);
+  ctx.moveTo(r.x + r.w / 2 - 8, r.y + r.h);
+  ctx.lineTo(r.x + r.w / 2 + 8, r.y + r.h);
+  ctx.lineTo(r.x + r.w / 2, r.y + r.h + 10);
+  ctx.closePath();
   ctx.fill();
 
   ctx.fillStyle = '#1a1a1a';
-  ctx.font = '20px sans-serif';
-  ctx.fillText(info.name, r.x + 100, r.y + 34);
-  ctx.font = '26px sans-serif';
-  req.text.split('\n').forEach((line, i) => {
-    ctx.fillText(line, r.x + 100, r.y + 74 + i * 36);
+  ctx.font = `${BUBBLE_FONT_PX}px sans-serif`;
+  bubble.text.split('\n').forEach((line, i) => {
+    ctx.fillText(line, r.x + 10, r.y + 24 + i * BUBBLE_LINE_H);
   });
-
-  ctx.font = '18px sans-serif';
-  ctx.fillStyle = '#666';
-  ctx.textAlign = 'right';
-  ctx.fillText('タップで つぎへ', r.x + r.w - 20, r.y + r.h - 18);
-  ctx.textAlign = 'left';
 }
 
 /** 会話フェーズのウィンドウ。背景のマップは呼び出し側が先に描いておく */

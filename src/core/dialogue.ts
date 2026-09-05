@@ -1,7 +1,7 @@
 import type { Registry } from '../engine/registry';
 import type { Speaker, SimEvent, StageDef } from './types';
 
-export type DialogueRequest = { speaker: Speaker; lineId: string; text: string };
+export type DialogueRequest = { uid: string; speaker: Speaker; lineId: string; text: string };
 
 /** 小さいほど先に表示する */
 const PRIORITY = ['rival', 'first', 'skill', 'levelup', 'pinch', 'win', 'retire'] as const;
@@ -10,10 +10,10 @@ function ally(id: string): Speaker {
   return { side: 'ally', id };
 }
 
-function make(reg: Registry, speaker: Speaker, lineId: string): DialogueRequest | null {
+function make(reg: Registry, uid: string, speaker: Speaker, lineId: string): DialogueRequest | null {
   const text = reg.lines.get(lineId);
   if (text === undefined) return null;
-  return { speaker, lineId, text };
+  return { uid, speaker, lineId, text };
 }
 
 export function pickDialogue(reg: Registry, events: SimEvent[]): DialogueRequest[] {
@@ -29,25 +29,26 @@ export function pickDialogue(reg: Registry, events: SimEvent[]): DialogueRequest
         if (!ev.firstMeeting) break;
         // rival があればそちらを優先し、なければ first に落ちる。
         // 特定の敵やキャラを名指しする分岐はここに書かない
-        const rival = make(reg, ally(ev.defId), `rival:${ev.defId}:${ev.targetDefId}`);
+        const rival = make(reg, ev.uid, ally(ev.defId), `rival:${ev.defId}:${ev.targetDefId}`);
         if (rival) push('rival', rival);
-        else push('first', make(reg, ally(ev.defId), `first:${ev.defId}:${ev.targetDefId}`));
+        else push('first', make(reg, ev.uid, ally(ev.defId), `first:${ev.defId}:${ev.targetDefId}`));
         break;
       }
       case 'skill':
-        push('skill', make(reg, ally(ev.defId), `skill:${ev.defId}`));
+        push('skill', make(reg, ev.uid, ally(ev.defId), `skill:${ev.defId}`));
         break;
       case 'levelUp':
-        push('levelup', make(reg, { side: 'ally', id: ev.defId }, `levelup:${ev.defId}`));
+        push('levelup', make(reg, ev.uid, { side: 'ally', id: ev.defId }, `levelup:${ev.defId}`));
         break;
       case 'pinch':
-        push('pinch', make(reg, ally(ev.defId), `pinch:${ev.defId}`));
+        push('pinch', make(reg, ev.uid, ally(ev.defId), `pinch:${ev.defId}`));
         break;
       case 'unitFled':
-        if (ev.byDefId) push('win', make(reg, ally(ev.byDefId), `win:${ev.byDefId}`));
+        // 喋るのは撃退した側なので byUid を使う
+        if (ev.byDefId && ev.byUid) push('win', make(reg, ev.byUid, ally(ev.byDefId), `win:${ev.byDefId}`));
         break;
       case 'unitRetired':
-        push('retire', make(reg, ally(ev.defId), `retire:${ev.defId}`));
+        push('retire', make(reg, ev.uid, ally(ev.defId), `retire:${ev.defId}`));
         break;
       default:
         break;
