@@ -60,13 +60,17 @@ export function pickDialogue(reg: Registry, events: SimEvent[]): DialogueRequest
     .map((f) => f.req);
 }
 
+/** 会話フェーズが読む1行。speaker が null なら地の文 */
+export type TalkLine = { speaker: string | null; text: string };
+
 /** ステージ開始時の会話を、stage.intro の順番どおりに返す */
-export function pickStageIntro(reg: Registry, stage: StageDef): DialogueRequest[] {
-  const found: DialogueRequest[] = [];
-  for (const { speaker, lineId } of stage.intro ?? []) {
-    const side = reg.units.has(speaker) ? 'ally' : 'enemy';
-    const req = make(reg, { side, id: speaker }, lineId);
-    if (req) found.push(req);
+export function pickStageIntro(reg: Registry, stage: StageDef): TalkLine[] {
+  const out: TalkLine[] = [];
+  for (const line of stage.intro ?? []) {
+    // 検証で片方だけが埋まることは保証済み。lines に無い lineId も検証で弾かれている
+    const text = line.text ?? (line.lineId === null ? undefined : reg.lines.get(line.lineId));
+    if (text === undefined) continue;
+    out.push({ speaker: line.speaker, text });
   }
-  return found;
+  return out;
 }

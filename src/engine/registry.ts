@@ -154,10 +154,10 @@ export function buildRegistry(
       });
     });
     stage.intro?.forEach((line, i) => {
-      if (lookupDef(reg, line.speaker) === null) {
+      if (line.speaker !== null && lookupDef(reg, line.speaker) === null) {
         errors.push({ file, path: `intro[${i}].speaker`, reason: `しらない はなして: ${line.speaker}` });
       }
-      if (!reg.lines.has(line.lineId)) {
+      if (line.lineId !== null && !reg.lines.has(line.lineId)) {
         errors.push({ file, path: `intro[${i}].lineId`, reason: `lines に ない id: ${line.lineId}` });
       }
     });

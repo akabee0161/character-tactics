@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { pickDialogue, pickStageIntro } from './dialogue';
 import { testRegistry } from './testing';
 import type { SimEvent } from './types';
+import type { StageDef } from '../engine/schema';
 
 describe('lines', () => {
   it('すべてのセリフが ひらがな・カタカナ のみ', () => {
@@ -148,18 +149,27 @@ describe('levelUp の トリガ', () => {
 });
 
 describe('pickStageIntro', () => {
-  it('intro が定義されていなければ空配列', () => {
-    const reg = testRegistry();
-    const stage = { ...reg.stages[0]!, intro: undefined };
-    expect(pickStageIntro(reg, stage)).toEqual([]);
+  const reg = testRegistry();
+
+  it('lineId を ひいて text に する', () => {
+    const stage = { intro: [{ speaker: 'roran', text: null, lineId: 'stage:stage1:roran' }] } as unknown as StageDef;
+    const r = pickStageIntro(reg, stage);
+    expect(r).toHaveLength(1);
+    expect(r[0]!.speaker).toBe('roran');
+    expect(r[0]!.text).toBe(reg.lines.get('stage:stage1:roran'));
   });
 
-  it('intro の順番どおりに DialogueRequest を返す', () => {
-    const reg = testRegistry();
-    const stage = reg.stages[0]!;
-    expect(pickStageIntro(reg, stage)).toEqual([
-      { speaker: { side: 'ally', id: 'roran' }, lineId: 'stage:stage1:roran', text: reg.lines.get('stage:stage1:roran') },
-      { speaker: { side: 'ally', id: 'gau' }, lineId: 'stage:stage1:gau', text: reg.lines.get('stage:stage1:gau') },
-    ]);
+  it('text の ちょくがきを そのまま つかう', () => {
+    const stage = { intro: [{ speaker: 'gau', text: 'いくぞー', lineId: null }] } as unknown as StageDef;
+    expect(pickStageIntro(reg, stage)).toEqual([{ speaker: 'gau', text: 'いくぞー' }]);
+  });
+
+  it('speaker が null なら 地の文に なる', () => {
+    const stage = { intro: [{ speaker: null, text: 'しずかだ。', lineId: null }] } as unknown as StageDef;
+    expect(pickStageIntro(reg, stage)).toEqual([{ speaker: null, text: 'しずかだ。' }]);
+  });
+
+  it('intro が なければ からの はいれつ', () => {
+    expect(pickStageIntro(reg, {} as unknown as StageDef)).toEqual([]);
   });
 });

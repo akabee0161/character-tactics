@@ -1,6 +1,6 @@
 import { loadRegistry } from './engine/loader';
 import { skillParam } from './engine/registry';
-import { pickDialogue, pickStageIntro } from './core/dialogue';
+import { pickDialogue } from './core/dialogue';
 import { SKILL_EFFECT_IDS } from './core/skills';
 import { beginBattle, createBattleState, placeUnit } from './core/state';
 import { playerUnits, step } from './core/sim';
@@ -126,7 +126,6 @@ function onPointerDown(ev: PointerEvent): void {
         pointerStart = null;
         writeSave(window.localStorage, save); // ステージ開始時点を保存する
         beginBattle(battle);
-        enqueue(bubbles, pickStageIntro(registry, battle.stage));
         phase = 'battle';
         return;
       }

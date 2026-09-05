@@ -350,4 +350,44 @@ describe('validateStageDef', () => {
     expect(r.ok).toBe(true);
     if (r.ok) expect(r.value.intro?.[0]?.speaker).toBe('roran');
   });
+
+  it('intro の speaker は はぶける（地の文）', () => {
+    const r = validateStageDef('stages/x.json', {
+      ...VALID_STAGE, intro: [{ text: 'みちの さきに、けむりが みえる。' }],
+    });
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value.intro![0]).toEqual({ speaker: null, text: 'みちの さきに、けむりが みえる。', lineId: null });
+  });
+
+  it('intro に text を ちょくせつ かける', () => {
+    const r = validateStageDef('stages/x.json', {
+      ...VALID_STAGE, intro: [{ speaker: 'roran', text: 'いくよ' }],
+    });
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value.intro![0]!.text).toBe('いくよ');
+  });
+
+  it('intro の text と lineId を りょうほう かくと 弾く', () => {
+    const r = validateStageDef('stages/x.json', {
+      ...VALID_STAGE, intro: [{ speaker: 'roran', text: 'いくよ', lineId: 'a' }],
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.errors).toContainEqual({
+        file: 'stages/x.json', path: 'intro[0]',
+        reason: 'text と lineId は どちらか いっぽうだけ',
+      });
+    }
+  });
+
+  it('intro に text も lineId も ないと 弾く', () => {
+    const r = validateStageDef('stages/x.json', { ...VALID_STAGE, intro: [{ speaker: 'roran' }] });
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.errors).toContainEqual({
+        file: 'stages/x.json', path: 'intro[0]',
+        reason: 'text か lineId の どちらかが ひつよう',
+      });
+    }
+  });
 });

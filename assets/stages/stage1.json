@@ -34,7 +34,8 @@
   "victory": { "type": "reach", "pos": { "x": 880, "y": 240 }, "radius": 40, "by": "any" },
   "defeat": [{ "type": "unitLost", "defIds": ["roran"] }],
   "intro": [
-    { "speaker": "roran", "lineId": "stage:stage1:roran" },
+    { "text": "みちの さきに、けむりが みえる。" },
+    { "speaker": "roran", "text": "みんな、いくよ。\nまえに すすもう" },
     { "speaker": "gau", "lineId": "stage:stage1:gau" }
   ]
 }
