@@ -1,5 +1,6 @@
 {
   "id": "stage2",
+  "order": 20,
   "name": "みはりの とりで",
   "cell": 32,
   "mapRows": [

@@ -185,6 +185,7 @@ describe('validateLinesFile', () => {
 
 const VALID_STAGE = {
   id: 'stage1',
+  order: 10,
   name: 'はじまりの しま',
   cell: 32,
   mapRows: ['####', '#..#', '#..#', '####'],
@@ -230,6 +231,27 @@ describe('validateStageDef', () => {
     const r = validateStageDef('stages/x.json', { ...VALID_STAGE, placementZone: [] });
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.errors[0]?.path).toBe('placementZone');
+  });
+
+  it('order が ないと 弾く', () => {
+    const { order: _drop, ...missing } = VALID_STAGE;
+    const r = validateStageDef('stages/x.json', missing);
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.errors).toContainEqual({
+        file: 'stages/x.json', path: 'order', reason: 'かずが ひつよう',
+      });
+    }
+  });
+
+  it('order は せいすうでないと 弾く', () => {
+    const r = validateStageDef('stages/x.json', { ...VALID_STAGE, order: 1.5 });
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.errors).toContainEqual({
+        file: 'stages/x.json', path: 'order', reason: 'せいすうが ひつよう',
+      });
+    }
   });
 
   it('未知の ai.kind を弾く', () => {

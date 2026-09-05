@@ -1,5 +1,6 @@
 {
   "id": "stage1",
+  "order": 10,
   "name": "はじまりの みち",
   "cell": 32,
   "mapRows": [

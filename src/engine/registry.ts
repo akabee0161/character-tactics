@@ -9,7 +9,7 @@ import type {
 export type Registry = {
   units: Map<string, UnitDef>;
   enemies: Map<string, EnemyDef>;
-  /** 順序を持つのでこれだけ配列。パスの辞書順 */
+  /** 順序を持つのでこれだけ配列。order の昇順 */
   stages: StageDef[];
   skills: Map<string, SkillDef>;
   titles: TitleDef[];
@@ -88,6 +88,22 @@ export function buildRegistry(
       take(validateTitlesFile(path, raw), (d) => reg.titles.push(...d));
     } else {
       errors.push({ file: path, path: '', reason: 'どの しゅるいの アセットか わからない' });
+    }
+  }
+
+  // ステージの並び順は order で決める。ファイルパスの辞書順に依存すると
+  // stage10 が stage1 と stage2 の間に入る
+  reg.stages.sort((a, b) => a.order - b.order);
+  const seenOrder = new Map<number, string>();
+  for (const s of reg.stages) {
+    const dup = seenOrder.get(s.order);
+    if (dup !== undefined) {
+      errors.push({
+        file: `assets/stages/${s.id}.json`, path: 'order',
+        reason: `order が じゅうふくしている: ${s.order}（${dup} と おなじ）`,
+      });
+    } else {
+      seenOrder.set(s.order, s.id);
     }
   }
 

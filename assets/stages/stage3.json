@@ -1,5 +1,6 @@
 {
   "id": "stage3",
+  "order": 30,
   "name": "ガルムの さいご",
   "cell": 32,
   "mapRows": [

@@ -24,7 +24,7 @@ function makeTestUnit(s: BattleState, def: EnemyDef, pos: Vec2, ai: AiDef): Unit
 // このテストファイルの「移動」系テストが途中で phase を失って固まらないよう、
 // ゴールから遠く離れた位置に置いて自然には撃破されない状態にしておく
 const STAGE: StageDef = {
-  id: 'teststage', name: 'テスト', cell: 32,
+  id: 'teststage', order: 10, name: 'テスト', cell: 32,
   mapRows: ['..........', '..........', '..........'],
   placementZone: [{ pos: { x: 16, y: 16 } }],
   roster: ['roran', 'ines', 'mist', 'gau'],
@@ -41,7 +41,7 @@ const LV1: Record<string, CharProgress> = {
 // AI の くみこみテストは x:400 前後 〜 y:400 前後の座標を つかうため、
 // STAGE(10x3セル)には おさまらない。テストぶんだけ ひろい へやを べつに もつ
 const AI_STAGE: StageDef = {
-  id: 'ai-teststage', name: 'AIテスト', cell: 32,
+  id: 'ai-teststage', order: 10, name: 'AIテスト', cell: 32,
   mapRows: Array.from({ length: 15 }, () => '.'.repeat(30)),
   placementZone: [{ pos: { x: 16, y: 16 } }],
   roster: ['roran', 'ines', 'mist', 'gau'],

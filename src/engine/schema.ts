@@ -289,6 +289,8 @@ export type EnemyPlacement = { defId: string; pos: Vec2; ai: AiDef };
 export type StageDef = {
   /** ファイル名と一致させる。セーブのキーになる */
   id: string;
+  /** ステージの並び順。昇順に並べる。欠番は許すが重複は不可 */
+  order: number;
   name: string;
   cell: number;
   /** '.' 歩ける / '#' 歩けない */
@@ -440,6 +442,7 @@ export function validateStageDef(file: string, raw: unknown): Validated<StageDef
 
   const stage: StageDef = {
     id: requireString(ctx, 'id', o.id) ?? '',
+    order: requireNumber(ctx, 'order', o.order, { min: 1, int: true }) ?? 1,
     name: requireString(ctx, 'name', o.name) ?? '',
     cell,
     mapRows,

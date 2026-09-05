@@ -20,7 +20,7 @@ const INES = {
   attackInterval: 1.2, speed: 50, skillId: null, color: '#c8a04a',
 };
 const STAGE = {
-  id: 'stage1', name: 'はじまりの しま', cell: 32,
+  id: 'stage1', order: 10, name: 'はじまりの しま', cell: 32,
   mapRows: ['####', '#..#', '#..#', '####'],
   placementZone: [{ pos: { x: 48, y: 48 } }],
   roster: ['roran'],
@@ -56,15 +56,6 @@ describe('buildRegistry', () => {
     expect(r.value.enemies.get('narazumono')?.xpReward).toBe(5);
     expect(r.value.stages.map((s) => s.id)).toEqual(['stage1']);
     expect(r.value.lines.get('skill:roran')).toBe('ここは とおさない！');
-  });
-
-  it('ステージは パスの じしょじゅんに ならぶ', () => {
-    const r = buildRegistry(files({
-      'assets/stages/stage2.json': { ...STAGE, id: 'stage2' },
-      'assets/stages/stage0.json': { ...STAGE, id: 'stage0' },
-    }), KNOWN_SKILLS);
-    expect(r.ok).toBe(true);
-    if (r.ok) expect(r.value.stages.map((s) => s.id)).toEqual(['stage0', 'stage1', 'stage2']);
   });
 
   it('複数の lines ファイルを1つに まとめる', () => {
@@ -236,5 +227,36 @@ describe('skillParam', () => {
     expect(skillParam(r.value, 'funbaru', 'duration', 99)).toBe(5);
     expect(skillParam(r.value, 'funbaru', 'nai', 99)).toBe(99);
     expect(skillParam(r.value, 'nai', 'duration', 99)).toBe(99);
+  });
+});
+
+describe('ステージの ならびじゅん', () => {
+  it('order の しょうじゅんに ならぶ（ファイルめいの じしょじゅんに よらない）', () => {
+    const r = buildRegistry(files({
+      'assets/stages/stage1.json': { ...STAGE, id: 'stage1', order: 30 },
+      'assets/stages/stage10.json': { ...STAGE, id: 'stage10', order: 10 },
+      'assets/stages/stage2.json': { ...STAGE, id: 'stage2', order: 20 },
+    }), ['funbaru']);
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value.stages.map((s) => s.id)).toEqual(['stage10', 'stage2', 'stage1']);
+  });
+
+  it('order の けつばんは ゆるす', () => {
+    const r = buildRegistry(files({
+      'assets/stages/stage1.json': { ...STAGE, id: 'stage1', order: 10 },
+      'assets/stages/stage2.json': { ...STAGE, id: 'stage2', order: 900 },
+    }), ['funbaru']);
+    expect(r.ok).toBe(true);
+  });
+
+  it('order の じゅうふくは 弾く', () => {
+    const r = buildRegistry(files({
+      'assets/stages/stage1.json': { ...STAGE, id: 'stage1', order: 10 },
+      'assets/stages/stage2.json': { ...STAGE, id: 'stage2', order: 10 },
+    }), ['funbaru']);
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.errors.some((e) => e.path === 'order' && e.reason.includes('じゅうふく'))).toBe(true);
+    }
   });
 });
