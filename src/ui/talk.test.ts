@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { splitPages, wrapText } from './talk';
+import {
+  TALK_CHARS_PER_SEC, advanceTalk, currentSpeaker, isPageComplete, makeTalkState,
+  pageCount, skipTalk, splitPages, tickTalk, visibleLines, wrapText,
+} from './talk';
+import type { TalkLine } from '../core/dialogue';
 
 /** テスト用の測定。1文字 = 10px とみなす */
 const measure = (t: string): number => t.length * 10;
@@ -66,5 +70,123 @@ describe('splitPages', () => {
 
   it('maxLines が ふなら エラーに する', () => {
     expect(() => splitPages('あ', measure, 1000, -1)).toThrow('maxLines must be positive');
+  });
+});
+
+const LINES: TalkLine[] = [
+  { speaker: 'roran', text: 'あい\nうえ\nおか\nきく' },  // 4行 → maxLines 3 で 2ページ
+  { speaker: null, text: 'しずかだ。' },
+];
+const make = () => makeTalkState(LINES, measure, 1000, 3);
+
+describe('TalkState', () => {
+  it('つくった ちょくごは 1ぎょうめの 1ページめ、0もじ', () => {
+    const s = make();
+    expect(s.index).toBe(0);
+    expect(s.page).toBe(0);
+    expect(s.shown).toBe(0);
+    expect(s.done).toBe(false);
+    expect(pageCount(s)).toBe(2);
+  });
+
+  it('からの はいれつなら さいしょから done', () => {
+    expect(makeTalkState([], measure, 1000, 3).done).toBe(true);
+  });
+
+  it('speaker を ひける。null は 地の文', () => {
+    const s = make();
+    expect(currentSpeaker(s)).toBe('roran');
+    advanceTalk(s, measure, 1000, 3);  // 1ページめを全文表示
+    advanceTalk(s, measure, 1000, 3);  // 2ページめへ
+    advanceTalk(s, measure, 1000, 3);  // 2ページめを全文表示
+    advanceTalk(s, measure, 1000, 3);  // 2ぎょうめへ
+    expect(currentSpeaker(s)).toBeNull();
+  });
+});
+
+describe('tickTalk', () => {
+  it('じかんに おうじて もじが ふえる', () => {
+    const s = make();
+    tickTalk(s, 0.1);
+    expect(s.shown).toBeCloseTo(TALK_CHARS_PER_SEC * 0.1);
+  });
+
+  it('ページの もじすうを こえない', () => {
+    const s = make();
+    tickTalk(s, 100);
+    expect(s.shown).toBe(6);  // 'あい' + 'うえ' + 'おか' = 6文字
+    expect(isPageComplete(s)).toBe(true);
+  });
+
+  it('done なら すすまない', () => {
+    const s = make();
+    skipTalk(s);
+    tickTalk(s, 1);
+    expect(s.shown).toBe(0);
+  });
+});
+
+describe('visibleLines', () => {
+  it('とちゅうまでの ぎょうを かえす', () => {
+    const s = make();
+    s.shown = 3;
+    expect(visibleLines(s)).toEqual(['あい', 'う', '']);
+  });
+
+  it('ぜんぶ ひょうじずみなら ページの ぜんぎょう', () => {
+    const s = make();
+    s.shown = 6;
+    expect(visibleLines(s)).toEqual(['あい', 'うえ', 'おか']);
+  });
+});
+
+describe('advanceTalk の 4ぶんき', () => {
+  it('おくりの とちゅうなら ぜんぶん ひょうじ', () => {
+    const s = make();
+    tickTalk(s, 0.05);
+    advanceTalk(s, measure, 1000, 3);
+    expect(isPageComplete(s)).toBe(true);
+    expect(s.page).toBe(0);
+  });
+
+  it('ひょうじずみで ページが のこっていれば つぎの ページ', () => {
+    const s = make();
+    tickTalk(s, 100);
+    advanceTalk(s, measure, 1000, 3);
+    expect(s.page).toBe(1);
+    expect(s.shown).toBe(0);
+    expect(s.index).toBe(0);
+  });
+
+  it('さいごの ページなら つぎの ぎょうへ', () => {
+    const s = make();
+    tickTalk(s, 100);
+    advanceTalk(s, measure, 1000, 3);  // 2ページめ
+    tickTalk(s, 100);
+    advanceTalk(s, measure, 1000, 3);  // 2ぎょうめ
+    expect(s.index).toBe(1);
+    expect(s.page).toBe(0);
+    expect(s.shown).toBe(0);
+    expect(pageCount(s)).toBe(1);
+  });
+
+  it('さいごの ぎょうまで いくと done', () => {
+    const s = make();
+    for (let i = 0; i < 10; i++) advanceTalk(s, measure, 1000, 3);
+    expect(s.done).toBe(true);
+  });
+
+  it('done の あと よんでも こわれない', () => {
+    const s = make();
+    skipTalk(s);
+    expect(() => advanceTalk(s, measure, 1000, 3)).not.toThrow();
+  });
+});
+
+describe('skipTalk', () => {
+  it('そくざに done に なる', () => {
+    const s = make();
+    skipTalk(s);
+    expect(s.done).toBe(true);
   });
 });
