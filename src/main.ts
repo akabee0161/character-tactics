@@ -1,6 +1,6 @@
 import { loadRegistry } from './engine/loader';
 import { skillParam } from './engine/registry';
-import { pickDialogue } from './core/dialogue';
+import { pickDialogue, pickStageIntro } from './core/dialogue';
 import { SKILL_EFFECT_IDS } from './core/skills';
 import { beginBattle, createBattleState, placeUnit } from './core/state';
 import { playerUnits, step } from './core/sim';
@@ -11,15 +11,20 @@ import { isWalkableAt } from './core/field';
 import { makeEffectState, resetEffects, spawnEffects, syncDisplayedHp, tickEffects } from './render/effects';
 import { LOGICAL_H, LOGICAL_W, computeViewport, logicalToMap, mapToLogical, screenToLogical } from './render/viewport';
 import { advanceBubble, currentBubble, enqueue, isBlocking, makeBubbleQueue } from './ui/bubbles';
-import { applyStageClear, isStageUnlocked } from './ui/flow';
+import { applyStageClear, hasReadIntro, isStageUnlocked, markIntroRead } from './ui/flow';
 import { hitRect, pickUnit } from './ui/hit';
 import { resolveMapGesture } from './ui/input';
 import type { PointerStart } from './ui/input';
-import { BTN, portraitSlot, skillButtonAt, stageSlot } from './ui/layout';
+import {
+  BTN, TALK_BODY_X, TALK_FONT, TALK_MAX_LINES, TALK_PAD, TALK_WINDOW,
+  portraitSlot, skillButtonAt, stageSlot,
+} from './ui/layout';
 import {
   drawBottomBar, drawBubble, drawDefeat, drawLoadErrors, drawPlacement, drawResult,
-  drawSkillButton, drawStageSelect, drawTitle,
+  drawSkillButton, drawStageSelect, drawTalk, drawTitle,
 } from './ui/screens';
+import { advanceTalk, makeTalkState, skipTalk, tickTalk } from './ui/talk';
+import type { Measure, TalkState } from './ui/talk';
 import { loadSave, newSave, writeSave } from './save/save';
 import type { SaveData } from './save/save';
 import type { XpGain } from './ui/flow';
@@ -27,7 +32,7 @@ import type { BattleState, Vec2 } from './core/types';
 
 const FIXED_DT = 1 / 60;
 
-type Phase = 'title' | 'select' | 'placement' | 'battle' | 'result' | 'defeat';
+type Phase = 'title' | 'select' | 'talk' | 'placement' | 'battle' | 'result' | 'defeat';
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d')!;
@@ -68,6 +73,16 @@ let result: { gains: XpGain[]; newTitles: string[] } | null = null;
 /** 護衛対象の defId。beginStage で1度だけ作る */
 let escorts: Set<string> = new Set();
 const bubbles = makeBubbleQueue();
+let talk: TalkState | null = null;
+/** 会話の文字幅測定。ctx を閉じ込めるので talk.ts 側は Canvas を知らない */
+const talkMeasure: Measure = (t) => {
+  ctx.save();
+  ctx.font = TALK_FONT;
+  const w = ctx.measureText(t).width;
+  ctx.restore();
+  return w;
+};
+const talkMaxWidth = TALK_WINDOW.w - TALK_BODY_X - TALK_PAD;
 const effects = makeEffectState();
 const commands: SimCommand[] = [];
 let accumulator = 0;
@@ -92,6 +107,19 @@ function beginStage(index: number): void {
   dragMap = null;
   commands.length = 0;
   accumulator = 0;
+  talk = makeTalkState(
+    pickStageIntro(registry, battle.stage), talkMeasure, talkMaxWidth, TALK_MAX_LINES,
+  );
+  phase = talk.done ? 'placement' : 'talk';
+}
+
+/** 会話フェーズを終える。読み切った記録を残してから配置へ移る */
+function endTalk(): void {
+  const next = markIntroRead(save, stageId);
+  if (next !== save) {
+    save = next;
+    hasSave = writeSave(window.localStorage, save) || hasSave;
+  }
   phase = 'placement';
 }
 
@@ -119,6 +147,14 @@ function onPointerDown(ev: PointerEvent): void {
         if (hitRect(stageSlot(i), p) && isStageUnlocked(registry, save, i)) beginStage(i);
       }
       return;
+
+    case 'talk': {
+      if (!talk) return;
+      if (hasReadIntro(save, stageId) && hitRect(BTN.skip, p)) skipTalk(talk);
+      else advanceTalk(talk, talkMeasure, talkMaxWidth, TALK_MAX_LINES);
+      if (talk.done) endTalk();
+      return;
+    }
 
     case 'placement': {
       if (!battle) return;
@@ -239,6 +275,10 @@ canvas.addEventListener('pointercancel', onPointerCancel);
 
 function update(dt: number): void {
   tickEffects(effects, dt);
+  if (phase === 'talk' && talk) {
+    tickTalk(talk, dt);
+    return;
+  }
   if (phase !== 'battle' || !battle) return;
   syncDisplayedHp(effects, battle.units, dt);
   if (isBlocking(bubbles)) return; // 吹き出し中は時間が止まる
@@ -276,6 +316,12 @@ function render(): void {
       break;
     case 'select':
       drawStageSelect(ctx, registry, save);
+      break;
+    case 'talk':
+      if (battle && talk) {
+        drawBattle(ctx, registry, battle, null, effects, escorts);
+        drawTalk(ctx, registry, talk, hasReadIntro(save, stageId));
+      }
       break;
     case 'placement':
       if (battle) {

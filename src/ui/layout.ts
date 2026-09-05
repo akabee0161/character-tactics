@@ -11,7 +11,17 @@ export const BTN = {
   next: { x: 380, y: 380, w: 200, h: 72 } as Rect,
   retry: { x: 250, y: 380, w: 200, h: 72 } as Rect,
   toSelect: { x: 510, y: 380, w: 200, h: 72 } as Rect,
+  skip: { x: 780, y: 276, w: 140, h: 44 } as Rect,
 } as const;
+
+/** 会話ウィンドウ。論理解像度 960×540 の下部に置く */
+export const TALK_WINDOW = { x: 40, y: 330, w: 880, h: 180 } as Rect;
+/** 本文の描き始め（話者の顔の丸のぶん右へ寄せる）。地の文では TALK_PAD を使う */
+export const TALK_BODY_X = 100;
+export const TALK_PAD = 24;
+export const TALK_LINE_H = 36;
+export const TALK_MAX_LINES = 3;
+export const TALK_FONT = '26px sans-serif';
 
 /** ステージ選択ボタン。3れつ×なんぎょうの グリッド。ステージ数は assets/stages/*.json ぶんだけ ふえる */
 export function stageSlot(index: number): Rect {
