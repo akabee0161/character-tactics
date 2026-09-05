@@ -286,9 +286,19 @@ export type DefeatCond =
 
 export type EnemyPlacement = { defId: string; pos: Vec2; ai: AiDef };
 
+export type IntroLine = {
+  /** null なら地の文。ネームプレートと顔の丸を出さない */
+  speaker: string | null;
+  /** text と lineId は排他。検証で片方だけが埋まることを保証する */
+  text: string | null;
+  lineId: string | null;
+};
+
 export type StageDef = {
   /** ファイル名と一致させる。セーブのキーになる */
   id: string;
+  /** ステージの並び順。昇順に並べる。欠番は許すが重複は不可 */
+  order: number;
   name: string;
   cell: number;
   /** '.' 歩ける / '#' 歩けない */
@@ -298,7 +308,7 @@ export type StageDef = {
   enemies: EnemyPlacement[];
   victory: VictoryCond;
   defeat: DefeatCond[];
-  intro?: { speaker: string; lineId: string }[];
+  intro?: IntroLine[];
 };
 
 function readMapRows(ctx: Ctx, v: unknown): string[] {
@@ -401,6 +411,27 @@ function isWalkableCell(cell: number, mapRows: string[], pos: Vec2): boolean {
   return row !== undefined && cx >= 0 && cx < row.length && row[cx] === '.';
 }
 
+/**
+ * text と lineId は排他にする。片方を優先する暗黙のルールを作ると、
+ * 直したつもりが効いていない事故が起きるため、両方書いたらエラーにする。
+ */
+function readIntroLine(ctx: Ctx, path: string, v: unknown): IntroLine {
+  const o = requireObject(ctx, path, v);
+  if (!o) return { speaker: null, text: null, lineId: null };
+
+  const hasText = o.text !== undefined;
+  const hasLineId = o.lineId !== undefined;
+  if (hasText && hasLineId) fail(ctx, path, 'text と lineId は どちらか いっぽうだけ');
+  else if (!hasText && !hasLineId) fail(ctx, path, 'text か lineId の どちらかが ひつよう');
+
+  return {
+    // speaker は「省略」と「明示的な null」を同じ意味（地の文）として扱う
+    speaker: o.speaker == null ? null : requireString(ctx, `${path}.speaker`, o.speaker),
+    text: hasText ? requireString(ctx, `${path}.text`, o.text) : null,
+    lineId: hasLineId ? requireString(ctx, `${path}.lineId`, o.lineId) : null,
+  };
+}
+
 export function validateStageDef(file: string, raw: unknown): Validated<StageDef> {
   const ctx = makeCtx(file);
   const o = requireObject(ctx, '', raw);
@@ -440,6 +471,7 @@ export function validateStageDef(file: string, raw: unknown): Validated<StageDef
 
   const stage: StageDef = {
     id: requireString(ctx, 'id', o.id) ?? '',
+    order: requireNumber(ctx, 'order', o.order, { min: 1, int: true }) ?? 1,
     name: requireString(ctx, 'name', o.name) ?? '',
     cell,
     mapRows,
@@ -452,14 +484,7 @@ export function validateStageDef(file: string, raw: unknown): Validated<StageDef
 
   if (o.intro !== undefined) {
     const introRaw = requireArray(ctx, 'intro', o.intro) ?? [];
-    stage.intro = introRaw.map((item, i) => {
-      const path = `intro[${i}]`;
-      const l = requireObject(ctx, path, item);
-      return {
-        speaker: (l && requireString(ctx, `${path}.speaker`, l.speaker)) ?? '',
-        lineId: (l && requireString(ctx, `${path}.lineId`, l.lineId)) ?? '',
-      };
-    });
+    stage.intro = introRaw.map((item, i) => readIntroLine(ctx, `intro[${i}]`, item));
   }
 
   return finish(ctx, stage);

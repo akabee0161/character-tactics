@@ -8,7 +8,7 @@ import type { BattleState, CharProgress, Vec2 } from './types';
 // units のうち敵側に常時 1 体だけ入れておく。ゴールから遠く離れた位置に置いて
 // 自然には撃破されない状態にしておく
 const STAGE: StageDef = {
-  id: 'teststage', name: 'テスト', cell: 32,
+  id: 'teststage', order: 10, name: 'テスト', cell: 32,
   mapRows: ['..........', '..........', '..........'],
   placementZone: [{ pos: { x: 16, y: 16 } }],
   roster: ['roran', 'ines', 'mist', 'gau'],

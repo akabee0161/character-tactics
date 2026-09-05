@@ -12,6 +12,8 @@ export type StorageLike = {
 export type SaveData = {
   version: number;
   clearedStageIds: string[];
+  /** 会話を最後まで読み終えたステージの id。「とばす」を出してよいかの判定に使う */
+  readIntroStageIds: string[];
   units: Record<string, CharProgress>;
   counters: Record<string, number>;
   titles: string[];
@@ -33,7 +35,10 @@ function isPlainObject(v: unknown): v is Record<string, unknown> {
 export function newSave(reg: Registry): SaveData {
   const units: Record<string, CharProgress> = {};
   for (const id of reg.units.keys()) units[id] = { level: 1, xp: 0 };
-  return { version: SAVE_VERSION, clearedStageIds: [], units, counters: {}, titles: [] };
+  return {
+    version: SAVE_VERSION, clearedStageIds: [], readIntroStageIds: [],
+    units, counters: {}, titles: [],
+  };
 }
 
 /**
@@ -54,6 +59,15 @@ function reconcile(raw: Record<string, unknown>, reg: Registry): SaveData {
   if (Array.isArray(raw.clearedStageIds)) {
     const known = new Set(reg.stages.map((s) => s.id));
     save.clearedStageIds = raw.clearedStageIds.filter(
+      (id): id is string => typeof id === 'string' && known.has(id),
+    );
+  }
+
+  // 旧セーブにこのフィールドは無い。newSave 由来の [] がそのまま残り、全ステージが未読になる。
+  // フィールドを足すだけなら SAVE_VERSION を上げなくてよいのはこのため
+  if (Array.isArray(raw.readIntroStageIds)) {
+    const known = new Set(reg.stages.map((s) => s.id));
+    save.readIntroStageIds = raw.readIntroStageIds.filter(
       (id): id is string => typeof id === 'string' && known.has(id),
     );
   }

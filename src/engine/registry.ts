@@ -9,7 +9,7 @@ import type {
 export type Registry = {
   units: Map<string, UnitDef>;
   enemies: Map<string, EnemyDef>;
-  /** 順序を持つのでこれだけ配列。パスの辞書順 */
+  /** 順序を持つのでこれだけ配列。order の昇順 */
   stages: StageDef[];
   skills: Map<string, SkillDef>;
   titles: TitleDef[];
@@ -91,6 +91,22 @@ export function buildRegistry(
     }
   }
 
+  // ステージの並び順は order で決める。ファイルパスの辞書順に依存すると
+  // stage10 が stage1 と stage2 の間に入る
+  reg.stages.sort((a, b) => a.order - b.order);
+  const seenOrder = new Map<number, string>();
+  for (const s of reg.stages) {
+    const dup = seenOrder.get(s.order);
+    if (dup !== undefined) {
+      errors.push({
+        file: `assets/stages/${s.id}.json`, path: 'order',
+        reason: `order が じゅうふくしている: ${s.order}（${dup} と おなじ）`,
+      });
+    } else {
+      seenOrder.set(s.order, s.id);
+    }
+  }
+
   // 形が崩れているうちに相互参照を見ても、正しくない指摘が大量に出るだけなので打ち切る
   if (errors.length > 0) return { ok: false, errors };
   if (reg.stages.length === 0) {
@@ -138,10 +154,10 @@ export function buildRegistry(
       });
     });
     stage.intro?.forEach((line, i) => {
-      if (lookupDef(reg, line.speaker) === null) {
+      if (line.speaker !== null && lookupDef(reg, line.speaker) === null) {
         errors.push({ file, path: `intro[${i}].speaker`, reason: `しらない はなして: ${line.speaker}` });
       }
-      if (!reg.lines.has(line.lineId)) {
+      if (line.lineId !== null && !reg.lines.has(line.lineId)) {
         errors.push({ file, path: `intro[${i}].lineId`, reason: `lines に ない id: ${line.lineId}` });
       }
     });

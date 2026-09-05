@@ -1,7 +1,7 @@
 import type { SimEvent, Unit, Vec2 } from '../core/types';
 
 export const HIT_EFFECT_DURATION = 0.25;
-export const DAMAGE_TEXT_DURATION = 0.6;
+export const DAMAGE_TEXT_DURATION = 2.0;
 export const HEAL_TEXT_DURATION = 0.6;
 export const ATTACK_LINE_DURATION = 0.15;
 export const HEAL_RING_DURATION = 0.4;

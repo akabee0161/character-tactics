@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyStageClear, isStageUnlocked } from './flow';
+import { applyStageClear, hasReadIntro, isStageUnlocked, markIntroRead } from './flow';
 import { newSave } from '../save/save';
 import { testRegistry } from '../core/testing';
 import type { BattleState } from '../core/types';
@@ -127,5 +127,32 @@ describe('applyStageClear', () => {
     applyStageClear(reg, save, 'stage1', battleWith({ units: { roran: { level: 4, xp: 3 } } }));
     expect(save.clearedStageIds).toEqual([]);
     expect(save.units.roran).toEqual({ level: 1, xp: 0 });
+  });
+});
+
+describe('既読の きろく', () => {
+  const reg = testRegistry();
+
+  it('きろくが なければ みどく', () => {
+    expect(hasReadIntro(newSave(reg), 'stage1')).toBe(false);
+  });
+
+  it('きろくすると きどくに なる', () => {
+    const s = markIntroRead(newSave(reg), 'stage1');
+    expect(hasReadIntro(s, 'stage1')).toBe(true);
+    expect(hasReadIntro(s, 'stage2')).toBe(false);
+  });
+
+  it('おなじ ステージを 2ど きろくしても ふえない', () => {
+    const once = markIntroRead(newSave(reg), 'stage1');
+    const twice = markIntroRead(once, 'stage1');
+    expect(twice.readIntroStageIds).toEqual(['stage1']);
+    expect(twice).toBe(once);  // 変化がなければ同じ参照を返す
+  });
+
+  it('もとの セーブを かきかえない', () => {
+    const before = newSave(reg);
+    markIntroRead(before, 'stage1');
+    expect(before.readIntroStageIds).toEqual([]);
   });
 });

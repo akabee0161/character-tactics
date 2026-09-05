@@ -185,6 +185,7 @@ describe('validateLinesFile', () => {
 
 const VALID_STAGE = {
   id: 'stage1',
+  order: 10,
   name: 'はじまりの しま',
   cell: 32,
   mapRows: ['####', '#..#', '#..#', '####'],
@@ -230,6 +231,27 @@ describe('validateStageDef', () => {
     const r = validateStageDef('stages/x.json', { ...VALID_STAGE, placementZone: [] });
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.errors[0]?.path).toBe('placementZone');
+  });
+
+  it('order が ないと 弾く', () => {
+    const { order: _drop, ...missing } = VALID_STAGE;
+    const r = validateStageDef('stages/x.json', missing);
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.errors).toContainEqual({
+        file: 'stages/x.json', path: 'order', reason: 'かずが ひつよう',
+      });
+    }
+  });
+
+  it('order は せいすうでないと 弾く', () => {
+    const r = validateStageDef('stages/x.json', { ...VALID_STAGE, order: 1.5 });
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.errors).toContainEqual({
+        file: 'stages/x.json', path: 'order', reason: 'せいすうが ひつよう',
+      });
+    }
   });
 
   it('未知の ai.kind を弾く', () => {
@@ -327,5 +349,53 @@ describe('validateStageDef', () => {
     });
     expect(r.ok).toBe(true);
     if (r.ok) expect(r.value.intro?.[0]?.speaker).toBe('roran');
+  });
+
+  it('intro の speaker は はぶける（地の文）', () => {
+    const r = validateStageDef('stages/x.json', {
+      ...VALID_STAGE, intro: [{ text: 'みちの さきに、けむりが みえる。' }],
+    });
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value.intro![0]).toEqual({ speaker: null, text: 'みちの さきに、けむりが みえる。', lineId: null });
+  });
+
+  it('intro の speaker は あきらかに null と かいても 地の文', () => {
+    const r = validateStageDef('stages/x.json', {
+      ...VALID_STAGE, intro: [{ speaker: null, text: 'みちの さきに、けむりが みえる。' }],
+    });
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value.intro![0]).toEqual({ speaker: null, text: 'みちの さきに、けむりが みえる。', lineId: null });
+  });
+
+  it('intro に text を ちょくせつ かける', () => {
+    const r = validateStageDef('stages/x.json', {
+      ...VALID_STAGE, intro: [{ speaker: 'roran', text: 'いくよ' }],
+    });
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value.intro![0]!.text).toBe('いくよ');
+  });
+
+  it('intro の text と lineId を りょうほう かくと 弾く', () => {
+    const r = validateStageDef('stages/x.json', {
+      ...VALID_STAGE, intro: [{ speaker: 'roran', text: 'いくよ', lineId: 'a' }],
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.errors).toContainEqual({
+        file: 'stages/x.json', path: 'intro[0]',
+        reason: 'text と lineId は どちらか いっぽうだけ',
+      });
+    }
+  });
+
+  it('intro に text も lineId も ないと 弾く', () => {
+    const r = validateStageDef('stages/x.json', { ...VALID_STAGE, intro: [{ speaker: 'roran' }] });
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.errors).toContainEqual({
+        file: 'stages/x.json', path: 'intro[0]',
+        reason: 'text か lineId の どちらかが ひつよう',
+      });
+    }
   });
 });
