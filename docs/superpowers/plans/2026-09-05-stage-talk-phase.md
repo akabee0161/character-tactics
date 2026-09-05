@@ -10,6 +10,8 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-05-stage-talk-phase-design.md`
 
+**すでにこのブランチに入っているもの:** ダメージ数値の表示時間を 0.6 秒 → 2.0 秒に伸ばす修正（`src/render/effects.ts` の `DAMAGE_TEXT_DURATION`）。この計画のタスクには含まれないが、Task 6 と Task 7 の手動確認では**この 2.0 秒が正しい状態**である。短く感じたらこの定数1つで調整する。
+
 ## Global Constraints
 
 - Node.js 22 以上。
