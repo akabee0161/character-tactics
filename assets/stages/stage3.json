@@ -47,5 +47,10 @@
   "intro": [
     { "speaker": "garum", "lineId": "stage:stage3:garum" },
     { "speaker": "roran", "lineId": "stage:stage3:roran" }
+  ],
+  "outro": [
+    { "speaker": "garum", "text": "……まさか、\nきみたちに やぶれるとは" },
+    { "speaker": "roran", "text": "もう だれのことも\nおびやかさないで" },
+    { "text": "とりでに あさひが さした。" }
   ]
 }

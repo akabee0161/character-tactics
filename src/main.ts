@@ -1,7 +1,7 @@
 import { imageUrls, loadRegistry } from './engine/loader';
 import { makeImageCache } from './render/images';
 import { skillParam } from './engine/registry';
-import { pickDialogue, pickStageIntro } from './core/dialogue';
+import { pickDialogue, pickStageIntro, pickStageOutro } from './core/dialogue';
 import { SKILL_EFFECT_IDS } from './core/skills';
 import { beginBattle, createBattleState, placeUnit } from './core/state';
 import { playerUnits, step } from './core/sim';
@@ -33,7 +33,7 @@ import type { BattleState, Vec2 } from './core/types';
 
 const FIXED_DT = 1 / 60;
 
-type Phase = 'title' | 'select' | 'talk' | 'placement' | 'battle' | 'result' | 'defeat';
+type Phase = 'title' | 'select' | 'talk' | 'placement' | 'battle' | 'outro' | 'result' | 'defeat';
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d')!;
@@ -125,6 +125,15 @@ function endTalk(): void {
   phase = 'placement';
 }
 
+/** 勝利の後始末。会話があってもなくても、必ずここを1度だけ通す */
+function finishStage(state: BattleState): void {
+  const r = applyStageClear(registry, save, stageId, state);
+  save = r.save;
+  hasSave = writeSave(window.localStorage, save) || hasSave;
+  result = { gains: r.gains, newTitles: r.newTitles };
+  phase = 'result';
+}
+
 function onPointerDown(ev: PointerEvent): void {
   const p = toLogical(ev);
 
@@ -150,6 +159,15 @@ function onPointerDown(ev: PointerEvent): void {
       if (hasReadIntro(save, stageId) && hitRect(BTN.skip, p)) skipTalk(talk);
       else advanceTalk(talk, talkMeasure, talkMaxWidth, TALK_MAX_LINES);
       if (talk.done) endTalk();
+      return;
+    }
+
+    case 'outro': {
+      if (!talk || !battle) return;
+      // クリア済みのステージ（2周目以降）だけ「とばす」を出す
+      if (save.clearedStageIds.includes(stageId) && hitRect(BTN.skip, p)) skipTalk(talk);
+      else advanceTalk(talk, talkMeasure, talkMaxWidth, TALK_MAX_LINES);
+      if (talk.done) finishStage(battle);
       return;
     }
 
@@ -288,7 +306,7 @@ canvas.addEventListener('pointercancel', onPointerCancel);
 
 function update(dt: number): void {
   tickEffects(effects, dt);
-  if (phase === 'talk' && talk) {
+  if ((phase === 'talk' || phase === 'outro') && talk) {
     tickTalk(talk, dt);
     return;
   }
@@ -308,11 +326,12 @@ function update(dt: number): void {
   if (battle.phase === 'defeat') {
     phase = 'defeat';
   } else if (battle.phase === 'victory') {
-    const r = applyStageClear(registry, save, stageId, battle);
-    save = r.save;
-    hasSave = writeSave(window.localStorage, save) || hasSave;
-    result = { gains: r.gains, newTitles: r.newTitles };
-    phase = 'result';
+    clearBubbles(bubbles);   // 会話の邪魔になるので消す。時間は止まっている
+    talk = makeTalkState(
+      pickStageOutro(registry, battle.stage), talkMeasure, talkMaxWidth, TALK_MAX_LINES,
+    );
+    if (talk.done) finishStage(battle);
+    else phase = 'outro';
   }
 }
 
@@ -333,6 +352,12 @@ function render(): void {
       if (battle && talk) {
         drawBattle(ctx, registry, battle, null, effects, escorts, images);
         drawTalk(ctx, registry, talk, hasReadIntro(save, stageId), images);
+      }
+      break;
+    case 'outro':
+      if (battle && talk) {
+        drawBattle(ctx, registry, battle, null, effects, escorts, images);
+        drawTalk(ctx, registry, talk, save.clearedStageIds.includes(stageId), images);
       }
       break;
     case 'placement':

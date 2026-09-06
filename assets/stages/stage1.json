@@ -46,5 +46,9 @@
     { "text": "みちの さきに、けむりが みえる。" },
     { "speaker": "roran", "text": "みんな、いくよ。\nまえに すすもう" },
     { "speaker": "gau", "lineId": "stage:stage1:gau" }
+  ],
+  "outro": [
+    { "text": "けむりは もう みえない。" },
+    { "speaker": "roran", "text": "ここまで これた。\nつぎへ いこう" }
   ]
 }

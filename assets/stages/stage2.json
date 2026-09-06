@@ -43,5 +43,9 @@
     { "defId": "tatemochi",  "pos": { "x": 240, "y": 144 }, "ai": { "kind": "aggressive" } }
   ],
   "victory": { "type": "reach", "pos": { "x": 240, "y": 48 }, "radius": 40, "by": "any" },
-  "defeat": [{ "type": "unitLost", "defIds": ["roran"] }]
+  "defeat": [{ "type": "unitLost", "defIds": ["roran"] }],
+  "outro": [
+    { "speaker": "gau", "text": "とりでを ぬけたぞ！" },
+    { "speaker": "ines", "text": "みはりは もう いない。\nさきを いそぎましょう" }
+  ]
 }
