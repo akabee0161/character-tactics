@@ -1,4 +1,5 @@
-import { loadRegistry } from './engine/loader';
+import { imageUrls, loadRegistry } from './engine/loader';
+import { makeImageCache } from './render/images';
 import { skillParam } from './engine/registry';
 import { pickDialogue, pickStageIntro } from './core/dialogue';
 import { SKILL_EFFECT_IDS } from './core/skills';
@@ -84,6 +85,8 @@ const talkMeasure: Measure = (t) => {
 };
 const talkMaxWidth = TALK_WINDOW.w - TALK_BODY_X - TALK_PAD;
 const effects = makeEffectState();
+const images = makeImageCache(imageUrls());
+void images;
 const commands: SimCommand[] = [];
 let accumulator = 0;
 let lastTime = performance.now();

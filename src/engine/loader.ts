@@ -11,6 +11,19 @@ export function assetFiles(): Record<string, unknown> {
   return import.meta.glob('/assets/**/*.json', { eager: true, import: 'default' });
 }
 
+/**
+ * 画像もビルド時に取り込む。JSON と同じく base 付きの URL に解決されるので、
+ * パス付きルートの Workers 上でも壊れない
+ */
+export function imageUrls(): Record<string, string> {
+  return import.meta.glob('/assets/images/*.png', { eager: true, query: '?url', import: 'default' });
+}
+
+/** '/assets/images/tate.png' → 'tate.png' */
+export function imageNames(urls: Record<string, string>): string[] {
+  return Object.keys(urls).map((p) => p.split('/').pop() ?? '');
+}
+
 export function loadRegistry(knownSkillIds: readonly string[]): Validated<Registry> {
-  return buildRegistry(assetFiles(), knownSkillIds);
+  return buildRegistry(assetFiles(), knownSkillIds, imageNames(imageUrls()));
 }
