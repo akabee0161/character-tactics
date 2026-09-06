@@ -6,7 +6,7 @@ import { LOGICAL_H, LOGICAL_W, mapToLogical } from '../render/viewport';
 import {
   BOTTOM_PANEL_Y, BTN, BUBBLE_FONT_PX, BUBBLE_LINE_H, BUBBLE_PAD, SKILL_BUTTON, TALK_BODY_X,
   TALK_FONT, TALK_LINE_H, TALK_PAD, TALK_WINDOW, bubbleLines, bubbleRectAt, portraitSlot,
-  rosterSlot, stageSlot,
+  roleBadgeIn, rosterSlot, stageSlot,
 } from './layout';
 import { skillButtonState } from './skillbutton';
 import { currentSpeaker, pageCount, visibleLines } from './talk';
@@ -22,6 +22,7 @@ import type { Rect } from './hit';
 
 const INK = '#f2efe4';
 const PANEL = 'rgba(16, 24, 32, 0.88)';
+const FALLBACK_DEF = { name: '', color: '#888888', role: '', sprites: { role: null, face: null, map: null } };
 
 function panel(ctx: CanvasRenderingContext2D, r: Rect, fill = PANEL): void {
   ctx.fillStyle = fill;
@@ -141,7 +142,7 @@ export function drawBottomBar(
       const r = portraitSlot(i);
       panel(ctx, r, selected === unit.uid ? '#3a5f7d' : '#18222c');
 
-      const def = lookupDef(reg, unit.defId) ?? { name: unit.defId, color: '#888888' };
+      const def = lookupDef(reg, unit.defId) ?? FALLBACK_DEF;
       ctx.globalAlpha = unit.retired ? 0.4 : 1;
       ctx.fillStyle = def.color;
       ctx.beginPath();
@@ -151,6 +152,11 @@ export function drawBottomBar(
       ctx.fillStyle = INK;
       ctx.font = '18px sans-serif';
       ctx.fillText(def.name, r.x + 42, r.y + 28);
+
+      const badge = roleBadgeIn(r);
+      ctx.fillStyle = '#ffd479';
+      ctx.font = '14px sans-serif';
+      ctx.fillText(def.role, badge.x, badge.y + 18);
 
       ctx.fillStyle = '#000';
       ctx.fillRect(r.x + 8, r.y + 60, 113, 7);

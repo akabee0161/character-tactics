@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   BOTTOM_PANEL_Y, BTN, BUBBLE_FONT_PX, BUBBLE_LINE_H, BUBBLE_PAD, SKILL_BUTTON, TALK_WINDOW,
-  bubbleLines, bubbleRectAt, portraitSlot, rosterSlot, stageSlot,
+  bubbleLines, bubbleRectAt, portraitSlot, roleBadgeIn, rosterSlot, stageSlot,
 } from './layout';
 import { LOGICAL_H, LOGICAL_W, MAP_ORIGIN } from '../render/viewport';
 import { testRegistry } from '../core/testing';
@@ -125,6 +125,21 @@ describe('たてがたの レイアウト', () => {
     for (let i = 0; i < 4; i++) expect(inScreen(rosterSlot(i))).toBe(true);
     expect(rosterSlot(1).x).toBe(rosterSlot(0).x);
     expect(rosterSlot(1).y).toBeGreaterThan(rosterSlot(0).y);
+  });
+
+  it('クラスの わくは ポートレートの なかに ある', () => {
+    const slot = portraitSlot(0);
+    const badge = roleBadgeIn(slot);
+    expect(badge.x).toBeGreaterThanOrEqual(slot.x);
+    expect(badge.y).toBeGreaterThanOrEqual(slot.y);
+    expect(badge.x + badge.w).toBeLessThanOrEqual(slot.x + slot.w);
+    expect(badge.y + badge.h).toBeLessThanOrEqual(slot.y + slot.h);
+  });
+
+  it('クラスの わくは HPバーと かさならない', () => {
+    const slot = portraitSlot(0);
+    // drawBottomBar は HP バーを slot.y + 60 に描く
+    expect(roleBadgeIn(slot).y + roleBadgeIn(slot).h).toBeLessThanOrEqual(slot.y + 60);
   });
 });
 

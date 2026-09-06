@@ -47,6 +47,15 @@ export function portraitSlot(index: number): Rect {
   return { x: 6 + index * 133, y: 858, w: 129, h: 80 };
 }
 
+/**
+ * ポートレートの中でクラス（役割）を出す場所。
+ * 画像・プレースホルダの文字・テストの3者が必ずこの1本を見る。
+ * 別々に持つと、画像を入れたときだけ位置がずれる
+ */
+export function roleBadgeIn(slot: Rect): Rect {
+  return { x: slot.x + 42, y: slot.y + 32, w: 84, h: 26 };
+}
+
 export const BUBBLE_FONT_PX = 16;
 export const BUBBLE_LINE_H = 20;
 export const BUBBLE_PAD = 10;
