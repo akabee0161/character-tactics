@@ -58,10 +58,11 @@ export function hasThreatWithinMelee(pos: Vec2, threats: { pos: Vec2 }[]): boole
   return threats.some((t) => distance(pos, t.pos) <= MELEE_RANGE);
 }
 
+/** 遠距離職は接近されると弱い、という一貫したルールにする */
 export function effectiveInterval(
   base: number,
   attackKind: AttackKind,
   meleeThreat: boolean,
 ): number {
-  return attackKind === 'bow' && meleeThreat ? base * 2 : base;
+  return attackKind !== 'melee' && meleeThreat ? base * 2 : base;
 }

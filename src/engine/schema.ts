@@ -1,7 +1,7 @@
 export type Vec2 = { x: number; y: number };
-export type AttackKind = 'melee' | 'bow';
+export type AttackKind = 'melee' | 'bow' | 'magic';
 
-export const ATTACK_KINDS: readonly AttackKind[] = ['melee', 'bow'];
+export const ATTACK_KINDS: readonly AttackKind[] = ['melee', 'bow', 'magic'];
 
 export type ValidationError = { file: string; path: string; reason: string };
 export type Validated<T> = { ok: true; value: T } | { ok: false; errors: ValidationError[] };

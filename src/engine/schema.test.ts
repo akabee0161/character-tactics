@@ -52,9 +52,16 @@ describe('validateUnitDef', () => {
   });
 
   it('未知の attack を弾き、許される値を理由に含める', () => {
-    const r = validateUnitDef('units/roran.json', { ...VALID_UNIT, attack: 'magic' });
+    const r = validateUnitDef('units/roran.json', { ...VALID_UNIT, attack: 'fire' });
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.errors[0]?.reason).toContain('melee');
+  });
+
+  it('attack に magic を かける', () => {
+    const r = validateUnitDef('units/roran.json', { ...VALID_UNIT, attack: 'magic' });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.value.attack).toBe('magic');
   });
 
   it('エラーは1つ目で打ち切らず、すべて集める', () => {

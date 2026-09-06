@@ -44,6 +44,13 @@ describe('computeDamage', () => {
     // (8 + 2) - 4 = 6 -> ふんばりで 3
     expect(computeDamage({ ...base, power: 8, guard: 4, bondBonus: 2, targetFunbaru: true })).toBe(3);
   });
+
+  it('まほうには bowDamageCap が きかない', () => {
+    expect(computeDamage({
+      power: 10, guard: 1, attackKind: 'magic', bowDamageCap: 2,
+      bondBonus: 0, neraiuchi: false, targetFunbaru: false,
+    })).toBe(9);
+  });
 });
 
 describe('nearestWithin', () => {
@@ -89,5 +96,10 @@ describe('effectiveInterval', () => {
 
   it('近接は密着されていても変わらない', () => {
     expect(effectiveInterval(1.6, 'melee', true)).toBeCloseTo(1.6);
+  });
+
+  it('まほうも きんせつされると こうげきかんかくが ばいに なる', () => {
+    expect(effectiveInterval(2.4, 'magic', true)).toBeCloseTo(4.8);
+    expect(effectiveInterval(2.4, 'magic', false)).toBeCloseTo(2.4);
   });
 });
