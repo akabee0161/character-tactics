@@ -4,6 +4,7 @@ import {
   bubbleLines, bubbleRectAt, portraitSlot, rosterSlot, stageSlot,
 } from './layout';
 import { LOGICAL_H, LOGICAL_W, MAP_ORIGIN } from '../render/viewport';
+import { testRegistry } from '../core/testing';
 
 describe('bubbleRectAt', () => {
   it('キャラの まうえに でる', () => {
@@ -125,4 +126,15 @@ describe('たてがたの レイアウト', () => {
     expect(rosterSlot(1).x).toBe(rosterSlot(0).x);
     expect(rosterSlot(1).y).toBeGreaterThan(rosterSlot(0).y);
   });
+});
+
+describe('ステージが マップりょういきに おさまる', () => {
+  for (const stage of testRegistry().stages) {
+    it(`${stage.id} が はみださない`, () => {
+      const w = (stage.mapRows[0]?.length ?? 0) * stage.cell;
+      const h = stage.mapRows.length * stage.cell;
+      expect(MAP_ORIGIN.x + w).toBeLessThanOrEqual(LOGICAL_W);
+      expect(MAP_ORIGIN.y + h).toBeLessThanOrEqual(BOTTOM_PANEL_Y);
+    });
+  }
 });

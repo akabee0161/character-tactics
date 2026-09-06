@@ -317,12 +317,12 @@ describe('ウェーブの さくじょ', () => {
   it('step は battle フェーズでだけ すすむ', () => {
     const { state } = realStageFresh();
     const enemy = state.units.find((u) => u.side === 'enemy')!;
-    const before = enemy.pos.x;
+    const before = { ...enemy.pos };
     step(state, [], 0.5); // placement のまま
-    expect(enemy.pos.x).toBe(before);
+    expect(enemy.pos).toEqual(before);
     beginBattle(state);
     step(state, [], 0.5);
-    expect(enemy.pos.x).not.toBe(before);
+    expect(enemy.pos).not.toEqual(before);
   });
 
   it('じかんが たっても 敵が ふえない', () => {

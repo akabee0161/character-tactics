@@ -190,16 +190,16 @@ describe('かけぬける', () => {
 
   it('歩けない目的地なら発動しない', () => {
     const reg = testRegistry();
-    // row6（y:192-224）の col14-16（x:448-544）を壁にする
+    // row6（y:192-224）の col6-8（x:192-288）を壁にする
     const stage: StageDef = {
       ...reg.stages[0]!,
       mapRows: reg.stages[0]!.mapRows.map((row, y) =>
-        y === 6 ? `${row.slice(0, 14)}###${row.slice(17)}` : row,
+        y === 6 ? `${row.slice(0, 6)}###${row.slice(9)}` : row,
       ),
     };
     const s = fresh(stage);
     const gau = unitOf(s, 'gau');
-    expect(useSkill(s, gau.uid, { x: 480, y: 208 })).toBe(false);
+    expect(useSkill(s, gau.uid, { x: 224, y: 208 })).toBe(false);
     expect(canUseSkill(s, gau.uid)).toBe(true);
   });
 
@@ -208,14 +208,14 @@ describe('かけぬける', () => {
     const stage: StageDef = {
       ...reg.stages[0]!,
       mapRows: reg.stages[0]!.mapRows.map((row, y) =>
-        y === 6 ? `${row.slice(0, 14)}###${row.slice(17)}` : row,
+        y === 6 ? `${row.slice(0, 6)}###${row.slice(9)}` : row,
       ),
     };
     const s = fresh(stage);
     const gau = unitOf(s, 'gau');
-    gau.pos = { x: 400, y: 208 };
-    expect(useSkill(s, gau.uid, { x: 600, y: 208 })).toBe(false);
-    expect(unitOf(s, 'gau').pos).toEqual({ x: 400, y: 208 });
+    gau.pos = { x: 96, y: 208 };
+    expect(useSkill(s, gau.uid, { x: 400, y: 208 })).toBe(false);
+    expect(unitOf(s, 'gau').pos).toEqual({ x: 96, y: 208 });
     expect(canUseSkill(s, gau.uid)).toBe(true);
   });
 
