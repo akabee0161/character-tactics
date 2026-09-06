@@ -1,6 +1,10 @@
 import { distance } from './field';
 import { MELEE_RANGE } from './constants';
-import type { AttackKind, Vec2 } from './types';
+import type { AttackKind, Unit, Vec2 } from './types';
+
+export function isFunbaruActive(unit: Unit, time: number): boolean {
+  return time < unit.funbaruUntil;
+}
 
 export type DamageParams = {
   power: number;

@@ -1,15 +1,14 @@
 import { AI_BEHAVIORS } from './ai';
 import { bondSupporters } from './bonds';
-import { computeDamage, effectiveInterval, hasThreatWithinMelee, nearestWithin } from './combat';
+import { computeDamage, effectiveInterval, hasThreatWithinMelee, isFunbaruActive, nearestWithin } from './combat';
+import { PINCH_RATIO } from './constants';
 import { accumulate } from './counters';
 import { computeFlowField, distance, flowDirection, hasLineOfSight, isWalkableAt } from './field';
 import { dropUnitField, fieldToStatic, fieldToUnit } from './fields';
 import { awardXpForDefeats } from './growth';
 import { updateObjectives } from './objectives';
-import { isFunbaruActive, useSkill } from './skills';
+import { useSkill } from './skills';
 import type { BattleState, FlowField, Unit, Vec2 } from './types';
-
-export const PINCH_RATIO = 0.3;
 
 export function playerUnits(state: BattleState): Unit[] {
   return state.units.filter((u) => u.side === 'player' && !u.retired);

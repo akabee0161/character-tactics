@@ -11,10 +11,6 @@ export const OMAJINAI_HEAL = 12;
 export const KAKENUKERU_DAMAGE = 5;
 export const DEFAULT_SKILL_COOLDOWN = 10;
 
-export function isFunbaruActive(unit: Unit, time: number): boolean {
-  return time < unit.funbaruUntil;
-}
-
 function isPathWalkable(state: BattleState, from: Vec2, dest: Vec2): boolean {
   const step = state.grid.cell / 2;
   const steps = Math.max(1, Math.ceil(distance(from, dest) / step));
