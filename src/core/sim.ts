@@ -49,8 +49,10 @@ export function step(state: BattleState, commands: SimCommand[], dt: number): vo
   updateAi(state);
   updateEngagements(state, movedThisTick);
   moveUnits(state, dt);
-  resolveAttacks(state, dt);
+  // 発射で追加された飛翔体は次の tick まで進めない。同じ tick で着弾させると、
+  // 至近距離で撃ったときに飛翔体が1フレームも描画されないままダメージが入る
   updateProjectiles(state, dt);
+  resolveAttacks(state, dt);
   resolveRemoval(state);
   awardXpForDefeats(state);
   updateObjectives(state);

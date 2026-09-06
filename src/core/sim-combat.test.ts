@@ -59,6 +59,20 @@ function engageAndAttack(s: BattleState, dt = 1.7): void {
   step(s, [], dt);
 }
 
+/**
+ * 飛翔体（弓・魔法）は発射と着弾が別 tick になったため、大きな dt を 1 回渡すだけでは
+ * 着弾まで進まないことがある。1/60 刻みで積み上げて同じ経過時間を再現する
+ */
+function advanceFine(s: BattleState, totalDt: number): void {
+  let remaining = totalDt;
+  const step60 = 1 / 60;
+  while (remaining > 1e-9) {
+    const dt = Math.min(step60, remaining);
+    step(s, [], dt);
+    remaining -= dt;
+  }
+}
+
 describe('攻撃の解決', () => {
   it('攻撃間隔ごとに 1 回ダメージが入る', () => {
     const s = fresh();
@@ -104,7 +118,7 @@ describe('攻撃の解決', () => {
     unitOf(s, 'ines').pos = { x: 16, y: 16 };
     const e = spawnEnemy(s, 'tatemochi', { x: 100, y: 16 });
     step(s, [], 0.01);
-    step(s, [], 2.3);
+    advanceFine(s, 2.3);
     expect(e.hp).toBe(19);
   });
 
@@ -114,7 +128,7 @@ describe('攻撃の解決', () => {
     ines.pos = { x: 16, y: 16 };
     const e = spawnEnemy(s, 'tatemochi', { x: 100, y: 16 });
     step(s, [{ type: 'skill', uid: ines.uid }], 0.01);
-    step(s, [], 2.3);
+    advanceFine(s, 2.3);
     expect(e.hp).toBe(20 - 10); // (8-3)*2
     expect(unitOf(s, 'ines').neraiuchiArmed).toBe(false);
   });
@@ -124,9 +138,9 @@ describe('攻撃の解決', () => {
     unitOf(s, 'ines').pos = { x: 16, y: 16 };
     const e = spawnEnemy(s, 'narazumono', { x: 32, y: 16 });
     step(s, [], 0.01);
-    step(s, [], 2.3);
+    advanceFine(s, 2.3);
     expect(e.hp).toBe(12); // まだ撃てない
-    step(s, [], 2.2);
+    advanceFine(s, 2.2);
     expect(e.hp).toBe(12 - 7);
   });
 
@@ -185,7 +199,7 @@ describe('撃破と撤退', () => {
     ines.pos = { x: 16, y: 16 };
     spawnEnemy(s, 'narazumono', { x: 100, y: 16 }, 5);
     step(s, [{ type: 'skill', uid: ines.uid }], 0.01);
-    step(s, [], 2.3);
+    advanceFine(s, 2.3);
     expect(s.counters['kill:neraiuchi']).toBe(1);
   });
 
@@ -246,6 +260,31 @@ describe('ひしょうたい', () => {
     }
     expect(s.projectiles.length).toBeGreaterThan(0);
     expect(enemy.hp).toBe(hp);
+  });
+
+  it('ちかくで うっても うった tick では ダメージに ならない(はっしゃと ちゃくだんは べつの tick)', () => {
+    const s = fresh();
+    const ines = unitOf(s, 'ines');
+    ines.pos = { x: 16, y: 16 };
+    // ゆみの 1 tick ぶんの いどうきょり(480 * 1/60 = 8px)より ちかい きょり
+    const enemy = spawnEnemy(s, 'narazumono', { x: 20, y: 16 });
+    const hp = enemy.hp;
+
+    // みっちゃく(距離4px < MELEE_RANGE)ぶんの攻撃間隔ばい増(2.2秒 -> 4.4秒)を待つ
+    let firedAt = -1;
+    for (let i = 0; i < 400; i++) {
+      step(s, [], 1 / 60);
+      if (s.projectiles.length > 0) { firedAt = i; break; }
+    }
+    expect(firedAt).toBeGreaterThanOrEqual(0);
+    // はっしゃした その tick では ちゃくだんせず、ダメージも まだ はいらない
+    expect(s.projectiles.length).toBeGreaterThan(0);
+    expect(enemy.hp).toBe(hp);
+
+    // つぎの tick で ちゃくだんする
+    step(s, [], 1 / 60);
+    expect(s.projectiles.length).toBe(0);
+    expect(enemy.hp).toBeLessThan(hp);
   });
 });
 
