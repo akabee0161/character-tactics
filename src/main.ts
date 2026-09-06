@@ -182,23 +182,7 @@ function onPointerDown(ev: PointerEvent): void {
         else commands.push({ type: 'skill', uid: selected });
         return;
       }
-      // 2) 吹き出し。当たったらその1つだけ消す
-      //    ただしユニットのタップ円と重なるときは操作を優先する。吹き出しは自分の丸とは
-      //    重ならない位置に出るが、すぐ上に立っている別のユニットの丸とは重なりうる
-      const overUnit = pickUnit(playerUnits(battle), logicalToMap(p)) !== null;
-      if (!overUnit) {
-        // 描画は items の挿入順（先が下、後が上）。当たり判定も同じ順で見えている
-        // ものを優先するため逆順にする
-        for (const b of [...bubbles.items.values()].reverse()) {
-          const unit = battle.units.find((u) => u.uid === b.uid);
-          if (!unit) continue;
-          if (hitRect(bubbleRectAt(mapToLogical(unit.pos), b.text), p)) {
-            dismissBubble(bubbles, b.uid);
-            return;
-          }
-        }
-      }
-      // 3) マップ操作
+      // 2) マップ操作
       beginMapPointer(battle, p, ev);
       return;
     }
@@ -212,6 +196,16 @@ function onPointerDown(ev: PointerEvent): void {
       else if (hitRect(BTN.toSelect, p)) phase = 'select';
       return;
   }
+}
+
+/** その論理座標に出ている吹き出しを探す。描画は挿入順（後が上）なので、逆順に見る */
+function bubbleAt(state: BattleState, p: Vec2): string | null {
+  for (const b of [...bubbles.items.values()].reverse()) {
+    const unit = state.units.find((u) => u.uid === b.uid);
+    if (!unit) continue;
+    if (hitRect(bubbleRectAt(mapToLogical(unit.pos), b.text), p)) return b.uid;
+  }
+  return null;
 }
 
 function beginMapPointer(state: BattleState, p: Vec2, ev: PointerEvent): void {
@@ -235,6 +229,8 @@ function beginMapPointer(state: BattleState, p: Vec2, ev: PointerEvent): void {
     startMap,
     wasSelected: uid !== null && selected === uid,
     pointerId: ev.pointerId,
+    // ユニットを掴んでいるときは吹き出しを見ない。操作のほうが優先
+    bubbleUid: uid === null ? bubbleAt(state, p) : null,
   };
   dragMap = startMap;
   canvas.setPointerCapture(ev.pointerId);
@@ -264,6 +260,9 @@ function onPointerUp(ev: PointerEvent): void {
       return;
     case 'deselect':
       selected = null;
+      return;
+    case 'dismissBubble':
+      dismissBubble(bubbles, g.uid);
       return;
     case 'moveUnit':
       if (phase === 'battle') commands.push({ type: 'move', uid: g.uid, dest: g.dest });
