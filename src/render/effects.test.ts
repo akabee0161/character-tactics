@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  ATTACK_LINE_DURATION, BOND_PULSE_DURATION, DAMAGE_TEXT_DURATION, DEFEAT_DURATION, HEAL_BEAM_DURATION,
+  BOND_PULSE_DURATION, DAMAGE_TEXT_DURATION, DEFEAT_DURATION, HEAL_BEAM_DURATION,
   HEAL_RING_DURATION, HEAL_TEXT_DURATION, HIT_EFFECT_DURATION, HP_BAR_CATCHUP_RATE,
   SKILL_CAST_DURATION, TRAIL_DURATION,
   makeEffectState, resetEffects, spawnEffects, syncDisplayedHp, tickEffects,
@@ -68,18 +68,14 @@ describe('spawnEffects', () => {
     expect(state.items.filter((i) => i.kind === 'hit')).toHaveLength(2);
   });
 
-  it('bow の hit は attackLine も追加する', () => {
+  it('ゆみの ヒットで せんの えんしゅつは でない(ひしょうたいが あるため)', () => {
     const state = makeEffectState();
-    spawnEffects(state, [hitEvent({ attackKind: 'bow', sourcePos: { x: 100, y: 20 }, targetPos: { x: 10, y: 20 } })]);
-    expect(state.items).toContainEqual({
-      kind: 'attackLine', from: { x: 100, y: 20 }, to: { x: 10, y: 20 }, ttl: ATTACK_LINE_DURATION,
-    });
-  });
-
-  it('melee の hit は attackLine を追加しない', () => {
-    const state = makeEffectState();
-    spawnEffects(state, [hitEvent({ attackKind: 'melee' })]);
-    expect(state.items.some((i) => i.kind === 'attackLine')).toBe(false);
+    spawnEffects(state, [{
+      type: 'hit', targetUid: 'e1', targetPos: { x: 10, y: 10 }, amount: 3,
+      sourceUid: 'p1', sourceDefId: 'ines', attackKind: 'bow',
+      sourcePos: { x: 0, y: 0 }, neraiuchi: false,
+    }]);
+    expect(state.items.some((e) => (e.kind as string) === 'attackLine')).toBe(false);
   });
 
   it('kakenukeru の skill イベントから trail を追加する', () => {

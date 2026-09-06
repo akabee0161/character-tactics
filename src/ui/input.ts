@@ -12,12 +12,18 @@ export type PointerStart = {
   wasSelected: boolean;
   /** このジェスチャを開始した指/ポインターの識別子。マルチタッチ時に他の指のイベントと区別するために使う */
   pointerId: number;
+  /**
+   * ポインターを下ろした位置にあった吹き出しの uid。地面でも吹き出しでもなければ null。
+   * ユニットの上に下ろしたときは常に null（操作を吹き出しより優先する）
+   */
+  bubbleUid: string | null;
 };
 
 export type MapGesture =
   | { type: 'none' }
   | { type: 'select'; uid: string }
   | { type: 'deselect' }
+  | { type: 'dismissBubble'; uid: string }
   | { type: 'moveUnit'; uid: string; dest: Vec2 };
 
 /**
@@ -30,6 +36,11 @@ export function resolveMapGesture(
   selected: string | null,
 ): MapGesture {
   const moved = distance(start.startMap, endMap) > TAP_SLOP;
+
+  // 吹き出しを消すのはタップのときだけ。ドラッグは移動指示として通す
+  if (!moved && start.bubbleUid !== null) {
+    return { type: 'dismissBubble', uid: start.bubbleUid };
+  }
 
   if (start.uid !== null) {
     if (moved) return { type: 'moveUnit', uid: start.uid, dest: endMap };

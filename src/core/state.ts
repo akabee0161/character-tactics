@@ -92,6 +92,8 @@ export function createBattleState(
     counters: {},
     rng: makeRng(seed),
     nextEnemyUid,
+    projectiles: [],
+    nextProjectileId: 1,
   };
 }
 
@@ -119,4 +121,5 @@ export function beginBattle(state: BattleState): void {
   state.events = [];
   state.time = 0;
   state.phase = 'battle';
+  state.projectiles = [];
 }

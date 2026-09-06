@@ -52,9 +52,16 @@ describe('validateUnitDef', () => {
   });
 
   it('未知の attack を弾き、許される値を理由に含める', () => {
-    const r = validateUnitDef('units/roran.json', { ...VALID_UNIT, attack: 'magic' });
+    const r = validateUnitDef('units/roran.json', { ...VALID_UNIT, attack: 'fire' });
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.errors[0]?.reason).toContain('melee');
+  });
+
+  it('attack に magic を かける', () => {
+    const r = validateUnitDef('units/roran.json', { ...VALID_UNIT, attack: 'magic' });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.value.attack).toBe('magic');
   });
 
   it('エラーは1つ目で打ち切らず、すべて集める', () => {
@@ -67,6 +74,29 @@ describe('validateUnitDef', () => {
     const r = validateUnitDef('units/bad.json', [1, 2, 3]);
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.errors[0]?.path).toBe('');
+  });
+
+  it('sprites を しょうりゃくすると すべて null に なる', () => {
+    const r = validateUnitDef('assets/units/roran.json', VALID_UNIT);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.value.sprites).toEqual({ role: null, face: null, map: null });
+  });
+
+  it('sprites に ファイルめいを かける', () => {
+    const r = validateUnitDef('assets/units/roran.json', {
+      ...VALID_UNIT, sprites: { role: 'tate.png', face: 'roran-face.png', map: null },
+    });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.value.sprites).toEqual({ role: 'tate.png', face: 'roran-face.png', map: null });
+  });
+
+  it('sprites の あたいが もじれつでも null でも ないと エラー', () => {
+    const r = validateUnitDef('assets/units/roran.json', { ...VALID_UNIT, sprites: { role: 3 } });
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.errors[0]?.path).toBe('sprites.role');
   });
 });
 
@@ -397,5 +427,21 @@ describe('validateStageDef', () => {
         reason: 'text か lineId の どちらかが ひつよう',
       });
     }
+  });
+
+  it('outro を かける', () => {
+    const r = validateStageDef('assets/stages/stage1.json', { ...VALID_STAGE, outro: [{ text: 'おわり' }] });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.value.outro).toEqual([{ speaker: null, text: 'おわり', lineId: null }]);
+  });
+
+  it('outro でも text と lineId の りょうほうは かけない', () => {
+    const r = validateStageDef('assets/stages/stage1.json', {
+      ...VALID_STAGE, outro: [{ text: 'あ', lineId: 'い' }],
+    });
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.errors.some((e) => e.path === 'outro[0]')).toBe(true);
   });
 });

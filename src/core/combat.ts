@@ -1,6 +1,10 @@
 import { distance } from './field';
 import { MELEE_RANGE } from './constants';
-import type { AttackKind, Vec2 } from './types';
+import type { AttackKind, Unit, Vec2 } from './types';
+
+export function isFunbaruActive(unit: Unit, time: number): boolean {
+  return time < unit.funbaruUntil;
+}
 
 export type DamageParams = {
   power: number;
@@ -54,10 +58,11 @@ export function hasThreatWithinMelee(pos: Vec2, threats: { pos: Vec2 }[]): boole
   return threats.some((t) => distance(pos, t.pos) <= MELEE_RANGE);
 }
 
+/** 遠距離職は接近されると弱い、という一貫したルールにする */
 export function effectiveInterval(
   base: number,
   attackKind: AttackKind,
   meleeThreat: boolean,
 ): number {
-  return attackKind === 'bow' && meleeThreat ? base * 2 : base;
+  return attackKind !== 'melee' && meleeThreat ? base * 2 : base;
 }

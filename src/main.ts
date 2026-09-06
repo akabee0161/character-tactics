@@ -1,6 +1,7 @@
-import { loadRegistry } from './engine/loader';
+import { imageUrls, loadRegistry } from './engine/loader';
+import { makeImageCache } from './render/images';
 import { skillParam } from './engine/registry';
-import { pickDialogue, pickStageIntro } from './core/dialogue';
+import { pickDialogue, pickStageIntro, pickStageOutro } from './core/dialogue';
 import { SKILL_EFFECT_IDS } from './core/skills';
 import { beginBattle, createBattleState, placeUnit } from './core/state';
 import { playerUnits, step } from './core/sim';
@@ -16,8 +17,8 @@ import { hitRect, pickUnit } from './ui/hit';
 import { resolveMapGesture } from './ui/input';
 import type { PointerStart } from './ui/input';
 import {
-  BTN, TALK_BODY_X, TALK_FONT, TALK_MAX_LINES, TALK_PAD, TALK_WINDOW,
-  bubbleRectAt, portraitSlot, skillButtonAt, stageSlot,
+  BTN, SKILL_BUTTON, TALK_BODY_X, TALK_FONT, TALK_MAX_LINES, TALK_PAD, TALK_WINDOW,
+  bubbleRectAt, portraitSlot, stageSlot,
 } from './ui/layout';
 import {
   drawBottomBar, drawBubble, drawDefeat, drawLoadErrors, drawPlacement, drawResult,
@@ -32,7 +33,7 @@ import type { BattleState, Vec2 } from './core/types';
 
 const FIXED_DT = 1 / 60;
 
-type Phase = 'title' | 'select' | 'talk' | 'placement' | 'battle' | 'result' | 'defeat';
+type Phase = 'title' | 'select' | 'talk' | 'placement' | 'battle' | 'outro' | 'result' | 'defeat';
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d')!;
@@ -84,6 +85,7 @@ const talkMeasure: Measure = (t) => {
 };
 const talkMaxWidth = TALK_WINDOW.w - TALK_BODY_X - TALK_PAD;
 const effects = makeEffectState();
+const images = makeImageCache(imageUrls());
 const commands: SimCommand[] = [];
 let accumulator = 0;
 let lastTime = performance.now();
@@ -123,6 +125,15 @@ function endTalk(): void {
   phase = 'placement';
 }
 
+/** 勝利の後始末。会話があってもなくても、必ずここを1度だけ通す */
+function finishStage(state: BattleState): void {
+  const r = applyStageClear(registry, save, stageId, state);
+  save = r.save;
+  hasSave = writeSave(window.localStorage, save) || hasSave;
+  result = { gains: r.gains, newTitles: r.newTitles };
+  phase = 'result';
+}
+
 function onPointerDown(ev: PointerEvent): void {
   const p = toLogical(ev);
 
@@ -151,9 +162,18 @@ function onPointerDown(ev: PointerEvent): void {
       return;
     }
 
+    case 'outro': {
+      if (!talk || !battle) return;
+      // クリア済みのステージ（2周目以降）だけ「とばす」を出す
+      if (save.clearedStageIds.includes(stageId) && hitRect(BTN.skip, p)) skipTalk(talk);
+      else advanceTalk(talk, talkMeasure, talkMaxWidth, TALK_MAX_LINES);
+      if (talk.done) finishStage(battle);
+      return;
+    }
+
     case 'placement': {
       if (!battle) return;
-      if (hitRect(BTN.start, p)) {
+      if (hitRect(SKILL_BUTTON, p)) {
         pointerStart = null;
         writeSave(window.localStorage, save); // ステージ開始時点を保存する
         beginBattle(battle);
@@ -172,34 +192,17 @@ function onPointerDown(ev: PointerEvent): void {
         pendingSkill = null;
         return;
       }
-      // 1) スキルボタン。吹き出しと重なりうるので操作を先に見る
-      if (selected) {
-        const unit = battle.units.find((u) => u.uid === selected)!;
-        const canTap = !unit.retired && battle.time >= unit.skillCooldownUntil;
-        if (canTap && hitRect(skillButtonAt(mapToLogical(unit.pos)), p)) {
-          pointerStart = null;
-          if (skillParam(battle.reg, unit.skillId ?? '', 'needsDest', 0) === 1) pendingSkill = selected;
-          else commands.push({ type: 'skill', uid: selected });
-          return;
-        }
+      // 1) スキルボタン。下パネルにあるのでマップ操作とは重ならない
+      if (hitRect(SKILL_BUTTON, p)) {
+        pointerStart = null;
+        if (selected === null) return;
+        const unit = battle.units.find((u) => u.uid === selected);
+        if (!unit || unit.retired || battle.time < unit.skillCooldownUntil) return;
+        if (skillParam(battle.reg, unit.skillId ?? '', 'needsDest', 0) === 1) pendingSkill = selected;
+        else commands.push({ type: 'skill', uid: selected });
+        return;
       }
-      // 2) 吹き出し。当たったらその1つだけ消す
-      //    ただしユニットのタップ円と重なるときは操作を優先する。吹き出しは自分の丸とは
-      //    重ならない位置に出るが、すぐ上に立っている別のユニットの丸とは重なりうる
-      const overUnit = pickUnit(playerUnits(battle), logicalToMap(p)) !== null;
-      if (!overUnit) {
-        // 描画は items の挿入順（先が下、後が上）。当たり判定も同じ順で見えている
-        // ものを優先するため逆順にする
-        for (const b of [...bubbles.items.values()].reverse()) {
-          const unit = battle.units.find((u) => u.uid === b.uid);
-          if (!unit) continue;
-          if (hitRect(bubbleRectAt(mapToLogical(unit.pos), b.text), p)) {
-            dismissBubble(bubbles, b.uid);
-            return;
-          }
-        }
-      }
-      // 3) マップ操作
+      // 2) マップ操作
       beginMapPointer(battle, p, ev);
       return;
     }
@@ -213,6 +216,16 @@ function onPointerDown(ev: PointerEvent): void {
       else if (hitRect(BTN.toSelect, p)) phase = 'select';
       return;
   }
+}
+
+/** その論理座標に出ている吹き出しを探す。描画は挿入順（後が上）なので、逆順に見る */
+function bubbleAt(state: BattleState, p: Vec2): string | null {
+  for (const b of [...bubbles.items.values()].reverse()) {
+    const unit = state.units.find((u) => u.uid === b.uid);
+    if (!unit) continue;
+    if (hitRect(bubbleRectAt(mapToLogical(unit.pos), b.text), p)) return b.uid;
+  }
+  return null;
 }
 
 function beginMapPointer(state: BattleState, p: Vec2, ev: PointerEvent): void {
@@ -236,6 +249,8 @@ function beginMapPointer(state: BattleState, p: Vec2, ev: PointerEvent): void {
     startMap,
     wasSelected: uid !== null && selected === uid,
     pointerId: ev.pointerId,
+    // ユニットを掴んでいるときは吹き出しを見ない。操作のほうが優先
+    bubbleUid: uid === null ? bubbleAt(state, p) : null,
   };
   dragMap = startMap;
   canvas.setPointerCapture(ev.pointerId);
@@ -266,6 +281,9 @@ function onPointerUp(ev: PointerEvent): void {
     case 'deselect':
       selected = null;
       return;
+    case 'dismissBubble':
+      dismissBubble(bubbles, g.uid);
+      return;
     case 'moveUnit':
       if (phase === 'battle') commands.push({ type: 'move', uid: g.uid, dest: g.dest });
       else placeUnit(battle, g.uid, g.dest);
@@ -288,7 +306,7 @@ canvas.addEventListener('pointercancel', onPointerCancel);
 
 function update(dt: number): void {
   tickEffects(effects, dt);
-  if (phase === 'talk' && talk) {
+  if ((phase === 'talk' || phase === 'outro') && talk) {
     tickTalk(talk, dt);
     return;
   }
@@ -308,11 +326,12 @@ function update(dt: number): void {
   if (battle.phase === 'defeat') {
     phase = 'defeat';
   } else if (battle.phase === 'victory') {
-    const r = applyStageClear(registry, save, stageId, battle);
-    save = r.save;
-    hasSave = writeSave(window.localStorage, save) || hasSave;
-    result = { gains: r.gains, newTitles: r.newTitles };
-    phase = 'result';
+    clearBubbles(bubbles);   // 会話の邪魔になるので消す。時間は止まっている
+    talk = makeTalkState(
+      pickStageOutro(registry, battle.stage), talkMeasure, talkMaxWidth, TALK_MAX_LINES,
+    );
+    if (talk.done) finishStage(battle);
+    else phase = 'outro';
   }
 }
 
@@ -327,34 +346,40 @@ function render(): void {
       drawTitle(ctx, hasSave);
       break;
     case 'select':
-      drawStageSelect(ctx, registry, save);
+      drawStageSelect(ctx, registry, save, images);
       break;
     case 'talk':
       if (battle && talk) {
-        drawBattle(ctx, registry, battle, null, effects, escorts);
-        drawTalk(ctx, registry, talk, hasReadIntro(save, stageId));
+        drawBattle(ctx, registry, battle, null, effects, escorts, images);
+        drawTalk(ctx, registry, talk, hasReadIntro(save, stageId), images);
+      }
+      break;
+    case 'outro':
+      if (battle && talk) {
+        drawBattle(ctx, registry, battle, null, effects, escorts, images);
+        drawTalk(ctx, registry, talk, save.clearedStageIds.includes(stageId), images);
       }
       break;
     case 'placement':
       if (battle) {
-        drawBattle(ctx, registry, battle, selected, effects, escorts);
+        drawBattle(ctx, registry, battle, selected, effects, escorts, images);
         drawPlacement(ctx, battle);
-        drawBottomBar(ctx, registry, battle, selected, escorts);
+        drawBottomBar(ctx, registry, battle, selected, escorts, images);
       }
       break;
     case 'battle':
       if (battle) {
-        drawBattle(ctx, registry, battle, selected, effects, escorts);
-        drawBottomBar(ctx, registry, battle, selected, escorts);
+        drawBattle(ctx, registry, battle, selected, effects, escorts, images);
+        drawBottomBar(ctx, registry, battle, selected, escorts, images);
         for (const b of bubbles.items.values()) {
           const unit = battle.units.find((u) => u.uid === b.uid);
           if (unit) drawBubble(ctx, b, mapToLogical(unit.pos));
         }
-        if (selected) drawSkillButton(ctx, registry, battle, selected);
+        drawSkillButton(ctx, registry, battle, selected);
       }
       break;
     case 'result':
-      if (result) drawResult(ctx, registry, result.gains, result.newTitles);
+      if (result) drawResult(ctx, registry, result.gains, result.newTitles, images);
       break;
     case 'defeat':
       drawDefeat(ctx);
@@ -366,7 +391,7 @@ function render(): void {
   if (battle && dragPhaseOk && dragUid !== null && dragMap !== null) {
     const unit = battle.units.find((u) => u.uid === dragUid)!;
     const blocked = !isWalkableAt(battle.grid, dragMap);
-    drawDragPreview(ctx, registry, unit.pos, dragMap, unit.defId, blocked);
+    drawDragPreview(ctx, registry, unit.pos, dragMap, unit.defId, blocked, images);
   }
 }
 

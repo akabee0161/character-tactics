@@ -1,22 +1,24 @@
 import { AI_BEHAVIORS } from './ai';
 import { bondSupporters } from './bonds';
-import { computeDamage, effectiveInterval, hasThreatWithinMelee, nearestWithin } from './combat';
+import { effectiveInterval, hasThreatWithinMelee, nearestWithin } from './combat';
 import { accumulate } from './counters';
+import { applyDamage } from './damage';
 import { computeFlowField, distance, flowDirection, hasLineOfSight, isWalkableAt } from './field';
 import { dropUnitField, fieldToStatic, fieldToUnit } from './fields';
 import { awardXpForDefeats } from './growth';
 import { updateObjectives } from './objectives';
-import { isFunbaruActive, useSkill } from './skills';
-import type { BattleState, FlowField, Unit, Vec2 } from './types';
-
-export const PINCH_RATIO = 0.3;
+import { spawnProjectile, updateProjectiles } from './projectiles';
+import { useSkill } from './skills';
+import type { BattleState, FlowField, HitSource, Unit, Vec2 } from './types';
 
 export function playerUnits(state: BattleState): Unit[] {
   return state.units.filter((u) => u.side === 'player' && !u.retired);
 }
 
 export function hostilesOf(state: BattleState, self: Unit): Unit[] {
-  return state.units.filter((u) => u.side !== self.side && !u.retired);
+  // hp <= 0 は resolveRemoval がまだ retired にしていない、同じ tick で倒れた直後の状態。
+  // これを含めると、死んだ直後の敵がまだ近接脅威や AI の標的として扱われてしまう
+  return state.units.filter((u) => u.side !== self.side && !u.retired && u.hp > 0);
 }
 
 export function unitByUid(state: BattleState, uid: string): Unit | undefined {
@@ -49,6 +51,9 @@ export function step(state: BattleState, commands: SimCommand[], dt: number): vo
   updateAi(state);
   updateEngagements(state, movedThisTick);
   moveUnits(state, dt);
+  // 発射で追加された飛翔体は次の tick まで進めない。同じ tick で着弾させると、
+  // 至近距離で撃ったときに飛翔体が1フレームも描画されないままダメージが入る
+  updateProjectiles(state, dt);
   resolveAttacks(state, dt);
   resolveRemoval(state);
   awardXpForDefeats(state);
@@ -161,9 +166,19 @@ function moveTowardGoal(state: BattleState, u: Unit, dt: number): void {
   u.pos = { x: u.pos.x + dir.x * stepLen, y: u.pos.y + dir.y * stepLen };
 }
 
+/**
+ * プレイヤーが出した移動指示は交戦より優先する。
+ * 指示した移動が途中で勝手に止まると、プレイヤーの意図が黙って消える。
+ * 攻撃は交戦しているかぎり続くので、歩きながら撃つ形になる
+ */
+function hasOrderedMove(u: Unit): boolean {
+  return u.controller === 'player' && u.goalPos !== null;
+}
+
 function moveUnits(state: BattleState, dt: number): void {
   for (const u of state.units) {
-    if (u.retired || u.engagedWith !== null) continue;
+    if (u.retired) continue;
+    if (u.engagedWith !== null && !hasOrderedMove(u)) continue;
     moveTowardGoal(state, u, dt);
   }
 }
@@ -172,18 +187,22 @@ function resolveAttacks(state: BattleState, dt: number): void {
   const byUid = new Map(state.units.map((u) => [u.uid, u]));
 
   for (const u of state.units) {
-    if (u.retired) continue;
+    // hp <= 0 は resolveRemoval がまだ retired にしていない状態。飛翔体の着弾を
+    // resolveAttacks の前に処理するようにしたため、着弾で倒れたユニットが同じ
+    // tick でまだ反撃できてしまう。retired と合わせて hp も見て弾く
+    if (u.retired || u.hp <= 0) continue;
     u.attackCooldown -= dt;
     if (!u.combat || u.engagedWith === null) continue;
     const target = byUid.get(u.engagedWith);
-    if (!target || target.retired) continue;
+    if (!target || target.retired || target.hp <= 0) continue;
 
     const hostiles = hostilesOf(state, u);
     const interval = effectiveInterval(u.attackInterval, u.attack, hasThreatWithinMelee(u.pos, hostiles));
     if (u.attackCooldown > 0) continue;
 
-    // 絆は味方どうしの支援なので、同じ side の生存ユニットだけを見る
-    const allies = state.units.filter((o) => o.side === u.side);
+    // 絆は味方どうしの支援なので、同じ side の生存ユニットだけを見る。
+    // hp <= 0 の味方は resolveRemoval 前でも支援者に含めない
+    const allies = state.units.filter((o) => o.side === u.side && o.hp > 0);
     const supporters = bondSupporters(state.reg, u.uid, u.defId, u.pos, allies.map((o) => ({
       id: o.defId, pos: o.pos, retired: o.retired, uid: o.uid,
     })));
@@ -196,35 +215,15 @@ function resolveAttacks(state: BattleState, dt: number): void {
       });
     }
 
-    const neraiuchi = u.neraiuchiArmed;
-    const before = target.hp;
-    const dmg = computeDamage({
-      power: u.power,
-      guard: target.guard,
-      attackKind: u.attack,
-      bowDamageCap: target.bowDamageCap,
-      bondBonus: bonus,
-      neraiuchi,
-      targetFunbaru: isFunbaruActive(target, state.time),
-    });
-    target.hp -= dmg;
-    target.lastHitBy = u.uid;
-    target.lastHitNeraiuchi = neraiuchi;
+    const source: HitSource = {
+      uid: u.uid, defId: u.defId, attack: u.attack, pos: { ...u.pos },
+      neraiuchi: u.neraiuchiArmed, power: u.power, bondBonus: bonus,
+    };
     u.neraiuchiArmed = false;
     u.attackCooldown = interval;
-    state.events.push({
-      type: 'hit', targetUid: target.uid, targetPos: { ...target.pos }, amount: dmg,
-      sourceUid: u.uid, sourceDefId: u.defId, attackKind: u.attack, sourcePos: { ...u.pos }, neraiuchi,
-    });
 
-    // ピンチのセリフは操作できる味方にだけ出す
-    if (target.side === 'player' && target.hp > 0 && !target.pinchShown) {
-      const ratio = target.hp / target.maxHp;
-      if (ratio < PINCH_RATIO && before / target.maxHp >= PINCH_RATIO) {
-        target.pinchShown = true;
-        state.events.push({ type: 'pinch', uid: target.uid, defId: target.defId });
-      }
-    }
+    if (u.attack === 'melee') applyDamage(state, source, target);
+    else spawnProjectile(state, source, target);
   }
 }
 

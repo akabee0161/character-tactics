@@ -93,6 +93,27 @@ export type SimEvent =
   | { type: 'bondSupport'; targetUid: string; targetDefId: string; supporterUids: string[]; pos: Vec2 }
   | { type: 'levelUp'; uid: string; defId: string; level: number };
 
+/** 攻撃を出した時点で固定される攻撃側の値。近接も飛翔体も同じものを通す */
+export type HitSource = {
+  uid: string;
+  defId: string;
+  attack: AttackKind;
+  /** 攻撃を出した位置。飛翔体では発射地点 */
+  pos: Vec2;
+  neraiuchi: boolean;
+  power: number;
+  bondBonus: number;
+};
+
+export type Projectile = {
+  id: string;
+  kind: Exclude<AttackKind, 'melee'>;
+  /** 発射時に固定した攻撃側の値。防御側は着弾時に見る */
+  source: HitSource;
+  targetUid: string;
+  pos: Vec2;
+};
+
 export type BattleState = {
   reg: Registry;
   stage: StageDef;
@@ -106,4 +127,6 @@ export type BattleState = {
   counters: Record<string, number>;
   rng: Rng;
   nextEnemyUid: number;
+  projectiles: Projectile[];
+  nextProjectileId: number;
 };

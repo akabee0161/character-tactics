@@ -5,7 +5,7 @@ import type { PointerStart } from './input';
 const at = (x: number, y: number) => ({ x, y });
 
 function start(uid: PointerStart['uid'], wasSelected = false): PointerStart {
-  return { uid, startMap: at(100, 100), wasSelected, pointerId: 0 };
+  return { uid, startMap: at(100, 100), wasSelected, pointerId: 0, bubbleUid: null };
 }
 
 describe('resolveMapGesture', () => {
@@ -41,5 +41,29 @@ describe('resolveMapGesture', () => {
     const end = at(100 + TAP_SLOP, 100);
     expect(resolveMapGesture(start(null), end, 'ines'))
       .toEqual({ type: 'moveUnit', uid: 'ines', dest: end });
+  });
+});
+
+describe('ふきだしの タップ', () => {
+  const start = (over: Partial<PointerStart> = {}): PointerStart => ({
+    uid: null, startMap: { x: 100, y: 100 }, wasSelected: false, pointerId: 1,
+    bubbleUid: null, ...over,
+  });
+
+  it('ふきだしの うえで タップしたら ふきだしを けす', () => {
+    const g = resolveMapGesture(start({ bubbleUid: 'p1' }), { x: 100, y: 100 }, 'p2');
+    expect(g).toEqual({ type: 'dismissBubble', uid: 'p1' });
+  });
+
+  it('ふきだしの うえから ドラッグしたら ふきだしを けさない', () => {
+    const g = resolveMapGesture(
+      start({ uid: 'p1', bubbleUid: null }), { x: 300, y: 300 }, 'p1',
+    );
+    expect(g).toEqual({ type: 'moveUnit', uid: 'p1', dest: { x: 300, y: 300 } });
+  });
+
+  it('ふきだしが なければ これまでどおり', () => {
+    const g = resolveMapGesture(start(), { x: 100, y: 100 }, 'p2');
+    expect(g).toEqual({ type: 'moveUnit', uid: 'p2', dest: { x: 100, y: 100 } });
   });
 });

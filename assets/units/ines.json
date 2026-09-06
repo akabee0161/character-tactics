@@ -5,5 +5,6 @@
   "attack": "bow", "range": 160,
   "attackInterval": 2.2, "speed": 60,
   "skillId": "neraiuchi",
-  "color": "#3faa6a"
+  "color": "#3faa6a",
+  "sprites": { "role": null, "face": null, "map": null }
 }

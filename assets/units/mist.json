@@ -1,9 +1,10 @@
 {
-  "id": "mist", "name": "ミスト", "role": "いやし",
+  "id": "mist", "name": "ミスト", "role": "まほう",
   "combat": true,
-  "maxHp": 22, "power": 4, "guard": 3,
-  "attack": "melee", "range": 24,
-  "attackInterval": 1.6, "speed": 60,
+  "maxHp": 22, "power": 5, "guard": 3,
+  "attack": "magic", "range": 140,
+  "attackInterval": 2.4, "speed": 60,
   "skillId": "omajinai",
-  "color": "#c86fb0"
+  "color": "#c86fb0",
+  "sprites": { "role": null, "face": null, "map": null }
 }

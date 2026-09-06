@@ -1,13 +1,16 @@
 import { bondSupporters } from '../core/bonds';
-import { isFunbaruActive } from '../core/skills';
+import { isFunbaruActive } from '../core/combat';
 import { playerUnits } from '../core/sim';
 import { lookupDef } from '../engine/registry';
 import type { Registry } from '../engine/registry';
 import type { StageDef } from '../engine/schema';
+import type { ImageCache } from './images';
 import { sightCircles } from './objectives-view';
-import { LOGICAL_H, LOGICAL_W, mapToLogical } from './viewport';
+import { drawMapUnit } from './sprites';
+import type { SpriteDef } from './sprites';
+import { LOGICAL_H, LOGICAL_W, MAP_ORIGIN, mapToLogical } from './viewport';
 import {
-  ATTACK_LINE_DURATION, BOND_PULSE_DURATION, DAMAGE_TEXT_DURATION, DEFEAT_DURATION,
+  BOND_PULSE_DURATION, DAMAGE_TEXT_DURATION, DEFEAT_DURATION,
   HEAL_BEAM_DURATION, HEAL_RING_DURATION, HEAL_TEXT_DURATION, HIT_EFFECT_DURATION,
   KNOCKBACK_DURATION, SKILL_CAST_DURATION, TRAIL_DURATION,
 } from './effects';
@@ -32,8 +35,10 @@ const COLORS = {
 
 const UNIT_R = 11;
 
-function defOf(reg: Registry, defId: string): { name: string; color: string } {
-  return lookupDef(reg, defId) ?? { name: defId, color: '#888888' };
+const FALLBACK_DEF = { name: '', color: '#888888', role: '', sprites: { role: null, face: null, map: null } };
+
+function defOf(reg: Registry, defId: string): { name: string; color: string } & SpriteDef {
+  return lookupDef(reg, defId) ?? { ...FALLBACK_DEF, name: defId };
 }
 
 /** EnemyDef.maxHp から見た目の半径を導く。ID を直書きしない */
@@ -48,6 +53,7 @@ export function drawBattle(
   selected: string | null,
   effects: EffectState,
   escorts: Set<string>,
+  images: ImageCache,
 ): void {
   ctx.save();
   ctx.fillStyle = COLORS.sea;
@@ -58,7 +64,8 @@ export function drawBattle(
   drawVictoryMarker(ctx, state.stage);
   drawGoalMarkers(ctx, reg, state, selected);
   drawBonds(ctx, state);
-  drawUnits(ctx, reg, state, selected, effects);
+  drawUnits(ctx, reg, state, selected, effects, images);
+  drawProjectiles(ctx, state);
   drawEscortMarks(ctx, state, escorts);
   drawEffects(ctx, effects);
   drawTopBar(ctx, state);
@@ -106,6 +113,35 @@ function drawVictoryMarker(ctx: CanvasRenderingContext2D, stage: StageDef): void
   ctx.lineTo(p.x + 2, p.y - 12);
   ctx.closePath();
   ctx.fill();
+}
+
+/** 飛んでいる矢と魔法。位置はシムが持っているので、ここは見た目だけ */
+function drawProjectiles(ctx: CanvasRenderingContext2D, state: BattleState): void {
+  for (const pj of state.projectiles) {
+    const p = mapToLogical(pj.pos);
+    if (pj.kind === 'bow') {
+      const from = mapToLogical(pj.source.pos);
+      const dx = p.x - from.x;
+      const dy = p.y - from.y;
+      const len = Math.hypot(dx, dy) || 1;
+      ctx.strokeStyle = '#e8e2d0';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(p.x - (dx / len) * 12, p.y - (dy / len) * 12);
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+    } else {
+      ctx.fillStyle = '#c07ae0';
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(192, 122, 224, 0.5)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 9, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  }
 }
 
 /** 護衛対象の頭上に印を出す。倒れたら即敗北するのがどれかを盤面で示す */
@@ -171,6 +207,7 @@ function drawUnits(
   state: BattleState,
   selected: string | null,
   effects: EffectState,
+  images: ImageCache,
 ): void {
   for (const unit of state.units) {
     if (unit.retired) continue;
@@ -181,10 +218,7 @@ function drawUnits(
       : { x: 0, y: 0 };
     const p = mapToLogical({ x: unit.pos.x + kbOffset.x, y: unit.pos.y + kbOffset.y });
     const radius = isAlly ? UNIT_R : enemyRadius(unit.maxHp);
-    ctx.fillStyle = defOf(reg, unit.defId).color;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
-    ctx.fill();
+    drawMapUnit(ctx, p, radius, defOf(reg, unit.defId), images);
 
     if (unit.bowDamageCap !== null) {
       ctx.fillStyle = '#c8ccd4';
@@ -264,18 +298,6 @@ function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void 
         ctx.fillText(`+${e.amount}`, p.x, p.y - UNIT_R - 14 - rise);
         ctx.globalAlpha = 1;
         ctx.textAlign = 'left';
-        break;
-      }
-      case 'attackLine': {
-        const a = mapToLogical(e.from);
-        const b = mapToLogical(e.to);
-        const ratio = Math.max(0, e.ttl / ATTACK_LINE_DURATION);
-        ctx.strokeStyle = `rgba(200, 220, 255, ${ratio})`;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(a.x, a.y);
-        ctx.lineTo(b.x, b.y);
-        ctx.stroke();
         break;
       }
       case 'heal': {
@@ -367,11 +389,11 @@ function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void 
 
 function drawTopBar(ctx: CanvasRenderingContext2D, state: BattleState): void {
   ctx.fillStyle = COLORS.bar;
-  ctx.fillRect(0, 0, LOGICAL_W, 46);
+  ctx.fillRect(0, 0, LOGICAL_W, MAP_ORIGIN.y);
   ctx.fillStyle = COLORS.text;
   ctx.font = '20px sans-serif';
   ctx.textBaseline = 'middle';
-  ctx.fillText(state.stage.name, 280, 23);
+  ctx.fillText(state.stage.name, 16, MAP_ORIGIN.y / 2);
 }
 
 /** 4人ぶんの移動先を常に出す。誰がどこへ向かっているかを盤面だけで読めるようにする */
@@ -388,8 +410,6 @@ export function drawGoalMarkers(
     const color = defOf(reg, unit.defId).color;
     const isSelected = unit.uid === selected;
 
-    // 交戦中は足が止まっているので薄くする。交戦が解けたら再開するため消しはしない
-    ctx.globalAlpha = unit.engagedWith !== null ? 0.35 : 1;
     ctx.strokeStyle = color;
 
     if (isSelected) {
@@ -410,7 +430,6 @@ export function drawGoalMarkers(
     ctx.beginPath();
     ctx.arc(g.x, g.y, 2.5, 0, Math.PI * 2);
     ctx.fill();
-    ctx.globalAlpha = 1;
   }
 }
 
@@ -422,10 +441,12 @@ export function drawDragPreview(
   toMap: Vec2,
   defId: string,
   blocked: boolean,
+  images: ImageCache,
 ): void {
   const a = mapToLogical(fromMap);
   const b = mapToLogical(toMap);
-  const color = blocked ? COLORS.hpEnemy : defOf(reg, defId).color;
+  const def = defOf(reg, defId);
+  const color = blocked ? COLORS.hpEnemy : def.color;
 
   ctx.strokeStyle = color;
   ctx.lineWidth = 2;
@@ -437,9 +458,6 @@ export function drawDragPreview(
   ctx.setLineDash([]);
 
   ctx.globalAlpha = 0.5;
-  ctx.fillStyle = color;
-  ctx.beginPath();
-  ctx.arc(b.x, b.y, UNIT_R, 0, Math.PI * 2);
-  ctx.fill();
+  drawMapUnit(ctx, b, UNIT_R, { ...def, color }, images);
   ctx.globalAlpha = 1;
 }

@@ -42,11 +42,27 @@ describe('screenToLogical', () => {
 
 describe('mapToLogical / logicalToMap', () => {
   it('マップ原点ぶんずれる', () => {
-    expect(mapToLogical({ x: 10, y: 20 })).toEqual({ x: 10, y: 20 + MAP_ORIGIN.y });
+    expect(mapToLogical({ x: 10, y: 20 })).toEqual({ x: 10 + MAP_ORIGIN.x, y: 20 + MAP_ORIGIN.y });
   });
 
   it('往復して元に戻る', () => {
     const p = { x: 123, y: 45 };
+    expect(logicalToMap(mapToLogical(p))).toEqual(p);
+  });
+});
+
+describe('たてがたの ろんりかいぞうど', () => {
+  it('たてながである', () => {
+    expect(LOGICAL_W).toBe(540);
+    expect(LOGICAL_H).toBe(945);
+  });
+
+  it('マップは じょうほうバーの したから はじまる', () => {
+    expect(MAP_ORIGIN).toEqual({ x: 14, y: 50 });
+  });
+
+  it('mapToLogical と logicalToMap は ぎゃくの かんけい', () => {
+    const p = { x: 100, y: 200 };
     expect(logicalToMap(mapToLogical(p))).toEqual(p);
   });
 });

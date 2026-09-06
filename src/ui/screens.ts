@@ -2,12 +2,15 @@ import { lookupDef, skillParam } from '../engine/registry';
 import { titlesOf, xpToNext } from '../core/progress';
 import { DEFAULT_SKILL_COOLDOWN } from '../core/skills';
 import { PLACEMENT_RADIUS } from '../core/state';
+import type { ImageCache } from '../render/images';
+import { drawFace, drawRoleBadge } from '../render/sprites';
 import { LOGICAL_H, LOGICAL_W, mapToLogical } from '../render/viewport';
 import {
-  BOTTOM_BAR_H, BOTTOM_BAR_Y, BTN, BUBBLE_FONT_PX, BUBBLE_LINE_H, BUBBLE_PAD, TALK_BODY_X,
+  BOTTOM_PANEL_Y, BTN, BUBBLE_FONT_PX, BUBBLE_LINE_H, BUBBLE_PAD, SKILL_BUTTON, TALK_BODY_X,
   TALK_FONT, TALK_LINE_H, TALK_PAD, TALK_WINDOW, bubbleLines, bubbleRectAt, portraitSlot,
-  skillButtonAt, stageSlot,
+  roleBadgeIn, rosterSlot, stageSlot,
 } from './layout';
+import { skillButtonState } from './skillbutton';
 import { currentSpeaker, pageCount, visibleLines } from './talk';
 import { isStageUnlocked } from './flow';
 import type { Bubble } from './bubbles';
@@ -21,6 +24,7 @@ import type { Rect } from './hit';
 
 const INK = '#f2efe4';
 const PANEL = 'rgba(16, 24, 32, 0.88)';
+const FALLBACK_DEF = { name: '', color: '#888888', role: '', sprites: { role: null, face: null, map: null } };
 
 function panel(ctx: CanvasRenderingContext2D, r: Rect, fill = PANEL): void {
   ctx.fillStyle = fill;
@@ -49,20 +53,23 @@ function clear(ctx: CanvasRenderingContext2D): void {
 export function drawTitle(ctx: CanvasRenderingContext2D, hasSave: boolean): void {
   clear(ctx);
   ctx.fillStyle = INK;
-  ctx.font = '58px sans-serif';
+  ctx.font = '40px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('とりでの なかまたち', LOGICAL_W / 2, 180);
+  ctx.fillText('とりでの なかまたち', LOGICAL_W / 2, 260);
   ctx.font = '22px sans-serif';
-  ctx.fillText('4にんの なかまで てきの ほんきょちへ せめこもう', LOGICAL_W / 2, 232);
+  ctx.fillText('4にんの なかまで', LOGICAL_W / 2, 320);
+  ctx.fillText('てきの ほんきょちへ せめこもう', LOGICAL_W / 2, 352);
   ctx.textAlign = 'left';
   button(ctx, BTN.titleNew, 'はじめから');
   button(ctx, BTN.titleContinue, 'つづきから', hasSave);
 }
 
-export function drawStageSelect(ctx: CanvasRenderingContext2D, reg: Registry, save: SaveData): void {
+export function drawStageSelect(
+  ctx: CanvasRenderingContext2D, reg: Registry, save: SaveData, images: ImageCache,
+): void {
   clear(ctx);
   ctx.fillStyle = INK;
-  ctx.font = '36px sans-serif';
+  ctx.font = '30px sans-serif';
   ctx.fillText('どの ステージに いく？', 40, 100);
 
   reg.stages.forEach((stage, i) => {
@@ -70,33 +77,32 @@ export function drawStageSelect(ctx: CanvasRenderingContext2D, reg: Registry, sa
     const unlocked = isStageUnlocked(reg, save, i);
     panel(ctx, r, unlocked ? '#2c4a63' : '#2a2f35');
     ctx.fillStyle = unlocked ? INK : '#78808a';
-    ctx.font = '24px sans-serif';
+    ctx.font = '22px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(unlocked ? stage.name : 'まだ いけない', r.x + r.w / 2, r.y + 60);
+    ctx.fillText(unlocked ? stage.name : 'まだ いけない', r.x + r.w / 2, r.y + 50);
     ctx.font = '18px sans-serif';
-    if (unlocked && save.clearedStageIds.includes(stage.id)) ctx.fillText('クリア ずみ', r.x + r.w / 2, r.y + 104);
+    if (unlocked && save.clearedStageIds.includes(stage.id)) ctx.fillText('クリア ずみ', r.x + r.w / 2, r.y + 88);
     ctx.textAlign = 'left';
   });
 
-  drawRoster(ctx, reg, save);
+  drawRoster(ctx, reg, save, images);
 }
 
-function drawRoster(ctx: CanvasRenderingContext2D, reg: Registry, save: SaveData): void {
+function drawRoster(
+  ctx: CanvasRenderingContext2D, reg: Registry, save: SaveData, images: ImageCache,
+): void {
   ctx.font = '18px sans-serif';
   const ids = [...reg.units.keys()];
   ids.forEach((id, i) => {
-    const r = portraitSlot(i);
+    const r = rosterSlot(i);
     panel(ctx, r, '#18222c');
     const def = reg.units.get(id)!;
-    ctx.fillStyle = def.color;
-    ctx.beginPath();
-    ctx.arc(r.x + 28, r.y + 32, 16, 0, Math.PI * 2);
-    ctx.fill();
+    drawFace(ctx, { x: r.x + 28, y: r.y + 32 }, 16, def, images);
     ctx.fillStyle = INK;
-    ctx.fillText(`${def.name} Lv${save.units[id]!.level}`, r.x + 54, r.y + 26);
+    ctx.fillText(`${def.name} Lv${save.units[id]!.level}`, r.x + 56, r.y + 26);
     const own = titlesOf(reg, save.titles, id);
     ctx.fillStyle = '#9fb3c4';
-    ctx.fillText(own.map((t) => t.label).join('、'), r.x + 54, r.y + 48);
+    ctx.fillText(own.map((t) => t.label).join('、'), r.x + 56, r.y + 50);
   });
 }
 
@@ -117,9 +123,9 @@ export function drawPlacement(ctx: CanvasRenderingContext2D, state: BattleState)
   ctx.setLineDash([]);
 
   ctx.fillStyle = INK;
-  ctx.font = '24px sans-serif';
-  ctx.fillText('きいろい わくの なかに なかまを おこう', 40, 380);
-  button(ctx, BTN.start, 'はじめる');
+  ctx.font = '20px sans-serif';
+  ctx.fillText('きいろい わくの なかに なかまを おこう', 24, 760);
+  button(ctx, SKILL_BUTTON, 'はじめる');
 }
 
 export function drawBottomBar(
@@ -128,9 +134,10 @@ export function drawBottomBar(
   state: BattleState,
   selected: string | null,
   escorts: Set<string>,
+  images: ImageCache,
 ): void {
   ctx.fillStyle = 'rgba(16, 24, 32, 0.92)';
-  ctx.fillRect(0, BOTTOM_BAR_Y, LOGICAL_W, BOTTOM_BAR_H);
+  ctx.fillRect(0, BOTTOM_PANEL_Y, LOGICAL_W, LOGICAL_H - BOTTOM_PANEL_Y);
 
   state.units
     .filter((u) => u.side === 'player')
@@ -139,21 +146,20 @@ export function drawBottomBar(
       const r = portraitSlot(i);
       panel(ctx, r, selected === unit.uid ? '#3a5f7d' : '#18222c');
 
-      const def = lookupDef(reg, unit.defId) ?? { name: unit.defId, color: '#888888' };
+      const def = lookupDef(reg, unit.defId) ?? FALLBACK_DEF;
       ctx.globalAlpha = unit.retired ? 0.4 : 1;
-      ctx.fillStyle = def.color;
-      ctx.beginPath();
-      ctx.arc(r.x + 26, r.y + 32, 15, 0, Math.PI * 2);
-      ctx.fill();
+      drawFace(ctx, { x: r.x + 22, y: r.y + 22 }, 13, def, images);
 
       ctx.fillStyle = INK;
-      ctx.font = '17px sans-serif';
-      ctx.fillText(def.name, r.x + 50, r.y + 24);
+      ctx.font = '18px sans-serif';
+      ctx.fillText(def.name, r.x + 42, r.y + 28);
+
+      drawRoleBadge(ctx, roleBadgeIn(r), def, images);
 
       ctx.fillStyle = '#000';
-      ctx.fillRect(r.x + 50, r.y + 34, 120, 8);
+      ctx.fillRect(r.x + 8, r.y + 60, 113, 7);
       ctx.fillStyle = unit.retired ? '#666' : '#5ad06a';
-      ctx.fillRect(r.x + 50, r.y + 34, 120 * Math.max(0, unit.hp / unit.maxHp), 8);
+      ctx.fillRect(r.x + 8, r.y + 60, 113 * Math.max(0, unit.hp / unit.maxHp), 7);
 
       ctx.globalAlpha = 1;
 
@@ -162,23 +168,23 @@ export function drawBottomBar(
         const remaining = Math.max(0, unit.skillCooldownUntil - state.time);
         const ratio = total > 0 ? 1 - remaining / total : 1;
         ctx.fillStyle = '#000';
-        ctx.fillRect(r.x + 50, r.y + 46, 120, 6);
+        ctx.fillRect(r.x + 8, r.y + 70, 113, 5);
         ctx.fillStyle = '#ffd479';
-        ctx.fillRect(r.x + 50, r.y + 46, 120 * Math.max(0, Math.min(1, ratio)), 6);
+        ctx.fillRect(r.x + 8, r.y + 70, 113 * Math.max(0, Math.min(1, ratio)), 5);
       }
 
       if (unit.retired) {
         ctx.fillStyle = '#ff9a9a';
-        ctx.font = '15px sans-serif';
-        ctx.fillText('たいきゃく', r.x + 50, r.y + 56);
+        ctx.font = '14px sans-serif';
+        ctx.fillText('たいきゃく', r.x + 42, r.y + 50);
       }
 
       if (escorts.has(unit.defId)) {
         ctx.fillStyle = '#ffd479';
         ctx.beginPath();
-        ctx.moveTo(r.x + 12, r.y + 14);
-        ctx.lineTo(r.x + 6, r.y + 24);
-        ctx.lineTo(r.x + 18, r.y + 24);
+        ctx.moveTo(r.x + 8, r.y + 10);
+        ctx.lineTo(r.x + 2, r.y + 20);
+        ctx.lineTo(r.x + 14, r.y + 20);
         ctx.closePath();
         ctx.fill();
       }
@@ -189,14 +195,10 @@ export function drawSkillButton(
   ctx: CanvasRenderingContext2D,
   reg: Registry,
   state: BattleState,
-  selected: string,
-): Rect | null {
-  const unit = state.units.find((u) => u.uid === selected);
-  if (!unit || unit.retired || state.time < unit.skillCooldownUntil) return null;
-  const r = skillButtonAt(mapToLogical(unit.pos));
-  const label = reg.skills.get(unit.skillId ?? '')?.label ?? 'スキル';
-  button(ctx, r, label);
-  return r;
+  selected: string | null,
+): void {
+  const s = skillButtonState(reg, state, selected);
+  button(ctx, SKILL_BUTTON, s.label, s.enabled);
 }
 
 /** 戦闘中の吹き出し。キャラの頭上に出し、時間は止めない */
@@ -228,6 +230,7 @@ export function drawTalk(
   reg: Registry,
   state: TalkState,
   canSkip: boolean,
+  images: ImageCache,
 ): void {
   ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
   ctx.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
@@ -242,11 +245,8 @@ export function drawTalk(
   const bodyX = r.x + (speaker === null ? TALK_PAD : TALK_BODY_X);
 
   if (speaker !== null) {
-    const info = lookupDef(reg, speaker) ?? { name: speaker, color: '#888888' };
-    ctx.fillStyle = info.color;
-    ctx.beginPath();
-    ctx.arc(r.x + 54, r.y + 60, 30, 0, Math.PI * 2);
-    ctx.fill();
+    const info = lookupDef(reg, speaker) ?? { ...FALLBACK_DEF, name: speaker };
+    drawFace(ctx, { x: r.x + 54, y: r.y + 60 }, 30, info, images);
     ctx.fillStyle = '#1a1a1a';
     ctx.font = '20px sans-serif';
     ctx.fillText(info.name, bodyX, r.y + 34);
@@ -274,38 +274,38 @@ export function drawResult(
   reg: Registry,
   gains: XpGain[],
   newTitles: string[],
+  images: ImageCache,
 ): void {
   clear(ctx);
   ctx.fillStyle = INK;
-  ctx.font = '44px sans-serif';
+  ctx.font = '28px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('てきの ほんきょちに とうたつ！', LOGICAL_W / 2, 90);
+  ctx.fillText('てきの ほんきょちに とうたつ！', LOGICAL_W / 2, 100);
   ctx.textAlign = 'left';
 
   ctx.font = '19px sans-serif';
   gains.forEach((g, i) => {
-    const y = 150 + i * 46;
-    const def = lookupDef(reg, g.id) ?? { name: g.id, color: '#888888' };
-    ctx.fillStyle = def.color;
-    ctx.beginPath();
-    ctx.arc(60, y - 6, 14, 0, Math.PI * 2);
-    ctx.fill();
+    const y = 180 + i * 56;
+    const def = lookupDef(reg, g.id) ?? { ...FALLBACK_DEF, name: g.id };
+    drawFace(ctx, { x: 40, y: y - 6 }, 14, def, images);
     ctx.fillStyle = INK;
-    ctx.fillText(def.name, 90, y);
+    ctx.fillText(def.name, 66, y);
     ctx.fillStyle = g.leveledUp ? '#ffd479' : '#9fb3c4';
+    ctx.font = '17px sans-serif';
     ctx.fillText(
       g.leveledUp
         ? `レベルアップ！ Lv${g.before.level} → Lv${g.after.level}`
         : `Lv${g.after.level} (${g.after.xp}/${xpToNext(g.after.level)})`,
-      620, y,
+      66, y + 24,
     );
+    ctx.font = '19px sans-serif';
   });
 
   if (newTitles.length > 0) {
     ctx.fillStyle = '#ffd479';
     ctx.font = '22px sans-serif';
     const label = (id: string): string => reg.titles.find((t) => t.id === id)?.label ?? id;
-    ctx.fillText(`しょうごう ゲット: ${newTitles.map(label).join('、')}`, 60, 350);
+    ctx.fillText(`しょうごう ゲット: ${newTitles.map(label).join('、')}`, 40, 560);
   }
 
   button(ctx, BTN.next, 'つぎへ');
@@ -314,9 +314,9 @@ export function drawResult(
 export function drawDefeat(ctx: CanvasRenderingContext2D): void {
   clear(ctx);
   ctx.fillStyle = INK;
-  ctx.font = '44px sans-serif';
+  ctx.font = '32px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('なかまを まもれなかった', LOGICAL_W / 2, 240);
+  ctx.fillText('なかまを まもれなかった', LOGICAL_W / 2, 320);
   ctx.textAlign = 'left';
   button(ctx, BTN.retry, 'もういちど');
   button(ctx, BTN.toSelect, 'しまを えらぶ');
@@ -328,11 +328,11 @@ export function drawLoadErrors(ctx: CanvasRenderingContext2D, errors: Validation
   ctx.font = '28px sans-serif';
   ctx.fillText('データの よみこみに しっぱいしました', 40, 80);
   ctx.fillStyle = INK;
-  ctx.font = '16px monospace';
+  ctx.font = '13px monospace';
   errors.slice(0, 20).forEach((e, i) => {
-    ctx.fillText(`${e.file} ${e.path}: ${e.reason}`, 40, 130 + i * 22);
+    ctx.fillText(`${e.file} ${e.path}: ${e.reason}`, 40, 130 + i * 20);
   });
   if (errors.length > 20) {
-    ctx.fillText(`ほか ${errors.length - 20} けん`, 40, 130 + 20 * 22);
+    ctx.fillText(`ほか ${errors.length - 20} けん`, 40, 130 + 20 * 20);
   }
 }

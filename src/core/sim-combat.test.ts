@@ -59,6 +59,20 @@ function engageAndAttack(s: BattleState, dt = 1.7): void {
   step(s, [], dt);
 }
 
+/**
+ * 飛翔体（弓・魔法）は発射と着弾が別 tick になったため、大きな dt を 1 回渡すだけでは
+ * 着弾まで進まないことがある。1/60 刻みで積み上げて同じ経過時間を再現する
+ */
+function advanceFine(s: BattleState, totalDt: number): void {
+  let remaining = totalDt;
+  const step60 = 1 / 60;
+  while (remaining > 1e-9) {
+    const dt = Math.min(step60, remaining);
+    step(s, [], dt);
+    remaining -= dt;
+  }
+}
+
 describe('攻撃の解決', () => {
   it('攻撃間隔ごとに 1 回ダメージが入る', () => {
     const s = fresh();
@@ -104,7 +118,7 @@ describe('攻撃の解決', () => {
     unitOf(s, 'ines').pos = { x: 16, y: 16 };
     const e = spawnEnemy(s, 'tatemochi', { x: 100, y: 16 });
     step(s, [], 0.01);
-    step(s, [], 2.3);
+    advanceFine(s, 2.3);
     expect(e.hp).toBe(19);
   });
 
@@ -114,7 +128,7 @@ describe('攻撃の解決', () => {
     ines.pos = { x: 16, y: 16 };
     const e = spawnEnemy(s, 'tatemochi', { x: 100, y: 16 });
     step(s, [{ type: 'skill', uid: ines.uid }], 0.01);
-    step(s, [], 2.3);
+    advanceFine(s, 2.3);
     expect(e.hp).toBe(20 - 10); // (8-3)*2
     expect(unitOf(s, 'ines').neraiuchiArmed).toBe(false);
   });
@@ -124,9 +138,9 @@ describe('攻撃の解決', () => {
     unitOf(s, 'ines').pos = { x: 16, y: 16 };
     const e = spawnEnemy(s, 'narazumono', { x: 32, y: 16 });
     step(s, [], 0.01);
-    step(s, [], 2.3);
+    advanceFine(s, 2.3);
     expect(e.hp).toBe(12); // まだ撃てない
-    step(s, [], 2.2);
+    advanceFine(s, 2.2);
     expect(e.hp).toBe(12 - 7);
   });
 
@@ -185,7 +199,7 @@ describe('撃破と撤退', () => {
     ines.pos = { x: 16, y: 16 };
     spawnEnemy(s, 'narazumono', { x: 100, y: 16 }, 5);
     step(s, [{ type: 'skill', uid: ines.uid }], 0.01);
-    step(s, [], 2.3);
+    advanceFine(s, 2.3);
     expect(s.counters['kill:neraiuchi']).toBe(1);
   });
 
@@ -228,6 +242,86 @@ describe('撃破と撤退', () => {
     expect(unitOf(s, 'roran').engagedWith).toBeNull();
     expect(e.engagedWith).toBeNull();
     expect(s.events).toContainEqual({ type: 'unitRetired', uid: roran.uid, defId: 'roran' });
+  });
+});
+
+describe('ひしょうたい', () => {
+  it('ゆみの こうげきは うった tick では ダメージに ならない', () => {
+    const s = fresh();
+    const ines = unitOf(s, 'ines');
+    ines.pos = { x: 16, y: 16 };
+    const enemy = spawnEnemy(s, 'narazumono', { x: 120, y: 16 });
+    const hp = enemy.hp;
+
+    // こうげきかんかくが あけるまで まわす
+    for (let i = 0; i < 200; i++) {
+      step(s, [], 1 / 60);
+      if (s.projectiles.length > 0) break;
+    }
+    expect(s.projectiles.length).toBeGreaterThan(0);
+    expect(enemy.hp).toBe(hp);
+  });
+
+  it('ちかくで うっても うった tick では ダメージに ならない(はっしゃと ちゃくだんは べつの tick)', () => {
+    const s = fresh();
+    const ines = unitOf(s, 'ines');
+    ines.pos = { x: 16, y: 16 };
+    // ゆみの 1 tick ぶんの いどうきょり(480 * 1/60 = 8px)より ちかい きょり
+    const enemy = spawnEnemy(s, 'narazumono', { x: 20, y: 16 });
+    const hp = enemy.hp;
+
+    // みっちゃく(距離4px < MELEE_RANGE)ぶんの攻撃間隔ばい増(2.2秒 -> 4.4秒)を待つ
+    let firedAt = -1;
+    for (let i = 0; i < 400; i++) {
+      step(s, [], 1 / 60);
+      if (s.projectiles.length > 0) { firedAt = i; break; }
+    }
+    expect(firedAt).toBeGreaterThanOrEqual(0);
+    // はっしゃした その tick では ちゃくだんせず、ダメージも まだ はいらない
+    expect(s.projectiles.length).toBeGreaterThan(0);
+    expect(enemy.hp).toBe(hp);
+
+    // つぎの tick で ちゃくだんする
+    step(s, [], 1 / 60);
+    expect(s.projectiles.length).toBe(0);
+    expect(enemy.hp).toBeLessThan(hp);
+  });
+
+  it('ちゃくだんで しんだ ユニットは おなじ tick で はんげきしない', () => {
+    const s = fresh();
+    const ines = unitOf(s, 'ines');
+    ines.pos = { x: 16, y: 16 };
+    const enemy = spawnEnemy(s, 'narazumono', { x: 20, y: 16 }, 1); // hp=1, きょり4px
+    step(s, [], 0.01); // こうせん せいりつ
+
+    ines.attackCooldown = 0;
+    enemy.attackCooldown = 999; // まだ こうげきさせない
+    const inesHpBefore = ines.hp;
+
+    step(s, [], 1 / 60); // はっしゃ tick
+    expect(s.projectiles.length).toBe(1);
+    expect(enemy.hp).toBe(1); // まだ ちゃくだんしていない
+
+    enemy.attackCooldown = 0; // つぎの tick で はんげき じゅんび かんりょう
+    step(s, [], 1 / 60); // ちゃくだん tick
+    expect(enemy.hp).toBeLessThanOrEqual(0);
+    expect(ines.hp).toBe(inesHpBefore); // しんだ ユニットに はんげきされていない
+  });
+
+  it('どうじ tick に たおれた みかたは しえんしゃに ならない', () => {
+    const s = fresh();
+    const roran = unitOf(s, 'roran');
+    roran.pos = { x: 16, y: 16 };
+    // イネスの弓レンジ(160)の外、なかよしレンジ(200)の内に置き、支援だけする状況にする
+    const ines = unitOf(s, 'ines');
+    ines.pos = { x: 200, y: 16 };
+    const e = spawnEnemy(s, 'narazumono', { x: 30, y: 16 });
+    step(s, [], 0.01);
+    // ここで イネスが おなじ tick に たおれた そうてい(まだ retired=false)
+    ines.hp = 0;
+    step(s, [], 1.7);
+    expect(e.hp).toBe(12 - 5); // しえんぼーなす ぬきの ロラン たんどく(6-1)
+    expect(s.events.some((ev) => ev.type === 'bondSupport')).toBe(false);
   });
 });
 
