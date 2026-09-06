@@ -3,7 +3,7 @@ import {
   validateStageDef, validateTitlesFile, validateUnitDef,
 } from './schema';
 import type {
-  BondDef, EnemyDef, SkillDef, Sprites, StageDef, TitleDef, UnitDef, Validated, ValidationError,
+  BondDef, EnemyDef, IntroLine, SkillDef, Sprites, StageDef, TitleDef, UnitDef, Validated, ValidationError,
 } from './schema';
 
 export type Registry = {
@@ -166,14 +166,18 @@ export function buildRegistry(
         }
       });
     });
-    stage.intro?.forEach((line, i) => {
-      if (line.speaker !== null && lookupDef(reg, line.speaker) === null) {
-        errors.push({ file, path: `intro[${i}].speaker`, reason: `しらない はなして: ${line.speaker}` });
-      }
-      if (line.lineId !== null && !reg.lines.has(line.lineId)) {
-        errors.push({ file, path: `intro[${i}].lineId`, reason: `lines に ない id: ${line.lineId}` });
-      }
-    });
+    const checkTalk = (kind: 'intro' | 'outro', lines: IntroLine[] | undefined): void => {
+      lines?.forEach((line, i) => {
+        if (line.speaker !== null && lookupDef(reg, line.speaker) === null) {
+          errors.push({ file, path: `${kind}[${i}].speaker`, reason: `しらない はなして: ${line.speaker}` });
+        }
+        if (line.lineId !== null && !reg.lines.has(line.lineId)) {
+          errors.push({ file, path: `${kind}[${i}].lineId`, reason: `lines に ない id: ${line.lineId}` });
+        }
+      });
+    };
+    checkTalk('intro', stage.intro);
+    checkTalk('outro', stage.outro);
   }
 
   reg.titles.forEach((t, i) => {

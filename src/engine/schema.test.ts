@@ -428,4 +428,20 @@ describe('validateStageDef', () => {
       });
     }
   });
+
+  it('outro を かける', () => {
+    const r = validateStageDef('assets/stages/stage1.json', { ...VALID_STAGE, outro: [{ text: 'おわり' }] });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.value.outro).toEqual([{ speaker: null, text: 'おわり', lineId: null }]);
+  });
+
+  it('outro でも text と lineId の りょうほうは かけない', () => {
+    const r = validateStageDef('assets/stages/stage1.json', {
+      ...VALID_STAGE, outro: [{ text: 'あ', lineId: 'い' }],
+    });
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.errors.some((e) => e.path === 'outro[0]')).toBe(true);
+  });
 });

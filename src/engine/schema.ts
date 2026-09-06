@@ -328,6 +328,7 @@ export type StageDef = {
   victory: VictoryCond;
   defeat: DefeatCond[];
   intro?: IntroLine[];
+  outro?: IntroLine[];
 };
 
 function readMapRows(ctx: Ctx, v: unknown): string[] {
@@ -504,6 +505,11 @@ export function validateStageDef(file: string, raw: unknown): Validated<StageDef
   if (o.intro !== undefined) {
     const introRaw = requireArray(ctx, 'intro', o.intro) ?? [];
     stage.intro = introRaw.map((item, i) => readIntroLine(ctx, `intro[${i}]`, item));
+  }
+
+  if (o.outro !== undefined) {
+    const outroRaw = requireArray(ctx, 'outro', o.outro) ?? [];
+    stage.outro = outroRaw.map((item, i) => readIntroLine(ctx, `outro[${i}]`, item));
   }
 
   return finish(ctx, stage);

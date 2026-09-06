@@ -1,4 +1,5 @@
 import type { Registry } from '../engine/registry';
+import type { IntroLine } from '../engine/schema';
 import type { Speaker, SimEvent, StageDef } from './types';
 
 export type DialogueRequest = { uid: string; speaker: Speaker; lineId: string; text: string };
@@ -64,14 +65,24 @@ export function pickDialogue(reg: Registry, events: SimEvent[]): DialogueRequest
 /** 会話フェーズが読む1行。speaker が null なら地の文 */
 export type TalkLine = { speaker: string | null; text: string };
 
-/** ステージ開始時の会話を、stage.intro の順番どおりに返す */
-export function pickStageIntro(reg: Registry, stage: StageDef): TalkLine[] {
+/** intro / outro の共通部分。片方だけ直して食い違うことがないように1本にする */
+function pickTalk(reg: Registry, lines: IntroLine[] | undefined): TalkLine[] {
   const out: TalkLine[] = [];
-  for (const line of stage.intro ?? []) {
+  for (const line of lines ?? []) {
     // 検証で片方だけが埋まることは保証済み。lines に無い lineId も検証で弾かれている
     const text = line.text ?? (line.lineId === null ? undefined : reg.lines.get(line.lineId));
     if (text === undefined) continue;
     out.push({ speaker: line.speaker, text });
   }
   return out;
+}
+
+/** ステージ開始時の会話 */
+export function pickStageIntro(reg: Registry, stage: StageDef): TalkLine[] {
+  return pickTalk(reg, stage.intro);
+}
+
+/** 敵の本拠地に到達したときの会話 */
+export function pickStageOutro(reg: Registry, stage: StageDef): TalkLine[] {
+  return pickTalk(reg, stage.outro);
 }

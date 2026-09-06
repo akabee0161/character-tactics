@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { pickDialogue, pickStageIntro } from './dialogue';
+import { pickDialogue, pickStageIntro, pickStageOutro } from './dialogue';
 import { testRegistry } from './testing';
 import type { SimEvent } from './types';
 import type { StageDef } from '../engine/schema';
@@ -179,5 +179,24 @@ describe('pickStageIntro', () => {
 
   it('intro が なければ からの はいれつ', () => {
     expect(pickStageIntro(reg, {} as unknown as StageDef)).toEqual([]);
+  });
+});
+
+describe('pickStageOutro', () => {
+  it('outro を じゅんばんどおり かえす', () => {
+    const reg = testRegistry();
+    const stage = { ...reg.stages[0]!, outro: [
+      { speaker: null, text: 'ちのぶん', lineId: null },
+      { speaker: 'roran', text: 'やったね', lineId: null },
+    ] };
+    expect(pickStageOutro(reg, stage)).toEqual([
+      { speaker: null, text: 'ちのぶん' },
+      { speaker: 'roran', text: 'やったね' },
+    ]);
+  });
+
+  it('outro が なければ からの はいれつ', () => {
+    const reg = testRegistry();
+    expect(pickStageOutro(reg, { ...reg.stages[0]!, outro: undefined })).toEqual([]);
   });
 });
