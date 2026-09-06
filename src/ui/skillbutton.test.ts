@@ -47,10 +47,16 @@ describe('skillButtonState', () => {
     expect(r.label).toContain('3');   // 2.5 秒 → きりあげて 3
   });
 
-  it('たいきゃくした なかまは おせない', () => {
+  it('たいきゃくした なかまは おせない。りゆうも「たいきゃくした」に なる', () => {
     const s = fresh();
     const roran = s.units.find((u) => u.defId === 'roran')!;
     roran.retired = true;
-    expect(skillButtonState(s.reg, s, roran.uid).enabled).toBe(false);
+    expect(skillButtonState(s.reg, s, roran.uid)).toEqual({ label: 'たいきゃくした', enabled: false });
+  });
+
+  it('わざを もたない なかまは おせない。りゆうも「わざが ない」に なる', () => {
+    const s = fresh();
+    const enemy = s.units.find((u) => u.side === 'enemy')!;
+    expect(skillButtonState(s.reg, s, enemy.uid)).toEqual({ label: 'わざが ない', enabled: false });
   });
 });
