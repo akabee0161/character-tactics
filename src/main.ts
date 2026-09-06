@@ -16,8 +16,8 @@ import { hitRect, pickUnit } from './ui/hit';
 import { resolveMapGesture } from './ui/input';
 import type { PointerStart } from './ui/input';
 import {
-  BTN, TALK_BODY_X, TALK_FONT, TALK_MAX_LINES, TALK_PAD, TALK_WINDOW,
-  bubbleRectAt, portraitSlot, skillButtonAt, stageSlot,
+  BTN, SKILL_BUTTON, TALK_BODY_X, TALK_FONT, TALK_MAX_LINES, TALK_PAD, TALK_WINDOW,
+  bubbleRectAt, portraitSlot, stageSlot,
 } from './ui/layout';
 import {
   drawBottomBar, drawBubble, drawDefeat, drawLoadErrors, drawPlacement, drawResult,
@@ -153,7 +153,7 @@ function onPointerDown(ev: PointerEvent): void {
 
     case 'placement': {
       if (!battle) return;
-      if (hitRect(BTN.start, p)) {
+      if (hitRect(SKILL_BUTTON, p)) {
         pointerStart = null;
         writeSave(window.localStorage, save); // ステージ開始時点を保存する
         beginBattle(battle);
@@ -172,16 +172,15 @@ function onPointerDown(ev: PointerEvent): void {
         pendingSkill = null;
         return;
       }
-      // 1) スキルボタン。吹き出しと重なりうるので操作を先に見る
-      if (selected) {
-        const unit = battle.units.find((u) => u.uid === selected)!;
-        const canTap = !unit.retired && battle.time >= unit.skillCooldownUntil;
-        if (canTap && hitRect(skillButtonAt(mapToLogical(unit.pos)), p)) {
-          pointerStart = null;
-          if (skillParam(battle.reg, unit.skillId ?? '', 'needsDest', 0) === 1) pendingSkill = selected;
-          else commands.push({ type: 'skill', uid: selected });
-          return;
-        }
+      // 1) スキルボタン。下パネルにあるのでマップ操作とは重ならない
+      if (hitRect(SKILL_BUTTON, p)) {
+        pointerStart = null;
+        if (selected === null) return;
+        const unit = battle.units.find((u) => u.uid === selected);
+        if (!unit || unit.retired || battle.time < unit.skillCooldownUntil) return;
+        if (skillParam(battle.reg, unit.skillId ?? '', 'needsDest', 0) === 1) pendingSkill = selected;
+        else commands.push({ type: 'skill', uid: selected });
+        return;
       }
       // 2) 吹き出し。当たったらその1つだけ消す
       //    ただしユニットのタップ円と重なるときは操作を優先する。吹き出しは自分の丸とは
@@ -350,7 +349,7 @@ function render(): void {
           const unit = battle.units.find((u) => u.uid === b.uid);
           if (unit) drawBubble(ctx, b, mapToLogical(unit.pos));
         }
-        if (selected) drawSkillButton(ctx, registry, battle, selected);
+        drawSkillButton(ctx, registry, battle, selected);
       }
       break;
     case 'result':

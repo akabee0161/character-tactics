@@ -15,7 +15,6 @@ export const SKILL_BUTTON: Rect = { x: 8, y: 794, w: 524, h: 56 };
 export const BTN = {
   titleNew: { x: 120, y: 520, w: 300, h: 76 } as Rect,
   titleContinue: { x: 120, y: 620, w: 300, h: 76 } as Rect,
-  start: { x: 8, y: 794, w: 524, h: 56 } as Rect,
   next: { x: 120, y: 700, w: 300, h: 76 } as Rect,
   retry: { x: 60, y: 700, w: 200, h: 72 } as Rect,
   toSelect: { x: 280, y: 700, w: 200, h: 72 } as Rect,
@@ -46,15 +45,6 @@ export function rosterSlot(index: number): Rect {
 /** 戦闘中の下パネルのポートレート。4枠を横に並べる */
 export function portraitSlot(index: number): Rect {
   return { x: 6 + index * 133, y: 858, w: 129, h: 80 };
-}
-
-/** 選択中のキャラの上に出すスキルボタン。マップ座標ではなく論理座標で返す */
-export function skillButtonAt(logicalPos: { x: number; y: number }): Rect {
-  const w = 132;
-  const h = 64;
-  const x = Math.max(8, Math.min(LOGICAL_W - w - 8, logicalPos.x - w / 2));
-  const y = Math.max(52, logicalPos.y - 86);
-  return { x, y, w, h };
 }
 
 export const BUBBLE_FONT_PX = 16;

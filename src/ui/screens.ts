@@ -4,10 +4,11 @@ import { DEFAULT_SKILL_COOLDOWN } from '../core/skills';
 import { PLACEMENT_RADIUS } from '../core/state';
 import { LOGICAL_H, LOGICAL_W, mapToLogical } from '../render/viewport';
 import {
-  BOTTOM_PANEL_Y, BTN, BUBBLE_FONT_PX, BUBBLE_LINE_H, BUBBLE_PAD, TALK_BODY_X,
+  BOTTOM_PANEL_Y, BTN, BUBBLE_FONT_PX, BUBBLE_LINE_H, BUBBLE_PAD, SKILL_BUTTON, TALK_BODY_X,
   TALK_FONT, TALK_LINE_H, TALK_PAD, TALK_WINDOW, bubbleLines, bubbleRectAt, portraitSlot,
-  rosterSlot, skillButtonAt, stageSlot,
+  rosterSlot, stageSlot,
 } from './layout';
+import { skillButtonState } from './skillbutton';
 import { currentSpeaker, pageCount, visibleLines } from './talk';
 import { isStageUnlocked } from './flow';
 import type { Bubble } from './bubbles';
@@ -120,7 +121,7 @@ export function drawPlacement(ctx: CanvasRenderingContext2D, state: BattleState)
   ctx.fillStyle = INK;
   ctx.font = '20px sans-serif';
   ctx.fillText('きいろい わくの なかに なかまを おこう', 24, 760);
-  button(ctx, BTN.start, 'はじめる');
+  button(ctx, SKILL_BUTTON, 'はじめる');
 }
 
 export function drawBottomBar(
@@ -190,14 +191,10 @@ export function drawSkillButton(
   ctx: CanvasRenderingContext2D,
   reg: Registry,
   state: BattleState,
-  selected: string,
-): Rect | null {
-  const unit = state.units.find((u) => u.uid === selected);
-  if (!unit || unit.retired || state.time < unit.skillCooldownUntil) return null;
-  const r = skillButtonAt(mapToLogical(unit.pos));
-  const label = reg.skills.get(unit.skillId ?? '')?.label ?? 'スキル';
-  button(ctx, r, label);
-  return r;
+  selected: string | null,
+): void {
+  const s = skillButtonState(reg, state, selected);
+  button(ctx, SKILL_BUTTON, s.label, s.enabled);
 }
 
 /** 戦闘中の吹き出し。キャラの頭上に出し、時間は止めない */
