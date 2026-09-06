@@ -3,8 +3,6 @@
 4人の仲間を率いて、敵の本拠地へ攻め込むリアルタイム侵攻シミュレーション。
 [ankardo](https://ankardo.com) のサブリソースとして `ankardo.com/play/character-tactics/` で公開する。
 
-- 設計: `docs/superpowers/specs/2026-08-28-invasion-pivot-design.md`
-- 実装計画: `docs/superpowers/plans/2026-08-28-invasion-pivot.md`
 - 設計: `docs/superpowers/specs/2026-09-06-vertical-pivot-design.md`
 - 実装計画: `docs/superpowers/plans/2026-09-06-vertical-pivot.md`
 
