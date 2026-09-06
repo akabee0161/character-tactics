@@ -3,7 +3,7 @@ import {
   validateStageDef, validateTitlesFile, validateUnitDef,
 } from './schema';
 import type {
-  BondDef, EnemyDef, SkillDef, StageDef, TitleDef, UnitDef, Validated, ValidationError,
+  BondDef, EnemyDef, SkillDef, Sprites, StageDef, TitleDef, UnitDef, Validated, ValidationError,
 } from './schema';
 
 export type Registry = {
@@ -30,6 +30,7 @@ function inDir(path: string, dir: string): boolean {
 export function buildRegistry(
   files: Record<string, unknown>,
   knownSkillIds: readonly string[],
+  imageNames: readonly string[] = [],
 ): Validated<Registry> {
   const errors: ValidationError[] = [];
   const reg: Registry = {
@@ -128,6 +129,18 @@ export function buildRegistry(
   };
   for (const [id, def] of reg.units) checkSkillId(`assets/units/${id}.json`, 'skillId', def.skillId);
   for (const [id, def] of reg.enemies) checkSkillId(`assets/enemies/${id}.json`, 'skillId', def.skillId);
+
+  const images = new Set(imageNames);
+  const checkSprites = (file: string, sprites: Sprites): void => {
+    for (const key of ['role', 'face', 'map'] as const) {
+      const name = sprites[key];
+      if (name !== null && !images.has(name)) {
+        errors.push({ file, path: `sprites.${key}`, reason: `assets/images/ に ない ファイル: ${name}` });
+      }
+    }
+  };
+  for (const [id, def] of reg.units) checkSprites(`assets/units/${id}.json`, def.sprites);
+  for (const [id, def] of reg.enemies) checkSprites(`assets/enemies/${id}.json`, def.sprites);
 
   for (const stage of reg.stages) {
     const file = `assets/stages/${stage.id}.json`;

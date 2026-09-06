@@ -278,3 +278,26 @@ describe('ステージの ならびじゅん', () => {
     }
   });
 });
+
+describe('sprites の ファイルの そんざい', () => {
+  const withSprite = (sprites: Record<string, string | null>) =>
+    files({ 'assets/units/roran.json': { ...UNIT, sprites } });
+
+  it('ある ファイルめいなら とおる', () => {
+    const r = buildRegistry(withSprite({ role: 'tate.png' }), KNOWN_SKILLS, ['tate.png']);
+    expect(r.ok).toBe(true);
+  });
+
+  it('ない ファイルめいは エラーに なる', () => {
+    const r = buildRegistry(withSprite({ role: 'nai.png' }), KNOWN_SKILLS, ['tate.png']);
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.errors[0]?.path).toBe('sprites.role');
+    expect(r.errors[0]?.reason).toContain('nai.png');
+  });
+
+  it('null は せいじょう', () => {
+    const r = buildRegistry(withSprite({ role: null, face: null, map: null }), KNOWN_SKILLS, []);
+    expect(r.ok).toBe(true);
+  });
+});
