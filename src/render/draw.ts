@@ -1,5 +1,5 @@
 import { bondSupporters } from '../core/bonds';
-import { isFunbaruActive } from '../core/skills';
+import { isFunbaruActive } from '../core/combat';
 import { playerUnits } from '../core/sim';
 import { lookupDef } from '../engine/registry';
 import type { Registry } from '../engine/registry';
