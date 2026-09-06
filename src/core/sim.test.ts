@@ -477,3 +477,64 @@ describe('AI の くみこみ', () => {
     expect(state.fields.byUnit.size).toBeLessThanOrEqual(state.units.length);
   });
 });
+
+describe('しじされた いどうは とまらない', () => {
+  // ines(ゆみ、range160)などが割りこんで交戦してしまうと、claimed に敵の uid が
+  // 入ってロランの交戦判定を邪魔する。ロラン単体の検証にするため他は退場させる
+  function isolateRoran(state: BattleState, roran: Unit): void {
+    for (const u of state.units) {
+      if (u.side === 'player' && u.uid !== roran.uid) u.retired = true;
+    }
+  }
+
+  it('こうせんちゅうでも プレイヤーの いどうしじは すすむ', () => {
+    const { state } = fresh();
+    const roran = state.units.find((u) => u.defId === 'roran')!;
+    const enemy = state.units.find((u) => u.side === 'enemy')!;
+    isolateRoran(state, roran);
+    roran.pos = { x: 100, y: 16 };
+    enemy.pos = { x: 110, y: 16 };   // ロランの しゃていない
+    enemy.speed = 0;
+
+    step(state, [{ type: 'move', uid: roran.uid, dest: { x: 240, y: 16 } }], 1 / 60);
+    const before = roran.pos.x;
+    for (let i = 0; i < 30; i++) step(state, [], 1 / 60);
+
+    expect(roran.engagedWith).not.toBeNull();     // こうせんは している
+    expect(roran.pos.x).toBeGreaterThan(before);  // それでも すすんでいる
+  });
+
+  it('とうちゃくすると こうせんで あしが とまる', () => {
+    const { state } = fresh();
+    const roran = state.units.find((u) => u.defId === 'roran')!;
+    const enemy = state.units.find((u) => u.side === 'enemy')!;
+    isolateRoran(state, roran);
+    roran.pos = { x: 100, y: 16 };
+    enemy.pos = { x: 110, y: 16 };
+    enemy.speed = 0;
+
+    step(state, [{ type: 'move', uid: roran.uid, dest: { x: 104, y: 16 } }], 1 / 60);
+    for (let i = 0; i < 20; i++) step(state, [], 1 / 60);
+    expect(roran.goalPos).toBeNull();
+
+    const at = { ...roran.pos };
+    for (let i = 0; i < 30; i++) step(state, [], 1 / 60);
+    expect(roran.pos).toEqual(at);
+  });
+
+  it('てきは こうせんすると あしが とまる', () => {
+    const { state } = fresh();
+    const roran = state.units.find((u) => u.defId === 'roran')!;
+    const enemy = state.units.find((u) => u.side === 'enemy')!;
+    isolateRoran(state, roran);
+    roran.pos = { x: 100, y: 16 };
+    enemy.pos = { x: 118, y: 16 };
+
+    for (let i = 0; i < 10; i++) step(state, [], 1 / 60);
+    const at = { ...enemy.pos };
+    for (let i = 0; i < 30; i++) step(state, [], 1 / 60);
+
+    expect(enemy.engagedWith).not.toBeNull();
+    expect(enemy.pos).toEqual(at);
+  });
+});

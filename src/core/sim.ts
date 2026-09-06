@@ -161,9 +161,19 @@ function moveTowardGoal(state: BattleState, u: Unit, dt: number): void {
   u.pos = { x: u.pos.x + dir.x * stepLen, y: u.pos.y + dir.y * stepLen };
 }
 
+/**
+ * プレイヤーが出した移動指示は交戦より優先する。
+ * 指示した移動が途中で勝手に止まると、プレイヤーの意図が黙って消える。
+ * 攻撃は交戦しているかぎり続くので、歩きながら撃つ形になる
+ */
+function hasOrderedMove(u: Unit): boolean {
+  return u.controller === 'player' && u.goalPos !== null;
+}
+
 function moveUnits(state: BattleState, dt: number): void {
   for (const u of state.units) {
-    if (u.retired || u.engagedWith !== null) continue;
+    if (u.retired) continue;
+    if (u.engagedWith !== null && !hasOrderedMove(u)) continue;
     moveTowardGoal(state, u, dt);
   }
 }

@@ -392,8 +392,6 @@ export function drawGoalMarkers(
     const color = defOf(reg, unit.defId).color;
     const isSelected = unit.uid === selected;
 
-    // 交戦中は足が止まっているので薄くする。交戦が解けたら再開するため消しはしない
-    ctx.globalAlpha = unit.engagedWith !== null ? 0.35 : 1;
     ctx.strokeStyle = color;
 
     if (isSelected) {
@@ -414,7 +412,6 @@ export function drawGoalMarkers(
     ctx.beginPath();
     ctx.arc(g.x, g.y, 2.5, 0, Math.PI * 2);
     ctx.fill();
-    ctx.globalAlpha = 1;
   }
 }
 
