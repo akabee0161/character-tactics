@@ -5,7 +5,7 @@ import { lookupDef } from '../engine/registry';
 import type { Registry } from '../engine/registry';
 import type { StageDef } from '../engine/schema';
 import { sightCircles } from './objectives-view';
-import { LOGICAL_H, LOGICAL_W, mapToLogical } from './viewport';
+import { LOGICAL_H, LOGICAL_W, MAP_ORIGIN, mapToLogical } from './viewport';
 import {
   ATTACK_LINE_DURATION, BOND_PULSE_DURATION, DAMAGE_TEXT_DURATION, DEFEAT_DURATION,
   HEAL_BEAM_DURATION, HEAL_RING_DURATION, HEAL_TEXT_DURATION, HIT_EFFECT_DURATION,
@@ -367,11 +367,11 @@ function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void 
 
 function drawTopBar(ctx: CanvasRenderingContext2D, state: BattleState): void {
   ctx.fillStyle = COLORS.bar;
-  ctx.fillRect(0, 0, LOGICAL_W, 46);
+  ctx.fillRect(0, 0, LOGICAL_W, MAP_ORIGIN.y);
   ctx.fillStyle = COLORS.text;
   ctx.font = '20px sans-serif';
   ctx.textBaseline = 'middle';
-  ctx.fillText(state.stage.name, 280, 23);
+  ctx.fillText(state.stage.name, 16, MAP_ORIGIN.y / 2);
 }
 
 /** 4人ぶんの移動先を常に出す。誰がどこへ向かっているかを盤面だけで読めるようにする */
