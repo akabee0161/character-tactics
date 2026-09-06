@@ -5,5 +5,6 @@
   "attack": "melee", "range": 24,
   "attackInterval": 1.6, "speed": 60,
   "skillId": "omajinai",
-  "color": "#c86fb0"
+  "color": "#c86fb0",
+  "sprites": { "role": null, "face": null, "map": null }
 }

@@ -103,6 +103,23 @@ function finish<T>(ctx: Ctx, value: T): Validated<T> {
   return ctx.errors.length > 0 ? { ok: false, errors: ctx.errors } : { ok: true, value };
 }
 
+/** ユニットの絵。値は assets/images/ の中のファイル名。null なら図形で描く */
+export type Sprites = { role: string | null; face: string | null; map: string | null };
+
+const NO_SPRITES: Sprites = { role: null, face: null, map: null };
+
+function readSprites(ctx: Ctx, v: unknown): Sprites {
+  if (v === undefined) return { ...NO_SPRITES };
+  const o = requireObject(ctx, 'sprites', v);
+  if (!o) return { ...NO_SPRITES };
+  const one = (key: keyof Sprites): string | null => {
+    const raw = o[key];
+    if (raw === undefined || raw === null) return null;
+    return requireString(ctx, `sprites.${key}`, raw);
+  };
+  return { role: one('role'), face: one('face'), map: one('map') };
+}
+
 export type UnitDef = {
   id: string;
   name: string;
@@ -118,6 +135,7 @@ export type UnitDef = {
   speed: number;
   skillId: string | null;
   color: string;
+  sprites: Sprites;
 };
 
 export type EnemyDef = UnitDef & {
@@ -144,6 +162,7 @@ function readUnitFields(ctx: Ctx, o: Record<string, unknown>): UnitDef {
     speed: requireNumber(ctx, 'speed', o.speed, { min: 0 }) ?? 0,
     skillId: o.skillId === null ? null : requireString(ctx, 'skillId', o.skillId),
     color: requireString(ctx, 'color', o.color) ?? '#000000',
+    sprites: readSprites(ctx, o.sprites),
   };
 }
 

@@ -68,6 +68,29 @@ describe('validateUnitDef', () => {
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.errors[0]?.path).toBe('');
   });
+
+  it('sprites を しょうりゃくすると すべて null に なる', () => {
+    const r = validateUnitDef('assets/units/roran.json', VALID_UNIT);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.value.sprites).toEqual({ role: null, face: null, map: null });
+  });
+
+  it('sprites に ファイルめいを かける', () => {
+    const r = validateUnitDef('assets/units/roran.json', {
+      ...VALID_UNIT, sprites: { role: 'tate.png', face: 'roran-face.png', map: null },
+    });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.value.sprites).toEqual({ role: 'tate.png', face: 'roran-face.png', map: null });
+  });
+
+  it('sprites の あたいが もじれつでも null でも ないと エラー', () => {
+    const r = validateUnitDef('assets/units/roran.json', { ...VALID_UNIT, sprites: { role: 3 } });
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.errors[0]?.path).toBe('sprites.role');
+  });
 });
 
 describe('validateEnemyDef', () => {
