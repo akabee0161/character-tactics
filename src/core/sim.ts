@@ -16,7 +16,9 @@ export function playerUnits(state: BattleState): Unit[] {
 }
 
 export function hostilesOf(state: BattleState, self: Unit): Unit[] {
-  return state.units.filter((u) => u.side !== self.side && !u.retired);
+  // hp <= 0 は resolveRemoval がまだ retired にしていない、同じ tick で倒れた直後の状態。
+  // これを含めると、死んだ直後の敵がまだ近接脅威や AI の標的として扱われてしまう
+  return state.units.filter((u) => u.side !== self.side && !u.retired && u.hp > 0);
 }
 
 export function unitByUid(state: BattleState, uid: string): Unit | undefined {
@@ -198,8 +200,9 @@ function resolveAttacks(state: BattleState, dt: number): void {
     const interval = effectiveInterval(u.attackInterval, u.attack, hasThreatWithinMelee(u.pos, hostiles));
     if (u.attackCooldown > 0) continue;
 
-    // 絆は味方どうしの支援なので、同じ side の生存ユニットだけを見る
-    const allies = state.units.filter((o) => o.side === u.side);
+    // 絆は味方どうしの支援なので、同じ side の生存ユニットだけを見る。
+    // hp <= 0 の味方は resolveRemoval 前でも支援者に含めない
+    const allies = state.units.filter((o) => o.side === u.side && o.hp > 0);
     const supporters = bondSupporters(state.reg, u.uid, u.defId, u.pos, allies.map((o) => ({
       id: o.defId, pos: o.pos, retired: o.retired, uid: o.uid,
     })));

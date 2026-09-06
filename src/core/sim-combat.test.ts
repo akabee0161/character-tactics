@@ -307,5 +307,21 @@ describe('ひしょうたい', () => {
     expect(enemy.hp).toBeLessThanOrEqual(0);
     expect(ines.hp).toBe(inesHpBefore); // しんだ ユニットに はんげきされていない
   });
+
+  it('どうじ tick に たおれた みかたは しえんしゃに ならない', () => {
+    const s = fresh();
+    const roran = unitOf(s, 'roran');
+    roran.pos = { x: 16, y: 16 };
+    // イネスの弓レンジ(160)の外、なかよしレンジ(200)の内に置き、支援だけする状況にする
+    const ines = unitOf(s, 'ines');
+    ines.pos = { x: 200, y: 16 };
+    const e = spawnEnemy(s, 'narazumono', { x: 30, y: 16 });
+    step(s, [], 0.01);
+    // ここで イネスが おなじ tick に たおれた そうてい(まだ retired=false)
+    ines.hp = 0;
+    step(s, [], 1.7);
+    expect(e.hp).toBe(12 - 5); // しえんぼーなす ぬきの ロラン たんどく(6-1)
+    expect(s.events.some((ev) => ev.type === 'bondSupport')).toBe(false);
+  });
 });
 
