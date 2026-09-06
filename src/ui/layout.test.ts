@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { BUBBLE_FONT_PX, BUBBLE_LINE_H, BUBBLE_PAD, bubbleLines, bubbleRectAt } from './layout';
-import { LOGICAL_W } from '../render/viewport';
+import {
+  BOTTOM_PANEL_Y, BTN, BUBBLE_FONT_PX, BUBBLE_LINE_H, BUBBLE_PAD, SKILL_BUTTON, TALK_WINDOW,
+  bubbleLines, bubbleRectAt, portraitSlot, rosterSlot, stageSlot,
+} from './layout';
+import { LOGICAL_H, LOGICAL_W, MAP_ORIGIN } from '../render/viewport';
 
 describe('bubbleRectAt', () => {
   it('キャラの まうえに でる', () => {
@@ -74,5 +77,52 @@ describe('bubbleRectAt と bubbleLines の せいごうせい', () => {
     const text = 'あ'.repeat(30);
     const r = bubbleRectAt({ x: 480, y: 300 }, text);
     expect(r.h).toBe(bubbleLines(text).length * BUBBLE_LINE_H + BUBBLE_PAD * 2);
+  });
+});
+
+const inScreen = (r: { x: number; y: number; w: number; h: number }): boolean =>
+  r.x >= 0 && r.y >= 0 && r.x + r.w <= LOGICAL_W && r.y + r.h <= LOGICAL_H;
+
+describe('たてがたの レイアウト', () => {
+  it('したパネルは マップの したに ある', () => {
+    expect(BOTTOM_PANEL_Y).toBe(MAP_ORIGIN.y + 23 * 32);
+  });
+
+  it('ポートレート 4まいが がめんに おさまる', () => {
+    for (let i = 0; i < 4; i++) expect(inScreen(portraitSlot(i))).toBe(true);
+  });
+
+  it('ポートレートどうしが かさならない', () => {
+    for (let i = 1; i < 4; i++) {
+      const prev = portraitSlot(i - 1);
+      expect(portraitSlot(i).x).toBeGreaterThanOrEqual(prev.x + prev.w);
+    }
+  });
+
+  it('ひっさつわざボタンは したパネルの なかで ポートレートと かさならない', () => {
+    expect(inScreen(SKILL_BUTTON)).toBe(true);
+    expect(SKILL_BUTTON.y).toBeGreaterThanOrEqual(BOTTOM_PANEL_Y);
+    expect(SKILL_BUTTON.y + SKILL_BUTTON.h).toBeLessThanOrEqual(portraitSlot(0).y);
+  });
+
+  it('かいわウィンドウと ボタンが がめんに おさまる', () => {
+    expect(inScreen(TALK_WINDOW)).toBe(true);
+    for (const r of Object.values(BTN)) expect(inScreen(r)).toBe(true);
+  });
+
+  it('とばすボタンは かいわウィンドウと かさならない', () => {
+    expect(BTN.skip.y + BTN.skip.h).toBeLessThanOrEqual(TALK_WINDOW.y);
+  });
+
+  it('ステージスロットは 2れつ で がめんに おさまる', () => {
+    expect(stageSlot(0).y).toBe(stageSlot(1).y);       // 同じ行
+    expect(stageSlot(2).y).toBeGreaterThan(stageSlot(0).y); // 3つめは次の行
+    for (let i = 0; i < 6; i++) expect(inScreen(stageSlot(i))).toBe(true);
+  });
+
+  it('ロスターは 1れつ で ならぶ', () => {
+    for (let i = 0; i < 4; i++) expect(inScreen(rosterSlot(i))).toBe(true);
+    expect(rosterSlot(1).x).toBe(rosterSlot(0).x);
+    expect(rosterSlot(1).y).toBeGreaterThan(rosterSlot(0).y);
   });
 });
