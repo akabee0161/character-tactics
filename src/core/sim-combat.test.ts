@@ -286,5 +286,26 @@ describe('ひしょうたい', () => {
     expect(s.projectiles.length).toBe(0);
     expect(enemy.hp).toBeLessThan(hp);
   });
+
+  it('ちゃくだんで しんだ ユニットは おなじ tick で はんげきしない', () => {
+    const s = fresh();
+    const ines = unitOf(s, 'ines');
+    ines.pos = { x: 16, y: 16 };
+    const enemy = spawnEnemy(s, 'narazumono', { x: 20, y: 16 }, 1); // hp=1, きょり4px
+    step(s, [], 0.01); // こうせん せいりつ
+
+    ines.attackCooldown = 0;
+    enemy.attackCooldown = 999; // まだ こうげきさせない
+    const inesHpBefore = ines.hp;
+
+    step(s, [], 1 / 60); // はっしゃ tick
+    expect(s.projectiles.length).toBe(1);
+    expect(enemy.hp).toBe(1); // まだ ちゃくだんしていない
+
+    enemy.attackCooldown = 0; // つぎの tick で はんげき じゅんび かんりょう
+    step(s, [], 1 / 60); // ちゃくだん tick
+    expect(enemy.hp).toBeLessThanOrEqual(0);
+    expect(ines.hp).toBe(inesHpBefore); // しんだ ユニットに はんげきされていない
+  });
 });
 

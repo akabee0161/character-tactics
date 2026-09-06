@@ -185,11 +185,14 @@ function resolveAttacks(state: BattleState, dt: number): void {
   const byUid = new Map(state.units.map((u) => [u.uid, u]));
 
   for (const u of state.units) {
-    if (u.retired) continue;
+    // hp <= 0 は resolveRemoval がまだ retired にしていない状態。飛翔体の着弾を
+    // resolveAttacks の前に処理するようにしたため、着弾で倒れたユニットが同じ
+    // tick でまだ反撃できてしまう。retired と合わせて hp も見て弾く
+    if (u.retired || u.hp <= 0) continue;
     u.attackCooldown -= dt;
     if (!u.combat || u.engagedWith === null) continue;
     const target = byUid.get(u.engagedWith);
-    if (!target || target.retired) continue;
+    if (!target || target.retired || target.hp <= 0) continue;
 
     const hostiles = hostilesOf(state, u);
     const interval = effectiveInterval(u.attackInterval, u.attack, hasThreatWithinMelee(u.pos, hostiles));
