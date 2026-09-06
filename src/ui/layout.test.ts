@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BUBBLE_FONT_PX, BUBBLE_LINE_H, BUBBLE_PAD, bubbleLines, bubbleRectAt } from './layout';
+import { LOGICAL_W } from '../render/viewport';
 
 describe('bubbleRectAt', () => {
   it('キャラの まうえに でる', () => {
@@ -25,8 +26,8 @@ describe('bubbleRectAt', () => {
   });
 
   it('みぎはしで はみださない', () => {
-    const r = bubbleRectAt({ x: 960, y: 300 }, 'あいうえお');
-    expect(r.x + r.w).toBeLessThanOrEqual(952);
+    const r = bubbleRectAt({ x: LOGICAL_W, y: 300 }, 'あいうえお');
+    expect(r.x + r.w).toBeLessThanOrEqual(LOGICAL_W - 8);
   });
 
   it('うえはしで はみださない', () => {

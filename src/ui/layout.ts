@@ -1,4 +1,5 @@
 import { wrapText } from './talk';
+import { LOGICAL_W } from '../render/viewport';
 import type { Rect } from './hit';
 import type { Vec2 } from '../core/types';
 
@@ -40,7 +41,7 @@ export function portraitSlot(index: number): Rect {
 export function skillButtonAt(logicalPos: { x: number; y: number }): Rect {
   const w = 132;
   const h = 64;
-  const x = Math.max(8, Math.min(960 - w - 8, logicalPos.x - w / 2));
+  const x = Math.max(8, Math.min(LOGICAL_W - w - 8, logicalPos.x - w / 2));
   const y = Math.max(52, logicalPos.y - 86);
   return { x, y, w, h };
 }
@@ -78,8 +79,7 @@ export function bubbleRectAt(logicalPos: Vec2, text: string): Rect {
   // BUBBLE_CONTENT_W を数文字ぶん超える行がありうるため
   const w = longest * BUBBLE_FONT_PX + BUBBLE_PAD * 2;
   const h = lines.length * BUBBLE_LINE_H + BUBBLE_PAD * 2;
-  // 960 は論理解像度の幅。skillButtonAt と同じ書き方に揃えている
-  const x = Math.max(8, Math.min(960 - w - 8, logicalPos.x - w / 2));
+  const x = Math.max(8, Math.min(LOGICAL_W - w - 8, logicalPos.x - w / 2));
   const y = Math.max(52, logicalPos.y - BUBBLE_LIFT - h);
   return { x, y, w, h };
 }

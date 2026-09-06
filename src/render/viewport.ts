@@ -1,9 +1,9 @@
 import type { Vec2 } from '../core/types';
 
-export const LOGICAL_W = 960;
-export const LOGICAL_H = 540;
-/** マップは情報バーのぶんだけ下にずらして描く */
-export const MAP_ORIGIN = { x: 0, y: 46 };
+export const LOGICAL_W = 540;
+export const LOGICAL_H = 945;
+/** マップは情報バーのぶんだけ下へ、左右は 16列 × 32px を中央に置くぶんだけ内側へずらす */
+export const MAP_ORIGIN = { x: 14, y: 50 };
 
 export type Viewport = { scale: number; offsetX: number; offsetY: number };
 
