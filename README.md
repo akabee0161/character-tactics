@@ -49,9 +49,12 @@ chrome --headless=new --no-sandbox --disable-gpu \
        --remote-debugging-port=9222 --window-size=540,945 <URL>
 ```
 
-`http://127.0.0.1:9222/json/list` から WebSocket に繋ぎ、`Input.dispatchMouseEvent` で
-タップとドラッグを送り、`Page.captureScreenshot` で画面を撮る。論理座標 540×945 から
-クライアント座標への変換は `computeViewport`（`src/render/viewport.ts`）と同じ式を使う。
+`http://127.0.0.1:9222/json/list` から WebSocket に繋ぎ、`Runtime.evaluate` で
+`document.getElementById('game')` に対して `PointerEvent` を直接 dispatch してタップと
+ドラッグを送り、`Page.captureScreenshot` で画面を撮る。`Input.dispatchMouseEvent` は
+headless Chromium で `pointerdown` / `pointerup` として正しく届かないことがあるため使わない。
+論理座標 540×945 からクライアント座標への変換は `computeViewport`（`src/render/viewport.ts`）
+と同じ式を使う。
 
 判定はスクリーンショットを見るほか、`getImageData` で色の塊を数えると機械的に取れる。
 吹き出しのパネルは `#f7f3e6`、ユニットの丸は各 def の `color`。下部バーのポートレートも
