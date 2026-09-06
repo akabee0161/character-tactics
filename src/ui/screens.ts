@@ -2,6 +2,8 @@ import { lookupDef, skillParam } from '../engine/registry';
 import { titlesOf, xpToNext } from '../core/progress';
 import { DEFAULT_SKILL_COOLDOWN } from '../core/skills';
 import { PLACEMENT_RADIUS } from '../core/state';
+import type { ImageCache } from '../render/images';
+import { drawFace, drawRoleBadge } from '../render/sprites';
 import { LOGICAL_H, LOGICAL_W, mapToLogical } from '../render/viewport';
 import {
   BOTTOM_PANEL_Y, BTN, BUBBLE_FONT_PX, BUBBLE_LINE_H, BUBBLE_PAD, SKILL_BUTTON, TALK_BODY_X,
@@ -62,7 +64,9 @@ export function drawTitle(ctx: CanvasRenderingContext2D, hasSave: boolean): void
   button(ctx, BTN.titleContinue, 'つづきから', hasSave);
 }
 
-export function drawStageSelect(ctx: CanvasRenderingContext2D, reg: Registry, save: SaveData): void {
+export function drawStageSelect(
+  ctx: CanvasRenderingContext2D, reg: Registry, save: SaveData, images: ImageCache,
+): void {
   clear(ctx);
   ctx.fillStyle = INK;
   ctx.font = '30px sans-serif';
@@ -81,20 +85,19 @@ export function drawStageSelect(ctx: CanvasRenderingContext2D, reg: Registry, sa
     ctx.textAlign = 'left';
   });
 
-  drawRoster(ctx, reg, save);
+  drawRoster(ctx, reg, save, images);
 }
 
-function drawRoster(ctx: CanvasRenderingContext2D, reg: Registry, save: SaveData): void {
+function drawRoster(
+  ctx: CanvasRenderingContext2D, reg: Registry, save: SaveData, images: ImageCache,
+): void {
   ctx.font = '18px sans-serif';
   const ids = [...reg.units.keys()];
   ids.forEach((id, i) => {
     const r = rosterSlot(i);
     panel(ctx, r, '#18222c');
     const def = reg.units.get(id)!;
-    ctx.fillStyle = def.color;
-    ctx.beginPath();
-    ctx.arc(r.x + 28, r.y + 32, 16, 0, Math.PI * 2);
-    ctx.fill();
+    drawFace(ctx, { x: r.x + 28, y: r.y + 32 }, 16, def, images);
     ctx.fillStyle = INK;
     ctx.fillText(`${def.name} Lv${save.units[id]!.level}`, r.x + 56, r.y + 26);
     const own = titlesOf(reg, save.titles, id);
@@ -131,6 +134,7 @@ export function drawBottomBar(
   state: BattleState,
   selected: string | null,
   escorts: Set<string>,
+  images: ImageCache,
 ): void {
   ctx.fillStyle = 'rgba(16, 24, 32, 0.92)';
   ctx.fillRect(0, BOTTOM_PANEL_Y, LOGICAL_W, LOGICAL_H - BOTTOM_PANEL_Y);
@@ -144,19 +148,13 @@ export function drawBottomBar(
 
       const def = lookupDef(reg, unit.defId) ?? FALLBACK_DEF;
       ctx.globalAlpha = unit.retired ? 0.4 : 1;
-      ctx.fillStyle = def.color;
-      ctx.beginPath();
-      ctx.arc(r.x + 22, r.y + 22, 13, 0, Math.PI * 2);
-      ctx.fill();
+      drawFace(ctx, { x: r.x + 22, y: r.y + 22 }, 13, def, images);
 
       ctx.fillStyle = INK;
       ctx.font = '18px sans-serif';
       ctx.fillText(def.name, r.x + 42, r.y + 28);
 
-      const badge = roleBadgeIn(r);
-      ctx.fillStyle = '#ffd479';
-      ctx.font = '14px sans-serif';
-      ctx.fillText(def.role, badge.x, badge.y + 18);
+      drawRoleBadge(ctx, roleBadgeIn(r), def, images);
 
       ctx.fillStyle = '#000';
       ctx.fillRect(r.x + 8, r.y + 60, 113, 7);
@@ -232,6 +230,7 @@ export function drawTalk(
   reg: Registry,
   state: TalkState,
   canSkip: boolean,
+  images: ImageCache,
 ): void {
   ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
   ctx.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
@@ -246,11 +245,8 @@ export function drawTalk(
   const bodyX = r.x + (speaker === null ? TALK_PAD : TALK_BODY_X);
 
   if (speaker !== null) {
-    const info = lookupDef(reg, speaker) ?? { name: speaker, color: '#888888' };
-    ctx.fillStyle = info.color;
-    ctx.beginPath();
-    ctx.arc(r.x + 54, r.y + 60, 30, 0, Math.PI * 2);
-    ctx.fill();
+    const info = lookupDef(reg, speaker) ?? { ...FALLBACK_DEF, name: speaker };
+    drawFace(ctx, { x: r.x + 54, y: r.y + 60 }, 30, info, images);
     ctx.fillStyle = '#1a1a1a';
     ctx.font = '20px sans-serif';
     ctx.fillText(info.name, bodyX, r.y + 34);
@@ -278,6 +274,7 @@ export function drawResult(
   reg: Registry,
   gains: XpGain[],
   newTitles: string[],
+  images: ImageCache,
 ): void {
   clear(ctx);
   ctx.fillStyle = INK;
@@ -289,11 +286,8 @@ export function drawResult(
   ctx.font = '19px sans-serif';
   gains.forEach((g, i) => {
     const y = 180 + i * 56;
-    const def = lookupDef(reg, g.id) ?? { name: g.id, color: '#888888' };
-    ctx.fillStyle = def.color;
-    ctx.beginPath();
-    ctx.arc(40, y - 6, 14, 0, Math.PI * 2);
-    ctx.fill();
+    const def = lookupDef(reg, g.id) ?? { ...FALLBACK_DEF, name: g.id };
+    drawFace(ctx, { x: 40, y: y - 6 }, 14, def, images);
     ctx.fillStyle = INK;
     ctx.fillText(def.name, 66, y);
     ctx.fillStyle = g.leveledUp ? '#ffd479' : '#9fb3c4';

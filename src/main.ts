@@ -86,7 +86,6 @@ const talkMeasure: Measure = (t) => {
 const talkMaxWidth = TALK_WINDOW.w - TALK_BODY_X - TALK_PAD;
 const effects = makeEffectState();
 const images = makeImageCache(imageUrls());
-void images;
 const commands: SimCommand[] = [];
 let accumulator = 0;
 let lastTime = performance.now();
@@ -328,25 +327,25 @@ function render(): void {
       drawTitle(ctx, hasSave);
       break;
     case 'select':
-      drawStageSelect(ctx, registry, save);
+      drawStageSelect(ctx, registry, save, images);
       break;
     case 'talk':
       if (battle && talk) {
-        drawBattle(ctx, registry, battle, null, effects, escorts);
-        drawTalk(ctx, registry, talk, hasReadIntro(save, stageId));
+        drawBattle(ctx, registry, battle, null, effects, escorts, images);
+        drawTalk(ctx, registry, talk, hasReadIntro(save, stageId), images);
       }
       break;
     case 'placement':
       if (battle) {
-        drawBattle(ctx, registry, battle, selected, effects, escorts);
+        drawBattle(ctx, registry, battle, selected, effects, escorts, images);
         drawPlacement(ctx, battle);
-        drawBottomBar(ctx, registry, battle, selected, escorts);
+        drawBottomBar(ctx, registry, battle, selected, escorts, images);
       }
       break;
     case 'battle':
       if (battle) {
-        drawBattle(ctx, registry, battle, selected, effects, escorts);
-        drawBottomBar(ctx, registry, battle, selected, escorts);
+        drawBattle(ctx, registry, battle, selected, effects, escorts, images);
+        drawBottomBar(ctx, registry, battle, selected, escorts, images);
         for (const b of bubbles.items.values()) {
           const unit = battle.units.find((u) => u.uid === b.uid);
           if (unit) drawBubble(ctx, b, mapToLogical(unit.pos));
@@ -355,7 +354,7 @@ function render(): void {
       }
       break;
     case 'result':
-      if (result) drawResult(ctx, registry, result.gains, result.newTitles);
+      if (result) drawResult(ctx, registry, result.gains, result.newTitles, images);
       break;
     case 'defeat':
       drawDefeat(ctx);
@@ -367,7 +366,7 @@ function render(): void {
   if (battle && dragPhaseOk && dragUid !== null && dragMap !== null) {
     const unit = battle.units.find((u) => u.uid === dragUid)!;
     const blocked = !isWalkableAt(battle.grid, dragMap);
-    drawDragPreview(ctx, registry, unit.pos, dragMap, unit.defId, blocked);
+    drawDragPreview(ctx, registry, unit.pos, dragMap, unit.defId, blocked, images);
   }
 }
 

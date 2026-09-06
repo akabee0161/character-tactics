@@ -4,7 +4,10 @@ import { playerUnits } from '../core/sim';
 import { lookupDef } from '../engine/registry';
 import type { Registry } from '../engine/registry';
 import type { StageDef } from '../engine/schema';
+import type { ImageCache } from './images';
 import { sightCircles } from './objectives-view';
+import { drawMapUnit } from './sprites';
+import type { SpriteDef } from './sprites';
 import { LOGICAL_H, LOGICAL_W, MAP_ORIGIN, mapToLogical } from './viewport';
 import {
   ATTACK_LINE_DURATION, BOND_PULSE_DURATION, DAMAGE_TEXT_DURATION, DEFEAT_DURATION,
@@ -32,8 +35,10 @@ const COLORS = {
 
 const UNIT_R = 11;
 
-function defOf(reg: Registry, defId: string): { name: string; color: string } {
-  return lookupDef(reg, defId) ?? { name: defId, color: '#888888' };
+const FALLBACK_DEF = { name: '', color: '#888888', role: '', sprites: { role: null, face: null, map: null } };
+
+function defOf(reg: Registry, defId: string): { name: string; color: string } & SpriteDef {
+  return lookupDef(reg, defId) ?? { ...FALLBACK_DEF, name: defId };
 }
 
 /** EnemyDef.maxHp から見た目の半径を導く。ID を直書きしない */
@@ -48,6 +53,7 @@ export function drawBattle(
   selected: string | null,
   effects: EffectState,
   escorts: Set<string>,
+  images: ImageCache,
 ): void {
   ctx.save();
   ctx.fillStyle = COLORS.sea;
@@ -58,7 +64,7 @@ export function drawBattle(
   drawVictoryMarker(ctx, state.stage);
   drawGoalMarkers(ctx, reg, state, selected);
   drawBonds(ctx, state);
-  drawUnits(ctx, reg, state, selected, effects);
+  drawUnits(ctx, reg, state, selected, effects, images);
   drawEscortMarks(ctx, state, escorts);
   drawEffects(ctx, effects);
   drawTopBar(ctx, state);
@@ -171,6 +177,7 @@ function drawUnits(
   state: BattleState,
   selected: string | null,
   effects: EffectState,
+  images: ImageCache,
 ): void {
   for (const unit of state.units) {
     if (unit.retired) continue;
@@ -181,10 +188,7 @@ function drawUnits(
       : { x: 0, y: 0 };
     const p = mapToLogical({ x: unit.pos.x + kbOffset.x, y: unit.pos.y + kbOffset.y });
     const radius = isAlly ? UNIT_R : enemyRadius(unit.maxHp);
-    ctx.fillStyle = defOf(reg, unit.defId).color;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
-    ctx.fill();
+    drawMapUnit(ctx, p, radius, defOf(reg, unit.defId), images);
 
     if (unit.bowDamageCap !== null) {
       ctx.fillStyle = '#c8ccd4';
@@ -422,10 +426,12 @@ export function drawDragPreview(
   toMap: Vec2,
   defId: string,
   blocked: boolean,
+  images: ImageCache,
 ): void {
   const a = mapToLogical(fromMap);
   const b = mapToLogical(toMap);
-  const color = blocked ? COLORS.hpEnemy : defOf(reg, defId).color;
+  const def = defOf(reg, defId);
+  const color = blocked ? COLORS.hpEnemy : def.color;
 
   ctx.strokeStyle = color;
   ctx.lineWidth = 2;
@@ -437,9 +443,6 @@ export function drawDragPreview(
   ctx.setLineDash([]);
 
   ctx.globalAlpha = 0.5;
-  ctx.fillStyle = color;
-  ctx.beginPath();
-  ctx.arc(b.x, b.y, UNIT_R, 0, Math.PI * 2);
-  ctx.fill();
+  drawMapUnit(ctx, b, UNIT_R, { ...def, color }, images);
   ctx.globalAlpha = 1;
 }
