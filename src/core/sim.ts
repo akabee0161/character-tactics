@@ -1,14 +1,15 @@
 import { AI_BEHAVIORS } from './ai';
 import { bondSupporters } from './bonds';
-import { computeDamage, effectiveInterval, hasThreatWithinMelee, isFunbaruActive, nearestWithin } from './combat';
-import { PINCH_RATIO } from './constants';
+import { effectiveInterval, hasThreatWithinMelee, nearestWithin } from './combat';
 import { accumulate } from './counters';
+import { applyDamage } from './damage';
 import { computeFlowField, distance, flowDirection, hasLineOfSight, isWalkableAt } from './field';
 import { dropUnitField, fieldToStatic, fieldToUnit } from './fields';
 import { awardXpForDefeats } from './growth';
 import { updateObjectives } from './objectives';
+import { spawnProjectile, updateProjectiles } from './projectiles';
 import { useSkill } from './skills';
-import type { BattleState, FlowField, Unit, Vec2 } from './types';
+import type { BattleState, FlowField, HitSource, Unit, Vec2 } from './types';
 
 export function playerUnits(state: BattleState): Unit[] {
   return state.units.filter((u) => u.side === 'player' && !u.retired);
@@ -49,6 +50,7 @@ export function step(state: BattleState, commands: SimCommand[], dt: number): vo
   updateEngagements(state, movedThisTick);
   moveUnits(state, dt);
   resolveAttacks(state, dt);
+  updateProjectiles(state, dt);
   resolveRemoval(state);
   awardXpForDefeats(state);
   updateObjectives(state);
@@ -205,35 +207,15 @@ function resolveAttacks(state: BattleState, dt: number): void {
       });
     }
 
-    const neraiuchi = u.neraiuchiArmed;
-    const before = target.hp;
-    const dmg = computeDamage({
-      power: u.power,
-      guard: target.guard,
-      attackKind: u.attack,
-      bowDamageCap: target.bowDamageCap,
-      bondBonus: bonus,
-      neraiuchi,
-      targetFunbaru: isFunbaruActive(target, state.time),
-    });
-    target.hp -= dmg;
-    target.lastHitBy = u.uid;
-    target.lastHitNeraiuchi = neraiuchi;
+    const source: HitSource = {
+      uid: u.uid, defId: u.defId, attack: u.attack, pos: { ...u.pos },
+      neraiuchi: u.neraiuchiArmed, power: u.power, bondBonus: bonus,
+    };
     u.neraiuchiArmed = false;
     u.attackCooldown = interval;
-    state.events.push({
-      type: 'hit', targetUid: target.uid, targetPos: { ...target.pos }, amount: dmg,
-      sourceUid: u.uid, sourceDefId: u.defId, attackKind: u.attack, sourcePos: { ...u.pos }, neraiuchi,
-    });
 
-    // ピンチのセリフは操作できる味方にだけ出す
-    if (target.side === 'player' && target.hp > 0 && !target.pinchShown) {
-      const ratio = target.hp / target.maxHp;
-      if (ratio < PINCH_RATIO && before / target.maxHp >= PINCH_RATIO) {
-        target.pinchShown = true;
-        state.events.push({ type: 'pinch', uid: target.uid, defId: target.defId });
-      }
-    }
+    if (u.attack === 'melee') applyDamage(state, source, target);
+    else spawnProjectile(state, source, target);
   }
 }
 

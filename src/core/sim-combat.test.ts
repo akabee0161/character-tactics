@@ -231,3 +231,21 @@ describe('撃破と撤退', () => {
   });
 });
 
+describe('ひしょうたい', () => {
+  it('ゆみの こうげきは うった tick では ダメージに ならない', () => {
+    const s = fresh();
+    const ines = unitOf(s, 'ines');
+    ines.pos = { x: 16, y: 16 };
+    const enemy = spawnEnemy(s, 'narazumono', { x: 120, y: 16 });
+    const hp = enemy.hp;
+
+    // こうげきかんかくが あけるまで まわす
+    for (let i = 0; i < 200; i++) {
+      step(s, [], 1 / 60);
+      if (s.projectiles.length > 0) break;
+    }
+    expect(s.projectiles.length).toBeGreaterThan(0);
+    expect(enemy.hp).toBe(hp);
+  });
+});
+
