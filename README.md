@@ -3,8 +3,8 @@
 4人の仲間を率いて、敵の本拠地へ攻め込むリアルタイム侵攻シミュレーション。
 [ankardo](https://ankardo.com) のサブリソースとして `ankardo.com/play/character-tactics/` で公開する。
 
-- 設計: `docs/superpowers/specs/2026-09-06-vertical-pivot-design.md`
-- 実装計画: `docs/superpowers/plans/2026-09-06-vertical-pivot.md`
+- 設計: `docs/superpowers/specs/2026-09-06-map-sprite-animation-design.md`
+- 実装計画: `docs/superpowers/plans/2026-09-07-map-sprite-animation.md`
 
 ## そうさ
 
@@ -76,9 +76,11 @@ headless Chromium で `pointerdown` / `pointerup` として正しく届かない
 | `src/render/` | Canvas2D 描画 |
 | `src/render/images.ts` | 画像の読み込みとキャッシュ |
 | `src/render/sprites.ts` | 画像とプレースホルダを1本にまとめた描画 |
+| `src/render/anim.ts` | 向き・状態・コマ番号の計算（DOM に触らない） |
 | `src/ui/` | 画面遷移・入力・会話フェーズ・吹き出し |
 | `src/ui/skillbutton.ts` | 必殺技ボタンの表示状態 |
 | `src/save/` | localStorage の読み書き |
+| `tools/` | 仮アセットの生成器。本番の絵が揃ったら消す |
 
 `src/core/**` と `src/engine/**` は `window` / `document` / `localStorage` を参照しない。
 
@@ -91,7 +93,8 @@ headless Chromium で `pointerdown` / `pointerup` として正しく届かない
 - **本拠地に到達したときの会話** — ステージの `outro` に書く。書き方は `intro` と同じ
 - **味方・同行 NPC** — `assets/units/<id>.json`。`combat: false` にすると攻撃しない同行者になる
 - **敵** — `assets/enemies/<id>.json`
-- **ユニットの絵** — `assets/images/` に正方形の PNG を置き、`assets/units/<id>.json` の `sprites` にファイル名を書く。`role` はクラスアイコン、`face` は顔（下パネル・ステージ選択・会話・リザルト）、`map` はフィールド上の姿。`null` のあいだは色つきの丸とクラス名の文字が出る。推奨サイズは `face` 128×128、`map` / `role` 64×64
+- **ユニットの絵** — `assets/images/` に PNG を置き、`assets/units/<id>.json`（敵は `assets/enemies/<id>.json`）の `sprites` に書く。`role` はクラスアイコン（64×64）、`face` は顔（128×128。下パネル・ステージ選択・会話・リザルト）、`map` はフィールド上の姿。`map` だけはスプライトシートで、`{ "sheet": "<file>.png", "frame": 32, "idle": { "frames": 2, "fps": 4 }, "walk": {...}, "attack": {...} }` の形。シートは**列 = コマ、行 = 12（3状態 × 4方向）**で、行番号 = 状態index × 4 + 方向index、状態は `idle, walk, attack`、方向は `down, up, left, right` の順。コマは正方形。列数は最大コマ数にそろえ、余りは透明のまま置く。`null` のあいだは色つきの丸とクラス名の文字が出る。実寸と JSON が食い違うと `npm test` が落ちる（`src/engine/sheet-size.test.ts`）
+- **仮の絵の作り直し** — `node tools/gen-placeholder-sprites.mjs`。本番の絵が揃ったらこの生成器は消してよい。差し替えは PNG を上書きするだけで、コマ数を変えるときだけ JSON の数値を直す
 - **攻撃の種別** — `attack` は `melee` / `bow` / `magic`。`bow` と `magic` は飛翔体として飛び、届いた瞬間にダメージが出る。`bowDamageCap` が効くのは `bow` だけ
 - **セリフ** — `assets/lines/*.json`
 - **称号** — `assets/titles.json`。`counter` に使えるキーは `skill:<skillId>:uses` / `skill:<skillId>:hits` / `kill:neraiuchi` / `bond:supports`
