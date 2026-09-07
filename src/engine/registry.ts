@@ -138,7 +138,13 @@ export function buildRegistry(
         errors.push({ file, path: `sprites.${key}`, reason: `assets/images/ に ない ファイル: ${name}` });
       }
     }
-    // sprites.map.sheet の実在検証は Task 2 で実装する
+    // シートの実寸（frame と行数の整合）は起動時には見られない。images.ts は
+    // 読み込みを待たない方針なので、この時点では幅も高さも分からない。
+    // 実寸は src/engine/sheet-size.test.ts が見る
+    const sheet = sprites.map?.sheet;
+    if (sheet !== undefined && !images.has(sheet)) {
+      errors.push({ file, path: 'sprites.map.sheet', reason: `assets/images/ に ない ファイル: ${sheet}` });
+    }
   };
   for (const [id, def] of reg.units) checkSprites(`assets/units/${id}.json`, def.sprites);
   for (const [id, def] of reg.enemies) checkSprites(`assets/enemies/${id}.json`, def.sprites);
