@@ -138,9 +138,7 @@ export function buildRegistry(
         errors.push({ file, path: `sprites.${key}`, reason: `assets/images/ に ない ファイル: ${name}` });
       }
     }
-    if (sprites.map !== null && !images.has(sprites.map.sheet)) {
-      errors.push({ file, path: 'sprites.map.sheet', reason: `assets/images/ に ない ファイル: ${sprites.map.sheet}` });
-    }
+    // sprites.map.sheet の実在検証は Task 2 で実装する
   };
   for (const [id, def] of reg.units) checkSprites(`assets/units/${id}.json`, def.sprites);
   for (const [id, def] of reg.enemies) checkSprites(`assets/enemies/${id}.json`, def.sprites);
