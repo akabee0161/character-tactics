@@ -9,6 +9,7 @@ map は スプライトシート。れつ = コマ、ぎょう = 12（3じょう
 
 face は 128×128、role は 64×64 の せいほうけい。
 
-units/*.json ・ enemies/*.json の sprites に ファイルめいを かくと つかわれる。
+units/*.json ・ enemies/*.json の sprites.role / sprites.face に ファイルめいを かくと つかわれる。
+sprites.map には sheet と アニメーションていぎ を もつ オブジェクトを かく（ファイルめいの もじれつ ではない）。
 かりの え は tools/gen-placeholder-sprites.mjs で つくっている。
 ほんばんの え が そろったら、その ファイルごと けしてよい。

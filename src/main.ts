@@ -346,7 +346,12 @@ function update(dt: number): void {
       pickStageOutro(registry, battle.stage), talkMeasure, talkMaxWidth, TALK_MAX_LINES,
     );
     if (talk.done) finishStage(battle);
-    else phase = 'outro';
+    else {
+      // battle.time は勝利で止まる。anim を持ち越すと最後の攻撃者が
+      // 攻撃コマのまま固まって見えるので、アウトロ開始時にクリアする
+      resetAnim(anim);
+      phase = 'outro';
+    }
   }
 }
 
