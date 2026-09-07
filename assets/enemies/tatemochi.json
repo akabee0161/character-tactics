@@ -6,5 +6,15 @@
   "attackInterval": 1.8, "speed": 35,
   "skillId": null,
   "color": "#6b6b7a",
+  "sprites": {
+    "role": "role-teki.png",
+    "face": "tatemochi-face.png",
+    "map": {
+      "sheet": "tatemochi-map.png", "frame": 32,
+      "idle": { "frames": 2, "fps": 4 },
+      "walk": { "frames": 4, "fps": 8 },
+      "attack": { "frames": 3, "fps": 12 }
+    }
+  },
   "xpReward": 8, "bowDamageCap": 1, "fleeAtHpRatio": null
 }
