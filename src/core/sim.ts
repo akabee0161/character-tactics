@@ -222,6 +222,12 @@ function resolveAttacks(state: BattleState, dt: number): void {
     u.neraiuchiArmed = false;
     u.attackCooldown = interval;
 
+    // 攻撃モーションの起点。近接も飛翔体もここを通る。必殺技は出さない
+    state.events.push({
+      type: 'attack', uid: u.uid, defId: u.defId,
+      pos: { ...u.pos }, targetPos: { ...target.pos },
+    });
+
     if (u.attack === 'melee') applyDamage(state, source, target);
     else spawnProjectile(state, source, target);
   }

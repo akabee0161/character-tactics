@@ -81,6 +81,7 @@ export type BattlePhase = 'placement' | 'battle' | 'victory' | 'defeat';
 
 export type SimEvent =
   | { type: 'engage'; uid: string; defId: string; targetUid: string; targetDefId: string; firstMeeting: boolean }
+  | { type: 'attack'; uid: string; defId: string; pos: Vec2; targetPos: Vec2 }
   | { type: 'skill'; uid: string; defId: string; skillId: string; hits: number; fromPos: Vec2; toPos: Vec2 }
   | { type: 'pinch'; uid: string; defId: string }
   | { type: 'hit'; targetUid: string; targetPos: Vec2; amount: number;
