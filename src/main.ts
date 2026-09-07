@@ -1,6 +1,6 @@
 import { imageUrls, loadRegistry } from './engine/loader';
 import { makeImageCache } from './render/images';
-import { skillParam } from './engine/registry';
+import { lookupDef, skillParam } from './engine/registry';
 import { pickDialogue, pickStageIntro, pickStageOutro } from './core/dialogue';
 import { SKILL_EFFECT_IDS } from './core/skills';
 import { beginBattle, createBattleState, placeUnit } from './core/state';
@@ -92,7 +92,7 @@ const anim = makeAnimStore();
 
 /** 攻撃モーションの長さ。シートを持たないユニットは null */
 function attackDuration(defId: string): number | null {
-  const def = registry.units.get(defId) ?? registry.enemies.get(defId);
+  const def = lookupDef(registry, defId);
   const sheet = def?.sprites.map;
   if (!sheet) return null;
   return sheet.attack.frames / sheet.attack.fps;

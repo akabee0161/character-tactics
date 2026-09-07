@@ -9,8 +9,8 @@ export type AnimFrame = { row: number; col: number };
 export const DIRS: readonly Dir[] = ['down', 'up', 'left', 'right'];
 export const STATES: readonly AnimState[] = ['idle', 'walk', 'attack'];
 
-/** アニメ状態を持たない相手（ドラッグ中の残像など）に使う静止コマ */
-export const STILL: AnimFrame = { row: 0, col: 0 };
+/** アニメ状態を持たない相手（ドラッグ中の残像など）に使う静止コマ。呼び出し元で共有されるので凍結しておく */
+export const STILL: AnimFrame = Object.freeze({ row: 0, col: 0 });
 
 /**
  * 歩行と判定する時間を伸ばす幅。シムは 1/60 の固定ステップ、描画は rAF なので、

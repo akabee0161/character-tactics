@@ -37,6 +37,10 @@ const COLORS = {
 
 const UNIT_R = 11;
 
+// drawEffects 専用。絵入り味方(32px = half 16)に合わせた半径。
+// ガルムなど大きいスプライトには追随しない簡易対応。本格対応は Effect に half を持たせる形で別途行う
+const EFFECT_R = 16;
+
 const FALLBACK_DEF = { name: '', color: '#888888', role: '', sprites: { role: null, face: null, map: null } };
 
 function defOf(reg: Registry, defId: string): { name: string; color: string } & SpriteDef {
@@ -282,7 +286,7 @@ function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void 
         ctx.strokeStyle = e.critical ? `rgba(255, 120, 60, ${ratio})` : `rgba(255, 235, 150, ${ratio})`;
         ctx.lineWidth = e.critical ? 4 : 3;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, UNIT_R + (1 - ratio) * (e.critical ? 20 : 14), 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, EFFECT_R + (1 - ratio) * (e.critical ? 20 : 14), 0, Math.PI * 2);
         ctx.stroke();
         break;
       }
@@ -294,7 +298,7 @@ function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void 
         ctx.fillStyle = e.critical ? '#ff8a3c' : '#ffffff';
         ctx.font = e.critical ? 'bold 18px sans-serif' : '15px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(`${e.amount}`, p.x, p.y - UNIT_R - 14 - rise);
+        ctx.fillText(`${e.amount}`, p.x, p.y - EFFECT_R - 14 - rise);
         ctx.globalAlpha = 1;
         ctx.textAlign = 'left';
         break;
@@ -307,7 +311,7 @@ function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void 
         ctx.fillStyle = '#8fffb0';
         ctx.font = '15px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(`+${e.amount}`, p.x, p.y - UNIT_R - 14 - rise);
+        ctx.fillText(`+${e.amount}`, p.x, p.y - EFFECT_R - 14 - rise);
         ctx.globalAlpha = 1;
         ctx.textAlign = 'left';
         break;
@@ -318,7 +322,7 @@ function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void 
         ctx.strokeStyle = `rgba(150, 255, 180, ${ratio})`;
         ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, UNIT_R + (1 - ratio) * 16, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, EFFECT_R + (1 - ratio) * 16, 0, Math.PI * 2);
         ctx.stroke();
         break;
       }
@@ -375,7 +379,7 @@ function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void 
         ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, UNIT_R + (1 - ratio) * 24, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, EFFECT_R + (1 - ratio) * 24, 0, Math.PI * 2);
         ctx.stroke();
         ctx.globalAlpha = 1;
         break;
@@ -386,7 +390,7 @@ function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void 
         ctx.strokeStyle = `rgba(255, 158, 196, ${ratio})`;
         ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, UNIT_R + (1 - ratio) * 18, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, EFFECT_R + (1 - ratio) * 18, 0, Math.PI * 2);
         ctx.stroke();
         break;
       }
