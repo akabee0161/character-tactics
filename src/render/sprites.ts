@@ -1,5 +1,6 @@
 import { imageFor } from './images';
 import type { ImageCache } from './images';
+import type { AnimFrame } from './anim';
 import type { Sprites } from '../engine/schema';
 import type { Vec2 } from '../core/types';
 import type { Rect } from '../ui/hit';
@@ -40,12 +41,29 @@ export function drawFace(
   drawSquareOrCircle(ctx, center, radius, def.color, imageFor(images, def.sprites.face));
 }
 
+/**
+ * シートがあるときの描画サイズは frame から決まる（等倍）。
+ * radius は丸フォールバック専用で、シートがあるときは使わない
+ */
 export function drawMapUnit(
   ctx: CanvasRenderingContext2D, center: Vec2, radius: number,
-  def: SpriteDef, images: ImageCache,
+  def: SpriteDef, images: ImageCache, frame: AnimFrame,
 ): void {
-  // TODO Task 2: map シートの描画を実装。今はフォールバックで circle を描く
-  drawSquareOrCircle(ctx, center, radius, def.color, null);
+  const sheet = def.sprites.map;
+  if (sheet === null) {
+    circle(ctx, center, radius, def.color);
+    return;
+  }
+  const img = imageFor(images, sheet.sheet);
+  if (img === null) {
+    circle(ctx, center, radius, def.color);
+    return;
+  }
+  const s = sheet.frame;
+  ctx.drawImage(
+    img, frame.col * s, frame.row * s, s, s,
+    Math.round(center.x - s / 2), Math.round(center.y - s / 2), s, s,
+  );
 }
 
 /** クラス。画像が無ければ role の文字を出す */
@@ -60,4 +78,12 @@ export function drawRoleBadge(
     return;
   }
   ctx.drawImage(img, rect.x, rect.y, rect.h, rect.h);
+}
+
+/**
+ * 実際に描く大きさの半分。HPバー・はた・リングの基準にする。
+ * 画像の読み込み待ちでも同じ値を返す（読み終わった瞬間に位置が跳ねないように）
+ */
+export function drawHalf(def: SpriteDef, fallback: number): number {
+  return def.sprites.map === null ? fallback : def.sprites.map.frame / 2;
 }

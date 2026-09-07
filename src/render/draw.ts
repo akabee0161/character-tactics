@@ -6,6 +6,7 @@ import type { Registry } from '../engine/registry';
 import type { StageDef } from '../engine/schema';
 import type { ImageCache } from './images';
 import { sightCircles } from './objectives-view';
+import { STILL } from './anim';
 import { drawMapUnit } from './sprites';
 import type { SpriteDef } from './sprites';
 import { LOGICAL_H, LOGICAL_W, MAP_ORIGIN, mapToLogical } from './viewport';
@@ -218,7 +219,7 @@ function drawUnits(
       : { x: 0, y: 0 };
     const p = mapToLogical({ x: unit.pos.x + kbOffset.x, y: unit.pos.y + kbOffset.y });
     const radius = isAlly ? UNIT_R : enemyRadius(unit.maxHp);
-    drawMapUnit(ctx, p, radius, defOf(reg, unit.defId), images);
+    drawMapUnit(ctx, p, radius, defOf(reg, unit.defId), images, STILL);
 
     if (unit.bowDamageCap !== null) {
       ctx.fillStyle = '#c8ccd4';
@@ -458,6 +459,6 @@ export function drawDragPreview(
   ctx.setLineDash([]);
 
   ctx.globalAlpha = 0.5;
-  drawMapUnit(ctx, b, UNIT_R, { ...def, color }, images);
+  drawMapUnit(ctx, b, UNIT_R, { ...def, color }, images, STILL);
   ctx.globalAlpha = 1;
 }
