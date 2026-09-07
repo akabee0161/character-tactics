@@ -325,3 +325,33 @@ describe('ひしょうたい', () => {
   });
 });
 
+describe('attack イベント', () => {
+  it('きんせつの こうげきの たびに でる', () => {
+    const s = fresh();
+    const roran = unitOf(s, 'roran');
+    roran.pos = { x: 100, y: 100 };
+    spawnEnemy(s, 'narazumono', { x: 110, y: 100 });
+    engageAndAttack(s);
+
+    // てきも おなじ tick で こうげきするので、uid で しぼる
+    const attacks = s.events.filter((e) => e.type === 'attack' && e.uid === roran.uid);
+    expect(attacks.length).toBe(1);
+    const ev = attacks[0]!;
+    if (ev.type !== 'attack') return;
+    expect(ev.uid).toBe(roran.uid);
+    expect(ev.defId).toBe('roran');
+    // てきは みぎに いるので、むきは みぎむきに なる
+    expect(ev.targetPos.x).toBeGreaterThan(ev.pos.x);
+  });
+
+  it('とおくの てきに うつ ゆみでも でる', () => {
+    const s = fresh();
+    const ines = unitOf(s, 'ines');
+    ines.pos = { x: 100, y: 100 };
+    spawnEnemy(s, 'narazumono', { x: 200, y: 100 });
+    engageAndAttack(s, 2.4);
+
+    expect(s.events.some((e) => e.type === 'attack' && e.uid === ines.uid)).toBe(true);
+  });
+});
+

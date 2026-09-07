@@ -6,7 +6,9 @@ import type { Registry } from '../engine/registry';
 import type { StageDef } from '../engine/schema';
 import type { ImageCache } from './images';
 import { sightCircles } from './objectives-view';
-import { drawMapUnit } from './sprites';
+import { STILL, frameFor } from './anim';
+import type { AnimStore } from './anim';
+import { drawHalf, drawMapUnit } from './sprites';
 import type { SpriteDef } from './sprites';
 import { LOGICAL_H, LOGICAL_W, MAP_ORIGIN, mapToLogical } from './viewport';
 import {
@@ -35,6 +37,10 @@ const COLORS = {
 
 const UNIT_R = 11;
 
+// drawEffects 専用。絵入り味方(32px = half 16)に合わせた半径。
+// ガルムなど大きいスプライトには追随しない簡易対応。本格対応は Effect に half を持たせる形で別途行う
+const EFFECT_R = 16;
+
 const FALLBACK_DEF = { name: '', color: '#888888', role: '', sprites: { role: null, face: null, map: null } };
 
 function defOf(reg: Registry, defId: string): { name: string; color: string } & SpriteDef {
@@ -54,6 +60,7 @@ export function drawBattle(
   effects: EffectState,
   escorts: Set<string>,
   images: ImageCache,
+  anim: AnimStore,
 ): void {
   ctx.save();
   ctx.fillStyle = COLORS.sea;
@@ -64,7 +71,7 @@ export function drawBattle(
   drawVictoryMarker(ctx, state.stage);
   drawGoalMarkers(ctx, reg, state, selected);
   drawBonds(ctx, state);
-  drawUnits(ctx, reg, state, selected, effects, images);
+  drawUnits(ctx, reg, state, selected, effects, images, anim);
   drawProjectiles(ctx, state);
   drawEscortMarks(ctx, state, escorts);
   drawEffects(ctx, effects);
@@ -150,10 +157,11 @@ function drawEscortMarks(ctx: CanvasRenderingContext2D, state: BattleState, esco
   for (const u of state.units) {
     if (u.retired || u.side !== 'player' || !escorts.has(u.defId)) continue;
     const p = mapToLogical(u.pos);
+    const half = drawHalf(defOf(state.reg, u.defId), UNIT_R);
     ctx.beginPath();
-    ctx.moveTo(p.x, p.y - UNIT_R - 14);
-    ctx.lineTo(p.x - 6, p.y - UNIT_R - 24);
-    ctx.lineTo(p.x + 6, p.y - UNIT_R - 24);
+    ctx.moveTo(p.x, p.y - half - 14);
+    ctx.lineTo(p.x - 6, p.y - half - 24);
+    ctx.lineTo(p.x + 6, p.y - half - 24);
     ctx.closePath();
     ctx.fill();
   }
@@ -193,12 +201,14 @@ function drawHeart(ctx: CanvasRenderingContext2D, p: Vec2): void {
   ctx.fill();
 }
 
-function drawHpBar(ctx: CanvasRenderingContext2D, p: Vec2, ratio: number, color: string): void {
+function drawHpBar(
+  ctx: CanvasRenderingContext2D, p: Vec2, half: number, ratio: number, color: string,
+): void {
   const w = 26;
   ctx.fillStyle = COLORS.hpBack;
-  ctx.fillRect(p.x - w / 2, p.y - UNIT_R - 9, w, 4);
+  ctx.fillRect(p.x - w / 2, p.y - half - 9, w, 4);
   ctx.fillStyle = color;
-  ctx.fillRect(p.x - w / 2, p.y - UNIT_R - 9, w * Math.max(0, Math.min(1, ratio)), 4);
+  ctx.fillRect(p.x - w / 2, p.y - half - 9, w * Math.max(0, Math.min(1, ratio)), 4);
 }
 
 function drawUnits(
@@ -208,6 +218,7 @@ function drawUnits(
   selected: string | null,
   effects: EffectState,
   images: ImageCache,
+  anim: AnimStore,
 ): void {
   for (const unit of state.units) {
     if (unit.retired) continue;
@@ -217,8 +228,13 @@ function drawUnits(
       ? { x: kb.dir.x * (kb.ttl / KNOCKBACK_DURATION) * 6, y: kb.dir.y * (kb.ttl / KNOCKBACK_DURATION) * 6 }
       : { x: 0, y: 0 };
     const p = mapToLogical({ x: unit.pos.x + kbOffset.x, y: unit.pos.y + kbOffset.y });
+    const def = defOf(reg, unit.defId);
     const radius = isAlly ? UNIT_R : enemyRadius(unit.maxHp);
-    drawMapUnit(ctx, p, radius, defOf(reg, unit.defId), images);
+    const sheet = def.sprites.map;
+    const frame = sheet === null ? STILL : frameFor(anim, unit.uid, sheet, state.time);
+    drawMapUnit(ctx, p, radius, def, images, frame);
+    // 絵が入ると 22px から 32px になる。HPバーやリングはこの half を基準にする
+    const half = drawHalf(def, radius);
 
     if (unit.bowDamageCap !== null) {
       ctx.fillStyle = '#c8ccd4';
@@ -228,15 +244,15 @@ function drawUnits(
     if (isAlly) {
       // はた（キャラだとわかるように）
       ctx.fillStyle = COLORS.text;
-      ctx.fillRect(p.x + UNIT_R - 2, p.y - UNIT_R - 6, 2, 10);
-      ctx.fillRect(p.x + UNIT_R, p.y - UNIT_R - 6, 7, 5);
+      ctx.fillRect(p.x + half - 2, p.y - half - 6, 2, 10);
+      ctx.fillRect(p.x + half, p.y - half - 6, 7, 5);
 
       if (unit.uid === selected) {
         ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 3;
         ctx.setLineDash([4, 3]);
         ctx.beginPath();
-        ctx.arc(p.x, p.y, UNIT_R + 10, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, half + 10, 0, Math.PI * 2);
         ctx.stroke();
         ctx.setLineDash([]);
       }
@@ -246,18 +262,18 @@ function drawUnits(
       ctx.strokeStyle = '#ffe27a';
       ctx.lineWidth = 3;
       ctx.beginPath();
-      ctx.arc(p.x, p.y, UNIT_R + 4, 0, Math.PI * 2);
+      ctx.arc(p.x, p.y, half + 4, 0, Math.PI * 2);
       ctx.stroke();
     }
     if (unit.neraiuchiArmed) {
       ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.arc(p.x, p.y, UNIT_R + 7, 0, Math.PI * 2);
+      ctx.arc(p.x, p.y, half + 7, 0, Math.PI * 2);
       ctx.stroke();
     }
     const displayedHp = effects.displayedHp.get(unit.uid) ?? unit.hp;
-    drawHpBar(ctx, p, displayedHp / unit.maxHp, isAlly ? COLORS.hpAlly : COLORS.hpEnemy);
+    drawHpBar(ctx, p, half, displayedHp / unit.maxHp, isAlly ? COLORS.hpAlly : COLORS.hpEnemy);
   }
 }
 
@@ -270,7 +286,7 @@ function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void 
         ctx.strokeStyle = e.critical ? `rgba(255, 120, 60, ${ratio})` : `rgba(255, 235, 150, ${ratio})`;
         ctx.lineWidth = e.critical ? 4 : 3;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, UNIT_R + (1 - ratio) * (e.critical ? 20 : 14), 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, EFFECT_R + (1 - ratio) * (e.critical ? 20 : 14), 0, Math.PI * 2);
         ctx.stroke();
         break;
       }
@@ -282,7 +298,7 @@ function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void 
         ctx.fillStyle = e.critical ? '#ff8a3c' : '#ffffff';
         ctx.font = e.critical ? 'bold 18px sans-serif' : '15px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(`${e.amount}`, p.x, p.y - UNIT_R - 14 - rise);
+        ctx.fillText(`${e.amount}`, p.x, p.y - EFFECT_R - 14 - rise);
         ctx.globalAlpha = 1;
         ctx.textAlign = 'left';
         break;
@@ -295,7 +311,7 @@ function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void 
         ctx.fillStyle = '#8fffb0';
         ctx.font = '15px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(`+${e.amount}`, p.x, p.y - UNIT_R - 14 - rise);
+        ctx.fillText(`+${e.amount}`, p.x, p.y - EFFECT_R - 14 - rise);
         ctx.globalAlpha = 1;
         ctx.textAlign = 'left';
         break;
@@ -306,7 +322,7 @@ function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void 
         ctx.strokeStyle = `rgba(150, 255, 180, ${ratio})`;
         ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, UNIT_R + (1 - ratio) * 16, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, EFFECT_R + (1 - ratio) * 16, 0, Math.PI * 2);
         ctx.stroke();
         break;
       }
@@ -363,7 +379,7 @@ function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void 
         ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, UNIT_R + (1 - ratio) * 24, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, EFFECT_R + (1 - ratio) * 24, 0, Math.PI * 2);
         ctx.stroke();
         ctx.globalAlpha = 1;
         break;
@@ -374,7 +390,7 @@ function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void 
         ctx.strokeStyle = `rgba(255, 158, 196, ${ratio})`;
         ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, UNIT_R + (1 - ratio) * 18, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, EFFECT_R + (1 - ratio) * 18, 0, Math.PI * 2);
         ctx.stroke();
         break;
       }
@@ -458,6 +474,15 @@ export function drawDragPreview(
   ctx.setLineDash([]);
 
   ctx.globalAlpha = 0.5;
-  drawMapUnit(ctx, b, UNIT_R, { ...def, color }, images);
+  drawMapUnit(ctx, b, UNIT_R, def, images, STILL);
   ctx.globalAlpha = 1;
+
+  if (blocked) {
+    const half = drawHalf(def, UNIT_R);
+    ctx.strokeStyle = COLORS.hpEnemy;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, half + 3, 0, Math.PI * 2);
+    ctx.stroke();
+  }
 }

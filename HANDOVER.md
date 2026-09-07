@@ -1,72 +1,75 @@
 # Session Handover
-## Generated: 2026-09-06T21:05:00+00:00
+## Generated: 2026-09-07T12:52:00+00:00
 
 ## Current State
 
-- **Branch**: `feat/vertical-pivot`(push 済み、PR #9 作成済み、`origin/main` から未マージ)
-- **PR**: https://github.com/akabee0161/character-tactics/pull/9
+- **Branch**: `feat/map-sprite-animation`(`origin/main` の `dfa9d8b` から分岐、**未 push**)
+- **Last Commit**: 全10タスク実装後の最終全体レビュー指摘を反映した修正コミット(直前 HEAD は `8cce2c3 docs: スプライトシートの規約と差し替え手順を README に書く`)
 - **Uncommitted Changes**: なし
+- **状態**: `npm test` / `npm run build` とも成功。実装は完了しており、ブランチの push と PR 作成が残っている
+
+PR #9(縦画面化)は `dfa9d8b` として `main` にマージ済み。その続きの作業。
 
 ## What Was Done
 
-`docs/superpowers/plans/2026-09-06-vertical-pivot.md` の実装計画を Task 1 から Task 20 まで**全て完了した**。各タスクは TDD(失敗するテスト → 実装 → 通す → コミット)で進め、タスクごとに `npm test` と `npm run build` の両方を確認してからコミットしている。
+`docs/superpowers/plans/2026-09-07-map-sprite-animation.md` の全10タスクを、タスクごとに TDD(失敗するテスト → 実装 → 通す → コミット)で実装し、各タスクでレビューを受けてコミットした。
 
-1. Task 1〜6: 論理解像度を 540×945 の縦画面にし、レイアウト定数・各画面描画・情報バー・ステージ3本・`index.html` を縦向きに作り直した
-2. Task 7: 必殺技ボタンを下パネルの固定位置(`SKILL_BUTTON`)へ移し、`skillbutton.ts` を新設した
-3. Task 8: 吹き出しのタップ判定を `pointerdown` から `pointerup` へ移し、ドラッグでの移動指示を吹き出しが奪わないようにした
-4. Task 9: 下パネルのポートレートにユニットクラス(役割名)を表示した
-5. Task 10〜13: `UnitDef.sprites`(画像ファイル名、省略可)をスキーマに追加し、起動時に画像の存在を検証し、`assets/images/*.png` を読み込む経路(`render/images.ts`)を作り、画像とプレースホルダ描画を1本の関数(`render/sprites.ts`)に統合した
-6. Task 14: `sim.ts` の `moveUnits` を直し、プレイヤーが指示した移動は交戦中でも止まらないようにした(`hasOrderedMove`)。移動先マーカーを薄くする演出も廃止した
-7. Task 15: 弓と魔法を飛翔体化した(`core/damage.ts`, `core/projectiles.ts` 新設)。`isFunbaruActive` を `skills.ts`→`combat.ts`、`PINCH_RATIO` を `sim.ts`→`constants.ts` へ移設してから着手
-8. Task 16: 飛翔体を描画し、弓の線の演出(`attackLine`)を廃止した
-9. Task 17: ミストに `magic` 攻撃を持たせた(クラス表示は「まほう」)
-10. Task 18: ステージに `outro`(本拠地到達時の会話)を書けるようにした
-11. Task 19: 本拠地に到達したときに `outro` 会話を出し、読み終えるとリザルトへ進む配線をした
-12. Task 20: README を更新した(操作説明・構成表・コンテンツの足しかた・ブラウザ確認手順)
+1. Task 1: `schema.ts` に `MapSheet` を追加(`sprites.map` を文字列からオブジェクトへ)
+2. Task 2: `registry.ts` で `sprites.map.sheet` の実在を検証
+3. Task 3: `core` に `attack` イベントを追加(`sim.ts` の `resolveAttacks`)
+4. Task 4: `src/render/anim.ts` を新設(`dirOf` / `frameOf` などの純粋関数)
+5. Task 5: `anim.ts` に状態更新を追加(`noteAttacks` / `updateMotion` / `frameFor`)
+6. Task 6: `sprites.ts` の `drawMapUnit` をシート対応にし、`drawHalf` を追加
+7. Task 7: `draw.ts` と `main.ts` を配線(オフセット・ドラッグ残像・`imageSmoothingEnabled`)
+8. Task 8: `tools/gen-placeholder-sprites.mjs` で仮アセットを生成し同梱
+9. Task 9: 7体の JSON をシートにつなぎ、PNG 実寸のテストを追加(`@types/node` もここ)
+10. Task 10: README と `assets/images/README.txt` を更新し、CDP でブラウザ目視確認
 
-**計画に無かった追加対応(実装中に見つけた問題への対処):**
-
-- `viewport.test.ts` の既存テスト「マップ原点ぶんずれる」が `MAP_ORIGIN.x` の変更(0→14)で不整合になっていたため、x 成分も原点分ずれるよう修正した
-- ステージのマップ縮小(30列→16列)に伴い、`skills.test.ts`(かけぬけるの壁判定テスト2件)と `sim.test.ts`(敵の移動確認テスト1件)がハードコードされた座標のずれで壊れたため、新しい16列マップに合わせて座標を調整した
-- Task 13 で画像差し替えの実機検証を行った際、ImageMagick も Pillow も使えない環境だったため Node.js の `zlib` で直接 32×32 の白色 PNG を生成して確認した(確認後、生成物と `roran.json` の変更は元に戻し済み)
-- Task 14 の新規テストで、配置ゾーン付近にいる `ines`(弓、range160)が意図せず敵と交戦してしまい、`claimed` セットに敵の uid が入ってロランの交戦判定を妨げる問題を発見。テスト内でロラン以外のプレイヤーユニットを退場させる `isolateRoran` ヘルパーを追加して解決した
-- PR #9 への CodeRabbitAI レビューで4件の指摘を受け、以下を修正した:
-  - `sim.ts`: `resolveAttacks` で発射した飛翔体を同じ tick の `updateProjectiles` が処理してしまい、至近距離(bow で 8px、magic で 6px 以下)だと発射 tick に着弾していた。`moveUnits → updateProjectiles → resolveAttacks` の順に入れ替えて解消。既存の弓のテストが「大きな dt 1回で着弾まで完了する」前提だったため、`sim-combat.test.ts` に `advanceFine`(細かい dt を積み上げるヘルパー)を足して4件のテストを直した
-  - `skillbutton.ts`: 選択済みユニットが退却済み/スキルなしのときも未選択と同じ「なかまを えらぶ」を返していたため、`RETIRED`(「たいきゃくした」)/`NO_SKILL`(「わざが ない」)を分離した
-  - HANDOVER.md・README.md のドキュメント不整合(このファイル自体と、README のブラウザ確認手順が `Input.dispatchMouseEvent` のままだった点)を修正
+途中で fix round(小さな指摘の修正)を何度か挟みつつ全タスクを完了させたあと、ブランチ全体を通した最終全体レビューを実施した。そこで挙がった5点(`drawEffects` のサイズ追随・`main.ts` の重複ヘルパー・`STILL` のミュータブル共有・`HANDOVER.md` の陳腐化・README のスプライト説明の不正確な記述)を今回まとめて修正した。これが本コミットの内容。
 
 ## What Remains
 
-実装計画の Task 1〜20 は全て完了。**PR #9 のレビュー対応・マージが残作業。**
+実装は完了している。残っているのは以下のみ。
 
-- [ ] PR #9 のレビューコメントで未対応のものが無いか再確認
-- [ ] マージ後、`feat/vertical-pivot` ブランチと関連メモリ(`project_character_tactics_vertical_pivot.md`)のクローズ処理
+- [ ] ブランチを push する
+- [ ] PR を作成する
 
 ## Key Decisions Made
 
-`HANDOVER.md`(前セッション分、`git show 316ae96:HANDOVER.md` などで参照可)に記載の decisions がそのまま有効。加えて今セッションで:
+設計時にユーザーと合意済み。
 
-- **ブラウザ確認は Node.js の `ws` パッケージ(character-tactics の node_modules 内)を使い、CDP 経由で `Runtime.evaluate` から直接 `PointerEvent` を dispatch する方式に落ち着いた。** `Input.dispatchMouseEvent` は headless Chromium で `pointerdown`/`pointerup` として正しく届かないことがあった
-- **一時ファイル(`.tmp-cdp-drive.cjs` など)はプロジェクト直下に作って作業後に必ず削除する。** `/tmp` 配下だと `ws` モジュールが解決できないため
-- **飛翔体の発射と着弾は必ず別 tick にする。** 同じ tick で処理すると至近距離で見た目が飛ばずダメージだけ入る事故になる(PR レビューで発覚)
+- **フレームは正方形固定。** 縦長(32×48 など)を許すと足元アンカーの規約が別途必要になる
+- **`sprites.map` は `MapSheet` オブジェクトか `null` のみ。** 旧い単体 PNG 文字列との互換は残さない(実アセットがまだ無く、互換を残す相手がいない)
+- **`role` と `face` は静止画のまま。** 動かす対象ではない
+- **シートの実寸検証は起動時ではなく vitest。** `images.ts` は方針として画像の読み込みを待たないので、起動時点では幅も高さも分からない。PNG の IHDR(先頭24バイト)を直接読んで JSON と突き合わせる
+- **必殺技には専用モーションを付けない。** 攻撃モーションは通常攻撃だけに紐づける
+- **攻撃中は向きを攻撃方向に固定する。** 歩きながら撃つゲームなので移動由来の向きと競合する。固定されるのは時間の1〜2割(攻撃 0.25秒 / 攻撃間隔 1.4〜2.4秒)
+- **歩行判定に `WALK_HOLD = 0.12` 秒のヒステリシス。** シムは 1/60 固定ステップ、描画は rAF なので、120Hz 端末では差分ゼロのフレームが必ず出てちらつく
+- **アニメの時計は壁時計ではなく `battle.time`。** 補間描画は無く、シムが止まればアニメも止まるのが正しい
+- **絵が入ると味方は直径 22px → 32px になる。** `UNIT_R` を直接見ているオフセット(HPバー・はた・選択リング・護衛の印)は `drawHalf(def, fallback)` に寄せた
+- **`enemyRadius(maxHp)` は丸フォールバック専用として残す。** スプライトの大小は `frame` で表す(ガルムだけ 48)
+- **仮アセットは生成器で作ってコミットする。** 本番の絵が揃ったら `tools/gen-placeholder-sprites.mjs` ごと消す前提
+- **`drawEffects` のサイズ追随は簡易対応。** 最終レビューで `UNIT_R` 直参照を `EFFECT_R`(32px絵基準)に差し替えたが、ガルムなど48px絵には追随していない。本格対応(Effect に half を持たせる)は別途
 
 ## Known Issues / Blockers
 
-- ブロッカーは無い
-- **作業ディレクトリの cwd が時々 `/home/ubuntu/workspace` に戻ることがある。** `npx vitest` 等を実行する前に `cd /home/ubuntu/workspace/character-tactics` を確認すること
-- ブラウザ確認は Playwright パッケージ不要。`~/.cache/ms-playwright/chromium-1140/chrome-linux/chrome` を `--headless=new --no-sandbox --disable-gpu --remote-debugging-port=<port> --window-size=540,945` で起動し、CDP で駆動する
-- 矢・魔法の飛翔体そのものの視覚描画は着弾までが短命すぎて、連写スクリーンショットでも捕捉できなかった(ロジックは型チェック・ユニットテストで検証済み)
+- ブロッカーは無い。ベースラインは green
+- `.claude/worktrees/character-tactics-impl/` に古い worktree が残っている(`vite.config.ts` の `exclude` で二重実行は防いである)。今回の作業とは無関係なので触らない
+- 仮アセットの品質はチビ体のシルエット止まり。デバッグの丸よりは良いが本番の絵には遠い、というのは織り込み済み
+- `drawEffects` の被弾/回復/撃破/絆リングは、ガルム(48px絵)に対してはやや小さめのまま表示される(上記「簡易対応」参照)
 
 ## Context Files
 
-読む順:
+上から順に読む。
 
-1. PR #9(https://github.com/akabee0161/character-tactics/pull/9) — 残作業の本体。レビューコメントを確認する
-2. `docs/superpowers/plans/2026-09-06-vertical-pivot.md` — 実装計画(完了済み、参照用)
-3. `docs/superpowers/specs/2026-09-06-vertical-pivot-design.md` — 設計書。なぜその形にしたかはここ
+- `docs/superpowers/plans/2026-09-07-map-sprite-animation.md` — 実装計画(ログ)
+- `docs/superpowers/specs/2026-09-06-map-sprite-animation-design.md` — なぜその設計なのか(ログ)
+- `CLAUDE.md` — コミット規約・テスト方針・ドキュメントの扱い
+- `README.md` — 現状の仕様と CDP でのブラウザ確認手順
+- `src/engine/schema.ts` — `MapSheet` の定義と検証
+- `src/render/sprites.ts` / `src/render/draw.ts` / `src/render/anim.ts` — 描画・アニメの実体
 
 ## Recommended Next Steps
 
-1. 新しいセッションを開く: `claude`
-2. `gh pr view 9 --json reviews,comments` で PR #9 のレビュー状況を再確認する
-3. 未対応の指摘が無ければ、ユーザーの指示に従いマージ or 追加レビュー依頼を進める
+1. ブランチを push する(`git push -u origin feat/map-sprite-animation`)
+2. PR を作成する(`main` の `dfa9d8b` を base に)

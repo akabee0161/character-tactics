@@ -6,5 +6,15 @@
   "attackInterval": 1.4, "speed": 55,
   "skillId": null,
   "color": "#b03a3a",
+  "sprites": {
+    "role": "role-teki.png",
+    "face": "garum-face.png",
+    "map": {
+      "sheet": "garum-map.png", "frame": 48,
+      "idle": { "frames": 2, "fps": 4 },
+      "walk": { "frames": 4, "fps": 8 },
+      "attack": { "frames": 3, "fps": 12 }
+    }
+  },
   "xpReward": 20, "bowDamageCap": null, "fleeAtHpRatio": 0.3
 }

@@ -1,6 +1,6 @@
 import { imageUrls, loadRegistry } from './engine/loader';
 import { makeImageCache } from './render/images';
-import { skillParam } from './engine/registry';
+import { lookupDef, skillParam } from './engine/registry';
 import { pickDialogue, pickStageIntro, pickStageOutro } from './core/dialogue';
 import { SKILL_EFFECT_IDS } from './core/skills';
 import { beginBattle, createBattleState, placeUnit } from './core/state';
@@ -10,6 +10,7 @@ import { drawBattle, drawDragPreview } from './render/draw';
 import { escortDefIds } from './render/objectives-view';
 import { isWalkableAt } from './core/field';
 import { makeEffectState, resetEffects, spawnEffects, syncDisplayedHp, tickEffects } from './render/effects';
+import { makeAnimStore, noteAttacks, resetAnim, updateMotion } from './render/anim';
 import { LOGICAL_H, LOGICAL_W, computeViewport, logicalToMap, mapToLogical, screenToLogical } from './render/viewport';
 import { clearBubbles, dismissBubble, makeBubbleState, pushBubbles, tickBubbles } from './ui/bubbles';
 import { applyStageClear, hasReadIntro, isStageUnlocked, markIntroRead } from './ui/flow';
@@ -44,6 +45,8 @@ function resize(): void {
   canvas.height = Math.floor(LOGICAL_H * scale * window.devicePixelRatio);
   canvas.style.width = `${Math.floor(LOGICAL_W * scale)}px`;
   canvas.style.height = `${Math.floor(LOGICAL_H * scale)}px`;
+  // width への代入でコンテキストの状態が全部リセットされるので、ここで毎回入れ直す
+  ctx.imageSmoothingEnabled = false;
 }
 window.addEventListener('resize', resize);
 resize();
@@ -85,6 +88,15 @@ const talkMeasure: Measure = (t) => {
 };
 const talkMaxWidth = TALK_WINDOW.w - TALK_BODY_X - TALK_PAD;
 const effects = makeEffectState();
+const anim = makeAnimStore();
+
+/** 攻撃モーションの長さ。シートを持たないユニットは null */
+function attackDuration(defId: string): number | null {
+  const def = lookupDef(registry, defId);
+  const sheet = def?.sprites.map;
+  if (!sheet) return null;
+  return sheet.attack.frames / sheet.attack.fps;
+}
 const images = makeImageCache(imageUrls());
 const commands: SimCommand[] = [];
 let accumulator = 0;
@@ -105,6 +117,7 @@ function beginStage(index: number): void {
   pendingSkill = null;
   clearBubbles(bubbles);
   resetEffects(effects);
+  resetAnim(anim);
   pointerStart = null;
   dragMap = null;
   commands.length = 0;
@@ -320,8 +333,10 @@ function update(dt: number): void {
     const batch = commands.splice(0, commands.length);
     step(battle, batch, FIXED_DT);
     spawnEffects(effects, battle.events);
+    noteAttacks(anim, battle.events, battle.time, attackDuration);
     pushBubbles(bubbles, pickDialogue(battle.reg, battle.events));
   }
+  updateMotion(anim, battle.units, battle.time);
 
   if (battle.phase === 'defeat') {
     phase = 'defeat';
@@ -331,7 +346,12 @@ function update(dt: number): void {
       pickStageOutro(registry, battle.stage), talkMeasure, talkMaxWidth, TALK_MAX_LINES,
     );
     if (talk.done) finishStage(battle);
-    else phase = 'outro';
+    else {
+      // battle.time は勝利で止まる。anim を持ち越すと最後の攻撃者が
+      // 攻撃コマのまま固まって見えるので、アウトロ開始時にクリアする
+      resetAnim(anim);
+      phase = 'outro';
+    }
   }
 }
 
@@ -350,26 +370,26 @@ function render(): void {
       break;
     case 'talk':
       if (battle && talk) {
-        drawBattle(ctx, registry, battle, null, effects, escorts, images);
+        drawBattle(ctx, registry, battle, null, effects, escorts, images, anim);
         drawTalk(ctx, registry, talk, hasReadIntro(save, stageId), images);
       }
       break;
     case 'outro':
       if (battle && talk) {
-        drawBattle(ctx, registry, battle, null, effects, escorts, images);
+        drawBattle(ctx, registry, battle, null, effects, escorts, images, anim);
         drawTalk(ctx, registry, talk, save.clearedStageIds.includes(stageId), images);
       }
       break;
     case 'placement':
       if (battle) {
-        drawBattle(ctx, registry, battle, selected, effects, escorts, images);
+        drawBattle(ctx, registry, battle, selected, effects, escorts, images, anim);
         drawPlacement(ctx, battle);
         drawBottomBar(ctx, registry, battle, selected, escorts, images);
       }
       break;
     case 'battle':
       if (battle) {
-        drawBattle(ctx, registry, battle, selected, effects, escorts, images);
+        drawBattle(ctx, registry, battle, selected, effects, escorts, images, anim);
         drawBottomBar(ctx, registry, battle, selected, escorts, images);
         for (const b of bubbles.items.values()) {
           const unit = battle.units.find((u) => u.uid === b.uid);

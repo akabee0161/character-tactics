@@ -6,5 +6,15 @@
   "attackInterval": 1.6, "speed": 45,
   "skillId": null,
   "color": "#8a5a4a",
+  "sprites": {
+    "role": "role-teki.png",
+    "face": "narazumono-face.png",
+    "map": {
+      "sheet": "narazumono-map.png", "frame": 32,
+      "idle": { "frames": 2, "fps": 4 },
+      "walk": { "frames": 4, "fps": 8 },
+      "attack": { "frames": 3, "fps": 12 }
+    }
+  },
   "xpReward": 5, "bowDamageCap": null, "fleeAtHpRatio": null
 }

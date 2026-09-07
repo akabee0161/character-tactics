@@ -280,7 +280,7 @@ describe('ステージの ならびじゅん', () => {
 });
 
 describe('sprites の ファイルの そんざい', () => {
-  const withSprite = (sprites: Record<string, string | null>) =>
+  const withSprite = (sprites: Record<string, unknown>) =>
     files({ 'assets/units/roran.json': { ...UNIT, sprites } });
 
   it('ある ファイルめいなら とおる', () => {
@@ -299,5 +299,23 @@ describe('sprites の ファイルの そんざい', () => {
   it('null は せいじょう', () => {
     const r = buildRegistry(withSprite({ role: null, face: null, map: null }), KNOWN_SKILLS, []);
     expect(r.ok).toBe(true);
+  });
+
+  const SHEET = {
+    sheet: 'roran-map.png', frame: 32,
+    idle: { frames: 2, fps: 4 }, walk: { frames: 4, fps: 8 }, attack: { frames: 3, fps: 12 },
+  };
+
+  it('ある シートなら とおる', () => {
+    const r = buildRegistry(withSprite({ map: SHEET }), KNOWN_SKILLS, ['roran-map.png']);
+    expect(r.ok).toBe(true);
+  });
+
+  it('ない シートは エラーに なる', () => {
+    const r = buildRegistry(withSprite({ map: { ...SHEET, sheet: 'nai.png' } }), KNOWN_SKILLS, ['roran-map.png']);
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.errors[0]?.path).toBe('sprites.map.sheet');
+    expect(r.errors[0]?.reason).toContain('nai.png');
   });
 });
