@@ -44,7 +44,8 @@ export function drawMapUnit(
   ctx: CanvasRenderingContext2D, center: Vec2, radius: number,
   def: SpriteDef, images: ImageCache,
 ): void {
-  drawSquareOrCircle(ctx, center, radius, def.color, imageFor(images, def.sprites.map));
+  // TODO Task 2: map シートの描画を実装。今はフォールバックで circle を描く
+  drawSquareOrCircle(ctx, center, radius, def.color, null);
 }
 
 /** クラス。画像が無ければ role の文字を出す */

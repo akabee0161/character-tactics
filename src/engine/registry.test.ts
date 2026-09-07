@@ -280,7 +280,7 @@ describe('ステージの ならびじゅん', () => {
 });
 
 describe('sprites の ファイルの そんざい', () => {
-  const withSprite = (sprites: Record<string, string | null>) =>
+  const withSprite = (sprites: Record<string, unknown>) =>
     files({ 'assets/units/roran.json': { ...UNIT, sprites } });
 
   it('ある ファイルめいなら とおる', () => {

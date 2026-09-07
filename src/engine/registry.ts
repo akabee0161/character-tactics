@@ -132,11 +132,14 @@ export function buildRegistry(
 
   const images = new Set(imageNames);
   const checkSprites = (file: string, sprites: Sprites): void => {
-    for (const key of ['role', 'face', 'map'] as const) {
+    for (const key of ['role', 'face'] as const) {
       const name = sprites[key];
       if (name !== null && !images.has(name)) {
         errors.push({ file, path: `sprites.${key}`, reason: `assets/images/ に ない ファイル: ${name}` });
       }
+    }
+    if (sprites.map !== null && !images.has(sprites.map.sheet)) {
+      errors.push({ file, path: 'sprites.map.sheet', reason: `assets/images/ に ない ファイル: ${sprites.map.sheet}` });
     }
   };
   for (const [id, def] of reg.units) checkSprites(`assets/units/${id}.json`, def.sprites);

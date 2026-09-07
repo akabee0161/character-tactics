@@ -103,21 +103,61 @@ function finish<T>(ctx: Ctx, value: T): Validated<T> {
   return ctx.errors.length > 0 ? { ok: false, errors: ctx.errors } : { ok: true, value };
 }
 
-/** ユニットの絵。値は assets/images/ の中のファイル名。null なら図形で描く */
-export type Sprites = { role: string | null; face: string | null; map: string | null };
+/** フィールド用スプライトシートの1状態ぶん */
+export type MapAnim = { frames: number; fps: number };
+
+/**
+ * フィールド用スプライトシート。行 = 状態index × 4 + 方向index の 12 行。
+ * 状態は idle, walk, attack の順、方向は down, up, left, right の順
+ */
+export type MapSheet = {
+  /** assets/images 内のファイル名 */
+  sheet: string;
+  /** 1フレームの一辺。正方形 */
+  frame: number;
+  idle: MapAnim;
+  walk: MapAnim;
+  attack: MapAnim;
+};
+
+/** ユニットの絵。role と face は静止画のまま。map だけがシート */
+export type Sprites = { role: string | null; face: string | null; map: MapSheet | null };
 
 const NO_SPRITES: Sprites = { role: null, face: null, map: null };
+
+function readMapAnim(ctx: Ctx, path: string, v: unknown): MapAnim | null {
+  const o = requireObject(ctx, path, v);
+  if (!o) return null;
+  const frames = requireNumber(ctx, `${path}.frames`, o.frames, { min: 1, int: true });
+  // 1fps 未満は 1コマが 1秒より長い。実用しないので下限を 1 にする
+  const fps = requireNumber(ctx, `${path}.fps`, o.fps, { min: 1 });
+  if (frames === null || fps === null) return null;
+  return { frames, fps };
+}
+
+function readMapSheet(ctx: Ctx, v: unknown): MapSheet | null {
+  if (v === undefined || v === null) return null;
+  const o = requireObject(ctx, 'sprites.map', v);
+  if (!o) return null;
+  const sheet = requireString(ctx, 'sprites.map.sheet', o.sheet);
+  const frame = requireNumber(ctx, 'sprites.map.frame', o.frame, { min: 1, int: true });
+  const idle = readMapAnim(ctx, 'sprites.map.idle', o.idle);
+  const walk = readMapAnim(ctx, 'sprites.map.walk', o.walk);
+  const attack = readMapAnim(ctx, 'sprites.map.attack', o.attack);
+  if (sheet === null || frame === null || idle === null || walk === null || attack === null) return null;
+  return { sheet, frame, idle, walk, attack };
+}
 
 function readSprites(ctx: Ctx, v: unknown): Sprites {
   if (v === undefined) return { ...NO_SPRITES };
   const o = requireObject(ctx, 'sprites', v);
   if (!o) return { ...NO_SPRITES };
-  const one = (key: keyof Sprites): string | null => {
+  const name = (key: 'role' | 'face'): string | null => {
     const raw = o[key];
     if (raw === undefined || raw === null) return null;
     return requireString(ctx, `sprites.${key}`, raw);
   };
-  return { role: one('role'), face: one('face'), map: one('map') };
+  return { role: name('role'), face: name('face'), map: readMapSheet(ctx, o.map) };
 }
 
 export type UnitDef = {

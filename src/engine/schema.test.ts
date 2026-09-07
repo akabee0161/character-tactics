@@ -100,6 +100,53 @@ describe('validateUnitDef', () => {
   });
 });
 
+const SHEET = {
+  sheet: 'roran-map.png', frame: 32,
+  idle: { frames: 2, fps: 4 },
+  walk: { frames: 4, fps: 8 },
+  attack: { frames: 3, fps: 12 },
+};
+
+describe('sprites.map の シート', () => {
+  it('シートを かくと そのまま よめる', () => {
+    const r = validateUnitDef('assets/units/roran.json', { ...VALID_UNIT, sprites: { map: SHEET } });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.value.sprites.map).toEqual(SHEET);
+  });
+
+  it('null なら null の まま', () => {
+    const r = validateUnitDef('assets/units/roran.json', { ...VALID_UNIT, sprites: { map: null } });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.value.sprites.map).toBe(null);
+  });
+
+  it('もじれつは うけつけない', () => {
+    const r = validateUnitDef('assets/units/roran.json', { ...VALID_UNIT, sprites: { map: 'roran.png' } });
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.errors[0]?.path).toBe('sprites.map');
+  });
+
+  it('frames が 0 なら エラー', () => {
+    const r = validateUnitDef('assets/units/roran.json', {
+      ...VALID_UNIT, sprites: { map: { ...SHEET, walk: { frames: 0, fps: 8 } } },
+    });
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.errors.some((e) => e.path === 'sprites.map.walk.frames')).toBe(true);
+  });
+
+  it('frame が かけていると エラー', () => {
+    const { frame, ...noFrame } = SHEET;
+    const r = validateUnitDef('assets/units/roran.json', { ...VALID_UNIT, sprites: { map: noFrame } });
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.errors.some((e) => e.path === 'sprites.map.frame')).toBe(true);
+  });
+});
+
 describe('validateEnemyDef', () => {
   it('正しい定義を受け入れる', () => {
     const r = validateEnemyDef('enemies/garum.json', VALID_ENEMY);
