@@ -38,8 +38,8 @@ const LV1: Record<string, CharProgress> = {
   mist: { level: 1, xp: 0 }, gau: { level: 1, xp: 0 },
 };
 
-// AI の くみこみテストは x:400 前後 〜 y:400 前後の座標を つかうため、
-// STAGE(10x3セル)には おさまらない。テストぶんだけ ひろい へやを べつに もつ
+// AI の組み込みテストは x:400 前後〜y:400 前後の座標を使うため、
+// STAGE(10x3セル)には収まらない。テスト分だけ広い部屋を別に持つ
 const AI_STAGE: StageDef = {
   id: 'ai-teststage', order: 10, name: 'AIテスト', cell: 32,
   mapRows: Array.from({ length: 15 }, () => '.'.repeat(30)),
@@ -385,9 +385,9 @@ describe('ユニット型の とうごう', () => {
     const p = state.units.find((u) => u.side === 'player')!;
     const e = state.units.find((u) => u.side === 'enemy')!;
     p.combat = false;
-    // ほかの みかたが かわりに こうげきしないよう とおざける
+    // ほかの味方が代わりに攻撃しないよう遠ざける
     for (const u of state.units) if (u.side === 'player' && u.uid !== p.uid) u.pos = { x: 900, y: 900 };
-    // 到達勝利の はんいの そとで こうせんさせる（そうでないと すぐ victory になり すすまない）
+    // 到達勝利の範囲の外で交戦させる(そうでないとすぐ victory になり進まない)
     e.pos = { x: 16, y: 80 };
     p.pos = { ...e.pos };
     const before = e.hp;
@@ -401,7 +401,7 @@ describe('ユニット型の とうごう', () => {
     const p = state.units.find((u) => u.side === 'player')!;
     const e = state.units.find((u) => u.side === 'enemy')!;
     p.combat = false;
-    // 到達勝利の はんいの そとで こうせんさせる（そうでないと すぐ victory になり すすまない）
+    // 到達勝利の範囲の外で交戦させる(そうでないとすぐ victory になり進まない)
     e.pos = { x: 16, y: 80 };
     p.pos = { ...e.pos };
     const before = p.hp;
@@ -414,9 +414,9 @@ describe('AI の くみこみ', () => {
   function withAi(kind: AiDef, enemyPos: Vec2) {
     const { state } = fresh(AI_STAGE);
     beginBattle(state);
-    // 敵を1体だけにして、その1体の ふるまいを 見る
+    // 敵を1体だけにして、その1体の振る舞いを見る
     state.units = state.units.filter((u) => u.side === 'player');
-    // victory.pos ({x:848,y:240}, radius 40) と かさならない いちに おく
+    // victory.pos ({x:848,y:240}, radius 40) と重ならない位置に置く
     for (const p of state.units) p.pos = { x: 848, y: 112 };
     const def = state.reg.enemies.get('narazumono')!;
     const e = makeTestUnit(state, def, enemyPos, kind);
@@ -473,7 +473,7 @@ describe('AI の くみこみ', () => {
     const { state } = fresh();
     beginBattle(state);
     for (let i = 0; i < 60; i++) step(state, [], 1 / 60);
-    // ユニットごとに 1まい ＋ 静的ゴールぶん。敵の かず × フレームすう には ならない
+    // ユニットごとに1枚 + 静的ゴール分。敵の数 × フレーム数にはならない
     expect(state.fields.byUnit.size).toBeLessThanOrEqual(state.units.length);
   });
 });
@@ -493,15 +493,15 @@ describe('しじされた いどうは とまらない', () => {
     const enemy = state.units.find((u) => u.side === 'enemy')!;
     isolateRoran(state, roran);
     roran.pos = { x: 100, y: 16 };
-    enemy.pos = { x: 110, y: 16 };   // ロランの しゃていない
+    enemy.pos = { x: 110, y: 16 };   // ロランの射程内
     enemy.speed = 0;
 
     step(state, [{ type: 'move', uid: roran.uid, dest: { x: 240, y: 16 } }], 1 / 60);
     const before = roran.pos.x;
     for (let i = 0; i < 30; i++) step(state, [], 1 / 60);
 
-    expect(roran.engagedWith).not.toBeNull();     // こうせんは している
-    expect(roran.pos.x).toBeGreaterThan(before);  // それでも すすんでいる
+    expect(roran.engagedWith).not.toBeNull();     // 交戦はしている
+    expect(roran.pos.x).toBeGreaterThan(before);  // それでも進んでいる
   });
 
   it('とうちゃくすると こうせんで あしが とまる', () => {

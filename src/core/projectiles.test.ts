@@ -70,7 +70,7 @@ describe('updateProjectiles', () => {
       const { state, shooter, target } = fresh();
       const hp = target.hp;
       spawnProjectile(state, sourceOf(shooter), target);
-      if (funbaru) target.funbaruUntil = state.time + 10;  // うった あとで ふんばる
+      if (funbaru) target.funbaruUntil = state.time + 10;  // 撃った後でふんばる
       for (let i = 0; i < 40; i++) updateProjectiles(state, 1 / 60);
       return hp - target.hp;
     };

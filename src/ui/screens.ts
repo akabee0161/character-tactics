@@ -110,7 +110,7 @@ export function drawPlacement(ctx: CanvasRenderingContext2D, state: BattleState)
   ctx.fillStyle = 'rgba(16, 24, 32, 0.35)';
   ctx.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
 
-  // 置ける はんいを 見せる。ここに おけないと プレイヤーが しれない と こまる
+  // 置ける範囲を見せる。ここに置けないとプレイヤーが分からず困る
   ctx.strokeStyle = '#ffd479';
   ctx.lineWidth = 2;
   ctx.setLineDash([5, 4]);

@@ -101,10 +101,10 @@ describe('TalkState', () => {
   it('speaker を ひける。null は 地の文', () => {
     const s = make();
     expect(currentSpeaker(s)).toBe('roran');
-    advanceTalk(s, measure, 1000, 3);  // 1ページめを全文表示
-    advanceTalk(s, measure, 1000, 3);  // 2ページめへ
-    advanceTalk(s, measure, 1000, 3);  // 2ページめを全文表示
-    advanceTalk(s, measure, 1000, 3);  // 2ぎょうめへ
+    advanceTalk(s, measure, 1000, 3);  // 1ページ目を全文表示
+    advanceTalk(s, measure, 1000, 3);  // 2ページ目へ
+    advanceTalk(s, measure, 1000, 3);  // 2ページ目を全文表示
+    advanceTalk(s, measure, 1000, 3);  // 2行目へ
     expect(currentSpeaker(s)).toBeNull();
   });
 });
@@ -166,9 +166,9 @@ describe('advanceTalk の 4ぶんき', () => {
   it('さいごの ページなら つぎの ぎょうへ', () => {
     const s = make();
     tickTalk(s, 100);
-    advanceTalk(s, measure, 1000, 3);  // 2ページめ
+    advanceTalk(s, measure, 1000, 3);  // 2ページ目
     tickTalk(s, 100);
-    advanceTalk(s, measure, 1000, 3);  // 2ぎょうめ
+    advanceTalk(s, measure, 1000, 3);  // 2行目
     expect(s.index).toBe(1);
     expect(s.page).toBe(0);
     expect(s.shown).toBe(0);

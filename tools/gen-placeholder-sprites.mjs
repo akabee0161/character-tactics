@@ -112,17 +112,17 @@ function drawFrame(c, ox, oy, s, def, state, dir, i) {
   // 上向きは背中なので、武器は体より先に（＝奥に）描く
   if (dir === 'up') drawWeapon();
 
-  // あし。walk は左右を振る
+  // 脚。walk は左右を振る
   const swing = state === 'walk' ? [0, 1, 0, -1][i] * 0.05 * s : 0;
   rect(c, ox + 0.36 * s, oy + 0.74 * s + bob, 0.10 * s, 0.14 * s + swing, DARK);
   rect(c, ox + 0.54 * s, oy + 0.74 * s + bob, 0.10 * s, 0.14 * s - swing, DARK);
 
-  // どう
+  // 胴
   rect(c, ox + 0.32 * s, oy + 0.48 * s + bob, 0.36 * s, 0.28 * s, body);
-  // あたま
+  // 頭
   disc(c, ox + 0.50 * s, oy + 0.36 * s + bob, 0.17 * s, SKIN);
 
-  // かみ・かぶりもの。上向きは後頭部なので頭を全部おおう
+  // 髪・被り物。上向きは後頭部なので頭を全部おおう
   const capH = dir === 'up' ? 0.34 * s : 0.16 * s;
   for (let y = 0; y < capH; y++) {
     for (let x = 0; x < 0.34 * s; x++) {
@@ -132,7 +132,7 @@ function drawFrame(c, ox, oy, s, def, state, dir, i) {
     }
   }
 
-  // かお。下向きは両目、横向きは片目だけ、上向きは無し
+  // 顔。下向きは両目、横向きは片目だけ、上向きは無し
   if (dir === 'down') {
     rect(c, ox + 0.42 * s, oy + 0.38 * s + bob, 0.05 * s, 0.06 * s, DARK);
     rect(c, ox + 0.55 * s, oy + 0.38 * s + bob, 0.05 * s, 0.06 * s, DARK);

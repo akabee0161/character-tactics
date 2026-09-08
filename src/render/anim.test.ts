@@ -51,17 +51,17 @@ describe('frameOf', () => {
   });
 
   it('idle と walk は ループする', () => {
-    // idle は 2コマ・4fps なので 0.25びょうで 1コマ すすむ
+    // idle は2コマ・4fpsなので0.25秒で1コマ進む
     expect(frameOf('idle', 'down', SHEET, 0).col).toBe(0);
     expect(frameOf('idle', 'down', SHEET, 0.26).col).toBe(1);
     expect(frameOf('idle', 'down', SHEET, 0.51).col).toBe(0);
-    // walk は 4コマ・8fps
+    // walk は4コマ・8fps
     expect(frameOf('walk', 'up', SHEET, 0.38).col).toBe(3);
     expect(frameOf('walk', 'up', SHEET, 0.51).col).toBe(0);
   });
 
   it('attack は さいごの コマで とまる', () => {
-    // attack は 3コマ・12fps なので 0.25びょうで おわる
+    // attack は3コマ・12fpsなので0.25秒で終わる
     expect(frameOf('attack', 'left', SHEET, 0).col).toBe(0);
     expect(frameOf('attack', 'left', SHEET, 0.09).col).toBe(1);
     expect(frameOf('attack', 'left', SHEET, 0.2).col).toBe(2);
@@ -113,7 +113,7 @@ describe('updateMotion', () => {
     const store = makeAnimStore();
     updateMotion(store, [ally('u1', 0, 100)], 0);
     updateMotion(store, [ally('u1', 0, 90)], 0.1);
-    // うごいていない フレーム。WALK_HOLD の うちは walk の まま
+    // 動いていないフレーム。WALK_HOLD の間は walk のまま
     updateMotion(store, [ally('u1', 0, 90)], 0.1 + WALK_HOLD / 2);
     expect(stateOf(store, 'u1', 0.1 + WALK_HOLD / 2)).toBe('walk');
   });
@@ -158,7 +158,7 @@ describe('noteAttacks', () => {
     const store = makeAnimStore();
     updateMotion(store, [ally('u1', 100, 100)], 0);
     noteAttacks(store, [attackEvent('u1', { x: 100, y: 100 }, { x: 140, y: 100 })], 1, durationOf);
-    // みぎを むいたまま うえへ あるく
+    // 右を向いたまま上へ歩く
     updateMotion(store, [ally('u1', 100, 80)], 1.1);
 
     expect(store.byUid.get('u1')?.dir).toBe('right');
@@ -182,7 +182,7 @@ describe('noteAttacks', () => {
     noteAttacks(store, [attackEvent('u1', { x: 100, y: 100 }, { x: 140, y: 100 })], 1, () => null);
 
     expect(stateOf(store, 'u1', 1)).toBe('idle');
-    // むきだけは かわる
+    // 向きだけは変わる
     expect(store.byUid.get('u1')?.dir).toBe('right');
   });
 });
@@ -197,7 +197,7 @@ describe('frameFor', () => {
     updateMotion(store, [ally('u1', 100, 100)], 0);
     noteAttacks(store, [attackEvent('u1', { x: 100, y: 100 }, { x: 140, y: 100 })], 10, () => ATTACK_DUR);
 
-    // attack / right は 11ぎょうめ。10.0 が 0コマめ、10.09 が 1コマめ
+    // attack / right は11行目。10.0 が0コマ目、10.09 が1コマ目
     expect(frameFor(store, 'u1', SHEET, 10)).toEqual({ row: 11, col: 0 });
     expect(frameFor(store, 'u1', SHEET, 10.09)).toEqual({ row: 11, col: 1 });
   });

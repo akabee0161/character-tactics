@@ -12,7 +12,7 @@ const ENEMY = {
   attackInterval: 1.6, speed: 45, skillId: null, color: '#8a5a4a',
   xpReward: 5, bowDamageCap: null, fleeAtHpRatio: null,
 };
-// bonds.json のデフォルトフィクスチャが roran との きずなを持つため、
+// bonds.json のデフォルトフィクスチャが roran との絆を持つため、
 // もう1人のユニットとして定義しておく（ブリーフのフィクスチャ不足を補うためのローカルな追加）
 const INES = {
   id: 'ines', name: 'イネス', role: 'ゆみ', combat: true,

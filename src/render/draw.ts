@@ -111,7 +111,7 @@ function drawVictoryMarker(ctx: CanvasRenderingContext2D, stage: StageDef): void
   ctx.arc(p.x, p.y, stage.victory.radius, 0, Math.PI * 2);
   ctx.stroke();
 
-  // はた。ここが ゴールだと ひと目で わかるように
+  // 旗。ここがゴールだとひと目でわかるように
   ctx.fillStyle = COLORS.goal;
   ctx.fillRect(p.x - 2, p.y - 26, 4, 26);
   ctx.beginPath();
@@ -242,7 +242,7 @@ function drawUnits(
     }
 
     if (isAlly) {
-      // はた（キャラだとわかるように）
+      // 旗(キャラだとわかるように)
       ctx.fillStyle = COLORS.text;
       ctx.fillRect(p.x + half - 2, p.y - half - 6, 2, 10);
       ctx.fillRect(p.x + half, p.y - half - 6, 7, 5);

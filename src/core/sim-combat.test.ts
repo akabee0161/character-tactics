@@ -5,7 +5,7 @@ import { testRegistry } from './testing';
 import type { StageDef, Unit } from './types';
 import type { BattleState, CharProgress, Vec2 } from './types';
 
-// units のうち敵側に常時 1 体だけ入れておく。ゴールから遠く離れた位置に置いて
+// units のうち敵側に常時1体だけ入れておく。ゴールから遠く離れた位置に置いて
 // 自然には撃破されない状態にしておく
 const STAGE: StageDef = {
   id: 'teststage', order: 10, name: 'テスト', cell: 32,
@@ -81,7 +81,7 @@ describe('攻撃の解決', () => {
     step(s, [], 0.01);
     expect(e.hp).toBe(12);      // 交戦成立の直後はまだ攻撃していない
     step(s, [], 1.7);
-    expect(e.hp).toBe(12 - 5);  // ロラン ちから6 - まもり1
+    expect(e.hp).toBe(12 - 5);  // ロラン 力6 - 守り1
   });
 
   it('攻撃間隔が来るまでは追加ダメージが入らない', () => {
@@ -253,7 +253,7 @@ describe('ひしょうたい', () => {
     const enemy = spawnEnemy(s, 'narazumono', { x: 120, y: 16 });
     const hp = enemy.hp;
 
-    // こうげきかんかくが あけるまで まわす
+    // 攻撃間隔があくまで回す
     for (let i = 0; i < 200; i++) {
       step(s, [], 1 / 60);
       if (s.projectiles.length > 0) break;
@@ -266,22 +266,22 @@ describe('ひしょうたい', () => {
     const s = fresh();
     const ines = unitOf(s, 'ines');
     ines.pos = { x: 16, y: 16 };
-    // ゆみの 1 tick ぶんの いどうきょり(480 * 1/60 = 8px)より ちかい きょり
+    // 弓の1tick分の移動距離(480 * 1/60 = 8px)より近い距離
     const enemy = spawnEnemy(s, 'narazumono', { x: 20, y: 16 });
     const hp = enemy.hp;
 
-    // みっちゃく(距離4px < MELEE_RANGE)ぶんの攻撃間隔ばい増(2.2秒 -> 4.4秒)を待つ
+    // 密着(距離4px < MELEE_RANGE)分の攻撃間隔倍増(2.2秒 -> 4.4秒)を待つ
     let firedAt = -1;
     for (let i = 0; i < 400; i++) {
       step(s, [], 1 / 60);
       if (s.projectiles.length > 0) { firedAt = i; break; }
     }
     expect(firedAt).toBeGreaterThanOrEqual(0);
-    // はっしゃした その tick では ちゃくだんせず、ダメージも まだ はいらない
+    // 発射したその tick では着弾せず、ダメージもまだ入らない
     expect(s.projectiles.length).toBeGreaterThan(0);
     expect(enemy.hp).toBe(hp);
 
-    // つぎの tick で ちゃくだんする
+    // 次の tick で着弾する
     step(s, [], 1 / 60);
     expect(s.projectiles.length).toBe(0);
     expect(enemy.hp).toBeLessThan(hp);
@@ -291,21 +291,21 @@ describe('ひしょうたい', () => {
     const s = fresh();
     const ines = unitOf(s, 'ines');
     ines.pos = { x: 16, y: 16 };
-    const enemy = spawnEnemy(s, 'narazumono', { x: 20, y: 16 }, 1); // hp=1, きょり4px
-    step(s, [], 0.01); // こうせん せいりつ
+    const enemy = spawnEnemy(s, 'narazumono', { x: 20, y: 16 }, 1); // hp=1, 距離4px
+    step(s, [], 0.01); // 交戦成立
 
     ines.attackCooldown = 0;
-    enemy.attackCooldown = 999; // まだ こうげきさせない
+    enemy.attackCooldown = 999; // まだ攻撃させない
     const inesHpBefore = ines.hp;
 
-    step(s, [], 1 / 60); // はっしゃ tick
+    step(s, [], 1 / 60); // 発射 tick
     expect(s.projectiles.length).toBe(1);
-    expect(enemy.hp).toBe(1); // まだ ちゃくだんしていない
+    expect(enemy.hp).toBe(1); // まだ着弾していない
 
-    enemy.attackCooldown = 0; // つぎの tick で はんげき じゅんび かんりょう
-    step(s, [], 1 / 60); // ちゃくだん tick
+    enemy.attackCooldown = 0; // 次の tick で反撃準備完了
+    step(s, [], 1 / 60); // 着弾 tick
     expect(enemy.hp).toBeLessThanOrEqual(0);
-    expect(ines.hp).toBe(inesHpBefore); // しんだ ユニットに はんげきされていない
+    expect(ines.hp).toBe(inesHpBefore); // 死んだユニットに反撃されていない
   });
 
   it('どうじ tick に たおれた みかたは しえんしゃに ならない', () => {
@@ -317,10 +317,10 @@ describe('ひしょうたい', () => {
     ines.pos = { x: 200, y: 16 };
     const e = spawnEnemy(s, 'narazumono', { x: 30, y: 16 });
     step(s, [], 0.01);
-    // ここで イネスが おなじ tick に たおれた そうてい(まだ retired=false)
+    // ここでイネスが同じ tick に倒れた想定(まだ retired=false)
     ines.hp = 0;
     step(s, [], 1.7);
-    expect(e.hp).toBe(12 - 5); // しえんぼーなす ぬきの ロラン たんどく(6-1)
+    expect(e.hp).toBe(12 - 5); // 支援ボーナス抜きのロラン単独(6-1)
     expect(s.events.some((ev) => ev.type === 'bondSupport')).toBe(false);
   });
 });
@@ -333,14 +333,14 @@ describe('attack イベント', () => {
     spawnEnemy(s, 'narazumono', { x: 110, y: 100 });
     engageAndAttack(s);
 
-    // てきも おなじ tick で こうげきするので、uid で しぼる
+    // 敵も同じ tick で攻撃するので、uid で絞る
     const attacks = s.events.filter((e) => e.type === 'attack' && e.uid === roran.uid);
     expect(attacks.length).toBe(1);
     const ev = attacks[0]!;
     if (ev.type !== 'attack') return;
     expect(ev.uid).toBe(roran.uid);
     expect(ev.defId).toBe('roran');
-    // てきは みぎに いるので、むきは みぎむきに なる
+    // 敵は右にいるので、向きは右向きになる
     expect(ev.targetPos.x).toBeGreaterThan(ev.pos.x);
   });
 

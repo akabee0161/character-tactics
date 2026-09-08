@@ -497,7 +497,7 @@ export function validateStageDef(file: string, raw: unknown): Validated<StageDef
   const o = requireObject(ctx, '', raw);
   if (!o) return { ok: false, errors: ctx.errors };
 
-  // walkable 検証に つかうので、mapRows/cell を さきに よむ
+  // walkable 検証に使うので、mapRows/cell を先に読む
   const cell = requireNumber(ctx, 'cell', o.cell, { min: 1, int: true }) ?? 32;
   const mapRows = readMapRows(ctx, o.mapRows);
   const checkWalkable = (path: string, pos: Vec2): void => {

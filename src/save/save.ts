@@ -23,7 +23,7 @@ function isFiniteNonNegInt(v: unknown): boolean {
   return typeof v === 'number' && Number.isInteger(v) && v >= 0;
 }
 
-/** level は 1 はじまりの せっけいなので、0 は こわれた ちとして あつかう */
+/** level は1始まりの設計なので、0 は壊れた値として扱う */
 function isFinitePositiveInt(v: unknown): boolean {
   return typeof v === 'number' && Number.isInteger(v) && v >= 1;
 }

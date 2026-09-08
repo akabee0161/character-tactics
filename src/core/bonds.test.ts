@@ -54,15 +54,15 @@ describe('bondBonus', () => {
   });
 
   it('自分自身の はんていは uid で する（defId が おなじ べつの あいてを のぞかない）', () => {
-    // roran どうしの きずなを もつ れじすとりを つくり、defId だけでは
-    // くべつできない じょうきょうを さいげんする
+    // roran 同士の絆を持つレジストリを作り、defId だけでは
+    // 区別できない状況を再現する
     const base = testRegistry();
     const reg = { ...base, bonds: [...base.bonds, { a: 'roran', b: 'roran', bonus: 5 }] };
     const r = bondBonus(reg, 'u:roran-1', 'roran', { x: 0, y: 0 }, [
-      { uid: 'u:roran-1', id: 'roran', pos: { x: 0, y: 0 }, retired: false }, // じぶん自身（のぞかれる）
-      { uid: 'u:roran-2', id: 'roran', pos: { x: 0, y: 0 }, retired: false }, // おなじ defId の べつの ユニット
+      { uid: 'u:roran-1', id: 'roran', pos: { x: 0, y: 0 }, retired: false }, // 自分自身(除かれる)
+      { uid: 'u:roran-2', id: 'roran', pos: { x: 0, y: 0 }, retired: false }, // 同じ defId の別のユニット
     ]);
-    // 1つめは uid が じぶんと おなじなので のぞかれ、2つめだけ かさんされる
+    // 1つ目は uid が自分と同じなので除かれ、2つ目だけ加算される
     expect(r).toBe(5);
   });
 

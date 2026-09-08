@@ -4,8 +4,8 @@ import { newSave } from '../save/save';
 import { testRegistry } from '../core/testing';
 import type { BattleState } from '../core/types';
 
-/** どのキャラの スキルが どの称号カウンタに つながるかは titles.json の きめごとなので、
- * テストの ぶんだけ 対応表を もつ */
+/** どのキャラのスキルがどの称号カウンタにつながるかは titles.json の決め事なので、
+ * テストの分だけ対応表を持つ */
 const SKILL_OF: Record<string, string> = {
   roran: 'funbaru', ines: 'neraiuchi', mist: 'omajinai', gau: 'kakenukeru',
 };
@@ -16,7 +16,7 @@ type BattleOver = {
   skillUses?: Partial<Record<string, number>>;
 };
 
-/** applyStageClear が読む units（player ぶんの level/xp）と counters だけを もった かんいな BattleState */
+/** applyStageClear が読む units(player 分の level/xp)と counters だけを持った簡易な BattleState */
 const battleWith = (over: BattleOver = {}): BattleState => {
   const counters: Record<string, number> = {};
   for (const [id, uses] of Object.entries(over.skillUses ?? {})) {

@@ -44,7 +44,7 @@ describe('skillButtonState', () => {
     const r = skillButtonState(s.reg, s, roran.uid);
     expect(r.enabled).toBe(false);
     expect(r.label).toContain('ふんばる');
-    expect(r.label).toContain('3');   // 2.5 秒 → きりあげて 3
+    expect(r.label).toContain('3');   // 2.5秒 → 切り上げて3
   });
 
   it('たいきゃくした なかまは おせない。りゆうも「たいきゃくした」に なる', () => {

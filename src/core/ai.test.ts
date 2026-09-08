@@ -4,7 +4,7 @@ import { makeGrid } from './field';
 import type { AiDef } from '../engine/schema';
 import type { Unit } from './types';
 
-// よこに ながい へや。まんなかに かべが 1れつ ある
+// 横に長い部屋。真ん中に壁が1列ある
 const GRID = makeGrid(32, [
   '################',
   '#..............#',
@@ -50,7 +50,7 @@ describe('sentry', () => {
   });
 
   it('かべごしの あいてには きづかない', () => {
-    // (3,1) と (3,4) のあいだには y=3 の かべが ある
+    // (3,1) と (3,4) の間には y=3 の壁がある
     const self = unit('e1', 112, 48, def);
     const p = unit('p1', 112, 144, null);
     expect(run('sentry', self, [p]).mode).toBe('idle');
@@ -148,9 +148,9 @@ describe('guard', () => {
   });
 
   it('いちど return に なったら post に つくまで ふたたび みえても chase に もどらない（ラッチ）', () => {
-    const self = unit('e1', 200, 48, def);   // post から 100 <= leash 120 (leash じたいは こえていない)
-    self.ai!.mode = 'return';                // まえの tick で すでに ついせきを うちきっている
-    const p = unit('p1', 220, 48, null);     // さくてき はんいに はいっている
+    const self = unit('e1', 200, 48, def);   // post から 100 <= leash 120 (leash自体は超えていない)
+    self.ai!.mode = 'return';                // 前の tick ですでに追跡を打ち切っている
+    const p = unit('p1', 220, 48, null);     // 索敵範囲に入っている
     const d = run('guard', self, [p]);
     expect(d.mode).toBe('return');
     expect(d.targetUid).toBeNull();
@@ -159,7 +159,7 @@ describe('guard', () => {
 
   it('post は home と べつに もてる', () => {
     const self = unit('e1', 100, 48, def, { x: 400, y: 48 });
-    expect(run('guard', self, []).mode).toBe('idle');   // home ではなく post を みる
+    expect(run('guard', self, []).mode).toBe('idle');   // home ではなく post を見る
   });
 
   it('post に もどる とちゅうは return', () => {

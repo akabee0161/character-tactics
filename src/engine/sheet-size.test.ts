@@ -43,7 +43,7 @@ describe('シートの じっすんと JSON', () => {
     const cols = Math.max(sheet.idle.frames, sheet.walk.frames, sheet.attack.frames);
 
     expect(w, `${file}: よこは frame × さいだいコマすう`).toBe(sheet.frame * cols);
-    // 3じょうたい × 4ほうこう = 12ぎょう
+    // 3状態 × 4方向 = 12行
     expect(h, `${file}: たては frame × 12`).toBe(sheet.frame * 12);
   });
 });
