@@ -7,7 +7,7 @@ import type { BattleState, CharProgress, HitSource, StageDef, Unit } from './typ
 const STAGE: StageDef = {
   id: 'teststage', order: 10, name: 'テスト', cell: 32,
   mapRows: ['..........', '..........', '..........'],
-  placementZone: [{ pos: { x: 16, y: 16 } }],
+  placement: { minY: 0, starts: [{ x: 16, y: 16 }] },
   roster: ['roran', 'ines', 'mist', 'gau'],
   enemies: [{ defId: 'narazumono', pos: { x: 216, y: 16 }, ai: { kind: 'aggressive' } }],
   victory: { type: 'reach', pos: { x: 304, y: 80 }, radius: 20, by: 'any' },

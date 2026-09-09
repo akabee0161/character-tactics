@@ -3,7 +3,7 @@ import { makeImageCache } from './render/images';
 import { lookupDef, skillParam } from './engine/registry';
 import { pickDialogue, pickStageIntro, pickStageOutro } from './core/dialogue';
 import { SKILL_EFFECT_IDS } from './core/skills';
-import { beginBattle, createBattleState, placeUnit } from './core/state';
+import { beginBattle, canPlaceAt, createBattleState, placeUnit } from './core/state';
 import { playerUnits, step } from './core/sim';
 import type { SimCommand } from './core/sim';
 import { drawBattle, drawDragPreview } from './render/draw';
@@ -416,7 +416,9 @@ function render(): void {
   const dragPhaseOk = phase === 'placement' || phase === 'battle';
   if (battle && dragPhaseOk && dragUid !== null && dragMap !== null) {
     const unit = battle.units.find((u) => u.uid === dragUid)!;
-    const blocked = !isWalkableAt(battle.grid, dragMap);
+    const blocked = phase === 'placement'
+      ? !canPlaceAt(battle.stage, battle.grid, dragMap)
+      : !isWalkableAt(battle.grid, dragMap);
     drawDragPreview(ctx, registry, unit.pos, dragMap, unit.defId, blocked, images);
   }
 }

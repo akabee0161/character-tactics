@@ -1,13 +1,12 @@
-import { distance, isWalkableAt, makeGrid } from './field';
+import { isWalkableAt, makeGrid } from './field';
 import { makeFieldCache } from './fields';
 import { makeRng } from './rng';
 import type { Registry } from '../engine/registry';
 import type { AiDef, EnemyDef, StageDef, UnitDef } from '../engine/schema';
-import type { BattleState, CharProgress, Unit, Vec2 } from './types';
+import type { BattleState, CharProgress, Grid, Unit, Vec2 } from './types';
 
 const HP_PER_LEVEL = 3;
 const POWER_PER_LEVEL = 1;
-export const PLACEMENT_RADIUS = 64;
 
 export function statsForLevel(def: UnitDef, level: number): { maxHp: number; power: number } {
   const steps = Math.max(0, level - 1);
@@ -62,9 +61,9 @@ export function createBattleState(
   const roster = stage.roster.map((defId, i) => {
     const def = reg.units.get(defId);
     if (!def) throw new Error(`roster に しらない ユニット: ${defId}`);
-    const zone = stage.placementZone[i % stage.placementZone.length]!;
+    const start = stage.placement.starts[i % stage.placement.starts.length]!;
     return makeUnit({
-      uid: `p${i + 1}`, def, side: 'player', controller: 'player', pos: zone.pos,
+      uid: `p${i + 1}`, def, side: 'player', controller: 'player', pos: start,
       level: progress[defId]?.level ?? 1, xp: progress[defId]?.xp ?? 0, ai: null,
     });
   });
@@ -83,7 +82,7 @@ export function createBattleState(
     reg,
     stage,
     grid,
-    // フェーズ 6 まで、敵は全員 placementZone[0] を目指す。フローフィールドは fields でキャッシュする
+    // フェーズ 6 まで、敵は全員 placement.starts[0] を目指す。フローフィールドは fields でキャッシュする
     fields: makeFieldCache(),
     time: 0,
     phase: 'placement',
@@ -97,10 +96,17 @@ export function createBattleState(
   };
 }
 
+/**
+ * そこへ配置できるか。配置の実行とドラッグプレビューの赤表示が必ずこの1本を通る。
+ * 別々に書くと「プレビューは置けそうに見えるのに離すと失敗する」がすぐ起きる
+ */
+export function canPlaceAt(stage: StageDef, grid: Grid, pos: Vec2): boolean {
+  if (!isWalkableAt(grid, pos)) return false;
+  return pos.y >= stage.placement.minY;
+}
+
 export function placeUnit(state: BattleState, uid: string, pos: Vec2): boolean {
-  if (!isWalkableAt(state.grid, pos)) return false;
-  const inZone = state.stage.placementZone.some((z) => distance(z.pos, pos) <= PLACEMENT_RADIUS);
-  if (!inZone) return false;
+  if (!canPlaceAt(state.stage, state.grid, pos)) return false;
   const unit = state.units.find((u) => u.uid === uid && u.side === 'player');
   if (!unit) return false;
   unit.pos = { ...pos };

@@ -1,7 +1,6 @@
 import { lookupDef, skillParam } from '../engine/registry';
 import { titlesOf, xpToNext } from '../core/progress';
 import { DEFAULT_SKILL_COOLDOWN } from '../core/skills';
-import { PLACEMENT_RADIUS } from '../core/state';
 import type { ImageCache } from '../render/images';
 import { drawFace, drawRoleBadge } from '../render/sprites';
 import { LOGICAL_H, LOGICAL_W, mapToLogical } from '../render/viewport';
@@ -110,21 +109,22 @@ export function drawPlacement(ctx: CanvasRenderingContext2D, state: BattleState)
   ctx.fillStyle = 'rgba(16, 24, 32, 0.35)';
   ctx.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
 
-  // 置ける範囲を見せる。ここに置けないとプレイヤーが分からず困る
+  // 置ける範囲を見せる。境界の線より下が置ける側
+  const edgeY = mapToLogical({ x: 0, y: state.stage.placement.minY }).y;
+  ctx.fillStyle = 'rgba(255, 212, 121, 0.12)';
+  ctx.fillRect(0, edgeY, LOGICAL_W, BOTTOM_PANEL_Y - edgeY);
   ctx.strokeStyle = '#ffd479';
   ctx.lineWidth = 2;
-  ctx.setLineDash([5, 4]);
-  for (const z of state.stage.placementZone) {
-    const p = mapToLogical(z.pos);
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, PLACEMENT_RADIUS, 0, Math.PI * 2);
-    ctx.stroke();
-  }
+  ctx.setLineDash([8, 6]);
+  ctx.beginPath();
+  ctx.moveTo(0, edgeY);
+  ctx.lineTo(LOGICAL_W, edgeY);
+  ctx.stroke();
   ctx.setLineDash([]);
 
   ctx.fillStyle = INK;
   ctx.font = '20px sans-serif';
-  ctx.fillText('きいろい わくの なかに なかまを おこう', 24, 760);
+  ctx.fillText('きいろい せんより したに なかまを おこう', 24, 760);
   button(ctx, SKILL_BUTTON, 'はじめる');
 }
 

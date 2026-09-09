@@ -3,7 +3,7 @@ import { escortDefIds, sightCircles } from './objectives-view';
 import type { StageDef } from '../engine/schema';
 import type { Unit } from '../core/types';
 
-const BASE = { id: 's', name: 'S', cell: 32, mapRows: ['..'], placementZone: [], roster: [], enemies: [] } as unknown as StageDef;
+const BASE = { id: 's', name: 'S', cell: 32, mapRows: ['..'], placement: { minY: 0, starts: [] }, roster: [], enemies: [] } as unknown as StageDef;
 
 describe('escortDefIds', () => {
   it('unitLost の defIds を あつめる', () => {

@@ -22,7 +22,7 @@ const INES = {
 const STAGE = {
   id: 'stage1', order: 10, name: 'はじまりの しま', cell: 32,
   mapRows: ['####', '#..#', '#..#', '####'],
-  placementZone: [{ pos: { x: 48, y: 48 } }],
+  placement: { minY: 0, starts: [{ x: 48, y: 48 }] },
   roster: ['roran'],
   enemies: [{ defId: 'narazumono', pos: { x: 80, y: 80 }, ai: { kind: 'aggressive' } }],
   victory: { type: 'reach', pos: { x: 80, y: 80 }, radius: 24, by: 'any' },

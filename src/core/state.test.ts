@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { cellIndexAt } from './field';
 import { fieldToStatic } from './fields';
-import { beginBattle, createBattleState, placeUnit, PLACEMENT_RADIUS, statsForLevel } from './state';
+import { beginBattle, canPlaceAt, createBattleState, placeUnit, statsForLevel } from './state';
 import { testRegistry } from './testing';
 import type { Registry } from '../engine/registry';
 import type { StageDef } from '../engine/schema';
@@ -40,15 +40,12 @@ describe('createBattleState: ステージからの はいち', () => {
     expect(playerDefIds).toEqual(stage.roster);
   });
 
-  it('味方を placementZone の うえに おく', () => {
+  it('味方を placement.starts の座標に置く', () => {
     const { stage, state } = fresh();
-    for (const u of state.units) {
-      if (u.side !== 'player') continue;
-      const near = stage.placementZone.some(
-        (z) => Math.hypot(z.pos.x - u.pos.x, z.pos.y - u.pos.y) <= PLACEMENT_RADIUS,
-      );
-      expect(`${u.defId} => ${near}`).toContain('true');
-    }
+    const players = state.units.filter((u) => u.side === 'player');
+    players.forEach((u, i) => {
+      expect(u.pos).toEqual(stage.placement.starts[i % stage.placement.starts.length]);
+    });
   });
 
   it('敵を ステージ定義の ざひょうに はいちずみで つくる', () => {
@@ -100,40 +97,56 @@ describe('createBattleState: ステージからの はいち', () => {
 
   it('味方の初期配置地点への フローフィールドを キャッシュから ひける', () => {
     const { stage, state } = fresh();
-    const goal = stage.placementZone[0]!.pos;
+    const goal = stage.placement.starts[0]!;
     const idx = cellIndexAt(state.grid, goal);
     const field = fieldToStatic(state.fields, state.grid, goal);
     expect(field.dist[idx]).toBe(0);
   });
 });
 
-describe('placeUnit', () => {
-  it('placementZone の ちかくなら おける', () => {
+describe('canPlaceAt', () => {
+  it('境界の線より下なら置ける', () => {
     const { stage, state } = fresh();
-    const zone = stage.placementZone[0]!.pos;
-    const uid = unitOf(state, 'roran').uid;
-    expect(placeUnit(state, uid, { ...zone })).toBe(true);
-    expect(unitOf(state, 'roran').pos).toEqual(zone);
+    expect(canPlaceAt(stage, state.grid, { x: 240, y: stage.placement.minY })).toBe(true);
   });
 
-  it('placementZone から とおければ おけない', () => {
+  it('境界の線より上は置けない', () => {
     const { stage, state } = fresh();
-    const far = { x: stage.victory.pos.x, y: stage.victory.pos.y };
+    expect(canPlaceAt(stage, state.grid, { x: 240, y: stage.placement.minY - 1 })).toBe(false);
+  });
+
+  it('歩けないマスは置けない', () => {
+    const { stage, state } = fresh();
+    expect(canPlaceAt(stage, state.grid, { x: 0, y: 0 })).toBe(false);
+  });
+});
+
+describe('placeUnit', () => {
+  it('境界の線より下なら置ける', () => {
+    const { stage, state } = fresh();
+    const dest = { x: 400, y: stage.placement.minY + 32 };
+    const uid = unitOf(state, 'roran').uid;
+    expect(placeUnit(state, uid, dest)).toBe(true);
+    expect(unitOf(state, 'roran').pos).toEqual(dest);
+  });
+
+  it('境界の線より上には置けない', () => {
+    const { stage, state } = fresh();
     const uid = unitOf(state, 'roran').uid;
     const before = { ...unitOf(state, 'roran').pos };
-    expect(placeUnit(state, uid, far)).toBe(false);
+    expect(placeUnit(state, uid, { x: 240, y: stage.placement.minY - 32 })).toBe(false);
     expect(unitOf(state, 'roran').pos).toEqual(before);
   });
 
-  it('あるけない マスには おけない', () => {
+  it('歩けないマスには置けない', () => {
     const { state } = fresh();
     const uid = unitOf(state, 'roran').uid;
     expect(placeUnit(state, uid, { x: 0, y: 0 })).toBe(false);
   });
 
-  it('しらない uid なら false', () => {
+  it('知らない uid なら false', () => {
     const { state } = fresh();
-    expect(placeUnit(state, 'yuurei', { x: 112, y: 208 })).toBe(false);
+    expect(placeUnit(state, 'yuurei', { x: 112, y: 600 })).toBe(false);
   });
 });
 

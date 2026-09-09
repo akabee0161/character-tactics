@@ -353,6 +353,13 @@ export type IntroLine = {
   lineId: string | null;
 };
 
+export type PlacementDef = {
+  /** この y 以上（画面で下）なら配置できる */
+  minY: number;
+  /** ステージ開始時の味方の初期位置。roster より少なければ先頭から繰り返す */
+  starts: Vec2[];
+};
+
 export type StageDef = {
   /** ファイル名と一致させる。セーブのキーになる */
   id: string;
@@ -362,7 +369,7 @@ export type StageDef = {
   cell: number;
   /** '.' 歩ける / '#' 歩けない */
   mapRows: string[];
-  placementZone: { pos: Vec2 }[];
+  placement: PlacementDef;
   roster: string[];
   enemies: EnemyPlacement[];
   victory: VictoryCond;
@@ -471,6 +478,35 @@ function isWalkableCell(cell: number, mapRows: string[], pos: Vec2): boolean {
   return row !== undefined && cx >= 0 && cx < row.length && row[cx] === '.';
 }
 
+function readPlacement(
+  ctx: Ctx,
+  v: unknown,
+  mapRows: string[],
+  cell: number,
+  checkWalkable: (path: string, pos: Vec2) => void,
+): PlacementDef {
+  const o = requireObject(ctx, 'placement', v);
+  if (!o) return { minY: 0, starts: [] };
+
+  const maxY = mapRows.length * cell;
+  const minY = requireNumber(
+    ctx, 'placement.minY', o.minY, maxY > 0 ? { min: 0, max: maxY - 1 } : { min: 0 },
+  ) ?? 0;
+
+  const raw = requireArray(ctx, 'placement.starts', o.starts, { min: 1 }) ?? [];
+  const starts: Vec2[] = [];
+  raw.forEach((item, i) => {
+    const path = `placement.starts[${i}]`;
+    const pos = requireVec2(ctx, path, item);
+    if (pos === null) return;
+    checkWalkable(path, pos);
+    if (pos.y < minY) fail(ctx, path, `minY（${minY}）いじょうで ないと いけない`);
+    starts.push(pos);
+  });
+
+  return { minY, starts };
+}
+
 /**
  * text と lineId は排他にする。片方を優先する暗黙のルールを作ると、
  * 直したつもりが効いていない事故が起きるため、両方書いたらエラーにする。
@@ -506,14 +542,6 @@ export function validateStageDef(file: string, raw: unknown): Validated<StageDef
     }
   };
 
-  const zoneRaw = requireArray(ctx, 'placementZone', o.placementZone, { min: 1 }) ?? [];
-  const placementZone = zoneRaw.map((item, i) => {
-    const z = requireObject(ctx, `placementZone[${i}]`, item);
-    const pos = (z && requireVec2(ctx, `placementZone[${i}].pos`, z.pos)) ?? { x: 0, y: 0 };
-    checkWalkable(`placementZone[${i}].pos`, pos);
-    return { pos };
-  });
-
   const enemiesRaw = requireArray(ctx, 'enemies', o.enemies) ?? [];
   const enemies = enemiesRaw.map((item, i) => {
     const path = `enemies[${i}]`;
@@ -535,7 +563,7 @@ export function validateStageDef(file: string, raw: unknown): Validated<StageDef
     name: requireString(ctx, 'name', o.name) ?? '',
     cell,
     mapRows,
-    placementZone,
+    placement: readPlacement(ctx, o.placement, mapRows, cell, checkWalkable),
     roster: readStringArray(ctx, 'roster', o.roster, 1),
     enemies,
     victory: readVictory(ctx, o.victory),

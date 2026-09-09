@@ -26,7 +26,7 @@ function makeTestUnit(s: BattleState, def: EnemyDef, pos: Vec2, ai: AiDef): Unit
 const STAGE: StageDef = {
   id: 'teststage', order: 10, name: 'テスト', cell: 32,
   mapRows: ['..........', '..........', '..........'],
-  placementZone: [{ pos: { x: 16, y: 16 } }],
+  placement: { minY: 0, starts: [{ x: 16, y: 16 }] },
   roster: ['roran', 'ines', 'mist', 'gau'],
   enemies: [{ defId: 'narazumono', pos: { x: 304, y: 16 }, ai: { kind: 'aggressive' } }],
   victory: { type: 'reach', pos: { x: 304, y: 16 }, radius: 40, by: 'any' },
@@ -43,7 +43,7 @@ const LV1: Record<string, CharProgress> = {
 const AI_STAGE: StageDef = {
   id: 'ai-teststage', order: 10, name: 'AIテスト', cell: 32,
   mapRows: Array.from({ length: 15 }, () => '.'.repeat(30)),
-  placementZone: [{ pos: { x: 16, y: 16 } }],
+  placement: { minY: 0, starts: [{ x: 16, y: 16 }] },
   roster: ['roran', 'ines', 'mist', 'gau'],
   enemies: [],
   victory: { type: 'reach', pos: { x: 848, y: 240 }, radius: 40, by: 'any' },
@@ -364,7 +364,7 @@ describe('ユニット型の とうごう', () => {
     const { state } = fresh();
     beginBattle(state);
     const p = state.units.find((u) => u.side === 'player')!;
-    const dest = { ...state.stage.placementZone[0]!.pos };
+    const dest = { ...state.stage.placement.starts[0]! };
     step(state, [{ type: 'move', uid: p.uid, dest }], 0.01);
     expect(p.goalPos).toEqual(dest);
   });

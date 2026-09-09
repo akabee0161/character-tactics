@@ -10,7 +10,7 @@ import type { BattleState, CharProgress, Vec2 } from './types';
 const STAGE: StageDef = {
   id: 'teststage', order: 10, name: 'テスト', cell: 32,
   mapRows: ['..........', '..........', '..........'],
-  placementZone: [{ pos: { x: 16, y: 16 } }],
+  placement: { minY: 0, starts: [{ x: 16, y: 16 }] },
   roster: ['roran', 'ines', 'mist', 'gau'],
   enemies: [{ defId: 'narazumono', pos: { x: 304, y: 16 }, ai: { kind: 'aggressive' } }],
   victory: { type: 'reach', pos: { x: 304, y: 16 }, radius: 40, by: 'any' },

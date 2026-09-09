@@ -266,7 +266,7 @@ const VALID_STAGE = {
   name: 'はじまりの しま',
   cell: 32,
   mapRows: ['####', '#..#', '#..#', '####'],
-  placementZone: [{ pos: { x: 48, y: 48 } }],
+  placement: { minY: 0, starts: [{ x: 48, y: 48 }] },
   roster: ['roran', 'ines'],
   enemies: [{ defId: 'narazumono', pos: { x: 80, y: 80 }, ai: { kind: 'aggressive' } }],
   victory: { type: 'reach', pos: { x: 80, y: 80 }, radius: 24, by: 'any' },
@@ -304,10 +304,12 @@ describe('validateStageDef', () => {
     if (!r.ok) expect(r.errors[0]?.path).toBe('roster');
   });
 
-  it('placementZone が からなら弾く', () => {
-    const r = validateStageDef('stages/x.json', { ...VALID_STAGE, placementZone: [] });
+  it('placement.starts が からなら弾く', () => {
+    const r = validateStageDef('stages/x.json', {
+      ...VALID_STAGE, placement: { minY: 0, starts: [] },
+    });
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.errors[0]?.path).toBe('placementZone');
+    if (!r.ok) expect(r.errors[0]?.path).toBe('placement.starts');
   });
 
   it('order が ないと 弾く', () => {
@@ -340,13 +342,13 @@ describe('validateStageDef', () => {
     if (!r.ok) expect(r.errors[0]?.path).toBe('enemies[0].ai.kind');
   });
 
-  it('placementZone が かべの なかなら弾く', () => {
+  it('placement.starts が かべの なかなら弾く', () => {
     const r = validateStageDef('stages/x.json', {
       ...VALID_STAGE,
-      placementZone: [{ pos: { x: 0, y: 0 } }],
+      placement: { minY: 0, starts: [{ x: 0, y: 0 }] },
     });
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.errors[0]?.path).toBe('placementZone[0].pos');
+    if (!r.ok) expect(r.errors[0]?.path).toBe('placement.starts[0]');
   });
 
   it('enemies の pos が マップの そとなら弾く', () => {
@@ -490,5 +492,45 @@ describe('validateStageDef', () => {
     expect(r.ok).toBe(false);
     if (r.ok) return;
     expect(r.errors.some((e) => e.path === 'outro[0]')).toBe(true);
+  });
+});
+
+/** 検証を通る最小のステージ。引数で1フィールドだけ差し替える */
+function stageRaw(over: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    id: 't', order: 10, name: 'T', cell: 32,
+    mapRows: ['###', '#.#', '#.#', '###'],
+    placement: { minY: 32, starts: [{ x: 48, y: 48 }] },
+    roster: ['roran'],
+    enemies: [],
+    victory: { type: 'reach', pos: { x: 48, y: 48 }, radius: 10, by: 'any' },
+    defeat: [{ type: 'allPlayerUnitsLost' }],
+    ...over,
+  };
+}
+
+describe('validateStageDef: placement', () => {
+  it('minY と starts を読む', () => {
+    const r = validateStageDef('assets/stages/t.json', stageRaw());
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value.placement).toEqual({ minY: 32, starts: [{ x: 48, y: 48 }] });
+  });
+
+  it('starts が minY より上だとエラー', () => {
+    const raw = stageRaw({ placement: { minY: 48, starts: [{ x: 48, y: 32 }] } });
+    const r = validateStageDef('assets/stages/t.json', raw);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors.some((e) => e.path === 'placement.starts[0]')).toBe(true);
+  });
+
+  it('starts が空だとエラー', () => {
+    const r = validateStageDef('assets/stages/t.json', stageRaw({ placement: { minY: 32, starts: [] } }));
+    expect(r.ok).toBe(false);
+  });
+
+  it('placement が無いとエラー', () => {
+    const raw = stageRaw();
+    delete (raw as Record<string, unknown>).placement;
+    expect(validateStageDef('assets/stages/t.json', raw).ok).toBe(false);
   });
 });
