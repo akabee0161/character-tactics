@@ -11,7 +11,7 @@ import { escortDefIds } from './render/objectives-view';
 import { isWalkableAt } from './core/field';
 import { makeEffectState, resetEffects, spawnEffects, syncDisplayedHp, tickEffects } from './render/effects';
 import { makeAnimStore, noteAttacks, resetAnim, updateMotion } from './render/anim';
-import { LOGICAL_H, LOGICAL_W, computeViewport, logicalToMap, mapToLogical, screenToLogical } from './render/viewport';
+import { LOGICAL_H, LOGICAL_W, computeViewport, fitCanvas, logicalToMap, mapToLogical, screenToLogical } from './render/viewport';
 import { clearBubbles, dismissBubble, makeBubbleState, pushBubbles, tickBubbles } from './ui/bubbles';
 import { applyStageClear, hasReadIntro, isStageUnlocked, markIntroRead } from './ui/flow';
 import { hitRect, pickUnit } from './ui/hit';
@@ -37,18 +37,24 @@ const FIXED_DT = 1 / 60;
 type Phase = 'title' | 'select' | 'talk' | 'placement' | 'battle' | 'outro' | 'result' | 'defeat';
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
+const stageBox = document.getElementById('stage') as HTMLElement;
 const ctx = canvas.getContext('2d')!;
 
 function resize(): void {
-  const scale = Math.min(window.innerWidth / LOGICAL_W, window.innerHeight / LOGICAL_H);
-  canvas.width = Math.floor(LOGICAL_W * scale * window.devicePixelRatio);
-  canvas.height = Math.floor(LOGICAL_H * scale * window.devicePixelRatio);
-  canvas.style.width = `${Math.floor(LOGICAL_W * scale)}px`;
-  canvas.style.height = `${Math.floor(LOGICAL_H * scale)}px`;
+  const box = stageBox.getBoundingClientRect();
+  const fit = fitCanvas(box.width, box.height, window.devicePixelRatio);
+  canvas.style.width = `${fit.cssW}px`;
+  canvas.style.height = `${fit.cssH}px`;
+  // 当てたあとの実寸から backing store を決める。CSS が何らかの制約を効かせても、
+  // 描画と入力が同じ実寸を見ているかぎりクリック位置はずれない
+  const actual = canvas.getBoundingClientRect();
+  canvas.width = Math.max(1, Math.round(actual.width * window.devicePixelRatio));
+  canvas.height = Math.max(1, Math.round(actual.height * window.devicePixelRatio));
   // width への代入でコンテキストの状態が全部リセットされるので、ここで毎回入れ直す
   ctx.imageSmoothingEnabled = false;
 }
-window.addEventListener('resize', resize);
+// window の resize ではブラウザズームによる devicePixelRatio の変化を拾えない
+new ResizeObserver(resize).observe(stageBox);
 resize();
 
 const loadResult = loadRegistry(SKILL_EFFECT_IDS);
