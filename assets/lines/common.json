@@ -6,7 +6,7 @@
   "first:mist:narazumono": "こんにちは……\nあ、 敵でしたね",
   "first:mist:tatemochi": "その 盾、\n重くないですか？",
   "first:mist:garum": "わあ、 大きい人",
-  "first:gau:narazumono": "よーし、\nいっちょ やるか！",
+  "first:gau:narazumono": "よーし、\n一つ やるか！",
   "first:gau:tatemochi": "硬い！\n回り込めば いける？",
   "first:gau:garum": "うわ、\n強そうなのが 来た！",
 
@@ -16,15 +16,15 @@
   "skill:roran": "ここは 通さない！",
   "skill:ines": "動かないで……\n今っ！",
   "skill:mist": "元気に なあれ……",
-  "skill:gau": "そこ どいて どいて どいてー！",
+  "skill:gau": "そこを 通してー！",
 
   "levelup:roran": "強く なった 気が する！",
   "levelup:ines": "腕が 上がったわね",
   "levelup:mist": "少し 自信が つきました",
-  "levelup:gau": "うおー！\nもっと いける！",
+  "levelup:gau": "うおー！\nもっと 行ける！",
 
   "pinch:roran": "まだ……\n立てる……！",
-  "pinch:ines": "ちょっと まずいかも",
+  "pinch:ines": "少し 危ないかも",
   "pinch:mist": "目が 回りますう",
   "pinch:gau": "いたた！\nちょっと 休ませて！",
 
@@ -34,9 +34,9 @@
   "win:gau": "やった！\n追い返したぞ！",
 
   "retire:roran": "ごめん……\n後は 頼む",
-  "retire:ines": "くっ……\nここまでね",
+  "retire:ines": "くっ……\nもう 限界ね",
   "retire:mist": "ちょっと……\n休みますね……",
-  "retire:gau": "うう、\nまだ やれるのに……",
+  "retire:gau": "うう、\nまだ 戦えるのに……",
 
   "stage:stage1:roran": "みんな、\n行くよ。 前に 進もう",
   "stage:stage1:gau": "任せて！\n先に 行ってみる！",
