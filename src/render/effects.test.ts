@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   BOND_PULSE_DURATION, DAMAGE_TEXT_DURATION, DEFEAT_DURATION, HEAL_BEAM_DURATION,
   HEAL_RING_DURATION, HEAL_TEXT_DURATION, HIT_EFFECT_DURATION, HP_BAR_CATCHUP_RATE,
-  SKILL_CAST_DURATION, TRAIL_DURATION,
+  SKILL_CAST_DURATION, TRAIL_DURATION, READY_GLOW_PERIOD, readyGlowAlpha,
   makeEffectState, resetEffects, spawnEffects, syncDisplayedHp, tickEffects,
 } from './effects';
 import type { EffectState } from './effects';
@@ -212,5 +212,25 @@ describe('syncDisplayedHp', () => {
     state.displayedHp.set('e1', 10);
     syncDisplayedHp(state, [], 0.1);
     expect(state.displayedHp.has('e1')).toBe(false);
+  });
+});
+
+describe('readyGlowAlpha', () => {
+  it('周期の頭は いちばん明るい', () => {
+    expect(readyGlowAlpha(0)).toBeCloseTo(1);
+    expect(readyGlowAlpha(READY_GLOW_PERIOD)).toBeCloseTo(1);
+    expect(readyGlowAlpha(READY_GLOW_PERIOD * 3)).toBeCloseTo(1);
+  });
+
+  it('周期の半分で いちばん暗い', () => {
+    expect(readyGlowAlpha(READY_GLOW_PERIOD / 2)).toBeCloseTo(0.45);
+  });
+
+  it('つねに 0.45〜1 に収まる', () => {
+    for (let t = 0; t < 5; t += 0.05) {
+      const a = readyGlowAlpha(t);
+      expect(a).toBeGreaterThanOrEqual(0.45);
+      expect(a).toBeLessThanOrEqual(1);
+    }
   });
 });

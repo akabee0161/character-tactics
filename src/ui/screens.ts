@@ -3,6 +3,7 @@ import { titlesOf, xpToNext } from '../core/progress';
 import { DEFAULT_SKILL_COOLDOWN } from '../core/skills';
 import type { ImageCache } from '../render/images';
 import { drawFace, drawRoleBadge } from '../render/sprites';
+import { readyGlowAlpha } from '../render/effects';
 import { LOGICAL_H, LOGICAL_W, mapToLogical } from '../render/viewport';
 import {
   BOTTOM_PANEL_Y, BTN, MESSAGE_BAR, SPEECH_BODY_X, SPEECH_FONT_PX, SPEECH_LINE_H,
@@ -193,9 +194,12 @@ export function drawBottomBar(
         // 押せば技が出る状態を縁で示す。押せない理由を文字で出す代わり
         // 配置フェーズは全員 time===0 かつクールダウン未消化で「発動可能」に見えてしまうため、戦闘フェーズ限定にする
         if (state.phase === 'battle' && remaining <= 0) {
+          ctx.save();
+          ctx.globalAlpha = readyGlowAlpha(state.time);
           ctx.strokeStyle = '#ffd479';
-          ctx.lineWidth = 2;
+          ctx.lineWidth = 4;
           ctx.strokeRect(r.x + 2, r.y + 2, r.w - 4, r.h - 4);
+          ctx.restore();
         }
       }
 

@@ -12,6 +12,20 @@ export const BOND_PULSE_DURATION = 0.3;
 export const SPAWN_DURATION = 0.5;
 export const KNOCKBACK_DURATION = 0.15;
 export const HP_BAR_CATCHUP_RATE = 6;
+/** 発動可能を示す枠の明滅の周期（秒） */
+export const READY_GLOW_PERIOD = 1.0;
+const READY_GLOW_MIN = 0.45;
+
+/**
+ * 発動可能を示す枠の明るさ。周期 READY_GLOW_PERIOD の三角波で
+ * READY_GLOW_MIN〜1 を往復する。動きがつくと視界の端でも気づける。
+ * 描画にはテストを書かない方針なので、値の計算だけをここに切り出す
+ */
+export function readyGlowAlpha(time: number): number {
+  const phase = (time % READY_GLOW_PERIOD) / READY_GLOW_PERIOD;
+  const triangle = 1 - 2 * Math.abs(phase - 0.5); // 0 → 1 → 0
+  return 1 - (1 - READY_GLOW_MIN) * triangle;
+}
 
 export type Effect =
   | { kind: 'hit'; pos: Vec2; ttl: number; critical: boolean }
