@@ -191,7 +191,8 @@ export function drawBottomBar(
         ctx.fillRect(r.x + 8, r.y + 70, 113 * Math.max(0, Math.min(1, ratio)), 5);
 
         // 押せば技が出る状態を縁で示す。押せない理由を文字で出す代わり
-        if (remaining <= 0) {
+        // 配置フェーズは全員 time===0 かつクールダウン未消化で「発動可能」に見えてしまうため、戦闘フェーズ限定にする
+        if (state.phase === 'battle' && remaining <= 0) {
           ctx.strokeStyle = '#ffd479';
           ctx.lineWidth = 2;
           ctx.strokeRect(r.x + 2, r.y + 2, r.w - 4, r.h - 4);

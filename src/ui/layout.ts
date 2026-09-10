@@ -5,7 +5,7 @@ import type { Rect } from './hit';
 export const BOTTOM_PANEL_Y = 786;
 
 /**
- * 下パネルの上段。配置フェーズは「はじめる」ボタン、戦闘中はセリフ欄として使う。
+ * 下パネルの上段。配置フェーズは「始める」ボタン、戦闘中はセリフ欄として使う。
  * 押す場所・読む場所がフェーズで動かないほうが覚えやすい
  */
 export const MESSAGE_BAR: Rect = { x: 8, y: 788, w: 524, h: 64 };

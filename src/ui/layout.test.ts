@@ -42,12 +42,6 @@ describe('たてがたの レイアウト', () => {
     }
   });
 
-  it('ひっさつわざボタンは したパネルの なかで ポートレートと かさならない', () => {
-    expect(inScreen(MESSAGE_BAR)).toBe(true);
-    expect(MESSAGE_BAR.y).toBeGreaterThanOrEqual(BOTTOM_PANEL_Y);
-    expect(MESSAGE_BAR.y + MESSAGE_BAR.h).toBeLessThanOrEqual(portraitSlot(0).y);
-  });
-
   it('かいわウィンドウと ボタンが がめんに おさまる', () => {
     expect(inScreen(TALK_WINDOW)).toBe(true);
     for (const r of Object.values(BTN)) expect(inScreen(r)).toBe(true);

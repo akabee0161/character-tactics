@@ -230,7 +230,7 @@ export function buildRegistry(
   return errors.length > 0 ? { ok: false, errors } : { ok: true, value: reg };
 }
 
-/** 味方・敵のどちらでも名前と色を引けるようにする。吹き出しと描画が使う */
+/** 味方・敵のどちらでも名前と色を引けるようにする。各種描画とセリフ欄が使う */
 export function lookupDef(reg: Registry, defId: string): UnitDef | EnemyDef | null {
   return reg.units.get(defId) ?? reg.enemies.get(defId) ?? null;
 }

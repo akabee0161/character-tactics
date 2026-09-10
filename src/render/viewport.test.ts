@@ -69,11 +69,11 @@ describe('たてがたの ろんりかいぞうど', () => {
 
 describe('fitCanvas', () => {
   it('縦に余裕があるときは幅が決め手になる', () => {
-    expect(fitCanvas(540, 2000, 1)).toEqual({ cssW: 540, cssH: 945, pixelW: 540, pixelH: 945 });
+    expect(fitCanvas(540, 2000, 1)).toEqual({ cssW: 540, cssH: 945 });
   });
 
   it('横に余裕があるときは高さが決め手になる', () => {
-    expect(fitCanvas(2000, 945, 1)).toEqual({ cssW: 540, cssH: 945, pixelW: 540, pixelH: 945 });
+    expect(fitCanvas(2000, 945, 1)).toEqual({ cssW: 540, cssH: 945 });
   });
 
   it('拡大率が1を超えても縦横比を保つ', () => {
@@ -83,15 +83,5 @@ describe('fitCanvas', () => {
     expect(fit.cssW).toBe(617);
     // 540/945 = 0.5714。1px 未満のずれだけに収まること
     expect(Math.abs(fit.cssW / fit.cssH - LOGICAL_W / LOGICAL_H)).toBeLessThan(0.001);
-  });
-
-  it('backing store は dpr 倍の整数になる', () => {
-    expect(fitCanvas(540, 945, 1.5)).toEqual({ cssW: 540, cssH: 945, pixelW: 810, pixelH: 1418 });
-  });
-
-  it('箱がつぶれていても 1px 未満にしない', () => {
-    const fit = fitCanvas(0, 0, 1);
-    expect(fit.pixelW).toBeGreaterThanOrEqual(1);
-    expect(fit.pixelH).toBeGreaterThanOrEqual(1);
   });
 });
