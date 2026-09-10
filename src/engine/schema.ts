@@ -324,6 +324,47 @@ export function validateLinesFile(file: string, raw: unknown): Validated<Record<
   return finish(ctx, out);
 }
 
+/**
+ * 成長の調整値。レベルアップの頻度（xpPerLevel）と1レベルの強化量（hpPerLevel /
+ * levelsPerPower）を別々に持つので、片方だけを動かして調整できる。
+ * hitXp / healXp / clearXp を整数に縛るのは、経験値が小数になるとリザルト画面に
+ * 4.5/12 のような値が出るため
+ */
+export type GrowthDef = {
+  maxLevel: number;
+  /** レベル n から n+1 に必要な経験値は n × xpPerLevel */
+  xpPerLevel: number;
+  /** 1レベルあたりの最大HPの増加 */
+  hpPerLevel: number;
+  /** 攻撃力が1上がるのに必要なレベル数 */
+  levelsPerPower: number;
+  /** 命中1回ごとに攻撃側へ入る経験値 */
+  hitXp: number;
+  /** 回復1回ごとに回復側へ入る経験値 */
+  healXp: number;
+  /** 撃破時、とどめ以外でダメージを与えた味方へ配る割合 */
+  assistRatio: number;
+  /** ステージクリア時、退場していない味方全員へ入る経験値 */
+  clearXp: number;
+};
+
+export function validateGrowthFile(file: string, raw: unknown): Validated<GrowthDef> {
+  const ctx = makeCtx(file);
+  const o = requireObject(ctx, '', raw);
+  if (!o) return { ok: false, errors: ctx.errors };
+  const growth: GrowthDef = {
+    maxLevel: requireNumber(ctx, 'maxLevel', o.maxLevel, { min: 1, int: true }) ?? 1,
+    xpPerLevel: requireNumber(ctx, 'xpPerLevel', o.xpPerLevel, { min: 1, int: true }) ?? 1,
+    hpPerLevel: requireNumber(ctx, 'hpPerLevel', o.hpPerLevel, { min: 0, int: true }) ?? 0,
+    levelsPerPower: requireNumber(ctx, 'levelsPerPower', o.levelsPerPower, { min: 1, int: true }) ?? 1,
+    hitXp: requireNumber(ctx, 'hitXp', o.hitXp, { min: 0, int: true }) ?? 0,
+    healXp: requireNumber(ctx, 'healXp', o.healXp, { min: 0, int: true }) ?? 0,
+    assistRatio: requireNumber(ctx, 'assistRatio', o.assistRatio, { min: 0, max: 1 }) ?? 0,
+    clearXp: requireNumber(ctx, 'clearXp', o.clearXp, { min: 0, int: true }) ?? 0,
+  };
+  return finish(ctx, growth);
+}
+
 export type AiDef =
   | { kind: 'sentry'; sightRange: number }
   | { kind: 'aggressive' }

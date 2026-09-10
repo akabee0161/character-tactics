@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  validateBondsFile, validateEnemyDef, validateLinesFile, validateSkillsFile,
+  validateBondsFile, validateEnemyDef, validateGrowthFile, validateLinesFile, validateSkillsFile,
   validateStageDef, validateTitlesFile, validateUnitDef,
 } from './schema';
 
@@ -563,5 +563,36 @@ describe('validateStageDef: placement', () => {
     const raw = stageRaw();
     delete (raw as Record<string, unknown>).placement;
     expect(validateStageDef('assets/stages/t.json', raw).ok).toBe(false);
+  });
+});
+
+describe('validateGrowthFile', () => {
+  const raw = () => ({
+    maxLevel: 12, xpPerLevel: 12, hpPerLevel: 1, levelsPerPower: 3,
+    hitXp: 1, healXp: 1, assistRatio: 0.5, clearXp: 10,
+  });
+
+  it('正しい形を読む', () => {
+    const r = validateGrowthFile('assets/growth.json', raw());
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value).toEqual(raw());
+  });
+
+  it('maxLevel が 0 以下はエラー', () => {
+    expect(validateGrowthFile('assets/growth.json', { ...raw(), maxLevel: 0 }).ok).toBe(false);
+  });
+
+  it('hitXp が小数はエラー（経験値が小数になるとリザルトに出てしまう）', () => {
+    expect(validateGrowthFile('assets/growth.json', { ...raw(), hitXp: 0.5 }).ok).toBe(false);
+  });
+
+  it('assistRatio が 1 を超えるとエラー', () => {
+    expect(validateGrowthFile('assets/growth.json', { ...raw(), assistRatio: 1.5 }).ok).toBe(false);
+  });
+
+  it('フィールドが欠けているとエラー', () => {
+    const o: Record<string, unknown> = raw();
+    delete o.clearXp;
+    expect(validateGrowthFile('assets/growth.json', o).ok).toBe(false);
   });
 });

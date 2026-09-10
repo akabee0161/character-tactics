@@ -1,0 +1,10 @@
+{
+  "maxLevel": 12,
+  "xpPerLevel": 12,
+  "hpPerLevel": 1,
+  "levelsPerPower": 3,
+  "hitXp": 1,
+  "healXp": 1,
+  "assistRatio": 0.5,
+  "clearXp": 10
+}

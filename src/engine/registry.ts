@@ -1,9 +1,10 @@
 import {
-  validateBondsFile, validateEnemyDef, validateLinesFile, validateSkillsFile,
+  validateBondsFile, validateEnemyDef, validateGrowthFile, validateLinesFile, validateSkillsFile,
   validateStageDef, validateTitlesFile, validateUnitDef,
 } from './schema';
 import type {
-  BondDef, EnemyDef, IntroLine, SkillDef, Sprites, StageDef, TitleDef, UnitDef, Validated, ValidationError,
+  BondDef, EnemyDef, GrowthDef, IntroLine, SkillDef, Sprites, StageDef, TitleDef, UnitDef, Validated,
+  ValidationError,
 } from './schema';
 
 export type Registry = {
@@ -15,6 +16,16 @@ export type Registry = {
   titles: TitleDef[];
   bonds: BondDef[];
   lines: Map<string, string>;
+  growth: GrowthDef;
+};
+
+/**
+ * growth.json が無い・壊れているときの仮値。errors が積まれた時点でゲームは
+ * 起動しないので実際には使われない（schema.ts のヘルパと同じ流儀）
+ */
+const FALLBACK_GROWTH: GrowthDef = {
+  maxLevel: 1, xpPerLevel: 1, hpPerLevel: 0, levelsPerPower: 1,
+  hitXp: 0, healXp: 0, assistRatio: 0, clearXp: 0,
 };
 
 /** 'assets/units/<id>.json' → '<id>' */
@@ -36,7 +47,9 @@ export function buildRegistry(
   const reg: Registry = {
     units: new Map(), enemies: new Map(), stages: [],
     skills: new Map(), titles: [], bonds: [], lines: new Map(),
+    growth: FALLBACK_GROWTH,
   };
+  let sawGrowth = false;
 
   const take = <T>(result: Validated<T>, use: (value: T) => void): void => {
     if (result.ok) use(result.value);
@@ -87,9 +100,16 @@ export function buildRegistry(
       take(validateBondsFile(path, raw), (d) => reg.bonds.push(...d));
     } else if (baseName(path) === 'titles') {
       take(validateTitlesFile(path, raw), (d) => reg.titles.push(...d));
+    } else if (baseName(path) === 'growth') {
+      sawGrowth = true;
+      take(validateGrowthFile(path, raw), (d) => { reg.growth = d; });
     } else {
       errors.push({ file: path, path: '', reason: 'どの しゅるいの アセットか わからない' });
     }
+  }
+
+  if (!sawGrowth) {
+    errors.push({ file: 'assets/growth.json', path: '', reason: 'growth.json が ない' });
   }
 
   // ステージの並び順は order で決める。ファイルパスの辞書順に依存すると
