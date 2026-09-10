@@ -13,21 +13,20 @@ export function escortDefIds(stage: StageDef): string[] {
   return out;
 }
 
-export type SightCircle = { pos: Vec2; radius: number; alerted: boolean };
+export type AlertMark = { pos: Vec2; defId: string };
 
 /**
- * 索敵範囲の表示は装飾ではない。範囲が見えなければ sentry と aggressive の区別が
- * プレイヤーに伝わらず、「近づかずに迂回する」という判断そのものが成立しない。
+ * 気づかれた敵。索敵範囲そのものは見せない。
+ * 範囲が見えると「どこまでなら近づけるか」を測る作業になって緊張感が削がれるため、
+ * 気づかれたことだけを伝える。aggressive は開始時から追ってくるので対象外
+ * （常に印が出てしまい、「気づかれた」という意味を持たなくなる）
  */
-export function sightCircles(units: Unit[]): SightCircle[] {
-  const out: SightCircle[] = [];
+export function alertMarks(units: Unit[]): AlertMark[] {
+  const out: AlertMark[] = [];
   for (const u of units) {
-    if (u.retired || u.ai === null) continue;
-    const def = u.ai.def;
-    const alerted = u.ai.mode === 'chase';
-    if (def.kind === 'sentry' || def.kind === 'guard') {
-      out.push({ pos: { ...u.pos }, radius: def.sightRange, alerted });
-    }
+    if (u.retired || u.side !== 'enemy' || u.ai === null) continue;
+    if (u.ai.def.kind === 'aggressive' || u.ai.mode !== 'chase') continue;
+    out.push({ pos: { ...u.pos }, defId: u.defId });
   }
   return out;
 }

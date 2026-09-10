@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { escortDefIds, sightCircles } from './objectives-view';
+import { alertMarks, escortDefIds } from './objectives-view';
 import type { StageDef } from '../engine/schema';
 import type { Unit } from '../core/types';
 
@@ -34,49 +34,32 @@ describe('escortDefIds', () => {
 });
 
 function enemy(uid: string, x: number, y: number, ai: Unit['ai']): Unit {
-  return { uid, pos: { x, y }, side: 'enemy', retired: false, ai } as unknown as Unit;
+  return { uid, defId: 'narazumono', pos: { x, y }, side: 'enemy', retired: false, ai } as unknown as Unit;
 }
 
-describe('sightCircles', () => {
-  it('sentry は げんざいいちを ちゅうしんに した えん', () => {
-    const u = enemy('e1', 200, 100, {
-      def: { kind: 'sentry', sightRange: 90 }, mode: 'idle', targetUid: null, home: { x: 100, y: 100 },
-    });
-    expect(sightCircles([u])).toEqual([{ pos: { x: 200, y: 100 }, radius: 90, alerted: false }]);
+describe('alertMarks', () => {
+  it('追跡中の敵を返す', () => {
+    const u = enemy('e1', 10, 20, { def: { kind: 'sentry', sightRange: 100 }, mode: 'chase', targetUid: 'p1', home: { x: 10, y: 20 } });
+    expect(alertMarks([u])).toEqual([{ pos: { x: 10, y: 20 }, defId: u.defId }]);
   });
 
-  it('guard は げんざいいちを ちゅうしんに した えん', () => {
-    const u = enemy('e1', 200, 100, {
-      def: { kind: 'guard', post: { x: 50, y: 60 }, leash: 120, sightRange: 80 },
-      mode: 'idle', targetUid: null, home: { x: 200, y: 100 },
-    });
-    expect(sightCircles([u])).toEqual([{ pos: { x: 200, y: 100 }, radius: 80, alerted: false }]);
+  it('追跡していない敵は返さない', () => {
+    const u = enemy('e1', 10, 20, { def: { kind: 'sentry', sightRange: 100 }, mode: 'idle', targetUid: null, home: { x: 10, y: 20 } });
+    expect(alertMarks([u])).toEqual([]);
   });
 
-  it('aggressive は えんを もたない', () => {
-    const u = enemy('e1', 200, 100, {
-      def: { kind: 'aggressive' }, mode: 'chase', targetUid: 'p1', home: { x: 200, y: 100 },
-    });
-    expect(sightCircles([u])).toEqual([]);
+  it('aggressive は返さない（常に追ってくるので「気づかれた」印にならない）', () => {
+    const u = enemy('e1', 10, 20, { def: { kind: 'aggressive' }, mode: 'chase', targetUid: 'p1', home: { x: 10, y: 20 } });
+    expect(alertMarks([u])).toEqual([]);
   });
 
-  it('ついせきちゅうは alerted に なる', () => {
-    const u = enemy('e1', 200, 100, {
-      def: { kind: 'sentry', sightRange: 90 }, mode: 'chase', targetUid: 'p1', home: { x: 100, y: 100 },
-    });
-    expect(sightCircles([u])[0]?.alerted).toBe(true);
+  it('退場した敵は返さない', () => {
+    const u = enemy('e1', 10, 20, { def: { kind: 'guard', post: { x: 0, y: 0 }, leash: 10, sightRange: 100 }, mode: 'chase', targetUid: 'p1', home: { x: 10, y: 20 } });
+    expect(alertMarks([{ ...u, retired: true }])).toEqual([]);
   });
 
-  it('たおれた 敵の えんは ださない', () => {
-    const u = enemy('e1', 200, 100, {
-      def: { kind: 'sentry', sightRange: 90 }, mode: 'idle', targetUid: null, home: { x: 100, y: 100 },
-    });
-    u.retired = true;
-    expect(sightCircles([u])).toEqual([]);
-  });
-
-  it('味方（ai が null）は えんを もたない', () => {
-    const p = { uid: 'p1', pos: { x: 0, y: 0 }, side: 'player', retired: false, ai: null } as unknown as Unit;
-    expect(sightCircles([p])).toEqual([]);
+  it('ai を持たない味方は返さない', () => {
+    const ally = { uid: 'p1', defId: 'roran', pos: { x: 1, y: 2 }, side: 'player', retired: false, ai: null } as unknown as Unit;
+    expect(alertMarks([ally])).toEqual([]);
   });
 });

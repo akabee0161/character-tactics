@@ -5,7 +5,7 @@ import { lookupDef } from '../engine/registry';
 import type { Registry } from '../engine/registry';
 import type { StageDef } from '../engine/schema';
 import type { ImageCache } from './images';
-import { sightCircles } from './objectives-view';
+import { alertMarks } from './objectives-view';
 import { STILL, frameFor } from './anim';
 import type { AnimStore } from './anim';
 import { drawHalf, drawMapUnit } from './sprites';
@@ -30,8 +30,7 @@ const COLORS = {
   hpEnemy: '#d05a5a',
   bond: 'rgba(255, 190, 220, 0.55)',
   goal: '#ffd479',
-  sight: 'rgba(255, 140, 120, 0.30)',
-  sightAlert: 'rgba(255, 90, 90, 0.60)',
+  alert: '#ff5a5a',
   escort: '#ffd479',
 };
 
@@ -67,11 +66,11 @@ export function drawBattle(
   ctx.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
 
   drawTerrain(ctx, state);
-  drawSightRanges(ctx, state);
   drawVictoryMarker(ctx, state.stage);
   drawGoalMarkers(ctx, reg, state, selected);
   drawBonds(ctx, state);
   drawUnits(ctx, reg, state, selected, effects, images, anim);
+  drawAlertMarks(ctx, reg, state);
   drawProjectiles(ctx, state);
   drawEscortMarks(ctx, state, escorts);
   drawEffects(ctx, effects);
@@ -90,17 +89,17 @@ function drawTerrain(ctx: CanvasRenderingContext2D, state: BattleState): void {
   }
 }
 
-function drawSightRanges(ctx: CanvasRenderingContext2D, state: BattleState): void {
-  ctx.lineWidth = 2;
-  for (const c of sightCircles(state.units)) {
-    const p = mapToLogical(c.pos);
-    ctx.strokeStyle = c.alerted ? COLORS.sightAlert : COLORS.sight;
-    ctx.setLineDash(c.alerted ? [] : [6, 5]);
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, c.radius, 0, Math.PI * 2);
-    ctx.stroke();
+/** 気づかれた敵の頭上に「！」を出す。索敵範囲そのものは見せない */
+function drawAlertMarks(ctx: CanvasRenderingContext2D, reg: Registry, state: BattleState): void {
+  ctx.fillStyle = COLORS.alert;
+  ctx.font = 'bold 22px sans-serif';
+  ctx.textAlign = 'center';
+  for (const m of alertMarks(state.units)) {
+    const p = mapToLogical(m.pos);
+    const half = drawHalf(defOf(reg, m.defId), UNIT_R);
+    ctx.fillText('！', p.x, p.y - half - 10);
   }
-  ctx.setLineDash([]);
+  ctx.textAlign = 'left';
 }
 
 function drawVictoryMarker(ctx: CanvasRenderingContext2D, stage: StageDef): void {
