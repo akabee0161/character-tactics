@@ -1,7 +1,7 @@
 {
   "id": "stage3",
   "order": 30,
-  "name": "ガルムの さいご",
+  "name": "ガルムの 最後",
   "cell": 32,
   "mapRows": [
     "################",
@@ -28,12 +28,15 @@
     "#..............#",
     "################"
   ],
-  "placementZone": [
-    { "pos": { "x": 144, "y": 656 } },
-    { "pos": { "x": 240, "y": 656 } },
-    { "pos": { "x": 144, "y": 592 } },
-    { "pos": { "x": 240, "y": 592 } }
-  ],
+  "placement": {
+    "minY": 528,
+    "starts": [
+      { "x": 144, "y": 656 },
+      { "x": 240, "y": 656 },
+      { "x": 144, "y": 592 },
+      { "x": 240, "y": 592 }
+    ]
+  },
   "roster": ["roran", "ines", "mist", "gau"],
   "enemies": [
     { "defId": "narazumono", "pos": { "x": 176, "y": 528 }, "ai": { "kind": "sentry", "sightRange": 100 } },
@@ -42,6 +45,9 @@
     { "defId": "tatemochi",  "pos": { "x": 336, "y": 304 }, "ai": { "kind": "guard", "post": { "x": 336, "y": 272 }, "leash": 140, "sightRange": 120 } },
     { "defId": "garum",      "pos": { "x": 240, "y": 112 }, "ai": { "kind": "aggressive" } }
   ],
+  "spawners": [
+    { "defId": "narazumono", "pos": { "x": 80, "y": 80 }, "firstAfter": 15, "every": 12, "total": 4 }
+  ],
   "victory": { "type": "reach", "pos": { "x": 240, "y": 48 }, "radius": 40, "by": "any" },
   "defeat": [{ "type": "unitLost", "defIds": ["roran", "mist"] }],
   "intro": [
@@ -49,8 +55,8 @@
     { "speaker": "roran", "lineId": "stage:stage3:roran" }
   ],
   "outro": [
-    { "speaker": "garum", "text": "……まさか、\nきみたちに やぶれるとは" },
-    { "speaker": "roran", "text": "もう だれのことも\nおびやかさないで" },
-    { "text": "とりでに あさひが さした。" }
+    { "speaker": "garum", "text": "……まさか、\n君たちに 敗れるとは" },
+    { "speaker": "roran", "text": "もう 誰のことも\n脅かさないで" },
+    { "text": "砦に 朝日が 差した。" }
   ]
 }

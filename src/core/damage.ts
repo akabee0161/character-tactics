@@ -21,6 +21,7 @@ export function applyDamage(state: BattleState, source: HitSource, target: Unit)
   target.hp -= dmg;
   target.lastHitBy = source.uid;
   target.lastHitNeraiuchi = source.neraiuchi;
+  if (!target.damagedBy.includes(source.uid)) target.damagedBy.push(source.uid);
 
   state.events.push({
     type: 'hit', targetUid: target.uid, targetPos: { ...target.pos }, amount: dmg,

@@ -324,6 +324,47 @@ export function validateLinesFile(file: string, raw: unknown): Validated<Record<
   return finish(ctx, out);
 }
 
+/**
+ * 成長の調整値。レベルアップの頻度（xpPerLevel）と1レベルの強化量（hpPerLevel /
+ * levelsPerPower）を別々に持つので、片方だけを動かして調整できる。
+ * hitXp / healXp / clearXp を整数に縛るのは、経験値が小数になるとリザルト画面に
+ * 4.5/12 のような値が出るため
+ */
+export type GrowthDef = {
+  maxLevel: number;
+  /** レベル n から n+1 に必要な経験値は n × xpPerLevel */
+  xpPerLevel: number;
+  /** 1レベルあたりの最大HPの増加 */
+  hpPerLevel: number;
+  /** 攻撃力が1上がるのに必要なレベル数 */
+  levelsPerPower: number;
+  /** 命中1回ごとに攻撃側へ入る経験値 */
+  hitXp: number;
+  /** 回復1回ごとに回復側へ入る経験値 */
+  healXp: number;
+  /** 撃破時、とどめ以外でダメージを与えた味方へ配る割合 */
+  assistRatio: number;
+  /** ステージクリア時、退場していない味方全員へ入る経験値 */
+  clearXp: number;
+};
+
+export function validateGrowthFile(file: string, raw: unknown): Validated<GrowthDef> {
+  const ctx = makeCtx(file);
+  const o = requireObject(ctx, '', raw);
+  if (!o) return { ok: false, errors: ctx.errors };
+  const growth: GrowthDef = {
+    maxLevel: requireNumber(ctx, 'maxLevel', o.maxLevel, { min: 1, int: true }) ?? 1,
+    xpPerLevel: requireNumber(ctx, 'xpPerLevel', o.xpPerLevel, { min: 1, int: true }) ?? 1,
+    hpPerLevel: requireNumber(ctx, 'hpPerLevel', o.hpPerLevel, { min: 0, int: true }) ?? 0,
+    levelsPerPower: requireNumber(ctx, 'levelsPerPower', o.levelsPerPower, { min: 1, int: true }) ?? 1,
+    hitXp: requireNumber(ctx, 'hitXp', o.hitXp, { min: 0, int: true }) ?? 0,
+    healXp: requireNumber(ctx, 'healXp', o.healXp, { min: 0, int: true }) ?? 0,
+    assistRatio: requireNumber(ctx, 'assistRatio', o.assistRatio, { min: 0, max: 1 }) ?? 0,
+    clearXp: requireNumber(ctx, 'clearXp', o.clearXp, { min: 0, int: true }) ?? 0,
+  };
+  return finish(ctx, growth);
+}
+
 export type AiDef =
   | { kind: 'sentry'; sightRange: number }
   | { kind: 'aggressive' }
@@ -345,12 +386,31 @@ export type DefeatCond =
 
 export type EnemyPlacement = { defId: string; pos: Vec2; ai: AiDef };
 
+/** 時間で敵を湧かせる口。湧いた敵は aggressive 固定でプレイヤーを追う */
+export type SpawnerDef = {
+  defId: string;
+  pos: Vec2;
+  /** 戦闘開始から1体目までの秒数 */
+  firstAfter: number;
+  /** 2体目以降の間隔（秒） */
+  every: number;
+  /** この湧き口から出る総数。上限を必須にしないと持久戦で詰む */
+  total: number;
+};
+
 export type IntroLine = {
   /** null なら地の文。ネームプレートと顔の丸を出さない */
   speaker: string | null;
   /** text と lineId は排他。検証で片方だけが埋まることを保証する */
   text: string | null;
   lineId: string | null;
+};
+
+export type PlacementDef = {
+  /** この y 以上（画面で下）なら配置できる */
+  minY: number;
+  /** ステージ開始時の味方の初期位置。roster より少なければ先頭から繰り返す */
+  starts: Vec2[];
 };
 
 export type StageDef = {
@@ -362,9 +422,10 @@ export type StageDef = {
   cell: number;
   /** '.' 歩ける / '#' 歩けない */
   mapRows: string[];
-  placementZone: { pos: Vec2 }[];
+  placement: PlacementDef;
   roster: string[];
   enemies: EnemyPlacement[];
+  spawners: SpawnerDef[];
   victory: VictoryCond;
   defeat: DefeatCond[];
   intro?: IntroLine[];
@@ -471,6 +532,58 @@ function isWalkableCell(cell: number, mapRows: string[], pos: Vec2): boolean {
   return row !== undefined && cx >= 0 && cx < row.length && row[cx] === '.';
 }
 
+function readPlacement(
+  ctx: Ctx,
+  v: unknown,
+  mapRows: string[],
+  cell: number,
+  checkWalkable: (path: string, pos: Vec2) => void,
+): PlacementDef {
+  const o = requireObject(ctx, 'placement', v);
+  if (!o) return { minY: 0, starts: [] };
+
+  const maxY = mapRows.length * cell;
+  const minY = requireNumber(
+    ctx, 'placement.minY', o.minY, maxY > 0 ? { min: 0, max: maxY - 1 } : { min: 0 },
+  ) ?? 0;
+
+  const raw = requireArray(ctx, 'placement.starts', o.starts, { min: 1 }) ?? [];
+  const starts: Vec2[] = [];
+  raw.forEach((item, i) => {
+    const path = `placement.starts[${i}]`;
+    const pos = requireVec2(ctx, path, item);
+    if (pos === null) return;
+    checkWalkable(path, pos);
+    if (pos.y < minY) fail(ctx, path, `minY（${minY}）いじょうで ないと いけない`);
+    starts.push(pos);
+  });
+
+  return { minY, starts };
+}
+
+function readSpawners(
+  ctx: Ctx, v: unknown, checkWalkable: (path: string, pos: Vec2) => void,
+): SpawnerDef[] {
+  if (v === undefined) return [];
+  const arr = requireArray(ctx, 'spawners', v) ?? [];
+  const out: SpawnerDef[] = [];
+  arr.forEach((item, i) => {
+    const path = `spawners[${i}]`;
+    const o = requireObject(ctx, path, item);
+    if (!o) return;
+    const pos = requireVec2(ctx, `${path}.pos`, o.pos) ?? { x: 0, y: 0 };
+    checkWalkable(`${path}.pos`, pos);
+    out.push({
+      defId: requireString(ctx, `${path}.defId`, o.defId) ?? '',
+      pos,
+      firstAfter: requireNumber(ctx, `${path}.firstAfter`, o.firstAfter, { min: 0 }) ?? 0,
+      every: requireNumber(ctx, `${path}.every`, o.every, { min: 1 }) ?? 1,
+      total: requireNumber(ctx, `${path}.total`, o.total, { min: 1, int: true }) ?? 1,
+    });
+  });
+  return out;
+}
+
 /**
  * text と lineId は排他にする。片方を優先する暗黙のルールを作ると、
  * 直したつもりが効いていない事故が起きるため、両方書いたらエラーにする。
@@ -506,14 +619,6 @@ export function validateStageDef(file: string, raw: unknown): Validated<StageDef
     }
   };
 
-  const zoneRaw = requireArray(ctx, 'placementZone', o.placementZone, { min: 1 }) ?? [];
-  const placementZone = zoneRaw.map((item, i) => {
-    const z = requireObject(ctx, `placementZone[${i}]`, item);
-    const pos = (z && requireVec2(ctx, `placementZone[${i}].pos`, z.pos)) ?? { x: 0, y: 0 };
-    checkWalkable(`placementZone[${i}].pos`, pos);
-    return { pos };
-  });
-
   const enemiesRaw = requireArray(ctx, 'enemies', o.enemies) ?? [];
   const enemies = enemiesRaw.map((item, i) => {
     const path = `enemies[${i}]`;
@@ -535,9 +640,10 @@ export function validateStageDef(file: string, raw: unknown): Validated<StageDef
     name: requireString(ctx, 'name', o.name) ?? '',
     cell,
     mapRows,
-    placementZone,
+    placement: readPlacement(ctx, o.placement, mapRows, cell, checkWalkable),
     roster: readStringArray(ctx, 'roster', o.roster, 1),
     enemies,
+    spawners: readSpawners(ctx, o.spawners, checkWalkable),
     victory: readVictory(ctx, o.victory),
     defeat: readDefeat(ctx, o.defeat),
   };

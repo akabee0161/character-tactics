@@ -10,9 +10,10 @@ import type { BattleState, CharProgress, Vec2 } from './types';
 const STAGE: StageDef = {
   id: 'teststage', order: 10, name: 'テスト', cell: 32,
   mapRows: ['..........', '..........', '..........'],
-  placementZone: [{ pos: { x: 16, y: 16 } }],
+  placement: { minY: 0, starts: [{ x: 16, y: 16 }] },
   roster: ['roran', 'ines', 'mist', 'gau'],
   enemies: [{ defId: 'narazumono', pos: { x: 304, y: 16 }, ai: { kind: 'aggressive' } }],
+  spawners: [],
   victory: { type: 'reach', pos: { x: 304, y: 16 }, radius: 40, by: 'any' },
   defeat: [{ type: 'unitLost', defIds: ['roran'] }],
 };
@@ -47,7 +48,7 @@ function spawnEnemy(s: BattleState, defId: string, pos: Vec2, hp?: number): Unit
     goalPos: null, goalField: null, engagedWith: null, attackCooldown: 0, retired: false,
     ai: { def: { kind: 'aggressive' }, mode: 'idle', targetUid: null, home: { ...pos } },
     skillCooldownUntil: 0, funbaruUntil: -1, neraiuchiArmed: false, pinchShown: false,
-    seenDefIds: [], lastHitBy: null, lastHitNeraiuchi: false,
+    seenDefIds: [], lastHitBy: null, lastHitNeraiuchi: false, damagedBy: [],
   };
   s.units.push(u);
   return u;
@@ -190,7 +191,8 @@ describe('撃破と撤退', () => {
       type: 'unitDefeated', uid: e.uid, defId: 'narazumono', byUid: roran.uid, byDefId: 'roran', neraiuchi: false,
       pos: e.pos,
     });
-    expect(roran.xp).toBe(s.reg.enemies.get('narazumono')!.xpReward);
+    // とどめの一撃も hit イベントとして hitXp が入るので、撃破報酬に上乗せされる
+    expect(roran.xp).toBe(s.reg.enemies.get('narazumono')!.xpReward + s.reg.growth.hitXp);
   });
 
   it('ねらいうちで倒すと kill:neraiuchi が増える', () => {
@@ -214,7 +216,8 @@ describe('撃破と撤退', () => {
       type: 'unitDefeated', uid: e.uid, defId: 'narazumono', byUid: gau.uid, byDefId: 'gau', neraiuchi: false,
       pos: e.pos,
     });
-    expect(gau.xp).toBe(s.reg.enemies.get('narazumono')!.xpReward);
+    // とどめの一撃も hit イベントとして hitXp が入るので、撃破報酬に上乗せされる
+    expect(gau.xp).toBe(s.reg.enemies.get('narazumono')!.xpReward + s.reg.growth.hitXp);
   });
 
   it('ガルムは 30% を切ると撤退し unitFled が出る', () => {
@@ -227,7 +230,8 @@ describe('撃破と撤退', () => {
     expect(s.events).toContainEqual({
       type: 'unitFled', uid: e.uid, defId: 'garum', byUid: roran.uid, byDefId: 'roran',
     });
-    expect(roran.xp).toBe(0);
+    // 撃破報酬は入らないが、撤退までに当てた一撃ぶんの hitXp は入る
+    expect(roran.xp).toBe(s.reg.growth.hitXp);
   });
 
   it('味方は HP 0 でたいきゃくし、交戦が解除される', () => {

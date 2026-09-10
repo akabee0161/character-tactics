@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { testRegistry } from '../core/testing';
 import { buildRegistry, lookupDef, skillParam } from './registry';
 
 const UNIT = {
@@ -19,10 +20,14 @@ const INES = {
   maxHp: 20, power: 4, guard: 2, attack: 'bow', range: 120,
   attackInterval: 1.2, speed: 50, skillId: null, color: '#c8a04a',
 };
+const GROWTH = {
+  maxLevel: 12, xpPerLevel: 12, hpPerLevel: 1, levelsPerPower: 3,
+  hitXp: 1, healXp: 1, assistRatio: 0.5, clearXp: 10,
+};
 const STAGE = {
   id: 'stage1', order: 10, name: 'はじまりの しま', cell: 32,
   mapRows: ['####', '#..#', '#..#', '####'],
-  placementZone: [{ pos: { x: 48, y: 48 } }],
+  placement: { minY: 0, starts: [{ x: 48, y: 48 }] },
   roster: ['roran'],
   enemies: [{ defId: 'narazumono', pos: { x: 80, y: 80 }, ai: { kind: 'aggressive' } }],
   victory: { type: 'reach', pos: { x: 80, y: 80 }, radius: 24, by: 'any' },
@@ -41,6 +46,7 @@ function files(over: Record<string, unknown> = {}): Record<string, unknown> {
       { id: 'nakayoshi', label: 'なかよし', owner: null, counter: 'bond:supports', threshold: 20 },
     ],
     'assets/lines/common.json': { 'skill:roran': 'ここは とおさない！' },
+    'assets/growth.json': GROWTH,
     ...over,
   };
 }
@@ -235,6 +241,15 @@ describe('lookupDef', () => {
     expect(lookupDef(r.value, 'roran')?.name).toBe('ロラン');
     expect(lookupDef(r.value, 'narazumono')?.name).toBe('ならずもの');
     expect(lookupDef(r.value, 'yuurei')).toBeNull();
+  });
+});
+
+describe('growth', () => {
+  it('assets/growth.json を読んで registry に入れる', () => {
+    const reg = testRegistry();
+    expect(reg.growth.maxLevel).toBe(12);
+    expect(reg.growth.xpPerLevel).toBe(12);
+    expect(reg.growth.assistRatio).toBe(0.5);
   });
 });
 

@@ -11,17 +11,19 @@
 | 操作 | 結果 |
 |---|---|
 | なかまをタップ | 選択する。もう一度タップで選択を外す |
-| 下のポートレートをタップ | 同じく選択・解除 |
+| 下のポートレートをタップ | そのなかまを選び、必殺技を出す |
 | なかまをドラッグして離す | 戦闘中はその地点へ移動 |
 | 選択中に地面をタップ | 戦闘中はその地点へ移動 |
 
-必殺技ボタンは下パネルの固定位置に常に出ている。なかまを選んでいないときや、クールダウン中で押せないときも「なかまを えらぶ」「わざめい あと ○びょう」のように理由が文字で読める。配置フェーズの「はじめる」も同じ場所に出るので、押す場所がフェーズをまたいで変わらない。
+必殺技は下のポートレートをタップして出す。タップすると同時にそのなかまが選択される。クールダウン中・必殺技を持たない場合は選択だけになる。倒れているなかまはタップしても何も起きない（選択も変わらない）。いま出せるなかまのポートレートには明るい縁が付き、残り時間はポートレートのゲージで読める。配置フェーズでは同じ下パネルの上段に「始める」が出る。
 
 ステージを選ぶと、まず会話から始まる。タップで送り、文字送りの途中でタップすると全文が出る。一度読み終えたステージでは「とばす」が出る。会話はステージ開始時と、敵の本拠地に到達したときの2回ある。
 
-戦闘中の会話は、喋ったキャラの頭上に数秒だけ出る。時間は止まらない。吹き出しをタップすると消え、吹き出しの上から始めたドラッグはタップ扱いにならず移動指示として通る。
+戦闘中のセリフは下パネルの上段に数秒だけ出る。時間は止まらない。同じ瞬間に複数のなかまが喋ったときは、優先度の高い1件だけを出す。盤面にはかぶらない。
 
-移動先は 4 人ぶんが常に表示される。選択中のなかまだけ、現在地から目的地への線が引かれる。指示した移動は交戦しても最後まで進む（歩きながら攻撃する）。配置中は、ドラッグ先が配置できないマス（壁など）だとプレビューの線と丸が赤く変わり、そのまま離しても失敗することが事前にわかる。
+移動先は 4 人ぶんが常に表示される。選択中のなかまだけ、現在地から目的地への線が引かれる。指示した移動は交戦しても最後まで進む（歩きながら攻撃する）。配置は黄色い線より下の、歩けるマスのどこにでもできる。ドラッグ先が線より上か壁だと、プレビューの線と丸が赤く変わり、そのまま離しても失敗することが事前にわかる。
+
+敵の索敵範囲は表示しない。気づかれた敵の頭上に赤い「！」が出る。
 
 ## 開発
 
@@ -36,7 +38,7 @@ npm run build   # 型チェック + 本番ビルド (out/play/character-tactics/
 
 ### 描画と入力をブラウザで確認する
 
-描画コードにはユニットテストを書かない方針なので、`drawTalk` / `drawBubble` の見た目や
+描画コードにはユニットテストを書かない方針なので、`drawTalk` / `drawSpeechBar` の見た目や
 ポインタ操作は実ブラウザで確かめる。**Playwright パッケージは要らない。** Chromium の
 バイナリさえあれば（`~/.cache/ms-playwright/` に落ちているものでよい）、追加の依存なしで
 CDP から駆動できる。
@@ -51,17 +53,15 @@ chrome --headless=new --no-sandbox --disable-gpu \
 `document.getElementById('game')` に対して `PointerEvent` を直接 dispatch してタップと
 ドラッグを送り、`Page.captureScreenshot` で画面を撮る。`Input.dispatchMouseEvent` は
 headless Chromium で `pointerdown` / `pointerup` として正しく届かないことがあるため使わない。
-論理座標 540×945 からクライアント座標への変換は `computeViewport`（`src/render/viewport.ts`）
-と同じ式を使う。
+論理座標 540×945 からクライアント座標への変換は `computeViewport` と `fitCanvas`
+（どちらも `src/render/viewport.ts`）と同じ式を使う。
 
 判定はスクリーンショットを見るほか、`getImageData` で色の塊を数えると機械的に取れる。
-吹き出しのパネルは `#f7f3e6`、ユニットの丸は各 def の `color`。下部バーのポートレートも
+セリフ欄のパネルは `#f7f3e6`、ユニットの丸は各 def の `color`。下部バーのポートレートも
 同じ色なので、マップ領域（論理 y が 50〜786）に絞ること。
 
 **確認しにくいもの:** 飛翔体（弓・魔法）は着弾までの数フレームしか画面に映らないため、
-`Page.captureScreenshot` を短い間隔で連写しないと捉えられない。同様に「同じキャラの
-連続発話で上書き」「画面端での吹き出しのはみ出し」は狙って起こしにくい。後者は
-`src/ui/layout.test.ts` のクランプ試験で担保する。
+`Page.captureScreenshot` を短い間隔で連写しないと捉えられない。
 
 ## 構成
 
@@ -73,12 +73,13 @@ headless Chromium で `pointerdown` / `pointerup` として正しく届かない
 | `src/core/` | 描画・DOM に依存しない純ロジック |
 | `src/core/damage.ts` | 命中1回ぶんの解決。近接も飛翔体の着弾も通る |
 | `src/core/projectiles.ts` | 飛翔体の生成・移動・命中 |
+| `src/core/spawns.ts` | 時間湧きの判定（純関数） |
 | `src/render/` | Canvas2D 描画 |
 | `src/render/images.ts` | 画像の読み込みとキャッシュ |
 | `src/render/sprites.ts` | 画像とプレースホルダを1本にまとめた描画 |
 | `src/render/anim.ts` | 向き・状態・コマ番号の計算（DOM に触らない） |
-| `src/ui/` | 画面遷移・入力・会話フェーズ・吹き出し |
-| `src/ui/skillbutton.ts` | 必殺技ボタンの表示状態 |
+| `src/ui/` | 画面遷移・入力・会話フェーズ |
+| `src/ui/speech.ts` | 戦闘中のセリフの保持と寿命 |
 | `src/save/` | localStorage の読み書き |
 | `tools/` | 仮アセットの生成器。本番の絵が揃ったら消す |
 
@@ -88,17 +89,19 @@ headless Chromium で `pointerdown` / `pointerup` として正しく届かない
 
 コードを書き換えずに足せるもの:
 
-- **ステージ** — `assets/stages/<id>.json` を1本置く。ファイル名と `id` を一致させ、`order` に並び順を書く（昇順に並ぶ。欠番は自由、重複は起動時エラー。10, 20, 30 と空けておくと後から間に挟める）。マップは **16列 × 23行、`cell` は 32**。`placementZone` は最下段、`victory.pos` は最上段に置く（下から上へ攻める）
+- **ステージ** — `assets/stages/<id>.json` を1本置く。ファイル名と `id` を一致させ、`order` に並び順を書く（昇順に並ぶ。欠番は自由、重複は起動時エラー。10, 20, 30 と空けておくと後から間に挟める）。マップは **16列 × 23行、`cell` は 32**。`placement.minY` より下（画面で下）の歩けるマスが配置できる範囲で、`placement.starts` に開始時の立ち位置を並べる（roster より少なければ先頭から繰り返す）。`victory.pos` は最上段に置く（下から上へ攻める）
 - **ステージ開始時の会話** — ステージの `intro` に書く。`speaker` を省略すると地の文になり、本文は `text` に直書きするか `lineId` で `assets/lines/` を参照する（両方書いても、どちらも書かなくてもエラー）
 - **本拠地に到達したときの会話** — ステージの `outro` に書く。書き方は `intro` と同じ
 - **味方・同行 NPC** — `assets/units/<id>.json`。`combat: false` にすると攻撃しない同行者になる
 - **敵** — `assets/enemies/<id>.json`
+- **時間湧きの敵** — ステージの `spawners` に `{ "defId": ..., "pos": ..., "firstAfter": 20, "every": 15, "total": 3 }` を並べる。`firstAfter` 秒後に1体目、以降 `every` 秒ごとに1体、合計 `total` 体まで湧く。湧いた敵の AI は `aggressive` 固定。総数上限は必須（上限がないと持久戦で詰む）
 - **ユニットの絵** — `assets/images/` に PNG を置き、`assets/units/<id>.json`（敵は `assets/enemies/<id>.json`）の `sprites` に書く。`role` はクラスアイコン（64×64）、`face` は顔（128×128。下パネル・ステージ選択・会話・リザルト）、`map` はフィールド上の姿。`map` だけはスプライトシートで、`{ "sheet": "<file>.png", "frame": 32, "idle": { "frames": 2, "fps": 4 }, "walk": {...}, "attack": {...} }` の形。シートは**列 = コマ、行 = 12（3状態 × 4方向）**で、行番号 = 状態index × 4 + 方向index、状態は `idle, walk, attack`、方向は `down, up, left, right` の順。コマは正方形。列数は最大コマ数にそろえ、余りは透明のまま置く。`map` が `null` のあいだは色つきの丸だけが出る（クラス名の文字は `role` が `null` のときに出る別のフォールバックで、`map` とは無関係）。`frame` と各状態の `frames` は1以上の整数、`fps` は1以上の数値であること。実寸と JSON が食い違うと `npm test` が落ちる（`src/engine/sheet-size.test.ts`）
 - **仮の絵の作り直し** — `node tools/gen-placeholder-sprites.mjs`。本番の絵が揃ったらこの生成器は消してよい。差し替えは PNG を上書きするだけで、コマ数を変えるときだけ JSON の数値を直す
 - **攻撃の種別** — `attack` は `melee` / `bow` / `magic`。`bow` と `magic` は飛翔体として飛び、届いた瞬間にダメージが出る。`bowDamageCap` が効くのは `bow` だけ
 - **セリフ** — `assets/lines/*.json`
 - **称号** — `assets/titles.json`。`counter` に使えるキーは `skill:<skillId>:uses` / `skill:<skillId>:hits` / `kill:neraiuchi` / `bond:supports`
 - **絆** — `assets/bonds.json`
+- **成長の調整** — `assets/growth.json`。`xpPerLevel`（レベルアップの必要量）、`hpPerLevel` と `levelsPerPower`（1レベルの強化量）、`hitXp` / `healXp` / `assistRatio` / `clearXp`（経験値の入り口）、`maxLevel`。経験値が小数にならないよう `hitXp` / `healXp` / `clearXp` は整数で検証する
 
 コードが要るもの:
 

@@ -42,8 +42,8 @@ describe('loadRegistry', () => {
         const cy = Math.floor(p.y / stage.cell);
         return stage.mapRows[cy]?.[cx] === '.';
       };
-      for (const z of stage.placementZone) {
-        expect(`${stage.id} placement ${z.pos.x},${z.pos.y} walkable=${walkable(z.pos)}`)
+      for (const s of stage.placement.starts) {
+        expect(`${stage.id} placement ${s.x},${s.y} walkable=${walkable(s)}`)
           .toContain('walkable=true');
       }
       for (const e of stage.enemies) {
@@ -85,8 +85,8 @@ describe('ステージの せっけい', () => {
 
   it('しょうり ちてんは はいち ちてんから じゅうぶん はなれている', () => {
     for (const s of reg.stages) {
-      for (const z of s.placementZone) {
-        const d = Math.hypot(z.pos.x - s.victory.pos.x, z.pos.y - s.victory.pos.y);
+      for (const start of s.placement.starts) {
+        const d = Math.hypot(start.x - s.victory.pos.x, start.y - s.victory.pos.y);
         expect(`${s.id} きょり ${Math.round(d)} > 300 => ${d > 300}`).toContain('true');
       }
     }
@@ -96,8 +96,8 @@ describe('ステージの せっけい', () => {
     for (const s of reg.stages) {
       const grid = makeGrid(s.cell, s.mapRows);
       const field = computeFlowField(grid, s.victory.pos);
-      for (const z of s.placementZone) {
-        const i = cellIndexAt(grid, z.pos);
+      for (const start of s.placement.starts) {
+        const i = cellIndexAt(grid, start);
         expect(`${s.id} とうたつかのう => ${i >= 0 && (field.dist[i] ?? -1) >= 0}`).toContain('true');
       }
     }

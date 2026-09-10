@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  computeViewport, logicalToMap, LOGICAL_H, LOGICAL_W, mapToLogical, MAP_ORIGIN, screenToLogical,
+  computeViewport, fitCanvas, logicalToMap, LOGICAL_H, LOGICAL_W, mapToLogical, MAP_ORIGIN, screenToLogical,
 } from './viewport';
 
 describe('computeViewport', () => {
@@ -64,5 +64,24 @@ describe('たてがたの ろんりかいぞうど', () => {
   it('mapToLogical と logicalToMap は ぎゃくの かんけい', () => {
     const p = { x: 100, y: 200 };
     expect(logicalToMap(mapToLogical(p))).toEqual(p);
+  });
+});
+
+describe('fitCanvas', () => {
+  it('縦に余裕があるときは幅が決め手になる', () => {
+    expect(fitCanvas(540, 2000, 1)).toEqual({ cssW: 540, cssH: 945 });
+  });
+
+  it('横に余裕があるときは高さが決め手になる', () => {
+    expect(fitCanvas(2000, 945, 1)).toEqual({ cssW: 540, cssH: 945 });
+  });
+
+  it('拡大率が1を超えても縦横比を保つ', () => {
+    // 1920x1080 は高さが決め手。945 -> 1080 の 1.1428 倍
+    const fit = fitCanvas(1920, 1080, 1);
+    expect(fit.cssH).toBe(1080);
+    expect(fit.cssW).toBe(617);
+    // 540/945 = 0.5714。1px 未満のずれだけに収まること
+    expect(Math.abs(fit.cssW / fit.cssH - LOGICAL_W / LOGICAL_H)).toBeLessThan(0.001);
   });
 });

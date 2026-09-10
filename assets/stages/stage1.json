@@ -1,7 +1,7 @@
 {
   "id": "stage1",
   "order": 10,
-  "name": "はじまりの みち",
+  "name": "始まりの 道",
   "cell": 32,
   "mapRows": [
     "################",
@@ -28,12 +28,15 @@
     "#..............#",
     "################"
   ],
-  "placementZone": [
-    { "pos": { "x": 144, "y": 656 } },
-    { "pos": { "x": 240, "y": 656 } },
-    { "pos": { "x": 144, "y": 592 } },
-    { "pos": { "x": 240, "y": 592 } }
-  ],
+  "placement": {
+    "minY": 528,
+    "starts": [
+      { "x": 144, "y": 656 },
+      { "x": 240, "y": 656 },
+      { "x": 144, "y": 592 },
+      { "x": 240, "y": 592 }
+    ]
+  },
   "roster": ["roran", "ines", "mist", "gau"],
   "enemies": [
     { "defId": "narazumono", "pos": { "x": 144, "y": 464 }, "ai": { "kind": "aggressive" } },
@@ -43,12 +46,12 @@
   "victory": { "type": "reach", "pos": { "x": 240, "y": 48 }, "radius": 40, "by": "any" },
   "defeat": [{ "type": "unitLost", "defIds": ["roran"] }],
   "intro": [
-    { "text": "みちの さきに、けむりが みえる。" },
-    { "speaker": "roran", "text": "みんな、いくよ。\nまえに すすもう" },
+    { "text": "道の 先に、煙が 見える。" },
+    { "speaker": "roran", "text": "みんな、行くよ。\n前に 進もう" },
     { "speaker": "gau", "lineId": "stage:stage1:gau" }
   ],
   "outro": [
-    { "text": "けむりは もう みえない。" },
-    { "speaker": "roran", "text": "ここまで これた。\nつぎへ いこう" }
+    { "text": "煙は もう 見えない。" },
+    { "speaker": "roran", "text": "ここまで 来れた。\n次へ 行こう" }
   ]
 }

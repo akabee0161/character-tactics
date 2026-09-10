@@ -1,5 +1,5 @@
 {
-  "id": "mist", "name": "ミスト", "role": "まほう",
+  "id": "mist", "name": "ミスト", "role": "魔法",
   "combat": true,
   "maxHp": 22, "power": 5, "guard": 3,
   "attack": "magic", "range": 140,

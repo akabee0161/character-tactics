@@ -16,6 +16,21 @@ export function computeViewport(canvasW: number, canvasH: number): Viewport {
   };
 }
 
+/** canvas の CSS 寸法。CSS 側とJS 側が別々に寸法を決めないための1本 */
+export type CanvasFit = { cssW: number; cssH: number };
+
+/**
+ * 与えられた箱に論理解像度の縦横比で収まる canvas の CSS 寸法を返す。
+ * cssW / cssH を整数に丸めるので縦横比は 1px 未満ずれる。そのぶんは
+ * computeViewport がレターボックスとして吸収する
+ */
+export function fitCanvas(boxW: number, boxH: number, dpr: number): CanvasFit {
+  const scale = Math.min(boxW / LOGICAL_W, boxH / LOGICAL_H);
+  const cssW = Math.floor(LOGICAL_W * scale);
+  const cssH = Math.floor(LOGICAL_H * scale);
+  return { cssW, cssH };
+}
+
 export function screenToLogical(vp: Viewport, sx: number, sy: number): Vec2 {
   return { x: (sx - vp.offsetX) / vp.scale, y: (sy - vp.offsetY) / vp.scale };
 }

@@ -1,5 +1,5 @@
 {
-  "id": "ines", "name": "イネス", "role": "ゆみ",
+  "id": "ines", "name": "イネス", "role": "弓",
   "combat": true,
   "maxHp": 20, "power": 8, "guard": 2,
   "attack": "bow", "range": 160,

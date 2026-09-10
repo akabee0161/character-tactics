@@ -5,10 +5,12 @@ import { accumulate } from './counters';
 import { applyDamage } from './damage';
 import { computeFlowField, distance, flowDirection, hasLineOfSight, isWalkableAt } from './field';
 import { dropUnitField, fieldToStatic, fieldToUnit } from './fields';
-import { awardXpForDefeats } from './growth';
+import { awardXpForEvents } from './growth';
 import { updateObjectives } from './objectives';
 import { spawnProjectile, updateProjectiles } from './projectiles';
 import { useSkill } from './skills';
+import { dueSpawns } from './spawns';
+import { makeEnemyUnit } from './state';
 import type { BattleState, FlowField, HitSource, Unit, Vec2 } from './types';
 
 export function playerUnits(state: BattleState): Unit[] {
@@ -41,11 +43,27 @@ function updateAi(state: BattleState): void {
   }
 }
 
+/** 時間湧き。湧いた敵は aggressive 固定でプレイヤーを追う */
+function runSpawns(state: BattleState): void {
+  for (const due of dueSpawns(state.stage.spawners, state.spawnCounts, state.time)) {
+    state.spawnCounts[due.index] = (state.spawnCounts[due.index] ?? 0) + 1;
+    const unit = makeEnemyUnit(
+      state.reg, `e${state.nextEnemyUid++}`, due.spawner.defId, due.spawner.pos,
+      { kind: 'aggressive' },
+    );
+    state.units.push(unit);
+    state.events.push({
+      type: 'enemySpawned', uid: unit.uid, defId: unit.defId, pos: { ...unit.pos },
+    });
+  }
+}
+
 export function step(state: BattleState, commands: SimCommand[], dt: number): void {
   state.events = [];
   if (state.phase !== 'battle') return;
 
   state.time += dt;
+  runSpawns(state);
 
   const movedThisTick = applyCommands(state, commands);
   updateAi(state);
@@ -56,7 +74,7 @@ export function step(state: BattleState, commands: SimCommand[], dt: number): vo
   updateProjectiles(state, dt);
   resolveAttacks(state, dt);
   resolveRemoval(state);
-  awardXpForDefeats(state);
+  awardXpForEvents(state);
   updateObjectives(state);
   accumulate(state.counters, state.events);
 }

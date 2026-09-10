@@ -1,9 +1,9 @@
 {
-  "id": "narazumono", "name": "ならずもの", "role": "てき",
+  "id": "narazumono", "name": "ならず者", "role": "敵",
   "combat": true,
   "maxHp": 12, "power": 5, "guard": 1,
   "attack": "melee", "range": 24,
-  "attackInterval": 1.6, "speed": 45,
+  "attackInterval": 1.6, "speed": 34,
   "skillId": null,
   "color": "#8a5a4a",
   "sprites": {
@@ -16,5 +16,5 @@
       "attack": { "frames": 3, "fps": 12 }
     }
   },
-  "xpReward": 5, "bowDamageCap": null, "fleeAtHpRatio": null
+  "xpReward": 8, "bowDamageCap": null, "fleeAtHpRatio": null
 }

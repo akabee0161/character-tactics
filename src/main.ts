@@ -3,7 +3,7 @@ import { makeImageCache } from './render/images';
 import { lookupDef, skillParam } from './engine/registry';
 import { pickDialogue, pickStageIntro, pickStageOutro } from './core/dialogue';
 import { SKILL_EFFECT_IDS } from './core/skills';
-import { beginBattle, createBattleState, placeUnit } from './core/state';
+import { beginBattle, canPlaceAt, createBattleState, placeUnit } from './core/state';
 import { playerUnits, step } from './core/sim';
 import type { SimCommand } from './core/sim';
 import { drawBattle, drawDragPreview } from './render/draw';
@@ -11,19 +11,19 @@ import { escortDefIds } from './render/objectives-view';
 import { isWalkableAt } from './core/field';
 import { makeEffectState, resetEffects, spawnEffects, syncDisplayedHp, tickEffects } from './render/effects';
 import { makeAnimStore, noteAttacks, resetAnim, updateMotion } from './render/anim';
-import { LOGICAL_H, LOGICAL_W, computeViewport, logicalToMap, mapToLogical, screenToLogical } from './render/viewport';
-import { clearBubbles, dismissBubble, makeBubbleState, pushBubbles, tickBubbles } from './ui/bubbles';
+import { LOGICAL_H, LOGICAL_W, computeViewport, fitCanvas, logicalToMap, screenToLogical } from './render/viewport';
+import { clearSpeech, makeSpeechState, pushSpeech, tickSpeech } from './ui/speech';
 import { applyStageClear, hasReadIntro, isStageUnlocked, markIntroRead } from './ui/flow';
 import { hitRect, pickUnit } from './ui/hit';
 import { resolveMapGesture } from './ui/input';
 import type { PointerStart } from './ui/input';
 import {
-  BTN, SKILL_BUTTON, TALK_BODY_X, TALK_FONT, TALK_MAX_LINES, TALK_PAD, TALK_WINDOW,
-  bubbleRectAt, portraitSlot, stageSlot,
+  BOTTOM_PANEL_Y, BTN, MESSAGE_BAR, TALK_BODY_X, TALK_FONT, TALK_MAX_LINES, TALK_PAD, TALK_WINDOW,
+  portraitSlot, stageSlot,
 } from './ui/layout';
 import {
-  drawBottomBar, drawBubble, drawDefeat, drawLoadErrors, drawPlacement, drawResult,
-  drawSkillButton, drawStageSelect, drawTalk, drawTitle,
+  drawBottomBar, drawDefeat, drawLoadErrors, drawPlacement, drawResult,
+  drawSpeechBar, drawStageSelect, drawTalk, drawTitle,
 } from './ui/screens';
 import { advanceTalk, makeTalkState, skipTalk, tickTalk } from './ui/talk';
 import type { Measure, TalkState } from './ui/talk';
@@ -37,18 +37,24 @@ const FIXED_DT = 1 / 60;
 type Phase = 'title' | 'select' | 'talk' | 'placement' | 'battle' | 'outro' | 'result' | 'defeat';
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
+const stageBox = document.getElementById('stage') as HTMLElement;
 const ctx = canvas.getContext('2d')!;
 
 function resize(): void {
-  const scale = Math.min(window.innerWidth / LOGICAL_W, window.innerHeight / LOGICAL_H);
-  canvas.width = Math.floor(LOGICAL_W * scale * window.devicePixelRatio);
-  canvas.height = Math.floor(LOGICAL_H * scale * window.devicePixelRatio);
-  canvas.style.width = `${Math.floor(LOGICAL_W * scale)}px`;
-  canvas.style.height = `${Math.floor(LOGICAL_H * scale)}px`;
+  const box = stageBox.getBoundingClientRect();
+  const fit = fitCanvas(box.width, box.height, window.devicePixelRatio);
+  canvas.style.width = `${fit.cssW}px`;
+  canvas.style.height = `${fit.cssH}px`;
+  // 当てたあとの実寸から backing store を決める。CSS が何らかの制約を効かせても、
+  // 描画と入力が同じ実寸を見ているかぎりクリック位置はずれない
+  const actual = canvas.getBoundingClientRect();
+  canvas.width = Math.max(1, Math.round(actual.width * window.devicePixelRatio));
+  canvas.height = Math.max(1, Math.round(actual.height * window.devicePixelRatio));
   // width への代入でコンテキストの状態が全部リセットされるので、ここで毎回入れ直す
   ctx.imageSmoothingEnabled = false;
 }
-window.addEventListener('resize', resize);
+// window の resize ではブラウザズームによる devicePixelRatio の変化を拾えない
+new ResizeObserver(resize).observe(stageBox);
 resize();
 
 const loadResult = loadRegistry(SKILL_EFFECT_IDS);
@@ -57,7 +63,7 @@ if (!loadResult.ok) {
   const vp = computeViewport(canvas.width, canvas.height);
   ctx.setTransform(vp.scale, 0, 0, vp.scale, vp.offsetX, vp.offsetY);
   drawLoadErrors(ctx, loadResult.errors);
-  throw new Error(`assets の よみこみに しっぱい: ${loadResult.errors.length} けん`);
+  throw new Error(`assets の 読み込みに 失敗: ${loadResult.errors.length} 件`);
 }
 const registry = loadResult.value;
 
@@ -76,7 +82,7 @@ let pendingSkill: string | null = null;
 let result: { gains: XpGain[]; newTitles: string[] } | null = null;
 /** 護衛対象の defId。beginStage で1度だけ作る */
 let escorts: Set<string> = new Set();
-const bubbles = makeBubbleState();
+const speech = makeSpeechState();
 let talk: TalkState | null = null;
 /** 会話の文字幅測定。ctx を閉じ込めるので talk.ts 側は Canvas を知らない */
 const talkMeasure: Measure = (t) => {
@@ -115,7 +121,7 @@ function beginStage(index: number): void {
   escorts = new Set(escortDefIds(battle.stage));
   selected = null;
   pendingSkill = null;
-  clearBubbles(bubbles);
+  clearSpeech(speech);
   resetEffects(effects);
   resetAnim(anim);
   pointerStart = null;
@@ -186,7 +192,7 @@ function onPointerDown(ev: PointerEvent): void {
 
     case 'placement': {
       if (!battle) return;
-      if (hitRect(SKILL_BUTTON, p)) {
+      if (hitRect(MESSAGE_BAR, p)) {
         pointerStart = null;
         writeSave(window.localStorage, save); // ステージ開始時点を保存する
         beginBattle(battle);
@@ -205,17 +211,6 @@ function onPointerDown(ev: PointerEvent): void {
         pendingSkill = null;
         return;
       }
-      // 1) スキルボタン。下パネルにあるのでマップ操作とは重ならない
-      if (hitRect(SKILL_BUTTON, p)) {
-        pointerStart = null;
-        if (selected === null) return;
-        const unit = battle.units.find((u) => u.uid === selected);
-        if (!unit || unit.retired || battle.time < unit.skillCooldownUntil) return;
-        if (skillParam(battle.reg, unit.skillId ?? '', 'needsDest', 0) === 1) pendingSkill = selected;
-        else commands.push({ type: 'skill', uid: selected });
-        return;
-      }
-      // 2) マップ操作
       beginMapPointer(battle, p, ev);
       return;
     }
@@ -231,29 +226,28 @@ function onPointerDown(ev: PointerEvent): void {
   }
 }
 
-/** その論理座標に出ている吹き出しを探す。描画は挿入順（後が上）なので、逆順に見る */
-function bubbleAt(state: BattleState, p: Vec2): string | null {
-  for (const b of [...bubbles.items.values()].reverse()) {
-    const unit = state.units.find((u) => u.uid === b.uid);
-    if (!unit) continue;
-    if (hitRect(bubbleRectAt(mapToLogical(unit.pos), b.text), p)) return b.uid;
-  }
-  return null;
-}
-
 function beginMapPointer(state: BattleState, p: Vec2, ev: PointerEvent): void {
   if (pointerStart !== null) return; // 別の指のジェスチャが進行中は新しいジェスチャを始めない
   // drawBottomBar と同じ無フィルタ配列でインデックスを解決する。playerUnits() は retired を
   // 除外して再インデックスするため、これと混ぜるとポートレートの見た目とタップ対象がずれる
   const portraitUnits = state.units.filter((u) => u.side === 'player').slice(0, 4);
   for (let i = 0; i < 4; i++) {
-    if (hitRect(portraitSlot(i), p)) {
-      const unit = portraitUnits[i];
-      const uid = unit && !unit.retired ? unit.uid : null;
-      if (uid !== null) selected = selected === uid ? null : uid;
-      pointerStart = null;
-      return;
-    }
+    if (!hitRect(portraitSlot(i), p)) continue;
+    pointerStart = null;
+    const unit = portraitUnits[i];
+    if (!unit || unit.retired) return;
+    // ポートレートのタップは「選択して必殺技を出す」。選択の解除はマップ上の再タップで行う
+    selected = unit.uid;
+    if (phase !== 'battle') return;
+    if (unit.skillId === null || state.time < unit.skillCooldownUntil) return;
+    if (skillParam(state.reg, unit.skillId, 'needsDest', 0) === 1) pendingSkill = unit.uid;
+    else commands.push({ type: 'skill', uid: unit.uid });
+    return;
+  }
+  // 下パネルのタップはマップ操作に落とさない。マップの外を移動先に解釈させない
+  if (p.y >= BOTTOM_PANEL_Y) {
+    pointerStart = null;
+    return;
   }
   const startMap = logicalToMap(p);
   const uid = pickUnit(playerUnits(state), startMap);
@@ -262,8 +256,6 @@ function beginMapPointer(state: BattleState, p: Vec2, ev: PointerEvent): void {
     startMap,
     wasSelected: uid !== null && selected === uid,
     pointerId: ev.pointerId,
-    // ユニットを掴んでいるときは吹き出しを見ない。操作のほうが優先
-    bubbleUid: uid === null ? bubbleAt(state, p) : null,
   };
   dragMap = startMap;
   canvas.setPointerCapture(ev.pointerId);
@@ -294,9 +286,6 @@ function onPointerUp(ev: PointerEvent): void {
     case 'deselect':
       selected = null;
       return;
-    case 'dismissBubble':
-      dismissBubble(bubbles, g.uid);
-      return;
     case 'moveUnit':
       if (phase === 'battle') commands.push({ type: 'move', uid: g.uid, dest: g.dest });
       else placeUnit(battle, g.uid, g.dest);
@@ -325,7 +314,7 @@ function update(dt: number): void {
   }
   if (phase !== 'battle' || !battle) return;
   syncDisplayedHp(effects, battle.units, dt);
-  tickBubbles(bubbles, dt);
+  tickSpeech(speech, dt);
 
   accumulator += dt;
   while (accumulator >= FIXED_DT) {
@@ -334,14 +323,14 @@ function update(dt: number): void {
     step(battle, batch, FIXED_DT);
     spawnEffects(effects, battle.events);
     noteAttacks(anim, battle.events, battle.time, attackDuration);
-    pushBubbles(bubbles, pickDialogue(battle.reg, battle.events));
+    pushSpeech(speech, pickDialogue(battle.reg, battle.events));
   }
   updateMotion(anim, battle.units, battle.time);
 
   if (battle.phase === 'defeat') {
     phase = 'defeat';
   } else if (battle.phase === 'victory') {
-    clearBubbles(bubbles);   // 会話の邪魔になるので消す。時間は止まっている
+    clearSpeech(speech);   // 会話の邪魔になるので消す。時間は止まっている
     talk = makeTalkState(
       pickStageOutro(registry, battle.stage), talkMeasure, talkMaxWidth, TALK_MAX_LINES,
     );
@@ -383,19 +372,15 @@ function render(): void {
     case 'placement':
       if (battle) {
         drawBattle(ctx, registry, battle, selected, effects, escorts, images, anim);
-        drawPlacement(ctx, battle);
         drawBottomBar(ctx, registry, battle, selected, escorts, images);
+        drawPlacement(ctx, battle);
       }
       break;
     case 'battle':
       if (battle) {
         drawBattle(ctx, registry, battle, selected, effects, escorts, images, anim);
         drawBottomBar(ctx, registry, battle, selected, escorts, images);
-        for (const b of bubbles.items.values()) {
-          const unit = battle.units.find((u) => u.uid === b.uid);
-          if (unit) drawBubble(ctx, b, mapToLogical(unit.pos));
-        }
-        drawSkillButton(ctx, registry, battle, selected);
+        if (speech.current !== null) drawSpeechBar(ctx, registry, speech.current, images);
       }
       break;
     case 'result':
@@ -410,7 +395,9 @@ function render(): void {
   const dragPhaseOk = phase === 'placement' || phase === 'battle';
   if (battle && dragPhaseOk && dragUid !== null && dragMap !== null) {
     const unit = battle.units.find((u) => u.uid === dragUid)!;
-    const blocked = !isWalkableAt(battle.grid, dragMap);
+    const blocked = phase === 'placement'
+      ? !canPlaceAt(battle.stage, battle.grid, dragMap)
+      : !isWalkableAt(battle.grid, dragMap);
     drawDragPreview(ctx, registry, unit.pos, dragMap, unit.defId, blocked, images);
   }
 }

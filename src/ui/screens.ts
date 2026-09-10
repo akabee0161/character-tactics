@@ -1,25 +1,23 @@
 import { lookupDef, skillParam } from '../engine/registry';
 import { titlesOf, xpToNext } from '../core/progress';
 import { DEFAULT_SKILL_COOLDOWN } from '../core/skills';
-import { PLACEMENT_RADIUS } from '../core/state';
 import type { ImageCache } from '../render/images';
 import { drawFace, drawRoleBadge } from '../render/sprites';
 import { LOGICAL_H, LOGICAL_W, mapToLogical } from '../render/viewport';
 import {
-  BOTTOM_PANEL_Y, BTN, BUBBLE_FONT_PX, BUBBLE_LINE_H, BUBBLE_PAD, SKILL_BUTTON, TALK_BODY_X,
-  TALK_FONT, TALK_LINE_H, TALK_PAD, TALK_WINDOW, bubbleLines, bubbleRectAt, portraitSlot,
-  roleBadgeIn, rosterSlot, stageSlot,
+  BOTTOM_PANEL_Y, BTN, MESSAGE_BAR, SPEECH_BODY_X, SPEECH_FONT_PX, SPEECH_LINE_H,
+  SPEECH_MAX_LINES, TALK_BODY_X, TALK_FONT, TALK_LINE_H, TALK_PAD, TALK_WINDOW,
+  portraitSlot, roleBadgeIn, rosterSlot, speechLines, stageSlot,
 } from './layout';
-import { skillButtonState } from './skillbutton';
 import { currentSpeaker, pageCount, visibleLines } from './talk';
 import { isStageUnlocked } from './flow';
-import type { Bubble } from './bubbles';
+import type { Speech } from './speech';
 import type { TalkState } from './talk';
 import type { XpGain } from './flow';
 import type { Registry } from '../engine/registry';
 import type { ValidationError } from '../engine/schema';
 import type { SaveData } from '../save/save';
-import type { BattleState, Vec2 } from '../core/types';
+import type { BattleState } from '../core/types';
 import type { Rect } from './hit';
 
 const INK = '#f2efe4';
@@ -34,9 +32,21 @@ function panel(ctx: CanvasRenderingContext2D, r: Rect, fill = PANEL): void {
   ctx.strokeRect(r.x + 1, r.y + 1, r.w - 2, r.h - 2);
 }
 
-function button(ctx: CanvasRenderingContext2D, r: Rect, label: string, enabled = true): void {
-  panel(ctx, r, enabled ? '#2c4a63' : '#2a2f35');
-  ctx.fillStyle = enabled ? INK : '#78808a';
+/**
+ * primary は主要な導線のボタン。有効な暗い紺（#2c4a63）と無効な暗い灰（#2a2f35）は
+ * 並べないと区別がつかず、「押せないボタン」に見えてしまうため、押してほしいボタンは
+ * アクセント色で塗る
+ */
+function button(
+  ctx: CanvasRenderingContext2D,
+  r: Rect,
+  label: string,
+  enabled = true,
+  primary = false,
+): void {
+  const fill = !enabled ? '#2a2f35' : primary ? '#ffd479' : '#2c4a63';
+  panel(ctx, r, fill);
+  ctx.fillStyle = !enabled ? '#78808a' : primary ? '#1a1a1a' : INK;
   ctx.font = '26px sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
@@ -55,13 +65,13 @@ export function drawTitle(ctx: CanvasRenderingContext2D, hasSave: boolean): void
   ctx.fillStyle = INK;
   ctx.font = '40px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('とりでの なかまたち', LOGICAL_W / 2, 260);
+  ctx.fillText('砦の 仲間たち', LOGICAL_W / 2, 260);
   ctx.font = '22px sans-serif';
-  ctx.fillText('4にんの なかまで', LOGICAL_W / 2, 320);
-  ctx.fillText('てきの ほんきょちへ せめこもう', LOGICAL_W / 2, 352);
+  ctx.fillText('4人の 仲間で', LOGICAL_W / 2, 320);
+  ctx.fillText('敵の 本拠地へ 攻めこもう', LOGICAL_W / 2, 352);
   ctx.textAlign = 'left';
-  button(ctx, BTN.titleNew, 'はじめから');
-  button(ctx, BTN.titleContinue, 'つづきから', hasSave);
+  button(ctx, BTN.titleNew, '最初から', true, true);
+  button(ctx, BTN.titleContinue, '続きから', hasSave);
 }
 
 export function drawStageSelect(
@@ -70,7 +80,7 @@ export function drawStageSelect(
   clear(ctx);
   ctx.fillStyle = INK;
   ctx.font = '30px sans-serif';
-  ctx.fillText('どの ステージに いく？', 40, 100);
+  ctx.fillText('どの ステージに 行く？', 40, 100);
 
   reg.stages.forEach((stage, i) => {
     const r = stageSlot(i);
@@ -79,9 +89,9 @@ export function drawStageSelect(
     ctx.fillStyle = unlocked ? INK : '#78808a';
     ctx.font = '22px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(unlocked ? stage.name : 'まだ いけない', r.x + r.w / 2, r.y + 50);
+    ctx.fillText(unlocked ? stage.name : 'まだ 行けない', r.x + r.w / 2, r.y + 50);
     ctx.font = '18px sans-serif';
-    if (unlocked && save.clearedStageIds.includes(stage.id)) ctx.fillText('クリア ずみ', r.x + r.w / 2, r.y + 88);
+    if (unlocked && save.clearedStageIds.includes(stage.id)) ctx.fillText('クリア済み', r.x + r.w / 2, r.y + 88);
     ctx.textAlign = 'left';
   });
 
@@ -108,24 +118,25 @@ function drawRoster(
 
 export function drawPlacement(ctx: CanvasRenderingContext2D, state: BattleState): void {
   ctx.fillStyle = 'rgba(16, 24, 32, 0.35)';
-  ctx.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
+  ctx.fillRect(0, 0, LOGICAL_W, BOTTOM_PANEL_Y);
 
-  // 置ける範囲を見せる。ここに置けないとプレイヤーが分からず困る
+  // 置ける範囲を見せる。境界の線より下が置ける側
+  const edgeY = mapToLogical({ x: 0, y: state.stage.placement.minY }).y;
+  ctx.fillStyle = 'rgba(255, 212, 121, 0.12)';
+  ctx.fillRect(0, edgeY, LOGICAL_W, BOTTOM_PANEL_Y - edgeY);
   ctx.strokeStyle = '#ffd479';
   ctx.lineWidth = 2;
-  ctx.setLineDash([5, 4]);
-  for (const z of state.stage.placementZone) {
-    const p = mapToLogical(z.pos);
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, PLACEMENT_RADIUS, 0, Math.PI * 2);
-    ctx.stroke();
-  }
+  ctx.setLineDash([8, 6]);
+  ctx.beginPath();
+  ctx.moveTo(0, edgeY);
+  ctx.lineTo(LOGICAL_W, edgeY);
+  ctx.stroke();
   ctx.setLineDash([]);
 
   ctx.fillStyle = INK;
   ctx.font = '20px sans-serif';
-  ctx.fillText('きいろい わくの なかに なかまを おこう', 24, 760);
-  button(ctx, SKILL_BUTTON, 'はじめる');
+  ctx.fillText('黄色い 線より 下に 仲間を 置こう', 24, 760);
+  button(ctx, MESSAGE_BAR, '始める', true, true);
 }
 
 export function drawBottomBar(
@@ -154,6 +165,13 @@ export function drawBottomBar(
       ctx.font = '18px sans-serif';
       ctx.fillText(def.name, r.x + 42, r.y + 28);
 
+      // レベルは枠の右上。名前の右は roleBadgeIn と重なる
+      ctx.font = '14px sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText(`Lv${unit.level}`, r.x + r.w - 8, r.y + 18);
+      ctx.textAlign = 'left';
+      ctx.font = '18px sans-serif';
+
       drawRoleBadge(ctx, roleBadgeIn(r), def, images);
 
       ctx.fillStyle = '#000';
@@ -171,12 +189,20 @@ export function drawBottomBar(
         ctx.fillRect(r.x + 8, r.y + 70, 113, 5);
         ctx.fillStyle = '#ffd479';
         ctx.fillRect(r.x + 8, r.y + 70, 113 * Math.max(0, Math.min(1, ratio)), 5);
+
+        // 押せば技が出る状態を縁で示す。押せない理由を文字で出す代わり
+        // 配置フェーズは全員 time===0 かつクールダウン未消化で「発動可能」に見えてしまうため、戦闘フェーズ限定にする
+        if (state.phase === 'battle' && remaining <= 0) {
+          ctx.strokeStyle = '#ffd479';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(r.x + 2, r.y + 2, r.w - 4, r.h - 4);
+        }
       }
 
       if (unit.retired) {
         ctx.fillStyle = '#ff9a9a';
         ctx.font = '14px sans-serif';
-        ctx.fillText('たいきゃく', r.x + 42, r.y + 50);
+        ctx.fillText('倒れた', r.x + 42, r.y + 50);
       }
 
       if (escorts.has(unit.defId)) {
@@ -191,36 +217,26 @@ export function drawBottomBar(
     });
 }
 
-export function drawSkillButton(
+/** 戦闘中のセリフ。下パネルの上段に出し、時間は止めない */
+export function drawSpeechBar(
   ctx: CanvasRenderingContext2D,
   reg: Registry,
-  state: BattleState,
-  selected: string | null,
+  speech: Speech,
+  images: ImageCache,
 ): void {
-  const s = skillButtonState(reg, state, selected);
-  button(ctx, SKILL_BUTTON, s.label, s.enabled);
-}
-
-/** 戦闘中の吹き出し。キャラの頭上に出し、時間は止めない */
-export function drawBubble(ctx: CanvasRenderingContext2D, bubble: Bubble, logicalPos: Vec2): void {
-  const r = bubbleRectAt(logicalPos, bubble.text);
+  const r = MESSAGE_BAR;
   panel(ctx, r, '#f7f3e6');
 
-  // 吹き出しの尻尾。キャラの方を指す
-  ctx.fillStyle = '#f7f3e6';
-  ctx.beginPath();
-  ctx.moveTo(r.x + r.w / 2 - 8, r.y + r.h);
-  ctx.lineTo(r.x + r.w / 2 + 8, r.y + r.h);
-  ctx.lineTo(r.x + r.w / 2, r.y + r.h + 10);
-  ctx.closePath();
-  ctx.fill();
+  const def = lookupDef(reg, speech.defId) ?? FALLBACK_DEF;
+  drawFace(ctx, { x: r.x + 34, y: r.y + r.h / 2 }, 24, def, images);
 
   ctx.fillStyle = '#1a1a1a';
-  ctx.font = `${BUBBLE_FONT_PX}px sans-serif`;
-  // 1行目のベースラインは、天面のパディング＋フォントの上昇分（実測はできないので概算）
-  const firstBaselineY = r.y + BUBBLE_PAD + BUBBLE_FONT_PX * 0.875;
-  bubbleLines(bubble.text).forEach((line, i) => {
-    ctx.fillText(line, r.x + BUBBLE_PAD, firstBaselineY + i * BUBBLE_LINE_H);
+  ctx.font = `${SPEECH_FONT_PX}px sans-serif`;
+  const lines = speechLines(speech.text).slice(0, SPEECH_MAX_LINES);
+  // 行数によらず縦中央に来るように、上端からの余白を行数から出す
+  const top = r.y + (r.h - lines.length * SPEECH_LINE_H) / 2 + SPEECH_FONT_PX * 0.875;
+  lines.forEach((line, i) => {
+    ctx.fillText(line, r.x + SPEECH_BODY_X, top + i * SPEECH_LINE_H);
   });
 }
 
@@ -235,7 +251,7 @@ export function drawTalk(
   ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
   ctx.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
 
-  if (canSkip) button(ctx, BTN.skip, 'とばす');
+  if (canSkip) button(ctx, BTN.skip, '飛ばす');
 
   const r = TALK_WINDOW;
   panel(ctx, r, '#f7f3e6');
@@ -264,7 +280,7 @@ export function drawTalk(
   if (pageCount(state) > 1) {
     ctx.fillText(`${state.page + 1} / ${pageCount(state)}`, r.x + r.w - 20, r.y + r.h - 18);
   } else {
-    ctx.fillText('タップで つぎへ', r.x + r.w - 20, r.y + r.h - 18);
+    ctx.fillText('タップで 次へ', r.x + r.w - 20, r.y + r.h - 18);
   }
   ctx.textAlign = 'left';
 }
@@ -280,7 +296,7 @@ export function drawResult(
   ctx.fillStyle = INK;
   ctx.font = '28px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('てきの ほんきょちに とうたつ！', LOGICAL_W / 2, 100);
+  ctx.fillText('敵の 本拠地に 到達！', LOGICAL_W / 2, 100);
   ctx.textAlign = 'left';
 
   ctx.font = '19px sans-serif';
@@ -295,7 +311,7 @@ export function drawResult(
     ctx.fillText(
       g.leveledUp
         ? `レベルアップ！ Lv${g.before.level} → Lv${g.after.level}`
-        : `Lv${g.after.level} (${g.after.xp}/${xpToNext(g.after.level)})`,
+        : `Lv${g.after.level} (${g.after.xp}/${xpToNext(g.after.level, reg.growth.xpPerLevel)})`,
       66, y + 24,
     );
     ctx.font = '19px sans-serif';
@@ -305,10 +321,10 @@ export function drawResult(
     ctx.fillStyle = '#ffd479';
     ctx.font = '22px sans-serif';
     const label = (id: string): string => reg.titles.find((t) => t.id === id)?.label ?? id;
-    ctx.fillText(`しょうごう ゲット: ${newTitles.map(label).join('、')}`, 40, 560);
+    ctx.fillText(`称号 ゲット: ${newTitles.map(label).join('、')}`, 40, 560);
   }
 
-  button(ctx, BTN.next, 'つぎへ');
+  button(ctx, BTN.next, '次へ', true, true);
 }
 
 export function drawDefeat(ctx: CanvasRenderingContext2D): void {
@@ -316,23 +332,23 @@ export function drawDefeat(ctx: CanvasRenderingContext2D): void {
   ctx.fillStyle = INK;
   ctx.font = '32px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('なかまを まもれなかった', LOGICAL_W / 2, 320);
+  ctx.fillText('仲間を 守れなかった', LOGICAL_W / 2, 320);
   ctx.textAlign = 'left';
-  button(ctx, BTN.retry, 'もういちど');
-  button(ctx, BTN.toSelect, 'しまを えらぶ');
+  button(ctx, BTN.retry, 'もう一度', true, true);
+  button(ctx, BTN.toSelect, 'ステージを 選ぶ');
 }
 
 export function drawLoadErrors(ctx: CanvasRenderingContext2D, errors: ValidationError[]): void {
   clear(ctx);
   ctx.fillStyle = '#ff9a9a';
   ctx.font = '28px sans-serif';
-  ctx.fillText('データの よみこみに しっぱいしました', 40, 80);
+  ctx.fillText('データの 読み込みに 失敗しました', 40, 80);
   ctx.fillStyle = INK;
   ctx.font = '13px monospace';
   errors.slice(0, 20).forEach((e, i) => {
     ctx.fillText(`${e.file} ${e.path}: ${e.reason}`, 40, 130 + i * 20);
   });
   if (errors.length > 20) {
-    ctx.fillText(`ほか ${errors.length - 20} けん`, 40, 130 + 20 * 20);
+    ctx.fillText(`ほか ${errors.length - 20} 件`, 40, 130 + 20 * 20);
   }
 }

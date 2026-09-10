@@ -74,6 +74,7 @@ export const SKILL_EFFECTS: Record<string, SkillEffect> = {
       enemy.hp -= damage;
       enemy.lastHitBy = self.uid;
       enemy.lastHitNeraiuchi = false;
+      if (!enemy.damagedBy.includes(self.uid)) enemy.damagedBy.push(self.uid);
       hits++;
       state.events.push({
         type: 'hit', targetUid: enemy.uid, targetPos: { ...enemy.pos }, amount: damage,

@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { applyStageClear, hasReadIntro, isStageUnlocked, markIntroRead } from './flow';
+import { applyXp } from '../core/progress';
 import { newSave } from '../save/save';
+import { beginBattle, createBattleState } from '../core/state';
 import { testRegistry } from '../core/testing';
-import type { BattleState } from '../core/types';
+import type { Registry } from '../engine/registry';
+import type { BattleState, CharProgress } from '../core/types';
 
 /** どのキャラのスキルがどの称号カウンタにつながるかは titles.json の決め事なので、
  * テストの分だけ対応表を持つ */
@@ -10,13 +13,17 @@ const SKILL_OF: Record<string, string> = {
   roran: 'funbaru', ines: 'neraiuchi', mist: 'omajinai', gau: 'kakenukeru',
 };
 
-type UnitOver = { level: number; xp: number };
+type UnitOver = { level: number; xp: number; retired?: boolean };
 type BattleOver = {
   units?: Partial<Record<string, UnitOver>>;
   skillUses?: Partial<Record<string, number>>;
 };
 
-/** applyStageClear が読む units(player 分の level/xp)と counters だけを持った簡易な BattleState */
+/**
+ * applyStageClear が読む units(player 分の level/xp)と counters だけを持った簡易な BattleState。
+ * クリアボーナスの対象外にするため、retired を明示しない限りは退場済み扱いにする
+ * （このヘルパを使う既存テストは書き戻し・称号まわりの検証で、クリアボーナスの計算対象ではないため）
+ */
 const battleWith = (over: BattleOver = {}): BattleState => {
   const counters: Record<string, number> = {};
   for (const [id, uses] of Object.entries(over.skillUses ?? {})) {
@@ -28,9 +35,20 @@ const battleWith = (over: BattleOver = {}): BattleState => {
     defId,
     level: p!.level,
     xp: p!.xp,
+    retired: p!.retired ?? true,
   }));
   return { units, counters } as unknown as BattleState;
 };
+
+/** クリアボーナスのテスト用に、実際の Unit(retired: false がデフォルト)を持つ BattleState を組む */
+function freshBattle(reg: Registry): BattleState {
+  const stage = reg.stages[0]!;
+  const progress: Record<string, CharProgress> = {};
+  for (const id of reg.units.keys()) progress[id] = { level: 1, xp: 0 };
+  const state = createBattleState(reg, stage, progress, 1);
+  beginBattle(state);
+  return state;
+}
 
 describe('isStageUnlocked', () => {
   const reg = testRegistry();
@@ -127,6 +145,40 @@ describe('applyStageClear', () => {
     applyStageClear(reg, save, 'stage1', battleWith({ units: { roran: { level: 4, xp: 3 } } }));
     expect(save.clearedStageIds).toEqual([]);
     expect(save.units.roran).toEqual({ level: 1, xp: 0 });
+  });
+});
+
+describe('applyStageClear: クリアボーナス', () => {
+  it('退場していない味方に clearXp が入る', () => {
+    const reg = testRegistry();
+    const state = freshBattle(reg);
+    const roran = state.units.find((u) => u.defId === 'roran')!;
+    const r = applyStageClear(reg, newSave(reg), state.stage.id, state);
+    expect(r.save.units.roran!.xp).toBe(reg.growth.clearXp);
+    expect(roran.retired).toBe(false);
+  });
+
+  it('退場した味方には入らない', () => {
+    const reg = testRegistry();
+    const state = freshBattle(reg);
+    const gau = state.units.find((u) => u.defId === 'gau')!;
+    gau.retired = true;
+    const r = applyStageClear(reg, newSave(reg), state.stage.id, state);
+    expect(r.save.units.gau!.xp).toBe(0);
+  });
+
+  it('生存していて既に進行がある味方には、確定済みの進行にクリアボーナスが上乗せされる', () => {
+    const reg = testRegistry();
+    const state = freshBattle(reg);
+    const roran = state.units.find((u) => u.defId === 'roran')!;
+    roran.level = 2;
+    roran.xp = 5; // 戦闘中に確定した想定の level / xp
+    expect(roran.retired).toBe(false);
+
+    const r = applyStageClear(reg, newSave(reg), state.stage.id, state);
+
+    const expected = applyXp({ level: 2, xp: 5 }, reg.growth.clearXp, reg.growth);
+    expect(r.save.units.roran).toEqual(expected);
   });
 });
 

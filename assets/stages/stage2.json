@@ -1,7 +1,7 @@
 {
   "id": "stage2",
   "order": 20,
-  "name": "みはりの とりで",
+  "name": "見張りの 砦",
   "cell": 32,
   "mapRows": [
     "################",
@@ -28,12 +28,15 @@
     "#..............#",
     "################"
   ],
-  "placementZone": [
-    { "pos": { "x": 144, "y": 656 } },
-    { "pos": { "x": 240, "y": 656 } },
-    { "pos": { "x": 144, "y": 592 } },
-    { "pos": { "x": 240, "y": 592 } }
-  ],
+  "placement": {
+    "minY": 528,
+    "starts": [
+      { "x": 144, "y": 656 },
+      { "x": 240, "y": 656 },
+      { "x": 144, "y": 592 },
+      { "x": 240, "y": 592 }
+    ]
+  },
   "roster": ["roran", "ines", "mist", "gau"],
   "enemies": [
     { "defId": "narazumono", "pos": { "x": 240, "y": 336 }, "ai": { "kind": "sentry", "sightRange": 110 } },
@@ -42,10 +45,13 @@
     { "defId": "narazumono", "pos": { "x": 400, "y": 560 }, "ai": { "kind": "sentry", "sightRange": 90 } },
     { "defId": "tatemochi",  "pos": { "x": 240, "y": 144 }, "ai": { "kind": "aggressive" } }
   ],
+  "spawners": [
+    { "defId": "narazumono", "pos": { "x": 400, "y": 80 }, "firstAfter": 20, "every": 15, "total": 3 }
+  ],
   "victory": { "type": "reach", "pos": { "x": 240, "y": 48 }, "radius": 40, "by": "any" },
   "defeat": [{ "type": "unitLost", "defIds": ["roran"] }],
   "outro": [
-    { "speaker": "gau", "text": "とりでを ぬけたぞ！" },
-    { "speaker": "ines", "text": "みはりは もう いない。\nさきを いそぎましょう" }
+    { "speaker": "gau", "text": "砦を 抜けたぞ！" },
+    { "speaker": "ines", "text": "見張りは もう いない。\n先を 急ぎましょう" }
   ]
 }
