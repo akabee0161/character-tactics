@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { applyStageClear, hasReadIntro, isStageUnlocked, markIntroRead } from './flow';
+import { applyXp } from '../core/progress';
 import { newSave } from '../save/save';
 import { beginBattle, createBattleState } from '../core/state';
 import { testRegistry } from '../core/testing';
@@ -164,6 +165,20 @@ describe('applyStageClear: クリアボーナス', () => {
     gau.retired = true;
     const r = applyStageClear(reg, newSave(reg), state.stage.id, state);
     expect(r.save.units.gau!.xp).toBe(0);
+  });
+
+  it('生存していて既に進行がある味方には、確定済みの進行にクリアボーナスが上乗せされる', () => {
+    const reg = testRegistry();
+    const state = freshBattle(reg);
+    const roran = state.units.find((u) => u.defId === 'roran')!;
+    roran.level = 2;
+    roran.xp = 5; // 戦闘中に確定した想定の level / xp
+    expect(roran.retired).toBe(false);
+
+    const r = applyStageClear(reg, newSave(reg), state.stage.id, state);
+
+    const expected = applyXp({ level: 2, xp: 5 }, reg.growth.clearXp, reg.growth);
+    expect(r.save.units.roran).toEqual(expected);
   });
 });
 
