@@ -5,13 +5,6 @@ import type { SimEvent } from './types';
 import type { StageDef } from '../engine/schema';
 
 describe('lines', () => {
-  it('すべてのセリフが ひらがな・カタカナ のみ', () => {
-    const reg = testRegistry();
-    for (const [id, text] of reg.lines) {
-      expect(text, id).not.toMatch(/[一-鿿]/);
-    }
-  });
-
   it('すべてのセリフが 2 行いない', () => {
     const reg = testRegistry();
     for (const [id, text] of reg.lines) {

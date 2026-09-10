@@ -1,7 +1,7 @@
 {
   "id": "stage2",
   "order": 20,
-  "name": "みはりの とりで",
+  "name": "見張りの 砦",
   "cell": 32,
   "mapRows": [
     "################",
@@ -51,7 +51,7 @@
   "victory": { "type": "reach", "pos": { "x": 240, "y": 48 }, "radius": 40, "by": "any" },
   "defeat": [{ "type": "unitLost", "defIds": ["roran"] }],
   "outro": [
-    { "speaker": "gau", "text": "とりでを ぬけたぞ！" },
-    { "speaker": "ines", "text": "みはりは もう いない。\nさきを いそぎましょう" }
+    { "speaker": "gau", "text": "砦を 抜けたぞ！" },
+    { "speaker": "ines", "text": "見張りは もう いない。\n先を 急ぎましょう" }
   ]
 }

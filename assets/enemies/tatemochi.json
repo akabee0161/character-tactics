@@ -1,5 +1,5 @@
 {
-  "id": "tatemochi", "name": "たてもち", "role": "てき",
+  "id": "tatemochi", "name": "たてもち", "role": "敵",
   "combat": true,
   "maxHp": 20, "power": 5, "guard": 3,
   "attack": "melee", "range": 24,

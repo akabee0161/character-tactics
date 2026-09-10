@@ -1,7 +1,7 @@
 {
   "id": "stage3",
   "order": 30,
-  "name": "ガルムの さいご",
+  "name": "ガルムの 最後",
   "cell": 32,
   "mapRows": [
     "################",
@@ -55,8 +55,8 @@
     { "speaker": "roran", "lineId": "stage:stage3:roran" }
   ],
   "outro": [
-    { "speaker": "garum", "text": "……まさか、\nきみたちに やぶれるとは" },
-    { "speaker": "roran", "text": "もう だれのことも\nおびやかさないで" },
-    { "text": "とりでに あさひが さした。" }
+    { "speaker": "garum", "text": "……まさか、\n君たちに 敗れるとは" },
+    { "speaker": "roran", "text": "もう 誰のことも\n脅かさないで" },
+    { "text": "砦に 朝日が 差した。" }
   ]
 }

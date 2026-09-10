@@ -1,5 +1,5 @@
 {
-  "id": "garum", "name": "ガルム", "role": "てき",
+  "id": "garum", "name": "ガルム", "role": "敵",
   "combat": true,
   "maxHp": 40, "power": 9, "guard": 4,
   "attack": "melee", "range": 24,

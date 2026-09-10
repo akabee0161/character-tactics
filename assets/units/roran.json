@@ -1,5 +1,5 @@
 {
-  "id": "roran", "name": "ロラン", "role": "たて",
+  "id": "roran", "name": "ロラン", "role": "盾",
   "combat": true,
   "maxHp": 30, "power": 6, "guard": 5,
   "attack": "melee", "range": 24,

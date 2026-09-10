@@ -65,13 +65,13 @@ export function drawTitle(ctx: CanvasRenderingContext2D, hasSave: boolean): void
   ctx.fillStyle = INK;
   ctx.font = '40px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('とりでの なかまたち', LOGICAL_W / 2, 260);
+  ctx.fillText('砦の 仲間たち', LOGICAL_W / 2, 260);
   ctx.font = '22px sans-serif';
-  ctx.fillText('4にんの なかまで', LOGICAL_W / 2, 320);
-  ctx.fillText('てきの ほんきょちへ せめこもう', LOGICAL_W / 2, 352);
+  ctx.fillText('4人の 仲間で', LOGICAL_W / 2, 320);
+  ctx.fillText('敵の 本拠地へ 攻めこもう', LOGICAL_W / 2, 352);
   ctx.textAlign = 'left';
-  button(ctx, BTN.titleNew, 'はじめから', true, true);
-  button(ctx, BTN.titleContinue, 'つづきから', hasSave);
+  button(ctx, BTN.titleNew, '最初から', true, true);
+  button(ctx, BTN.titleContinue, '続きから', hasSave);
 }
 
 export function drawStageSelect(
@@ -80,7 +80,7 @@ export function drawStageSelect(
   clear(ctx);
   ctx.fillStyle = INK;
   ctx.font = '30px sans-serif';
-  ctx.fillText('どの ステージに いく？', 40, 100);
+  ctx.fillText('どの ステージに 行く？', 40, 100);
 
   reg.stages.forEach((stage, i) => {
     const r = stageSlot(i);
@@ -89,9 +89,9 @@ export function drawStageSelect(
     ctx.fillStyle = unlocked ? INK : '#78808a';
     ctx.font = '22px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(unlocked ? stage.name : 'まだ いけない', r.x + r.w / 2, r.y + 50);
+    ctx.fillText(unlocked ? stage.name : 'まだ 行けない', r.x + r.w / 2, r.y + 50);
     ctx.font = '18px sans-serif';
-    if (unlocked && save.clearedStageIds.includes(stage.id)) ctx.fillText('クリア ずみ', r.x + r.w / 2, r.y + 88);
+    if (unlocked && save.clearedStageIds.includes(stage.id)) ctx.fillText('クリア済み', r.x + r.w / 2, r.y + 88);
     ctx.textAlign = 'left';
   });
 
@@ -135,8 +135,8 @@ export function drawPlacement(ctx: CanvasRenderingContext2D, state: BattleState)
 
   ctx.fillStyle = INK;
   ctx.font = '20px sans-serif';
-  ctx.fillText('きいろい せんより したに なかまを おこう', 24, 760);
-  button(ctx, MESSAGE_BAR, 'はじめる', true, true);
+  ctx.fillText('黄色い 線より 下に 仲間を 置こう', 24, 760);
+  button(ctx, MESSAGE_BAR, '始める', true, true);
 }
 
 export function drawBottomBar(
@@ -201,7 +201,7 @@ export function drawBottomBar(
       if (unit.retired) {
         ctx.fillStyle = '#ff9a9a';
         ctx.font = '14px sans-serif';
-        ctx.fillText('たいきゃく', r.x + 42, r.y + 50);
+        ctx.fillText('倒れた', r.x + 42, r.y + 50);
       }
 
       if (escorts.has(unit.defId)) {
@@ -250,7 +250,7 @@ export function drawTalk(
   ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
   ctx.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
 
-  if (canSkip) button(ctx, BTN.skip, 'とばす');
+  if (canSkip) button(ctx, BTN.skip, '飛ばす');
 
   const r = TALK_WINDOW;
   panel(ctx, r, '#f7f3e6');
@@ -279,7 +279,7 @@ export function drawTalk(
   if (pageCount(state) > 1) {
     ctx.fillText(`${state.page + 1} / ${pageCount(state)}`, r.x + r.w - 20, r.y + r.h - 18);
   } else {
-    ctx.fillText('タップで つぎへ', r.x + r.w - 20, r.y + r.h - 18);
+    ctx.fillText('タップで 次へ', r.x + r.w - 20, r.y + r.h - 18);
   }
   ctx.textAlign = 'left';
 }
@@ -295,7 +295,7 @@ export function drawResult(
   ctx.fillStyle = INK;
   ctx.font = '28px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('てきの ほんきょちに とうたつ！', LOGICAL_W / 2, 100);
+  ctx.fillText('敵の 本拠地に 到達！', LOGICAL_W / 2, 100);
   ctx.textAlign = 'left';
 
   ctx.font = '19px sans-serif';
@@ -320,10 +320,10 @@ export function drawResult(
     ctx.fillStyle = '#ffd479';
     ctx.font = '22px sans-serif';
     const label = (id: string): string => reg.titles.find((t) => t.id === id)?.label ?? id;
-    ctx.fillText(`しょうごう ゲット: ${newTitles.map(label).join('、')}`, 40, 560);
+    ctx.fillText(`称号 ゲット: ${newTitles.map(label).join('、')}`, 40, 560);
   }
 
-  button(ctx, BTN.next, 'つぎへ', true, true);
+  button(ctx, BTN.next, '次へ', true, true);
 }
 
 export function drawDefeat(ctx: CanvasRenderingContext2D): void {
@@ -331,23 +331,23 @@ export function drawDefeat(ctx: CanvasRenderingContext2D): void {
   ctx.fillStyle = INK;
   ctx.font = '32px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('なかまを まもれなかった', LOGICAL_W / 2, 320);
+  ctx.fillText('仲間を 守れなかった', LOGICAL_W / 2, 320);
   ctx.textAlign = 'left';
-  button(ctx, BTN.retry, 'もういちど', true, true);
-  button(ctx, BTN.toSelect, 'しまを えらぶ');
+  button(ctx, BTN.retry, 'もう一度', true, true);
+  button(ctx, BTN.toSelect, 'ステージを 選ぶ');
 }
 
 export function drawLoadErrors(ctx: CanvasRenderingContext2D, errors: ValidationError[]): void {
   clear(ctx);
   ctx.fillStyle = '#ff9a9a';
   ctx.font = '28px sans-serif';
-  ctx.fillText('データの よみこみに しっぱいしました', 40, 80);
+  ctx.fillText('データの 読み込みに 失敗しました', 40, 80);
   ctx.fillStyle = INK;
   ctx.font = '13px monospace';
   errors.slice(0, 20).forEach((e, i) => {
     ctx.fillText(`${e.file} ${e.path}: ${e.reason}`, 40, 130 + i * 20);
   });
   if (errors.length > 20) {
-    ctx.fillText(`ほか ${errors.length - 20} けん`, 40, 130 + 20 * 20);
+    ctx.fillText(`ほか ${errors.length - 20} 件`, 40, 130 + 20 * 20);
   }
 }

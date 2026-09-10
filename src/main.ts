@@ -63,7 +63,7 @@ if (!loadResult.ok) {
   const vp = computeViewport(canvas.width, canvas.height);
   ctx.setTransform(vp.scale, 0, 0, vp.scale, vp.offsetX, vp.offsetY);
   drawLoadErrors(ctx, loadResult.errors);
-  throw new Error(`assets の よみこみに しっぱい: ${loadResult.errors.length} けん`);
+  throw new Error(`assets の 読み込みに 失敗: ${loadResult.errors.length} 件`);
 }
 const registry = loadResult.value;
 

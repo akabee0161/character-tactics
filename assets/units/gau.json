@@ -1,5 +1,5 @@
 {
-  "id": "gau", "name": "ガウ", "role": "ものみ",
+  "id": "gau", "name": "ガウ", "role": "物見",
   "combat": true,
   "maxHp": 24, "power": 7, "guard": 3,
   "attack": "melee", "range": 24,
