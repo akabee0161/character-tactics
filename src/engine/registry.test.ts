@@ -27,9 +27,9 @@ const GROWTH = {
 const STAGE = {
   id: 'stage1', order: 10, name: 'はじまりの しま', cell: 32,
   mapRows: ['####', '#..#', '#..#', '####'],
-  placement: { minY: 0, starts: [{ x: 48, y: 48 }] },
+  placement: { minY: 64, starts: [{ x: 48, y: 80 }] },
   roster: ['roran'],
-  enemies: [{ defId: 'narazumono', pos: { x: 80, y: 80 }, ai: { kind: 'aggressive' } }],
+  enemies: [{ defId: 'narazumono', pos: { x: 80, y: 48 }, ai: { kind: 'aggressive' } }],
   victory: { type: 'reach', pos: { x: 80, y: 80 }, radius: 24, by: 'any' },
   defeat: [{ type: 'unitLost', defIds: ['roran'] }],
 };
@@ -120,7 +120,7 @@ describe('buildRegistry', () => {
     const r = buildRegistry(files({
       'assets/stages/stage1.json': {
         ...STAGE,
-        enemies: [{ defId: 'yuurei', pos: { x: 80, y: 80 }, ai: { kind: 'aggressive' } }],
+        enemies: [{ defId: 'yuurei', pos: { x: 80, y: 48 }, ai: { kind: 'aggressive' } }],
       },
     }), KNOWN_SKILLS);
     expect(r.ok).toBe(false);
