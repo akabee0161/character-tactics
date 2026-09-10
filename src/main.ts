@@ -372,8 +372,8 @@ function render(): void {
     case 'placement':
       if (battle) {
         drawBattle(ctx, registry, battle, selected, effects, escorts, images, anim);
-        drawPlacement(ctx, battle);
         drawBottomBar(ctx, registry, battle, selected, escorts, images);
+        drawPlacement(ctx, battle);
       }
       break;
     case 'battle':

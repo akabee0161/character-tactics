@@ -118,7 +118,7 @@ function drawRoster(
 
 export function drawPlacement(ctx: CanvasRenderingContext2D, state: BattleState): void {
   ctx.fillStyle = 'rgba(16, 24, 32, 0.35)';
-  ctx.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
+  ctx.fillRect(0, 0, LOGICAL_W, BOTTOM_PANEL_Y);
 
   // 置ける範囲を見せる。境界の線より下が置ける側
   const edgeY = mapToLogical({ x: 0, y: state.stage.placement.minY }).y;
