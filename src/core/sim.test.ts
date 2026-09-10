@@ -29,6 +29,7 @@ const STAGE: StageDef = {
   placement: { minY: 0, starts: [{ x: 16, y: 16 }] },
   roster: ['roran', 'ines', 'mist', 'gau'],
   enemies: [{ defId: 'narazumono', pos: { x: 304, y: 16 }, ai: { kind: 'aggressive' } }],
+  spawners: [],
   victory: { type: 'reach', pos: { x: 304, y: 16 }, radius: 40, by: 'any' },
   defeat: [{ type: 'unitLost', defIds: ['roran'] }],
 };
@@ -46,6 +47,7 @@ const AI_STAGE: StageDef = {
   placement: { minY: 0, starts: [{ x: 16, y: 16 }] },
   roster: ['roran', 'ines', 'mist', 'gau'],
   enemies: [],
+  spawners: [],
   victory: { type: 'reach', pos: { x: 848, y: 240 }, radius: 40, by: 'any' },
   defeat: [{ type: 'unitLost', defIds: ['roran'] }],
 };
@@ -475,6 +477,60 @@ describe('AI の くみこみ', () => {
     for (let i = 0; i < 60; i++) step(state, [], 1 / 60);
     // ユニットごとに1枚 + 静的ゴール分。敵の数 × フレーム数にはならない
     expect(state.fields.byUnit.size).toBeLessThanOrEqual(state.units.length);
+  });
+});
+
+describe('時間湧き', () => {
+  function spawnStage() {
+    const reg = testRegistry();
+    const stage = reg.stages.find((s) => s.spawners.length > 0);
+    if (!stage) throw new Error('spawners を持つステージが assets に無い');
+    const progress: Record<string, CharProgress> = {};
+    for (const id of reg.units.keys()) progress[id] = { level: 1, xp: 0 };
+    const state = createBattleState(reg, stage, progress, 1);
+    beginBattle(state);
+    return { stage, state };
+  }
+
+  it('firstAfter に達すると敵が1体増える', () => {
+    const { stage, state } = spawnStage();
+    const before = state.units.filter((u) => u.side === 'enemy').length;
+    state.time = stage.spawners[0]!.firstAfter;
+    step(state, [], 1 / 60);
+    expect(state.units.filter((u) => u.side === 'enemy').length).toBe(before + 1);
+    expect(state.spawnCounts[0]).toBe(1);
+  });
+
+  it('湧いた敵は aggressive で追ってくる', () => {
+    const { stage, state } = spawnStage();
+    state.time = stage.spawners[0]!.firstAfter;
+    step(state, [], 1 / 60);
+    const spawned = state.units[state.units.length - 1]!;
+    expect(spawned.side).toBe('enemy');
+    expect(spawned.ai!.def.kind).toBe('aggressive');
+    // 湧いたその tick で aggressive AI が動き出すので、ちょうど湧き口の座標に
+    // 止まっているとは限らない。湧いた瞬間の座標は enemySpawned イベント側で見る
+    const ev = state.events.find((e) => e.type === 'enemySpawned');
+    expect(ev && ev.type === 'enemySpawned' ? ev.pos : null).toEqual(stage.spawners[0]!.pos);
+  });
+
+  it('enemySpawned イベントを出す', () => {
+    const { stage, state } = spawnStage();
+    state.time = stage.spawners[0]!.firstAfter;
+    step(state, [], 1 / 60);
+    expect(state.events.some((e) => e.type === 'enemySpawned')).toBe(true);
+  });
+
+  it('total を超えて湧かない', () => {
+    const { stage, state } = spawnStage();
+    const before = state.units.filter((u) => u.side === 'enemy').length;
+    const total = stage.spawners.reduce((n, s) => n + s.total, 0);
+    // 湧き口ごとに1 tick 1体なので、total 回ぶん十分に時間を進めて回す
+    for (let i = 0; i < total + 5; i++) {
+      state.time += 1000;
+      step(state, [], 1 / 60);
+    }
+    expect(state.units.filter((u) => u.side === 'enemy').length).toBe(before + total);
   });
 });
 

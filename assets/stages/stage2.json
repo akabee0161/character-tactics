@@ -45,6 +45,9 @@
     { "defId": "narazumono", "pos": { "x": 400, "y": 560 }, "ai": { "kind": "sentry", "sightRange": 90 } },
     { "defId": "tatemochi",  "pos": { "x": 240, "y": 144 }, "ai": { "kind": "aggressive" } }
   ],
+  "spawners": [
+    { "defId": "narazumono", "pos": { "x": 400, "y": 80 }, "firstAfter": 20, "every": 15, "total": 3 }
+  ],
   "victory": { "type": "reach", "pos": { "x": 240, "y": 48 }, "radius": 40, "by": "any" },
   "defeat": [{ "type": "unitLost", "defIds": ["roran"] }],
   "outro": [

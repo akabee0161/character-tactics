@@ -10,6 +10,7 @@ const STAGE: StageDef = {
   placement: { minY: 0, starts: [{ x: 16, y: 16 }] },
   roster: ['roran', 'ines', 'mist', 'gau'],
   enemies: [{ defId: 'narazumono', pos: { x: 216, y: 16 }, ai: { kind: 'aggressive' } }],
+  spawners: [],
   victory: { type: 'reach', pos: { x: 304, y: 80 }, radius: 20, by: 'any' },
   defeat: [{ type: 'unitLost', defIds: ['roran'] }],
 };

@@ -92,7 +92,8 @@ export type SimEvent =
   | { type: 'unitFled'; uid: string; defId: string; byUid: string | null; byDefId: string | null }
   | { type: 'unitRetired'; uid: string; defId: string }
   | { type: 'bondSupport'; targetUid: string; targetDefId: string; supporterUids: string[]; pos: Vec2 }
-  | { type: 'levelUp'; uid: string; defId: string; level: number };
+  | { type: 'levelUp'; uid: string; defId: string; level: number }
+  | { type: 'enemySpawned'; uid: string; defId: string; pos: Vec2 };
 
 /** 攻撃を出した時点で固定される攻撃側の値。近接も飛翔体も同じものを通す */
 export type HitSource = {
@@ -128,6 +129,8 @@ export type BattleState = {
   counters: Record<string, number>;
   rng: Rng;
   nextEnemyUid: number;
+  /** 湧き口ごとに、これまで湧かせた数。stage.spawners と同じ長さ */
+  spawnCounts: number[];
   projectiles: Projectile[];
   nextProjectileId: number;
 };

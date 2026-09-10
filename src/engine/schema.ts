@@ -345,6 +345,18 @@ export type DefeatCond =
 
 export type EnemyPlacement = { defId: string; pos: Vec2; ai: AiDef };
 
+/** 時間で敵を湧かせる口。湧いた敵は aggressive 固定でプレイヤーを追う */
+export type SpawnerDef = {
+  defId: string;
+  pos: Vec2;
+  /** 戦闘開始から1体目までの秒数 */
+  firstAfter: number;
+  /** 2体目以降の間隔（秒） */
+  every: number;
+  /** この湧き口から出る総数。上限を必須にしないと持久戦で詰む */
+  total: number;
+};
+
 export type IntroLine = {
   /** null なら地の文。ネームプレートと顔の丸を出さない */
   speaker: string | null;
@@ -372,6 +384,7 @@ export type StageDef = {
   placement: PlacementDef;
   roster: string[];
   enemies: EnemyPlacement[];
+  spawners: SpawnerDef[];
   victory: VictoryCond;
   defeat: DefeatCond[];
   intro?: IntroLine[];
@@ -507,6 +520,29 @@ function readPlacement(
   return { minY, starts };
 }
 
+function readSpawners(
+  ctx: Ctx, v: unknown, checkWalkable: (path: string, pos: Vec2) => void,
+): SpawnerDef[] {
+  if (v === undefined) return [];
+  const arr = requireArray(ctx, 'spawners', v) ?? [];
+  const out: SpawnerDef[] = [];
+  arr.forEach((item, i) => {
+    const path = `spawners[${i}]`;
+    const o = requireObject(ctx, path, item);
+    if (!o) return;
+    const pos = requireVec2(ctx, `${path}.pos`, o.pos) ?? { x: 0, y: 0 };
+    checkWalkable(`${path}.pos`, pos);
+    out.push({
+      defId: requireString(ctx, `${path}.defId`, o.defId) ?? '',
+      pos,
+      firstAfter: requireNumber(ctx, `${path}.firstAfter`, o.firstAfter, { min: 0 }) ?? 0,
+      every: requireNumber(ctx, `${path}.every`, o.every, { min: 1 }) ?? 1,
+      total: requireNumber(ctx, `${path}.total`, o.total, { min: 1, int: true }) ?? 1,
+    });
+  });
+  return out;
+}
+
 /**
  * text と lineId は排他にする。片方を優先する暗黙のルールを作ると、
  * 直したつもりが効いていない事故が起きるため、両方書いたらエラーにする。
@@ -566,6 +602,7 @@ export function validateStageDef(file: string, raw: unknown): Validated<StageDef
     placement: readPlacement(ctx, o.placement, mapRows, cell, checkWalkable),
     roster: readStringArray(ctx, 'roster', o.roster, 1),
     enemies,
+    spawners: readSpawners(ctx, o.spawners, checkWalkable),
     victory: readVictory(ctx, o.victory),
     defeat: readDefeat(ctx, o.defeat),
   };

@@ -50,6 +50,15 @@ function makeUnit(a: MakeUnitArgs): Unit {
   };
 }
 
+/** 敵ユニットを1体つくる。ステージ開始時の配置と時間湧きの両方がここを通る */
+export function makeEnemyUnit(
+  reg: Registry, uid: string, defId: string, pos: Vec2, ai: AiDef,
+): Unit {
+  const def = reg.enemies.get(defId);
+  if (!def) throw new Error(`はいちに しらない てき: ${defId}`);
+  return makeUnit({ uid, def, side: 'enemy', controller: 'ai', pos, level: 1, xp: 0, ai });
+}
+
 export function createBattleState(
   reg: Registry,
   stage: StageDef,
@@ -69,14 +78,8 @@ export function createBattleState(
   });
 
   let nextEnemyUid = 1;
-  const enemies = stage.enemies.map((placement) => {
-    const def = reg.enemies.get(placement.defId);
-    if (!def) throw new Error(`はいちに しらない てき: ${placement.defId}`);
-    return makeUnit({
-      uid: `e${nextEnemyUid++}`, def, side: 'enemy', controller: 'ai', pos: placement.pos,
-      level: 1, xp: 0, ai: placement.ai,
-    });
-  });
+  const enemies = stage.enemies.map((placement) =>
+    makeEnemyUnit(reg, `e${nextEnemyUid++}`, placement.defId, placement.pos, placement.ai));
 
   return {
     reg,
@@ -91,6 +94,7 @@ export function createBattleState(
     counters: {},
     rng: makeRng(seed),
     nextEnemyUid,
+    spawnCounts: stage.spawners.map(() => 0),
     projectiles: [],
     nextProjectileId: 1,
   };

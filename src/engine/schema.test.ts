@@ -509,6 +509,37 @@ function stageRaw(over: Record<string, unknown> = {}): Record<string, unknown> {
   };
 }
 
+describe('validateStageDef: spawners', () => {
+  it('書かなければ空配列', () => {
+    const r = validateStageDef('assets/stages/t.json', stageRaw());
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value.spawners).toEqual([]);
+  });
+
+  it('読める', () => {
+    const raw = stageRaw({
+      spawners: [{ defId: 'narazumono', pos: { x: 48, y: 48 }, firstAfter: 5, every: 10, total: 2 }],
+    });
+    const r = validateStageDef('assets/stages/t.json', raw);
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value.spawners[0]!.total).toBe(2);
+  });
+
+  it('歩けないマスはエラー', () => {
+    const raw = stageRaw({
+      spawners: [{ defId: 'narazumono', pos: { x: 0, y: 0 }, firstAfter: 5, every: 10, total: 2 }],
+    });
+    expect(validateStageDef('assets/stages/t.json', raw).ok).toBe(false);
+  });
+
+  it('total が 0 以下はエラー', () => {
+    const raw = stageRaw({
+      spawners: [{ defId: 'narazumono', pos: { x: 48, y: 48 }, firstAfter: 5, every: 10, total: 0 }],
+    });
+    expect(validateStageDef('assets/stages/t.json', raw).ok).toBe(false);
+  });
+});
+
 describe('validateStageDef: placement', () => {
   it('minY と starts を読む', () => {
     const r = validateStageDef('assets/stages/t.json', stageRaw());

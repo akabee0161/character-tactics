@@ -14,7 +14,7 @@ import { LOGICAL_H, LOGICAL_W, MAP_ORIGIN, mapToLogical } from './viewport';
 import {
   BOND_PULSE_DURATION, DAMAGE_TEXT_DURATION, DEFEAT_DURATION,
   HEAL_BEAM_DURATION, HEAL_RING_DURATION, HEAL_TEXT_DURATION, HIT_EFFECT_DURATION,
-  KNOCKBACK_DURATION, SKILL_CAST_DURATION, TRAIL_DURATION,
+  KNOCKBACK_DURATION, SKILL_CAST_DURATION, SPAWN_DURATION, TRAIL_DURATION,
 } from './effects';
 import type { EffectState } from './effects';
 import type { BattleState, Vec2 } from '../core/types';
@@ -390,6 +390,17 @@ function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void 
         ctx.lineWidth = 3;
         ctx.beginPath();
         ctx.arc(p.x, p.y, EFFECT_R + (1 - ratio) * 18, 0, Math.PI * 2);
+        ctx.stroke();
+        break;
+      }
+      case 'spawn': {
+        const p = mapToLogical(e.pos);
+        const ratio = Math.max(0, e.ttl / SPAWN_DURATION);
+        // 外から内へ縮む輪。「出てきた」と読めるように
+        ctx.strokeStyle = `rgba(255, 90, 90, ${1 - ratio})`;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, EFFECT_R + ratio * 24, 0, Math.PI * 2);
         ctx.stroke();
         break;
       }

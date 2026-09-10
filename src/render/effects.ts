@@ -9,6 +9,7 @@ export const SKILL_CAST_DURATION = 0.35;
 export const TRAIL_DURATION = 0.25;
 export const DEFEAT_DURATION = 0.5;
 export const BOND_PULSE_DURATION = 0.3;
+export const SPAWN_DURATION = 0.5;
 export const KNOCKBACK_DURATION = 0.15;
 export const HP_BAR_CATCHUP_RATE = 6;
 
@@ -21,7 +22,8 @@ export type Effect =
   | { kind: 'skillCast'; skillId: string; pos: Vec2; ttl: number }
   | { kind: 'trail'; from: Vec2; to: Vec2; ttl: number }
   | { kind: 'defeat'; pos: Vec2; ttl: number }
-  | { kind: 'bondPulse'; pos: Vec2; ttl: number };
+  | { kind: 'bondPulse'; pos: Vec2; ttl: number }
+  | { kind: 'spawn'; pos: Vec2; ttl: number };
 
 export type EffectState = {
   items: Effect[];
@@ -71,6 +73,8 @@ export function spawnEffects(state: EffectState, events: SimEvent[]): void {
       state.items.push({ kind: 'defeat', pos: { ...ev.pos }, ttl: DEFEAT_DURATION });
     } else if (ev.type === 'bondSupport') {
       state.items.push({ kind: 'bondPulse', pos: { ...ev.pos }, ttl: BOND_PULSE_DURATION });
+    } else if (ev.type === 'enemySpawned') {
+      state.items.push({ kind: 'spawn', pos: { ...ev.pos }, ttl: SPAWN_DURATION });
     }
   }
 }

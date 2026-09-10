@@ -162,6 +162,11 @@ export function buildRegistry(
         errors.push({ file, path: `enemies[${i}].defId`, reason: `enemies に ない id: ${e.defId}` });
       }
     });
+    stage.spawners.forEach((s, i) => {
+      if (!reg.enemies.has(s.defId)) {
+        errors.push({ file, path: `spawners[${i}].defId`, reason: `enemies に ない id: ${s.defId}` });
+      }
+    });
     if (stage.victory.by !== 'any' && !roster.has(stage.victory.by)) {
       errors.push({ file, path: 'victory.by', reason: `roster に ない id: ${stage.victory.by}` });
     }
