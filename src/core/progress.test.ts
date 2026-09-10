@@ -29,6 +29,12 @@ describe('applyXp', () => {
     const g = growth();
     expect(applyXp({ level: g.maxLevel, xp: 0 }, 999, g)).toEqual({ level: g.maxLevel, xp: 0 });
   });
+
+  it('元のオブジェクトを書き換えない', () => {
+    const p = { level: 1, xp: 0 };
+    applyXp(p, 50, growth());
+    expect(p).toEqual({ level: 1, xp: 0 });
+  });
 });
 
 describe('earnedTitles', () => {
