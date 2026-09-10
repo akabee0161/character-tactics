@@ -5,19 +5,19 @@ import type { ImageCache } from '../render/images';
 import { drawFace, drawRoleBadge } from '../render/sprites';
 import { LOGICAL_H, LOGICAL_W, mapToLogical } from '../render/viewport';
 import {
-  BOTTOM_PANEL_Y, BTN, BUBBLE_FONT_PX, BUBBLE_LINE_H, BUBBLE_PAD, MESSAGE_BAR, TALK_BODY_X,
-  TALK_FONT, TALK_LINE_H, TALK_PAD, TALK_WINDOW, bubbleLines, bubbleRectAt, portraitSlot,
-  roleBadgeIn, rosterSlot, stageSlot,
+  BOTTOM_PANEL_Y, BTN, MESSAGE_BAR, SPEECH_BODY_X, SPEECH_FONT_PX, SPEECH_LINE_H,
+  SPEECH_MAX_LINES, TALK_BODY_X, TALK_FONT, TALK_LINE_H, TALK_PAD, TALK_WINDOW,
+  portraitSlot, roleBadgeIn, rosterSlot, speechLines, stageSlot,
 } from './layout';
 import { currentSpeaker, pageCount, visibleLines } from './talk';
 import { isStageUnlocked } from './flow';
-import type { Bubble } from './bubbles';
+import type { Speech } from './speech';
 import type { TalkState } from './talk';
 import type { XpGain } from './flow';
 import type { Registry } from '../engine/registry';
 import type { ValidationError } from '../engine/schema';
 import type { SaveData } from '../save/save';
-import type { BattleState, Vec2 } from '../core/types';
+import type { BattleState } from '../core/types';
 import type { Rect } from './hit';
 
 const INK = '#f2efe4';
@@ -216,26 +216,26 @@ export function drawBottomBar(
     });
 }
 
-/** 戦闘中の吹き出し。キャラの頭上に出し、時間は止めない */
-export function drawBubble(ctx: CanvasRenderingContext2D, bubble: Bubble, logicalPos: Vec2): void {
-  const r = bubbleRectAt(logicalPos, bubble.text);
+/** 戦闘中のセリフ。下パネルの上段に出し、時間は止めない */
+export function drawSpeechBar(
+  ctx: CanvasRenderingContext2D,
+  reg: Registry,
+  speech: Speech,
+  images: ImageCache,
+): void {
+  const r = MESSAGE_BAR;
   panel(ctx, r, '#f7f3e6');
 
-  // 吹き出しの尻尾。キャラの方を指す
-  ctx.fillStyle = '#f7f3e6';
-  ctx.beginPath();
-  ctx.moveTo(r.x + r.w / 2 - 8, r.y + r.h);
-  ctx.lineTo(r.x + r.w / 2 + 8, r.y + r.h);
-  ctx.lineTo(r.x + r.w / 2, r.y + r.h + 10);
-  ctx.closePath();
-  ctx.fill();
+  const def = lookupDef(reg, speech.defId) ?? FALLBACK_DEF;
+  drawFace(ctx, { x: r.x + 34, y: r.y + r.h / 2 }, 24, def, images);
 
   ctx.fillStyle = '#1a1a1a';
-  ctx.font = `${BUBBLE_FONT_PX}px sans-serif`;
-  // 1行目のベースラインは、天面のパディング＋フォントの上昇分（実測はできないので概算）
-  const firstBaselineY = r.y + BUBBLE_PAD + BUBBLE_FONT_PX * 0.875;
-  bubbleLines(bubble.text).forEach((line, i) => {
-    ctx.fillText(line, r.x + BUBBLE_PAD, firstBaselineY + i * BUBBLE_LINE_H);
+  ctx.font = `${SPEECH_FONT_PX}px sans-serif`;
+  const lines = speechLines(speech.text).slice(0, SPEECH_MAX_LINES);
+  // 行数によらず縦中央に来るように、上端からの余白を行数から出す
+  const top = r.y + (r.h - lines.length * SPEECH_LINE_H) / 2 + SPEECH_FONT_PX * 0.875;
+  lines.forEach((line, i) => {
+    ctx.fillText(line, r.x + SPEECH_BODY_X, top + i * SPEECH_LINE_H);
   });
 }
 

@@ -1,7 +1,5 @@
 import { wrapText } from './talk';
-import { LOGICAL_W } from '../render/viewport';
 import type { Rect } from './hit';
-import type { Vec2 } from '../core/types';
 
 /** 下パネルの上端。マップ領域(MAP_ORIGIN.y + 23行 × 32px)の直下 */
 export const BOTTOM_PANEL_Y = 786;
@@ -56,40 +54,30 @@ export function roleBadgeIn(slot: Rect): Rect {
   return { x: slot.x + 42, y: slot.y + 32, w: 84, h: 26 };
 }
 
-export const BUBBLE_FONT_PX = 16;
-export const BUBBLE_LINE_H = 20;
-export const BUBBLE_PAD = 10;
-/** 吹き出しの本文の折り返し幅。長い台詞はここで折り返す */
-const BUBBLE_CONTENT_W = 300;
-/** キャラの中心から吹き出しの下端までの距離。丸（当たり判定は半径32）と重ならない値 */
-const BUBBLE_LIFT = 44;
+export const SPEECH_FONT_PX = 18;
+export const SPEECH_LINE_H = 22;
+/** セリフ欄に出す最大行数。これを超える行は切る */
+export const SPEECH_MAX_LINES = 2;
+/** 本文の描き始め（顔のぶん右へ寄せる） */
+export const SPEECH_BODY_X = 68;
+/** 本文の折り返し幅。MESSAGE_BAR から顔と右の余白を引いた残り */
+const SPEECH_CONTENT_W = MESSAGE_BAR.w - SPEECH_BODY_X - 12;
 
 /**
- * 幅の見積り。measureText は使わない。当たり判定側が描画コンテキストを
- * 持たないため。全角前提なので実測とほぼ合う。
+ * 幅の見積り。measureText は使わない（レイアウト側が描画コンテキストを持たないため）。
+ * 半角は全角の半分で数える。「Lv3」のような半角混在を全角前提で数えると幅を
+ * 過大に見積もり、入るはずの行が折り返される
  */
-const measure = (t: string): number => t.length * BUBBLE_FONT_PX;
+const measure = (t: string): number => {
+  let w = 0;
+  for (const ch of t) w += /^[\x20-\x7e]$/.test(ch) ? SPEECH_FONT_PX / 2 : SPEECH_FONT_PX;
+  return w;
+};
 
 /**
- * 吹き出しに実際に描く行。矩形の計算と描画が必ず同じ行を見るように、
- * 折り返しはこの1本に通す。別々に折り返すと箱から文字がはみ出す。
+ * セリフ欄に実際に描く行。描画はこの1本を通す。
+ * 別々に折り返すと箱から文字がはみ出す
  */
-export function bubbleLines(text: string): string[] {
-  return wrapText(text, measure, BUBBLE_CONTENT_W);
-}
-
-/**
- * キャラの頭上に出す吹き出しの矩形。描画と当たり判定の両方がこれを使う。
- * 別々に書くと必ずずれるため、必ずこの1本を通すこと。
- */
-export function bubbleRectAt(logicalPos: Vec2, text: string): Rect {
-  const lines = bubbleLines(text);
-  const longest = lines.reduce((n, l) => Math.max(n, l.length), 0);
-  // 折り返し幅ではなく実際の行長から出す。行頭禁則のぶら下げで
-  // BUBBLE_CONTENT_W を数文字ぶん超える行がありうるため
-  const w = longest * BUBBLE_FONT_PX + BUBBLE_PAD * 2;
-  const h = lines.length * BUBBLE_LINE_H + BUBBLE_PAD * 2;
-  const x = Math.max(8, Math.min(LOGICAL_W - w - 8, logicalPos.x - w / 2));
-  const y = Math.max(52, logicalPos.y - BUBBLE_LIFT - h);
-  return { x, y, w, h };
+export function speechLines(text: string): string[] {
+  return wrapText(text, measure, SPEECH_CONTENT_W);
 }

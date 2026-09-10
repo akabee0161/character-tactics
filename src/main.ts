@@ -11,19 +11,19 @@ import { escortDefIds } from './render/objectives-view';
 import { isWalkableAt } from './core/field';
 import { makeEffectState, resetEffects, spawnEffects, syncDisplayedHp, tickEffects } from './render/effects';
 import { makeAnimStore, noteAttacks, resetAnim, updateMotion } from './render/anim';
-import { LOGICAL_H, LOGICAL_W, computeViewport, fitCanvas, logicalToMap, mapToLogical, screenToLogical } from './render/viewport';
-import { clearBubbles, dismissBubble, makeBubbleState, pushBubbles, tickBubbles } from './ui/bubbles';
+import { LOGICAL_H, LOGICAL_W, computeViewport, fitCanvas, logicalToMap, screenToLogical } from './render/viewport';
+import { clearSpeech, makeSpeechState, pushSpeech, tickSpeech } from './ui/speech';
 import { applyStageClear, hasReadIntro, isStageUnlocked, markIntroRead } from './ui/flow';
 import { hitRect, pickUnit } from './ui/hit';
 import { resolveMapGesture } from './ui/input';
 import type { PointerStart } from './ui/input';
 import {
   BOTTOM_PANEL_Y, BTN, MESSAGE_BAR, TALK_BODY_X, TALK_FONT, TALK_MAX_LINES, TALK_PAD, TALK_WINDOW,
-  bubbleRectAt, portraitSlot, stageSlot,
+  portraitSlot, stageSlot,
 } from './ui/layout';
 import {
-  drawBottomBar, drawBubble, drawDefeat, drawLoadErrors, drawPlacement, drawResult,
-  drawStageSelect, drawTalk, drawTitle,
+  drawBottomBar, drawDefeat, drawLoadErrors, drawPlacement, drawResult,
+  drawSpeechBar, drawStageSelect, drawTalk, drawTitle,
 } from './ui/screens';
 import { advanceTalk, makeTalkState, skipTalk, tickTalk } from './ui/talk';
 import type { Measure, TalkState } from './ui/talk';
@@ -82,7 +82,7 @@ let pendingSkill: string | null = null;
 let result: { gains: XpGain[]; newTitles: string[] } | null = null;
 /** 護衛対象の defId。beginStage で1度だけ作る */
 let escorts: Set<string> = new Set();
-const bubbles = makeBubbleState();
+const speech = makeSpeechState();
 let talk: TalkState | null = null;
 /** 会話の文字幅測定。ctx を閉じ込めるので talk.ts 側は Canvas を知らない */
 const talkMeasure: Measure = (t) => {
@@ -121,7 +121,7 @@ function beginStage(index: number): void {
   escorts = new Set(escortDefIds(battle.stage));
   selected = null;
   pendingSkill = null;
-  clearBubbles(bubbles);
+  clearSpeech(speech);
   resetEffects(effects);
   resetAnim(anim);
   pointerStart = null;
@@ -226,16 +226,6 @@ function onPointerDown(ev: PointerEvent): void {
   }
 }
 
-/** その論理座標に出ている吹き出しを探す。描画は挿入順（後が上）なので、逆順に見る */
-function bubbleAt(state: BattleState, p: Vec2): string | null {
-  for (const b of [...bubbles.items.values()].reverse()) {
-    const unit = state.units.find((u) => u.uid === b.uid);
-    if (!unit) continue;
-    if (hitRect(bubbleRectAt(mapToLogical(unit.pos), b.text), p)) return b.uid;
-  }
-  return null;
-}
-
 function beginMapPointer(state: BattleState, p: Vec2, ev: PointerEvent): void {
   if (pointerStart !== null) return; // 別の指のジェスチャが進行中は新しいジェスチャを始めない
   // drawBottomBar と同じ無フィルタ配列でインデックスを解決する。playerUnits() は retired を
@@ -266,8 +256,6 @@ function beginMapPointer(state: BattleState, p: Vec2, ev: PointerEvent): void {
     startMap,
     wasSelected: uid !== null && selected === uid,
     pointerId: ev.pointerId,
-    // ユニットを掴んでいるときは吹き出しを見ない。操作のほうが優先
-    bubbleUid: uid === null ? bubbleAt(state, p) : null,
   };
   dragMap = startMap;
   canvas.setPointerCapture(ev.pointerId);
@@ -298,9 +286,6 @@ function onPointerUp(ev: PointerEvent): void {
     case 'deselect':
       selected = null;
       return;
-    case 'dismissBubble':
-      dismissBubble(bubbles, g.uid);
-      return;
     case 'moveUnit':
       if (phase === 'battle') commands.push({ type: 'move', uid: g.uid, dest: g.dest });
       else placeUnit(battle, g.uid, g.dest);
@@ -329,7 +314,7 @@ function update(dt: number): void {
   }
   if (phase !== 'battle' || !battle) return;
   syncDisplayedHp(effects, battle.units, dt);
-  tickBubbles(bubbles, dt);
+  tickSpeech(speech, dt);
 
   accumulator += dt;
   while (accumulator >= FIXED_DT) {
@@ -338,14 +323,14 @@ function update(dt: number): void {
     step(battle, batch, FIXED_DT);
     spawnEffects(effects, battle.events);
     noteAttacks(anim, battle.events, battle.time, attackDuration);
-    pushBubbles(bubbles, pickDialogue(battle.reg, battle.events));
+    pushSpeech(speech, pickDialogue(battle.reg, battle.events));
   }
   updateMotion(anim, battle.units, battle.time);
 
   if (battle.phase === 'defeat') {
     phase = 'defeat';
   } else if (battle.phase === 'victory') {
-    clearBubbles(bubbles);   // 会話の邪魔になるので消す。時間は止まっている
+    clearSpeech(speech);   // 会話の邪魔になるので消す。時間は止まっている
     talk = makeTalkState(
       pickStageOutro(registry, battle.stage), talkMeasure, talkMaxWidth, TALK_MAX_LINES,
     );
@@ -395,10 +380,7 @@ function render(): void {
       if (battle) {
         drawBattle(ctx, registry, battle, selected, effects, escorts, images, anim);
         drawBottomBar(ctx, registry, battle, selected, escorts, images);
-        for (const b of bubbles.items.values()) {
-          const unit = battle.units.find((u) => u.uid === b.uid);
-          if (unit) drawBubble(ctx, b, mapToLogical(unit.pos));
-        }
+        if (speech.current !== null) drawSpeechBar(ctx, registry, speech.current, images);
       }
       break;
     case 'result':
