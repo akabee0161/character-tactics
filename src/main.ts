@@ -18,12 +18,12 @@ import { hitRect, pickUnit } from './ui/hit';
 import { resolveMapGesture } from './ui/input';
 import type { PointerStart } from './ui/input';
 import {
-  BTN, MESSAGE_BAR, TALK_BODY_X, TALK_FONT, TALK_MAX_LINES, TALK_PAD, TALK_WINDOW,
+  BOTTOM_PANEL_Y, BTN, MESSAGE_BAR, TALK_BODY_X, TALK_FONT, TALK_MAX_LINES, TALK_PAD, TALK_WINDOW,
   bubbleRectAt, portraitSlot, stageSlot,
 } from './ui/layout';
 import {
   drawBottomBar, drawBubble, drawDefeat, drawLoadErrors, drawPlacement, drawResult,
-  drawSkillButton, drawStageSelect, drawTalk, drawTitle,
+  drawStageSelect, drawTalk, drawTitle,
 } from './ui/screens';
 import { advanceTalk, makeTalkState, skipTalk, tickTalk } from './ui/talk';
 import type { Measure, TalkState } from './ui/talk';
@@ -211,17 +211,6 @@ function onPointerDown(ev: PointerEvent): void {
         pendingSkill = null;
         return;
       }
-      // 1) スキルボタン。下パネルにあるのでマップ操作とは重ならない
-      if (hitRect(MESSAGE_BAR, p)) {
-        pointerStart = null;
-        if (selected === null) return;
-        const unit = battle.units.find((u) => u.uid === selected);
-        if (!unit || unit.retired || battle.time < unit.skillCooldownUntil) return;
-        if (skillParam(battle.reg, unit.skillId ?? '', 'needsDest', 0) === 1) pendingSkill = selected;
-        else commands.push({ type: 'skill', uid: selected });
-        return;
-      }
-      // 2) マップ操作
       beginMapPointer(battle, p, ev);
       return;
     }
@@ -253,13 +242,22 @@ function beginMapPointer(state: BattleState, p: Vec2, ev: PointerEvent): void {
   // 除外して再インデックスするため、これと混ぜるとポートレートの見た目とタップ対象がずれる
   const portraitUnits = state.units.filter((u) => u.side === 'player').slice(0, 4);
   for (let i = 0; i < 4; i++) {
-    if (hitRect(portraitSlot(i), p)) {
-      const unit = portraitUnits[i];
-      const uid = unit && !unit.retired ? unit.uid : null;
-      if (uid !== null) selected = selected === uid ? null : uid;
-      pointerStart = null;
-      return;
-    }
+    if (!hitRect(portraitSlot(i), p)) continue;
+    pointerStart = null;
+    const unit = portraitUnits[i];
+    if (!unit || unit.retired) return;
+    // ポートレートのタップは「選択して必殺技を出す」。選択の解除はマップ上の再タップで行う
+    selected = unit.uid;
+    if (phase !== 'battle') return;
+    if (unit.skillId === null || state.time < unit.skillCooldownUntil) return;
+    if (skillParam(state.reg, unit.skillId, 'needsDest', 0) === 1) pendingSkill = unit.uid;
+    else commands.push({ type: 'skill', uid: unit.uid });
+    return;
+  }
+  // 下パネルのタップはマップ操作に落とさない。マップの外を移動先に解釈させない
+  if (p.y >= BOTTOM_PANEL_Y) {
+    pointerStart = null;
+    return;
   }
   const startMap = logicalToMap(p);
   const uid = pickUnit(playerUnits(state), startMap);
@@ -401,7 +399,6 @@ function render(): void {
           const unit = battle.units.find((u) => u.uid === b.uid);
           if (unit) drawBubble(ctx, b, mapToLogical(unit.pos));
         }
-        drawSkillButton(ctx, registry, battle, selected);
       }
       break;
     case 'result':

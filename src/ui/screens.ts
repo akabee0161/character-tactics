@@ -9,7 +9,6 @@ import {
   TALK_FONT, TALK_LINE_H, TALK_PAD, TALK_WINDOW, bubbleLines, bubbleRectAt, portraitSlot,
   roleBadgeIn, rosterSlot, stageSlot,
 } from './layout';
-import { skillButtonState } from './skillbutton';
 import { currentSpeaker, pageCount, visibleLines } from './talk';
 import { isStageUnlocked } from './flow';
 import type { Bubble } from './bubbles';
@@ -190,6 +189,13 @@ export function drawBottomBar(
         ctx.fillRect(r.x + 8, r.y + 70, 113, 5);
         ctx.fillStyle = '#ffd479';
         ctx.fillRect(r.x + 8, r.y + 70, 113 * Math.max(0, Math.min(1, ratio)), 5);
+
+        // 押せば技が出る状態を縁で示す。押せない理由を文字で出す代わり
+        if (remaining <= 0) {
+          ctx.strokeStyle = '#ffd479';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(r.x + 2, r.y + 2, r.w - 4, r.h - 4);
+        }
       }
 
       if (unit.retired) {
@@ -208,16 +214,6 @@ export function drawBottomBar(
         ctx.fill();
       }
     });
-}
-
-export function drawSkillButton(
-  ctx: CanvasRenderingContext2D,
-  reg: Registry,
-  state: BattleState,
-  selected: string | null,
-): void {
-  const s = skillButtonState(reg, state, selected);
-  button(ctx, MESSAGE_BAR, s.label, s.enabled);
 }
 
 /** 戦闘中の吹き出し。キャラの頭上に出し、時間は止めない */
