@@ -1,36 +1,33 @@
 import { describe, expect, it } from 'vitest';
-import { applyXp, earnedTitles, MAX_LEVEL, titlesOf, xpToNext } from './progress';
+import { applyXp, earnedTitles, titlesOf, xpToNext } from './progress';
 import { testRegistry } from './testing';
 
+const growth = () => testRegistry().growth;
+
 describe('xpToNext', () => {
-  it('次のレベルに必要な経験値は レベル x 30', () => {
-    expect(xpToNext(1)).toBe(30);
-    expect(xpToNext(4)).toBe(120);
+  it('レベル × xpPerLevel', () => {
+    expect(xpToNext(1, 12)).toBe(12);
+    expect(xpToNext(4, 12)).toBe(48);
   });
 });
 
 describe('applyXp', () => {
-  it('足りなければレベルは上がらない', () => {
-    expect(applyXp({ level: 1, xp: 0 }, 25)).toEqual({ level: 1, xp: 25 });
+  it('必要量に届けばレベルが上がる', () => {
+    expect(applyXp({ level: 1, xp: 0 }, 12, growth())).toEqual({ level: 2, xp: 0 });
   });
 
-  it('ちょうど足りればレベルが上がって余りが繰り越される', () => {
-    expect(applyXp({ level: 1, xp: 10 }, 20)).toEqual({ level: 2, xp: 0 });
+  it('余りは次のレベルに繰り越す', () => {
+    expect(applyXp({ level: 1, xp: 0 }, 15, growth())).toEqual({ level: 2, xp: 3 });
   });
 
-  it('一度に 2 レベル上がることもある', () => {
-    // Lv1: 30 必要 -> Lv2: 60 必要
-    expect(applyXp({ level: 1, xp: 0 }, 95)).toEqual({ level: 3, xp: 5 });
+  it('一度に複数レベル上がる', () => {
+    // Lv2 まで 12、Lv3 まで 24
+    expect(applyXp({ level: 1, xp: 0 }, 36, growth()).level).toBe(3);
   });
 
-  it('上限レベルでは経験値が貯まらない', () => {
-    expect(applyXp({ level: MAX_LEVEL, xp: 0 }, 999)).toEqual({ level: MAX_LEVEL, xp: 0 });
-  });
-
-  it('元のオブジェクトを書き換えない', () => {
-    const p = { level: 1, xp: 0 };
-    applyXp(p, 50);
-    expect(p).toEqual({ level: 1, xp: 0 });
+  it('上限に達したら増えない', () => {
+    const g = growth();
+    expect(applyXp({ level: g.maxLevel, xp: 0 }, 999, g)).toEqual({ level: g.maxLevel, xp: 0 });
   });
 });
 

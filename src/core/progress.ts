@@ -1,25 +1,22 @@
 import type { Registry } from '../engine/registry';
-import type { TitleDef } from '../engine/schema';
+import type { GrowthDef, TitleDef } from '../engine/schema';
 import type { CharProgress } from './types';
 
-export const MAX_LEVEL = 5;
-const XP_PER_LEVEL = 30;
-
-export function xpToNext(level: number): number {
-  return level * XP_PER_LEVEL;
+export function xpToNext(level: number, xpPerLevel: number): number {
+  return level * xpPerLevel;
 }
 
-export function applyXp(p: CharProgress, gained: number): CharProgress {
+export function applyXp(p: CharProgress, gained: number, growth: GrowthDef): CharProgress {
   let level = p.level;
   let xp = p.xp;
-  if (level >= MAX_LEVEL) return { level, xp };
+  if (level >= growth.maxLevel) return { level, xp };
 
   xp += gained;
-  while (level < MAX_LEVEL && xp >= xpToNext(level)) {
-    xp -= xpToNext(level);
+  while (level < growth.maxLevel && xp >= xpToNext(level, growth.xpPerLevel)) {
+    xp -= xpToNext(level, growth.xpPerLevel);
     level += 1;
   }
-  if (level >= MAX_LEVEL) xp = 0;
+  if (level >= growth.maxLevel) xp = 0;
   return { level, xp };
 }
 

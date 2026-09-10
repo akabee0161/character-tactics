@@ -24,12 +24,23 @@ function unitOf(s: BattleState, defId: string) {
 describe('statsForLevel', () => {
   it('レベル1 は基礎値どおり', () => {
     const reg = testRegistry();
-    expect(statsForLevel(reg.units.get('roran')!, 1)).toEqual({ maxHp: 30, power: 6 });
+    expect(statsForLevel(reg.units.get('roran')!, 1, reg.growth)).toEqual({ maxHp: 30, power: 6 });
   });
 
-  it('レベルが上がると HP+3 / ちから+1', () => {
+  it('HP は1レベルごとに+1', () => {
     const reg = testRegistry();
-    expect(statsForLevel(reg.units.get('roran')!, 3)).toEqual({ maxHp: 36, power: 8 });
+    expect(statsForLevel(reg.units.get('roran')!, 4, reg.growth).maxHp).toBe(33);
+  });
+
+  it('攻撃力は3レベルごとに+1', () => {
+    const reg = testRegistry();
+    expect(statsForLevel(reg.units.get('roran')!, 3, reg.growth).power).toBe(6);
+    expect(statsForLevel(reg.units.get('roran')!, 4, reg.growth).power).toBe(7);
+  });
+
+  it('上限レベルでも現状の上限とほぼ同じ強さ', () => {
+    const reg = testRegistry();
+    expect(statsForLevel(reg.units.get('roran')!, 12, reg.growth)).toEqual({ maxHp: 41, power: 9 });
   });
 });
 
@@ -84,9 +95,9 @@ describe('createBattleState: ステージからの はいち', () => {
     for (const id of reg.units.keys()) progress[id] ??= { level: 1, xp: 0 };
     const state = createBattleState(reg, stage, progress, 1);
     const roran = unitOf(state, 'roran');
-    expect(roran.maxHp).toBe(36);
-    expect(roran.hp).toBe(36);
-    expect(roran.power).toBe(8);
+    expect(roran.maxHp).toBe(32);
+    expect(roran.hp).toBe(32);
+    expect(roran.power).toBe(6);
   });
 
   it('フィールドキャッシュは からで しょきかされる', () => {

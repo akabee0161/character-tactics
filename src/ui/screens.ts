@@ -310,7 +310,7 @@ export function drawResult(
     ctx.fillText(
       g.leveledUp
         ? `レベルアップ！ Lv${g.before.level} → Lv${g.after.level}`
-        : `Lv${g.after.level} (${g.after.xp}/${xpToNext(g.after.level)})`,
+        : `Lv${g.after.level} (${g.after.xp}/${xpToNext(g.after.level, reg.growth.xpPerLevel)})`,
       66, y + 24,
     );
     ctx.font = '19px sans-serif';

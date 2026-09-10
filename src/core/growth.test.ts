@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { awardXp, awardXpForDefeats } from './growth';
-import { MAX_LEVEL, xpToNext } from './progress';
+import { xpToNext } from './progress';
 import { beginBattle, createBattleState, statsForLevel } from './state';
 import { testRegistry } from './testing';
 import type { BattleState, Unit } from './types';
@@ -30,7 +30,7 @@ describe('awardXp', () => {
   it('しきいちを こえたら レベルが あがる', () => {
     const s = fresh();
     const u = playerOf(s, 'roran');
-    awardXp(s, u, xpToNext(1));
+    awardXp(s, u, xpToNext(1, s.reg.growth.xpPerLevel));
     expect(u.level).toBe(2);
   });
 
@@ -38,9 +38,9 @@ describe('awardXp', () => {
     const s = fresh();
     const u = playerOf(s, 'roran');
     const def = s.reg.units.get('roran')!;
-    awardXp(s, u, xpToNext(1));
-    expect(u.maxHp).toBe(statsForLevel(def, 2).maxHp);
-    expect(u.power).toBe(statsForLevel(def, 2).power);
+    awardXp(s, u, xpToNext(1, s.reg.growth.xpPerLevel));
+    expect(u.maxHp).toBe(statsForLevel(def, 2, s.reg.growth).maxHp);
+    expect(u.power).toBe(statsForLevel(def, 2, s.reg.growth).power);
   });
 
   it('ふえた さいだい HP の ぶんだけ いまの HP も ふえる', () => {
@@ -48,7 +48,7 @@ describe('awardXp', () => {
     const u = playerOf(s, 'roran');
     const beforeMax = u.maxHp;
     u.hp = 10;
-    awardXp(s, u, xpToNext(1));
+    awardXp(s, u, xpToNext(1, s.reg.growth.xpPerLevel));
     expect(u.hp).toBe(10 + (u.maxHp - beforeMax));
   });
 
@@ -56,14 +56,14 @@ describe('awardXp', () => {
     const s = fresh();
     const u = playerOf(s, 'roran');
     u.hp = 1;
-    awardXp(s, u, xpToNext(1));
+    awardXp(s, u, xpToNext(1, s.reg.growth.xpPerLevel));
     expect(u.hp).toBeLessThan(u.maxHp);
   });
 
   it('レベルアップの イベントが でる', () => {
     const s = fresh();
     const u = playerOf(s, 'roran');
-    awardXp(s, u, xpToNext(1));
+    awardXp(s, u, xpToNext(1, s.reg.growth.xpPerLevel));
     expect(s.events).toContainEqual({ type: 'levelUp', uid: u.uid, defId: 'roran', level: 2 });
   });
 
@@ -76,7 +76,7 @@ describe('awardXp', () => {
   it('1どに 2レベル あがったら イベントは さいしゅうレベルで 1けん', () => {
     const s = fresh();
     const u = playerOf(s, 'roran');
-    awardXp(s, u, xpToNext(1) + xpToNext(2));
+    awardXp(s, u, xpToNext(1, s.reg.growth.xpPerLevel) + xpToNext(2, s.reg.growth.xpPerLevel));
     expect(u.level).toBe(3);
     expect(s.events.filter((e) => e.type === 'levelUp')).toEqual([
       { type: 'levelUp', uid: u.uid, defId: 'roran', level: 3 },
@@ -86,9 +86,9 @@ describe('awardXp', () => {
   it('さいだいレベルでは あがらない', () => {
     const s = fresh();
     const u = playerOf(s, 'roran');
-    u.level = MAX_LEVEL;
+    u.level = s.reg.growth.maxLevel;
     awardXp(s, u, 9999);
-    expect(u.level).toBe(MAX_LEVEL);
+    expect(u.level).toBe(s.reg.growth.maxLevel);
     expect(s.events.filter((e) => e.type === 'levelUp')).toEqual([]);
   });
 

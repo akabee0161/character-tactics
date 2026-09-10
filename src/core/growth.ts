@@ -11,14 +11,14 @@ export function awardXp(state: BattleState, unit: Unit, amount: number): void {
   if (unit.retired || amount <= 0) return;
 
   const before = unit.level;
-  const after = applyXp({ level: unit.level, xp: unit.xp }, amount);
+  const after = applyXp({ level: unit.level, xp: unit.xp }, amount, state.reg.growth);
   unit.level = after.level;
   unit.xp = after.xp;
   if (after.level === before) return;
 
   const def = state.reg.units.get(unit.defId) ?? state.reg.enemies.get(unit.defId);
   if (!def) return;
-  const stats = statsForLevel(def, after.level);
+  const stats = statsForLevel(def, after.level, state.reg.growth);
   const gainedMaxHp = stats.maxHp - unit.maxHp;
   unit.maxHp = stats.maxHp;
   unit.power = stats.power;

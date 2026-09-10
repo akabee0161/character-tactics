@@ -2,15 +2,21 @@ import { isWalkableAt, makeGrid } from './field';
 import { makeFieldCache } from './fields';
 import { makeRng } from './rng';
 import type { Registry } from '../engine/registry';
-import type { AiDef, EnemyDef, StageDef, UnitDef } from '../engine/schema';
+import type { AiDef, EnemyDef, GrowthDef, StageDef, UnitDef } from '../engine/schema';
 import type { BattleState, CharProgress, Grid, Unit, Vec2 } from './types';
 
-const HP_PER_LEVEL = 3;
-const POWER_PER_LEVEL = 1;
-
-export function statsForLevel(def: UnitDef, level: number): { maxHp: number; power: number } {
+/**
+ * レベルからステータスを出す。HP は毎レベル、攻撃力は levelsPerPower レベルごとに上がる。
+ * 攻撃力を小数にしないのは computeDamage が整数前提で組まれているため
+ */
+export function statsForLevel(
+  def: UnitDef | EnemyDef, level: number, growth: GrowthDef,
+): { maxHp: number; power: number } {
   const steps = Math.max(0, level - 1);
-  return { maxHp: def.maxHp + steps * HP_PER_LEVEL, power: def.power + steps * POWER_PER_LEVEL };
+  return {
+    maxHp: def.maxHp + steps * growth.hpPerLevel,
+    power: def.power + Math.floor(steps / growth.levelsPerPower),
+  };
 }
 
 type MakeUnitArgs = {
@@ -22,10 +28,11 @@ type MakeUnitArgs = {
   level: number;
   xp: number;
   ai: AiDef | null;
+  growth: GrowthDef;
 };
 
 function makeUnit(a: MakeUnitArgs): Unit {
-  const { maxHp, power } = statsForLevel(a.def, a.level);
+  const { maxHp, power } = statsForLevel(a.def, a.level, a.growth);
   const enemyDef = 'bowDamageCap' in a.def ? a.def : null;
   return {
     uid: a.uid,
@@ -56,7 +63,9 @@ export function makeEnemyUnit(
 ): Unit {
   const def = reg.enemies.get(defId);
   if (!def) throw new Error(`はいちに しらない てき: ${defId}`);
-  return makeUnit({ uid, def, side: 'enemy', controller: 'ai', pos, level: 1, xp: 0, ai });
+  return makeUnit({
+    uid, def, side: 'enemy', controller: 'ai', pos, level: 1, xp: 0, ai, growth: reg.growth,
+  });
 }
 
 export function createBattleState(
@@ -74,6 +83,7 @@ export function createBattleState(
     return makeUnit({
       uid: `p${i + 1}`, def, side: 'player', controller: 'player', pos: start,
       level: progress[defId]?.level ?? 1, xp: progress[defId]?.xp ?? 0, ai: null,
+      growth: reg.growth,
     });
   });
 
