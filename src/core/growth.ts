@@ -27,15 +27,38 @@ export function awardXp(state: BattleState, unit: Unit, amount: number): void {
   state.events.push({ type: 'levelUp', uid: unit.uid, defId: unit.defId, level: after.level });
 }
 
-/** その tick の撃破を見て、とどめを刺したユニットへ経験値を渡す */
-export function awardXpForDefeats(state: BattleState): void {
+/** 味方にだけ経験値を入れる。敵は育たない */
+function awardXpTo(state: BattleState, uid: string, amount: number): void {
+  if (amount <= 0) return;
+  const unit = state.units.find((u) => u.uid === uid);
+  if (!unit || unit.side !== 'player') return;
+  awardXp(state, unit, amount);
+}
+
+/**
+ * その tick のイベントを見て経験値を配る。
+ * 命中・回復・撃破の3つが入り口で、撃破はとどめ役に全額、
+ * ダメージを与えた他の味方に assistRatio ぶんを配る
+ */
+export function awardXpForEvents(state: BattleState): void {
+  const { hitXp, healXp, assistRatio } = state.reg.growth;
   // 走査中に events へ levelUp が積まれるので、先にコピーを取る
-  const defeats = state.events.filter((e) => e.type === 'unitDefeated');
-  for (const ev of defeats) {
-    if (ev.type !== 'unitDefeated' || ev.byUid === null) continue;
-    const killer = state.units.find((u) => u.uid === ev.byUid);
-    if (!killer || killer.side !== 'player') continue;
-    const reward = state.reg.enemies.get(ev.defId)?.xpReward ?? 0;
-    awardXp(state, killer, reward);
+  const events = [...state.events];
+  for (const ev of events) {
+    if (ev.type === 'hit') {
+      awardXpTo(state, ev.sourceUid, hitXp);
+    } else if (ev.type === 'heal') {
+      awardXpTo(state, ev.sourceUid, healXp);
+    } else if (ev.type === 'unitDefeated') {
+      const reward = state.reg.enemies.get(ev.defId)?.xpReward ?? 0;
+      if (ev.byUid !== null) awardXpTo(state, ev.byUid, reward);
+      const victim = state.units.find((u) => u.uid === ev.uid);
+      const assist = Math.floor(reward * assistRatio);
+      for (const uid of victim?.damagedBy ?? []) {
+        // とどめ役は全額を受け取っているので二重取りさせない
+        if (uid === ev.byUid) continue;
+        awardXpTo(state, uid, assist);
+      }
+    }
   }
 }

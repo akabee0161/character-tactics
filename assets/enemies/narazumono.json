@@ -16,5 +16,5 @@
       "attack": { "frames": 3, "fps": 12 }
     }
   },
-  "xpReward": 5, "bowDamageCap": null, "fleeAtHpRatio": null
+  "xpReward": 8, "bowDamageCap": null, "fleeAtHpRatio": null
 }

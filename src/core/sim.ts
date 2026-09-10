@@ -5,7 +5,7 @@ import { accumulate } from './counters';
 import { applyDamage } from './damage';
 import { computeFlowField, distance, flowDirection, hasLineOfSight, isWalkableAt } from './field';
 import { dropUnitField, fieldToStatic, fieldToUnit } from './fields';
-import { awardXpForDefeats } from './growth';
+import { awardXpForEvents } from './growth';
 import { updateObjectives } from './objectives';
 import { spawnProjectile, updateProjectiles } from './projectiles';
 import { useSkill } from './skills';
@@ -74,7 +74,7 @@ export function step(state: BattleState, commands: SimCommand[], dt: number): vo
   updateProjectiles(state, dt);
   resolveAttacks(state, dt);
   resolveRemoval(state);
-  awardXpForDefeats(state);
+  awardXpForEvents(state);
   updateObjectives(state);
   accumulate(state.counters, state.events);
 }

@@ -17,7 +17,7 @@ function makeTestUnit(s: BattleState, def: EnemyDef, pos: Vec2, ai: AiDef): Unit
     goalPos: null, goalField: null, engagedWith: null, attackCooldown: 0, retired: false,
     ai: { def: ai, mode: 'idle', targetUid: null, home: { ...pos } },
     skillCooldownUntil: 0, funbaruUntil: -1, neraiuchiArmed: false, pinchShown: false,
-    seenDefIds: [], lastHitBy: null, lastHitNeraiuchi: false,
+    seenDefIds: [], lastHitBy: null, lastHitNeraiuchi: false, damagedBy: [],
   };
 }
 
@@ -78,7 +78,7 @@ function spawnEnemy(s: BattleState, defId: string, pos: { x: number; y: number }
     goalPos: null, goalField: null, engagedWith: null, attackCooldown: 0, retired: false,
     ai: { def: { kind: 'aggressive' }, mode: 'idle', targetUid: null, home: { ...pos } },
     skillCooldownUntil: 0, funbaruUntil: -1, neraiuchiArmed: false, pinchShown: false,
-    seenDefIds: [], lastHitBy: null, lastHitNeraiuchi: false,
+    seenDefIds: [], lastHitBy: null, lastHitNeraiuchi: false, damagedBy: [],
   };
   s.units.push(u);
   return u;

@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { awardXp, awardXpForDefeats } from './growth';
+import { awardXp, awardXpForEvents } from './growth';
 import { xpToNext } from './progress';
 import { beginBattle, createBattleState, statsForLevel } from './state';
 import { testRegistry } from './testing';
-import type { BattleState, Unit } from './types';
+import type { Registry } from '../engine/registry';
+import type { BattleState, CharProgress, Unit } from './types';
 
 function fresh(): BattleState {
   const reg = testRegistry();
@@ -101,51 +102,93 @@ describe('awardXp', () => {
   });
 });
 
-describe('awardXpForDefeats', () => {
-  it('とどめを さした ユニットに xpReward を あげる', () => {
-    const s = fresh();
-    const u = playerOf(s, 'gau');
-    const e = s.units.find((x) => x.side === 'enemy')!;
+describe('awardXpForEvents', () => {
+  function battle() {
+    const reg = testRegistry();
+    const stage = reg.stages[0]!;
+    const progress: Record<string, CharProgress> = {};
+    for (const id of reg.units.keys()) progress[id] = { level: 1, xp: 0 };
+    const state = createBattleState(reg, stage, progress, 1);
+    beginBattle(state);
+    return state;
+  }
+
+  const player = (s: BattleState, defId: string) =>
+    s.units.find((u) => u.side === 'player' && u.defId === defId)!;
+  const enemy = (s: BattleState) => s.units.find((u) => u.side === 'enemy')!;
+
+  it('命中で攻撃側に hitXp が入る', () => {
+    const s = battle();
+    const roran = player(s, 'roran');
+    const before = roran.xp;
+    s.events = [{
+      type: 'hit', targetUid: enemy(s).uid, targetPos: { x: 0, y: 0 }, amount: 3,
+      sourceUid: roran.uid, sourceDefId: 'roran', attackKind: 'melee',
+      sourcePos: { x: 0, y: 0 }, neraiuchi: false,
+    }];
+    awardXpForEvents(s);
+    expect(roran.xp).toBe(before + s.reg.growth.hitXp);
+  });
+
+  it('敵の命中では敵に経験値が入らない', () => {
+    const s = battle();
+    const e = enemy(s);
+    s.events = [{
+      type: 'hit', targetUid: player(s, 'roran').uid, targetPos: { x: 0, y: 0 }, amount: 3,
+      sourceUid: e.uid, sourceDefId: e.defId, attackKind: 'melee',
+      sourcePos: { x: 0, y: 0 }, neraiuchi: false,
+    }];
+    awardXpForEvents(s);
+    expect(e.xp).toBe(0);
+  });
+
+  it('回復で術者に healXp が入る', () => {
+    const s = battle();
+    const mist = player(s, 'mist');
+    s.events = [{
+      type: 'heal', targetPos: { x: 0, y: 0 }, amount: 5,
+      sourceUid: mist.uid, sourceDefId: 'mist', sourcePos: { x: 0, y: 0 },
+    }];
+    awardXpForEvents(s);
+    expect(mist.xp).toBe(s.reg.growth.healXp);
+  });
+
+  it('撃破でとどめ役に全額、ダメージを与えた他の味方に半額が入る', () => {
+    const s = battle();
+    const roran = player(s, 'roran');
+    const ines = player(s, 'ines');
+    const e = enemy(s);
     const reward = s.reg.enemies.get(e.defId)!.xpReward;
+    e.damagedBy = [roran.uid, ines.uid];
     s.events = [{
-      type: 'unitDefeated', uid: e.uid, defId: e.defId,
-      byUid: u.uid, byDefId: u.defId, neraiuchi: false, pos: { x: 0, y: 0 },
+      type: 'unitDefeated', uid: e.uid, defId: e.defId, byUid: roran.uid, byDefId: 'roran',
+      neraiuchi: false, pos: { x: 0, y: 0 },
     }];
-    awardXpForDefeats(s);
-    expect(u.xp).toBe(reward);
+    awardXpForEvents(s);
+    const assist = Math.floor(reward * s.reg.growth.assistRatio);
+    // レベルが上がると xp が繰り越しで減るので、レベルと xp の両方から総量を見る
+    expect(totalXp(s.reg, roran)).toBe(reward);
+    expect(totalXp(s.reg, ines)).toBe(assist);
   });
 
-  it('てがらが なければ だれにも あげない', () => {
-    const s = fresh();
-    const e = s.units.find((x) => x.side === 'enemy')!;
+  it('とどめ役はアシストぶんを二重取りしない', () => {
+    const s = battle();
+    const roran = player(s, 'roran');
+    const e = enemy(s);
+    const reward = s.reg.enemies.get(e.defId)!.xpReward;
+    e.damagedBy = [roran.uid];
     s.events = [{
-      type: 'unitDefeated', uid: e.uid, defId: e.defId,
-      byUid: null, byDefId: null, neraiuchi: false, pos: { x: 0, y: 0 },
+      type: 'unitDefeated', uid: e.uid, defId: e.defId, byUid: roran.uid, byDefId: 'roran',
+      neraiuchi: false, pos: { x: 0, y: 0 },
     }];
-    awardXpForDefeats(s);
-    expect(s.units.filter((u) => u.side === 'player').every((u) => u.xp === 0)).toBe(true);
-  });
-
-  it('てったい（unitFled）では けいけんちを あげない', () => {
-    const s = fresh();
-    const u = playerOf(s, 'gau');
-    const e = s.units.find((x) => x.side === 'enemy')!;
-    s.events = [{ type: 'unitFled', uid: e.uid, defId: e.defId, byUid: u.uid, byDefId: u.defId }];
-    awardXpForDefeats(s);
-    expect(u.xp).toBe(0);
-  });
-
-  it('おなじ tick に 2たい たおしたら 2たいぶん', () => {
-    const s = fresh();
-    const u = playerOf(s, 'gau');
-    const [a, b] = s.units.filter((x) => x.side === 'enemy');
-    const total =
-      s.reg.enemies.get(a!.defId)!.xpReward + s.reg.enemies.get(b!.defId)!.xpReward;
-    s.events = [
-      { type: 'unitDefeated', uid: a!.uid, defId: a!.defId, byUid: u.uid, byDefId: u.defId, neraiuchi: false, pos: { x: 0, y: 0 } },
-      { type: 'unitDefeated', uid: b!.uid, defId: b!.defId, byUid: u.uid, byDefId: u.defId, neraiuchi: false, pos: { x: 0, y: 0 } },
-    ];
-    awardXpForDefeats(s);
-    expect(u.xp).toBe(total);
+    awardXpForEvents(s);
+    expect(totalXp(s.reg, roran)).toBe(reward);
   });
 });
+
+/** レベルアップで繰り越した経験値を足し戻し、累計で何 xp 入ったかを出す */
+function totalXp(reg: Registry, unit: Unit): number {
+  let total = unit.xp;
+  for (let lv = 1; lv < unit.level; lv++) total += xpToNext(lv, reg.growth.xpPerLevel);
+  return total;
+}

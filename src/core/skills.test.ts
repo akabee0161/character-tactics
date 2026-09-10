@@ -26,7 +26,7 @@ function addEnemy(s: BattleState, x: number, y: number, hp = 12): Unit {
     goalPos: null, goalField: null, engagedWith: null, attackCooldown: 0, retired: false,
     ai: { def: { kind: 'aggressive' }, mode: 'idle', targetUid: null, home: { x, y } },
     skillCooldownUntil: 0, funbaruUntil: -1, neraiuchiArmed: false, pinchShown: false,
-    seenDefIds: [], lastHitBy: null, lastHitNeraiuchi: false,
+    seenDefIds: [], lastHitBy: null, lastHitNeraiuchi: false, damagedBy: [],
   };
   s.units.push(e);
   return e;

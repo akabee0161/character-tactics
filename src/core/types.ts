@@ -73,6 +73,8 @@ export type Unit = {
   seenDefIds: string[];
   lastHitBy: string | null;
   lastHitNeraiuchi: boolean;
+  /** このユニットにダメージを与えた相手の uid（重複なし）。撃破時のアシスト配分に使う */
+  damagedBy: string[];
 };
 
 export type Speaker = { side: 'ally' | 'enemy'; id: string };
