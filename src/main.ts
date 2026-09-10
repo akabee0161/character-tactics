@@ -18,7 +18,7 @@ import { hitRect, pickUnit } from './ui/hit';
 import { resolveMapGesture } from './ui/input';
 import type { PointerStart } from './ui/input';
 import {
-  BTN, SKILL_BUTTON, TALK_BODY_X, TALK_FONT, TALK_MAX_LINES, TALK_PAD, TALK_WINDOW,
+  BTN, MESSAGE_BAR, TALK_BODY_X, TALK_FONT, TALK_MAX_LINES, TALK_PAD, TALK_WINDOW,
   bubbleRectAt, portraitSlot, stageSlot,
 } from './ui/layout';
 import {
@@ -192,7 +192,7 @@ function onPointerDown(ev: PointerEvent): void {
 
     case 'placement': {
       if (!battle) return;
-      if (hitRect(SKILL_BUTTON, p)) {
+      if (hitRect(MESSAGE_BAR, p)) {
         pointerStart = null;
         writeSave(window.localStorage, save); // ステージ開始時点を保存する
         beginBattle(battle);
@@ -212,7 +212,7 @@ function onPointerDown(ev: PointerEvent): void {
         return;
       }
       // 1) スキルボタン。下パネルにあるのでマップ操作とは重ならない
-      if (hitRect(SKILL_BUTTON, p)) {
+      if (hitRect(MESSAGE_BAR, p)) {
         pointerStart = null;
         if (selected === null) return;
         const unit = battle.units.find((u) => u.uid === selected);

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  BOTTOM_PANEL_Y, BTN, BUBBLE_FONT_PX, BUBBLE_LINE_H, BUBBLE_PAD, SKILL_BUTTON, TALK_WINDOW,
+  BOTTOM_PANEL_Y, BTN, BUBBLE_FONT_PX, BUBBLE_LINE_H, BUBBLE_PAD, MESSAGE_BAR, TALK_WINDOW,
   bubbleLines, bubbleRectAt, portraitSlot, roleBadgeIn, rosterSlot, stageSlot,
 } from './layout';
 import { LOGICAL_H, LOGICAL_W, MAP_ORIGIN } from '../render/viewport';
@@ -101,9 +101,9 @@ describe('たてがたの レイアウト', () => {
   });
 
   it('ひっさつわざボタンは したパネルの なかで ポートレートと かさならない', () => {
-    expect(inScreen(SKILL_BUTTON)).toBe(true);
-    expect(SKILL_BUTTON.y).toBeGreaterThanOrEqual(BOTTOM_PANEL_Y);
-    expect(SKILL_BUTTON.y + SKILL_BUTTON.h).toBeLessThanOrEqual(portraitSlot(0).y);
+    expect(inScreen(MESSAGE_BAR)).toBe(true);
+    expect(MESSAGE_BAR.y).toBeGreaterThanOrEqual(BOTTOM_PANEL_Y);
+    expect(MESSAGE_BAR.y + MESSAGE_BAR.h).toBeLessThanOrEqual(portraitSlot(0).y);
   });
 
   it('かいわウィンドウと ボタンが がめんに おさまる', () => {
@@ -140,6 +140,22 @@ describe('たてがたの レイアウト', () => {
     const slot = portraitSlot(0);
     // drawBottomBar は HP バーを slot.y + 60 に描く
     expect(roleBadgeIn(slot).y + roleBadgeIn(slot).h).toBeLessThanOrEqual(slot.y + 60);
+  });
+});
+
+describe('MESSAGE_BAR', () => {
+  it('下パネルの中にある', () => {
+    expect(MESSAGE_BAR.y).toBeGreaterThanOrEqual(BOTTOM_PANEL_Y);
+    expect(MESSAGE_BAR.y + MESSAGE_BAR.h).toBeLessThanOrEqual(LOGICAL_H);
+  });
+
+  it('ポートレートと重ならない', () => {
+    expect(MESSAGE_BAR.y + MESSAGE_BAR.h).toBeLessThanOrEqual(portraitSlot(0).y);
+  });
+
+  it('画面の横幅に収まる', () => {
+    expect(MESSAGE_BAR.x).toBeGreaterThanOrEqual(0);
+    expect(MESSAGE_BAR.x + MESSAGE_BAR.w).toBeLessThanOrEqual(LOGICAL_W);
   });
 });
 

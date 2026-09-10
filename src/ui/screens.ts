@@ -5,7 +5,7 @@ import type { ImageCache } from '../render/images';
 import { drawFace, drawRoleBadge } from '../render/sprites';
 import { LOGICAL_H, LOGICAL_W, mapToLogical } from '../render/viewport';
 import {
-  BOTTOM_PANEL_Y, BTN, BUBBLE_FONT_PX, BUBBLE_LINE_H, BUBBLE_PAD, SKILL_BUTTON, TALK_BODY_X,
+  BOTTOM_PANEL_Y, BTN, BUBBLE_FONT_PX, BUBBLE_LINE_H, BUBBLE_PAD, MESSAGE_BAR, TALK_BODY_X,
   TALK_FONT, TALK_LINE_H, TALK_PAD, TALK_WINDOW, bubbleLines, bubbleRectAt, portraitSlot,
   roleBadgeIn, rosterSlot, stageSlot,
 } from './layout';
@@ -33,9 +33,21 @@ function panel(ctx: CanvasRenderingContext2D, r: Rect, fill = PANEL): void {
   ctx.strokeRect(r.x + 1, r.y + 1, r.w - 2, r.h - 2);
 }
 
-function button(ctx: CanvasRenderingContext2D, r: Rect, label: string, enabled = true): void {
-  panel(ctx, r, enabled ? '#2c4a63' : '#2a2f35');
-  ctx.fillStyle = enabled ? INK : '#78808a';
+/**
+ * primary は主要な導線のボタン。有効な暗い紺（#2c4a63）と無効な暗い灰（#2a2f35）は
+ * 並べないと区別がつかず、「押せないボタン」に見えてしまうため、押してほしいボタンは
+ * アクセント色で塗る
+ */
+function button(
+  ctx: CanvasRenderingContext2D,
+  r: Rect,
+  label: string,
+  enabled = true,
+  primary = false,
+): void {
+  const fill = !enabled ? '#2a2f35' : primary ? '#ffd479' : '#2c4a63';
+  panel(ctx, r, fill);
+  ctx.fillStyle = !enabled ? '#78808a' : primary ? '#1a1a1a' : INK;
   ctx.font = '26px sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
@@ -59,7 +71,7 @@ export function drawTitle(ctx: CanvasRenderingContext2D, hasSave: boolean): void
   ctx.fillText('4にんの なかまで', LOGICAL_W / 2, 320);
   ctx.fillText('てきの ほんきょちへ せめこもう', LOGICAL_W / 2, 352);
   ctx.textAlign = 'left';
-  button(ctx, BTN.titleNew, 'はじめから');
+  button(ctx, BTN.titleNew, 'はじめから', true, true);
   button(ctx, BTN.titleContinue, 'つづきから', hasSave);
 }
 
@@ -125,7 +137,7 @@ export function drawPlacement(ctx: CanvasRenderingContext2D, state: BattleState)
   ctx.fillStyle = INK;
   ctx.font = '20px sans-serif';
   ctx.fillText('きいろい せんより したに なかまを おこう', 24, 760);
-  button(ctx, SKILL_BUTTON, 'はじめる');
+  button(ctx, MESSAGE_BAR, 'はじめる', true, true);
 }
 
 export function drawBottomBar(
@@ -153,6 +165,13 @@ export function drawBottomBar(
       ctx.fillStyle = INK;
       ctx.font = '18px sans-serif';
       ctx.fillText(def.name, r.x + 42, r.y + 28);
+
+      // レベルは枠の右上。名前の右は roleBadgeIn と重なる
+      ctx.font = '14px sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText(`Lv${unit.level}`, r.x + r.w - 8, r.y + 18);
+      ctx.textAlign = 'left';
+      ctx.font = '18px sans-serif';
 
       drawRoleBadge(ctx, roleBadgeIn(r), def, images);
 
@@ -198,7 +217,7 @@ export function drawSkillButton(
   selected: string | null,
 ): void {
   const s = skillButtonState(reg, state, selected);
-  button(ctx, SKILL_BUTTON, s.label, s.enabled);
+  button(ctx, MESSAGE_BAR, s.label, s.enabled);
 }
 
 /** 戦闘中の吹き出し。キャラの頭上に出し、時間は止めない */
@@ -308,7 +327,7 @@ export function drawResult(
     ctx.fillText(`しょうごう ゲット: ${newTitles.map(label).join('、')}`, 40, 560);
   }
 
-  button(ctx, BTN.next, 'つぎへ');
+  button(ctx, BTN.next, 'つぎへ', true, true);
 }
 
 export function drawDefeat(ctx: CanvasRenderingContext2D): void {
@@ -318,7 +337,7 @@ export function drawDefeat(ctx: CanvasRenderingContext2D): void {
   ctx.textAlign = 'center';
   ctx.fillText('なかまを まもれなかった', LOGICAL_W / 2, 320);
   ctx.textAlign = 'left';
-  button(ctx, BTN.retry, 'もういちど');
+  button(ctx, BTN.retry, 'もういちど', true, true);
   button(ctx, BTN.toSelect, 'しまを えらぶ');
 }
 

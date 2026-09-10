@@ -7,10 +7,10 @@ import type { Vec2 } from '../core/types';
 export const BOTTOM_PANEL_Y = 786;
 
 /**
- * 必殺技ボタン。配置フェーズの「はじめる」と同じ矩形を使う。
- * 押す場所がフェーズで動かないほうが覚えやすい
+ * 下パネルの上段。配置フェーズは「はじめる」ボタン、戦闘中はセリフ欄として使う。
+ * 押す場所・読む場所がフェーズで動かないほうが覚えやすい
  */
-export const SKILL_BUTTON: Rect = { x: 8, y: 794, w: 524, h: 56 };
+export const MESSAGE_BAR: Rect = { x: 8, y: 788, w: 524, h: 64 };
 
 export const BTN = {
   titleNew: { x: 120, y: 520, w: 300, h: 76 } as Rect,
