@@ -154,7 +154,8 @@ describe('applyStageClear: クリアボーナス', () => {
     const state = freshBattle(reg);
     const roran = state.units.find((u) => u.defId === 'roran')!;
     const r = applyStageClear(reg, newSave(reg), state.stage.id, state);
-    expect(r.save.units.roran!.xp).toBe(reg.growth.clearXp);
+    const expected = applyXp({ level: 1, xp: 0 }, reg.growth.clearXp, reg.growth);
+    expect(r.save.units.roran).toEqual(expected);
     expect(roran.retired).toBe(false);
   });
 

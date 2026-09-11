@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { step } from './sim';
+import { applyXp } from './progress';
 import { beginBattle, createBattleState } from './state';
 import { testRegistry } from './testing';
 import type { StageDef, Unit } from './types';
@@ -191,8 +192,12 @@ describe('撃破と撤退', () => {
       type: 'unitDefeated', uid: e.uid, defId: 'narazumono', byUid: roran.uid, byDefId: 'roran', neraiuchi: false,
       pos: e.pos,
     });
-    // とどめの一撃も hit イベントとして hitXp が入るので、撃破報酬に上乗せされる
-    expect(roran.xp).toBe(s.reg.enemies.get('narazumono')!.xpReward + s.reg.growth.hitXp);
+    // とどめの一撃も hit イベントとして hitXp が入るので、撃破報酬に上乗せされる。
+    // xpPerLevel が小さいとこの合計だけでレベルが上がり xp が繰り越されるので、
+    // 生の合計ではなく applyXp を通した値と比べる
+    const gained = s.reg.enemies.get('narazumono')!.xpReward + s.reg.growth.hitXp;
+    const expected = applyXp({ level: 1, xp: 0 }, gained, s.reg.growth);
+    expect({ level: roran.level, xp: roran.xp }).toEqual(expected);
   });
 
   it('ねらいうちで倒すと kill:neraiuchi が増える', () => {
@@ -216,8 +221,12 @@ describe('撃破と撤退', () => {
       type: 'unitDefeated', uid: e.uid, defId: 'narazumono', byUid: gau.uid, byDefId: 'gau', neraiuchi: false,
       pos: e.pos,
     });
-    // とどめの一撃も hit イベントとして hitXp が入るので、撃破報酬に上乗せされる
-    expect(gau.xp).toBe(s.reg.enemies.get('narazumono')!.xpReward + s.reg.growth.hitXp);
+    // とどめの一撃も hit イベントとして hitXp が入るので、撃破報酬に上乗せされる。
+    // xpPerLevel が小さいとこの合計だけでレベルが上がり xp が繰り越されるので、
+    // 生の合計ではなく applyXp を通した値と比べる
+    const gained = s.reg.enemies.get('narazumono')!.xpReward + s.reg.growth.hitXp;
+    const expected = applyXp({ level: 1, xp: 0 }, gained, s.reg.growth);
+    expect({ level: gau.level, xp: gau.xp }).toEqual(expected);
   });
 
   it('ガルムは 30% を切ると撤退し unitFled が出る', () => {
@@ -309,7 +318,10 @@ describe('ひしょうたい', () => {
     enemy.attackCooldown = 0; // 次の tick で反撃準備完了
     step(s, [], 1 / 60); // 着弾 tick
     expect(enemy.hp).toBeLessThanOrEqual(0);
-    expect(ines.hp).toBe(inesHpBefore); // 死んだユニットに反撃されていない
+    // 死んだユニットに反撃されていない(反撃されれば減るはず)。
+    // このヒットで得た経験値によりレベルアップし現在HPが増えることがあるので、
+    // 「減っていない」で判定する(反撃を受けていれば下回る)
+    expect(ines.hp).toBeGreaterThanOrEqual(inesHpBefore);
   });
 
   it('どうじ tick に たおれた みかたは しえんしゃに ならない', () => {

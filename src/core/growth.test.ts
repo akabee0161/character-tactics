@@ -23,9 +23,10 @@ describe('awardXp', () => {
   it('レベルが あがらない ぶんは xp に たまる', () => {
     const s = fresh();
     const u = playerOf(s, 'roran');
-    awardXp(s, u, 5);
+    const amount = xpToNext(1, s.reg.growth.xpPerLevel) - 1; // しきいちの1手前
+    awardXp(s, u, amount);
     expect(u.level).toBe(1);
-    expect(u.xp).toBe(5);
+    expect(u.xp).toBe(amount);
   });
 
   it('しきいちを こえたら レベルが あがる', () => {

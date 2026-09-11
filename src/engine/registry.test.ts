@@ -248,7 +248,7 @@ describe('growth', () => {
   it('assets/growth.json を読んで registry に入れる', () => {
     const reg = testRegistry();
     expect(reg.growth.maxLevel).toBe(12);
-    expect(reg.growth.xpPerLevel).toBe(12);
+    expect(reg.growth.xpPerLevel).toBe(4);
     expect(reg.growth.assistRatio).toBe(0.5);
   });
 });
