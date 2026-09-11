@@ -334,3 +334,20 @@ describe('sprites の ファイルの そんざい', () => {
     expect(r.errors[0]?.reason).toContain('nai.png');
   });
 });
+
+describe('実アセットのステージ', () => {
+  it('10本ある', () => {
+    expect(testRegistry().stages.length).toBe(10);
+  });
+
+  it('order は昇順で 重複しない', () => {
+    const orders = testRegistry().stages.map((s) => s.order);
+    expect(orders).toEqual([...orders].sort((a, b) => a - b));
+    expect(new Set(orders).size).toBe(orders.length);
+  });
+
+  it('ガルム戦が いちばん最後', () => {
+    const stages = testRegistry().stages;
+    expect(stages[stages.length - 1]!.id).toBe('stage3');
+  });
+});

@@ -22,7 +22,7 @@ describe('loadRegistry', () => {
     }
     expect(r.value.units.size).toBe(4);
     expect(r.value.enemies.size).toBe(5);
-    expect(r.value.stages.length).toBe(8);
+    expect(r.value.stages.length).toBe(10);
     expect(r.value.skills.size).toBe(4);
     expect(r.value.titles.length).toBe(5);
     expect(r.value.bonds.length).toBe(3);
@@ -73,8 +73,8 @@ describe('ステージの せっけい', () => {
     return r.value;
   })();
 
-  it('8つの ステージが ある', () => {
-    expect(reg.stages.map((s) => s.id)).toEqual(['stage1', 'stage2', 'stage3', 'stage4', 'stage5', 'stage6', 'stage7', 'stage8']);
+  it('10の ステージが ある', () => {
+    expect(reg.stages.map((s) => s.id)).toEqual(['stage1', 'stage2', 'stage4', 'stage5', 'stage6', 'stage7', 'stage8', 'stage9', 'stage10', 'stage3']);
   });
 
   it('どの ステージにも 敵が 1たい いじょう いる', () => {
