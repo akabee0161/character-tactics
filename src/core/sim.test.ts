@@ -15,7 +15,7 @@ function makeTestUnit(s: BattleState, def: EnemyDef, pos: Vec2, ai: AiDef): Unit
     bowDamageCap: def.bowDamageCap, skillId: def.skillId,
     level: 1, xp: 0,
     goalPos: null, goalField: null, engagedWith: null, attackCooldown: 0, retired: false,
-    ai: { def: ai, mode: 'idle', targetUid: null, home: { ...pos } },
+    ai: { def: ai, mode: 'idle', targetUid: null, home: { ...pos }, spottedAt: null },
     skillCooldownUntil: 0, funbaruUntil: -1, neraiuchiArmed: false, pinchShown: false,
     seenDefIds: [], lastHitBy: null, lastHitNeraiuchi: false, damagedBy: [],
   };
@@ -76,7 +76,7 @@ function spawnEnemy(s: BattleState, defId: string, pos: { x: number; y: number }
     bowDamageCap: def.bowDamageCap, skillId: def.skillId,
     level: 1, xp: 0,
     goalPos: null, goalField: null, engagedWith: null, attackCooldown: 0, retired: false,
-    ai: { def: { kind: 'aggressive' }, mode: 'idle', targetUid: null, home: { ...pos } },
+    ai: { def: { kind: 'aggressive' }, mode: 'idle', targetUid: null, home: { ...pos }, spottedAt: null },
     skillCooldownUntil: 0, funbaruUntil: -1, neraiuchiArmed: false, pinchShown: false,
     seenDefIds: [], lastHitBy: null, lastHitNeraiuchi: false, damagedBy: [],
   };
@@ -592,5 +592,63 @@ describe('しじされた いどうは とまらない', () => {
 
     expect(enemy.engagedWith).not.toBeNull();
     expect(enemy.pos).toEqual(at);
+  });
+});
+
+describe('spottedAt', () => {
+  function sentryState(): BattleState {
+    const stage: StageDef = {
+      ...AI_STAGE,
+      enemies: [{
+        defId: 'narazumono',
+        pos: { x: 400, y: 240 },
+        ai: { kind: 'sentry', sightRange: 100 },
+      }],
+    };
+    return fresh(stage).state;
+  }
+
+  it('はじめは null', () => {
+    const state = sentryState();
+    const e = state.units.find((u) => u.side === 'enemy')!;
+    expect(e.ai!.spottedAt).toBeNull();
+  });
+
+  it('見つけた tick の時刻が入る', () => {
+    const state = sentryState();
+    const e = state.units.find((u) => u.side === 'enemy')!;
+    const p = state.units.find((u) => u.side === 'player')!;
+    p.pos = { x: 440, y: 240 }; // 索敵範囲の内側
+    step(state, [], 0.1);
+    expect(e.ai!.mode).toBe('chase');
+    expect(e.ai!.spottedAt).toBeCloseTo(state.time);
+  });
+
+  it('追いかけているあいだ 時刻は更新されない', () => {
+    const state = sentryState();
+    const e = state.units.find((u) => u.side === 'enemy')!;
+    const p = state.units.find((u) => u.side === 'player')!;
+    p.pos = { x: 440, y: 240 };
+    step(state, [], 0.1);
+    const first = e.ai!.spottedAt;
+    step(state, [], 0.1);
+    expect(e.ai!.spottedAt).toBe(first);
+  });
+
+  it('見失ったら null に戻り、見つけ直すと入り直す', () => {
+    const state = sentryState();
+    const e = state.units.find((u) => u.side === 'enemy')!;
+    const p = state.units.find((u) => u.side === 'player')!;
+    p.pos = { x: 440, y: 240 };
+    step(state, [], 0.1);
+    expect(e.ai!.spottedAt).not.toBeNull();
+
+    p.pos = { x: 40, y: 40 }; // 索敵範囲の外
+    step(state, [], 0.1);
+    expect(e.ai!.spottedAt).toBeNull();
+
+    p.pos = { x: e.pos.x + 40, y: e.pos.y };
+    step(state, [], 0.1);
+    expect(e.ai!.spottedAt).toBeCloseTo(state.time);
   });
 });

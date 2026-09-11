@@ -1,0 +1,20 @@
+{
+  "id": "majinaishi", "name": "まじない師", "role": "敵",
+  "combat": true,
+  "maxHp": 9, "power": 7, "guard": 0,
+  "attack": "magic", "range": 140,
+  "attackInterval": 2.6, "speed": 24,
+  "skillId": null,
+  "color": "#6a4a8a",
+  "sprites": {
+    "role": "role-teki-mahou.png",
+    "face": "majinaishi-face.png",
+    "map": {
+      "sheet": "majinaishi-map.png", "frame": 32,
+      "idle": { "frames": 2, "fps": 4 },
+      "walk": { "frames": 4, "fps": 8 },
+      "attack": { "frames": 3, "fps": 12 }
+    }
+  },
+  "xpReward": 14, "bowDamageCap": null, "fleeAtHpRatio": null
+}

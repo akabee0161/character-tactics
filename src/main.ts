@@ -18,9 +18,10 @@ import { hitRect, pickUnit } from './ui/hit';
 import { resolveMapGesture } from './ui/input';
 import type { PointerStart } from './ui/input';
 import {
-  BOTTOM_PANEL_Y, BTN, MESSAGE_BAR, TALK_BODY_X, TALK_FONT, TALK_MAX_LINES, TALK_PAD, TALK_WINDOW,
-  portraitSlot, stageSlot,
+  BOTTOM_PANEL_Y, BTN, MESSAGE_BAR, STAGE_LIST_VIEW, TALK_BODY_X, TALK_FONT, TALK_MAX_LINES,
+  TALK_PAD, TALK_WINDOW, portraitSlot, stageListContentH, stageSlot,
 } from './ui/layout';
+import { clampScroll, isTap, maxScroll } from './ui/scroll';
 import {
   drawBottomBar, drawDefeat, drawLoadErrors, drawPlacement, drawResult,
   drawSpeechBar, drawStageSelect, drawTalk, drawTitle,
@@ -78,6 +79,24 @@ let selected: string | null = null;
 let pointerStart: PointerStart | null = null;
 /** ドラッグ中の指の位置（マップ座標）。プレビュー描画が読む */
 let dragMap: Vec2 | null = null;
+/**
+ * ステージ選択の縦スクロール。盤面のドラッグ（pointerStart / dragMap）とは
+ * 別系統で持つ。1つに混ぜると、フェーズごとに意味の違う値が同じ変数に入って読めなくなる
+ */
+let stageScrollY = 0;
+let stageDrag: { pointerId: number; startY: number; startScrollY: number } | null = null;
+
+function stageScrollMax(): number {
+  return maxScroll(stageListContentH(registry.stages.length), STAGE_LIST_VIEW.h);
+}
+
+/** 選択画面に入るたびに一番上へ戻す */
+function toStageSelect(): void {
+  stageScrollY = 0;
+  stageDrag = null;
+  phase = 'select';
+}
+
 let pendingSkill: string | null = null;
 let result: { gains: XpGain[]; newTitles: string[] } | null = null;
 /** 護衛対象の defId。beginStage で1度だけ作る */
@@ -161,15 +180,16 @@ function onPointerDown(ev: PointerEvent): void {
       if (hitRect(BTN.titleNew, p)) {
         save = newSave(registry);
         hasSave = writeSave(window.localStorage, save) || hasSave;
-        phase = 'select';
+        toStageSelect();
       } else if (hasSave && hitRect(BTN.titleContinue, p)) {
-        phase = 'select';
+        toStageSelect();
       }
       return;
 
     case 'select':
-      for (let i = 0; i < registry.stages.length; i++) {
-        if (hitRect(stageSlot(i), p) && isStageUnlocked(registry, save, i)) beginStage(i);
+      if (hitRect(STAGE_LIST_VIEW, p)) {
+        stageDrag = { pointerId: ev.pointerId, startY: p.y, startScrollY: stageScrollY };
+        canvas.setPointerCapture(ev.pointerId);
       }
       return;
 
@@ -216,12 +236,12 @@ function onPointerDown(ev: PointerEvent): void {
     }
 
     case 'result':
-      if (hitRect(BTN.next, p)) phase = 'select';
+      if (hitRect(BTN.next, p)) toStageSelect();
       return;
 
     case 'defeat':
       if (hitRect(BTN.retry, p)) beginStage(stageIndex);
-      else if (hitRect(BTN.toSelect, p)) phase = 'select';
+      else if (hitRect(BTN.toSelect, p)) toStageSelect();
       return;
   }
 }
@@ -265,11 +285,29 @@ function beginMapPointer(state: BattleState, p: Vec2, ev: PointerEvent): void {
 }
 
 function onPointerMove(ev: PointerEvent): void {
+  if (stageDrag && ev.pointerId === stageDrag.pointerId) {
+    const dy = toLogical(ev).y - stageDrag.startY;
+    stageScrollY = clampScroll(stageDrag.startScrollY - dy, stageScrollMax());
+    return;
+  }
   if (!pointerStart || ev.pointerId !== pointerStart.pointerId) return;
   dragMap = logicalToMap(toLogical(ev));
 }
 
 function onPointerUp(ev: PointerEvent): void {
+  if (stageDrag && ev.pointerId === stageDrag.pointerId) {
+    const start = stageDrag;
+    stageDrag = null;
+    const p = toLogical(ev);
+    // 指がほとんど動いていなければ選んだとみなす。動いていればスクロールだった
+    if (phase === 'select' && isTap(p.y - start.startY)) {
+      const hit = { x: p.x, y: p.y + stageScrollY };
+      for (let i = 0; i < registry.stages.length; i++) {
+        if (hitRect(stageSlot(i), hit) && isStageUnlocked(registry, save, i)) beginStage(i);
+      }
+    }
+    return;
+  }
   if (!pointerStart || ev.pointerId !== pointerStart.pointerId) return;
   const start = pointerStart;
   pointerStart = null;
@@ -296,6 +334,10 @@ function onPointerUp(ev: PointerEvent): void {
 }
 
 function onPointerCancel(ev: PointerEvent): void {
+  if (stageDrag && ev.pointerId === stageDrag.pointerId) {
+    stageDrag = null;
+    return;
+  }
   if (!pointerStart || ev.pointerId !== pointerStart.pointerId) return;
   pointerStart = null;
   dragMap = null;
@@ -355,7 +397,7 @@ function render(): void {
       drawTitle(ctx, hasSave);
       break;
     case 'select':
-      drawStageSelect(ctx, registry, save, images);
+      drawStageSelect(ctx, registry, save, images, stageScrollY);
       break;
     case 'talk':
       if (battle && talk) {

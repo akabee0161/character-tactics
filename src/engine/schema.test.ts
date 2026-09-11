@@ -266,9 +266,9 @@ const VALID_STAGE = {
   name: 'はじまりの しま',
   cell: 32,
   mapRows: ['####', '#..#', '#..#', '####'],
-  placement: { minY: 0, starts: [{ x: 48, y: 48 }] },
+  placement: { minY: 64, starts: [{ x: 48, y: 80 }] },
   roster: ['roran', 'ines'],
-  enemies: [{ defId: 'narazumono', pos: { x: 80, y: 80 }, ai: { kind: 'aggressive' } }],
+  enemies: [{ defId: 'narazumono', pos: { x: 80, y: 48 }, ai: { kind: 'aggressive' } }],
   victory: { type: 'reach', pos: { x: 80, y: 80 }, radius: 24, by: 'any' },
   defeat: [{ type: 'unitLost', defIds: ['roran'] }],
 };
@@ -500,7 +500,7 @@ function stageRaw(over: Record<string, unknown> = {}): Record<string, unknown> {
   return {
     id: 't', order: 10, name: 'T', cell: 32,
     mapRows: ['###', '#.#', '#.#', '###'],
-    placement: { minY: 32, starts: [{ x: 48, y: 48 }] },
+    placement: { minY: 64, starts: [{ x: 48, y: 80 }] },
     roster: ['roran'],
     enemies: [],
     victory: { type: 'reach', pos: { x: 48, y: 48 }, radius: 10, by: 'any' },
@@ -544,7 +544,7 @@ describe('validateStageDef: placement', () => {
   it('minY と starts を読む', () => {
     const r = validateStageDef('assets/stages/t.json', stageRaw());
     expect(r.ok).toBe(true);
-    if (r.ok) expect(r.value.placement).toEqual({ minY: 32, starts: [{ x: 48, y: 48 }] });
+    if (r.ok) expect(r.value.placement).toEqual({ minY: 64, starts: [{ x: 48, y: 80 }] });
   });
 
   it('starts が minY より上だとエラー', () => {
@@ -563,6 +563,80 @@ describe('validateStageDef: placement', () => {
     const raw = stageRaw();
     delete (raw as Record<string, unknown>).placement;
     expect(validateStageDef('assets/stages/t.json', raw).ok).toBe(false);
+  });
+});
+
+describe('validateStageDef: 敵は配置範囲より上', () => {
+  it('敵が minY より下だとエラー', () => {
+    const raw = stageRaw({
+      enemies: [{ defId: 'narazumono', pos: { x: 48, y: 80 }, ai: { kind: 'aggressive' } }],
+    });
+    const r = validateStageDef('assets/stages/t.json', raw);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors.some((e) => e.path === 'enemies[0].pos')).toBe(true);
+  });
+
+  it('敵が minY ちょうどでもエラー（線上は配置できる側）', () => {
+    const raw = stageRaw({
+      enemies: [{ defId: 'narazumono', pos: { x: 48, y: 64 }, ai: { kind: 'aggressive' } }],
+    });
+    expect(validateStageDef('assets/stages/t.json', raw).ok).toBe(false);
+  });
+
+  it('敵が minY より上なら通る', () => {
+    const raw = stageRaw({
+      enemies: [{ defId: 'narazumono', pos: { x: 48, y: 48 }, ai: { kind: 'aggressive' } }],
+    });
+    expect(validateStageDef('assets/stages/t.json', raw).ok).toBe(true);
+  });
+
+  it('時間湧きが minY より下だとエラー', () => {
+    const raw = stageRaw({
+      spawners: [{ defId: 'narazumono', pos: { x: 48, y: 80 }, firstAfter: 5, every: 10, total: 2 }],
+    });
+    const r = validateStageDef('assets/stages/t.json', raw);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors.some((e) => e.path === 'spawners[0].pos')).toBe(true);
+  });
+
+  it('placement 自体が無いときは、敵の位置では弾かない', () => {
+    const raw = stageRaw({
+      enemies: [{ defId: 'narazumono', pos: { x: 48, y: 80 }, ai: { kind: 'aggressive' } }],
+    });
+    delete (raw as Record<string, unknown>).placement;
+    const r = validateStageDef('assets/stages/t.json', raw);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors.every((e) => !e.path.startsWith('enemies['))).toBe(true);
+  });
+
+  it('placement.minY が欠けているときは、敵の位置では弾かない（フォールバック0による誤検出を防ぐ）', () => {
+    const raw = stageRaw({
+      placement: { starts: [{ x: 48, y: 80 }] },
+      enemies: [{ defId: 'narazumono', pos: { x: 48, y: 48 }, ai: { kind: 'aggressive' } }],
+    });
+    const r = validateStageDef('assets/stages/t.json', raw);
+    expect(r.ok).toBe(false); // minY 自体が無いのでステージとしては不正
+    if (!r.ok) expect(r.errors.every((e) => !e.path.startsWith('enemies['))).toBe(true);
+  });
+
+  it('placement.minY が数値でないときは、敵の位置では弾かない', () => {
+    const raw = stageRaw({
+      placement: { minY: 'abc', starts: [{ x: 48, y: 80 }] },
+      enemies: [{ defId: 'narazumono', pos: { x: 48, y: 48 }, ai: { kind: 'aggressive' } }],
+    });
+    const r = validateStageDef('assets/stages/t.json', raw);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors.every((e) => !e.path.startsWith('enemies['))).toBe(true);
+  });
+
+  it('placement.minY が範囲外のときは、敵の位置では弾かない', () => {
+    const raw = stageRaw({
+      placement: { minY: 200, starts: [{ x: 48, y: 80 }] },
+      enemies: [{ defId: 'narazumono', pos: { x: 48, y: 48 }, ai: { kind: 'aggressive' } }],
+    });
+    const r = validateStageDef('assets/stages/t.json', raw);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors.every((e) => !e.path.startsWith('enemies['))).toBe(true);
   });
 });
 

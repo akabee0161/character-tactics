@@ -3,14 +3,16 @@ import { titlesOf, xpToNext } from '../core/progress';
 import { DEFAULT_SKILL_COOLDOWN } from '../core/skills';
 import type { ImageCache } from '../render/images';
 import { drawFace, drawRoleBadge } from '../render/sprites';
+import { readyGlowAlpha } from '../render/effects';
 import { LOGICAL_H, LOGICAL_W, mapToLogical } from '../render/viewport';
 import {
   BOTTOM_PANEL_Y, BTN, MESSAGE_BAR, SPEECH_BODY_X, SPEECH_FONT_PX, SPEECH_LINE_H,
-  SPEECH_MAX_LINES, TALK_BODY_X, TALK_FONT, TALK_LINE_H, TALK_PAD, TALK_WINDOW,
-  portraitSlot, roleBadgeIn, rosterSlot, speechLines, stageSlot,
+  SPEECH_MAX_LINES, STAGE_LIST_VIEW, TALK_BODY_X, TALK_FONT, TALK_LINE_H, TALK_PAD, TALK_WINDOW,
+  portraitSlot, roleBadgeIn, rosterSlot, speechLines, stageListContentH, stageSlot,
 } from './layout';
 import { currentSpeaker, pageCount, visibleLines } from './talk';
 import { isStageUnlocked } from './flow';
+import { maxScroll } from './scroll';
 import type { Speech } from './speech';
 import type { TalkState } from './talk';
 import type { XpGain } from './flow';
@@ -75,12 +77,23 @@ export function drawTitle(ctx: CanvasRenderingContext2D, hasSave: boolean): void
 }
 
 export function drawStageSelect(
-  ctx: CanvasRenderingContext2D, reg: Registry, save: SaveData, images: ImageCache,
+  ctx: CanvasRenderingContext2D,
+  reg: Registry,
+  save: SaveData,
+  images: ImageCache,
+  scrollY: number,
 ): void {
   clear(ctx);
   ctx.fillStyle = INK;
   ctx.font = '30px sans-serif';
   ctx.fillText('どの ステージに 行く？', 40, 100);
+
+  const v = STAGE_LIST_VIEW;
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(v.x, v.y, v.w, v.h);
+  ctx.clip();
+  ctx.translate(0, -scrollY);
 
   reg.stages.forEach((stage, i) => {
     const r = stageSlot(i);
@@ -95,7 +108,27 @@ export function drawStageSelect(
     ctx.textAlign = 'left';
   });
 
+  ctx.restore();
+  drawScrollBar(ctx, reg.stages.length, scrollY);
   drawRoster(ctx, reg, save, images);
+}
+
+/**
+ * まだ下に続きがあることを見せる。出さないと、画面に収まっている数が
+ * 全部だと思われる。収まりきっているときは出さない
+ */
+function drawScrollBar(ctx: CanvasRenderingContext2D, count: number, scrollY: number): void {
+  const v = STAGE_LIST_VIEW;
+  const max = maxScroll(stageListContentH(count), v.h);
+  if (max <= 0) return;
+
+  const trackX = v.x + v.w - 10;
+  const thumbH = Math.max(40, (v.h * v.h) / stageListContentH(count));
+  const thumbY = v.y + (v.h - thumbH) * (scrollY / max);
+  ctx.fillStyle = 'rgba(242, 239, 228, 0.18)';
+  ctx.fillRect(trackX, v.y, 4, v.h);
+  ctx.fillStyle = 'rgba(242, 239, 228, 0.55)';
+  ctx.fillRect(trackX, thumbY, 4, thumbH);
 }
 
 function drawRoster(
@@ -193,9 +226,12 @@ export function drawBottomBar(
         // 押せば技が出る状態を縁で示す。押せない理由を文字で出す代わり
         // 配置フェーズは全員 time===0 かつクールダウン未消化で「発動可能」に見えてしまうため、戦闘フェーズ限定にする
         if (state.phase === 'battle' && remaining <= 0) {
+          ctx.save();
+          ctx.globalAlpha = readyGlowAlpha(state.time);
           ctx.strokeStyle = '#ffd479';
-          ctx.lineWidth = 2;
+          ctx.lineWidth = 4;
           ctx.strokeRect(r.x + 2, r.y + 2, r.w - 4, r.h - 4);
+          ctx.restore();
         }
       }
 

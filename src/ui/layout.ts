@@ -28,11 +28,24 @@ export const TALK_LINE_H = 36;
 export const TALK_MAX_LINES = 3;
 export const TALK_FONT = '26px sans-serif';
 
+/**
+ * ステージ一覧の見える範囲。ここでクリップして中身をスクロールさせる。
+ * 下端は rosterSlot(0) の上に収める（仲間一覧は下に固定で出す）
+ */
+export const STAGE_LIST_VIEW: Rect = { x: 0, y: 140, w: 540, h: 480 };
+
 /** ステージ選択ボタン。2れつ×なんぎょうの グリッド */
 export function stageSlot(index: number): Rect {
   const col = index % 2;
   const row = Math.floor(index / 2);
   return { x: 20 + col * 260, y: 160 + row * 140, w: 240, h: 120 };
+}
+
+/** ステージ一覧の中身の高さ。STAGE_LIST_VIEW の上端から最終行の下端まで */
+export function stageListContentH(count: number): number {
+  if (count <= 0) return 0;
+  const last = stageSlot(count - 1);
+  return last.y + last.h - STAGE_LIST_VIEW.y;
 }
 
 /** ステージ選択の下に出す仲間の一覧。名前と称号を並べるので1列にする */

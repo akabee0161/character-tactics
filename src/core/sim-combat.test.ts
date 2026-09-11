@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { step } from './sim';
+import { applyXp } from './progress';
 import { beginBattle, createBattleState } from './state';
 import { testRegistry } from './testing';
 import type { StageDef, Unit } from './types';
@@ -46,7 +47,7 @@ function spawnEnemy(s: BattleState, defId: string, pos: Vec2, hp?: number): Unit
     bowDamageCap: def.bowDamageCap, skillId: def.skillId,
     level: 1, xp: 0,
     goalPos: null, goalField: null, engagedWith: null, attackCooldown: 0, retired: false,
-    ai: { def: { kind: 'aggressive' }, mode: 'idle', targetUid: null, home: { ...pos } },
+    ai: { def: { kind: 'aggressive' }, mode: 'idle', targetUid: null, home: { ...pos }, spottedAt: null },
     skillCooldownUntil: 0, funbaruUntil: -1, neraiuchiArmed: false, pinchShown: false,
     seenDefIds: [], lastHitBy: null, lastHitNeraiuchi: false, damagedBy: [],
   };
@@ -191,8 +192,12 @@ describe('撃破と撤退', () => {
       type: 'unitDefeated', uid: e.uid, defId: 'narazumono', byUid: roran.uid, byDefId: 'roran', neraiuchi: false,
       pos: e.pos,
     });
-    // とどめの一撃も hit イベントとして hitXp が入るので、撃破報酬に上乗せされる
-    expect(roran.xp).toBe(s.reg.enemies.get('narazumono')!.xpReward + s.reg.growth.hitXp);
+    // とどめの一撃も hit イベントとして hitXp が入るので、撃破報酬に上乗せされる。
+    // xpPerLevel が小さいとこの合計だけでレベルが上がり xp が繰り越されるので、
+    // 生の合計ではなく applyXp を通した値と比べる
+    const gained = s.reg.enemies.get('narazumono')!.xpReward + s.reg.growth.hitXp;
+    const expected = applyXp({ level: 1, xp: 0 }, gained, s.reg.growth);
+    expect({ level: roran.level, xp: roran.xp }).toEqual(expected);
   });
 
   it('ねらいうちで倒すと kill:neraiuchi が増える', () => {
@@ -216,8 +221,12 @@ describe('撃破と撤退', () => {
       type: 'unitDefeated', uid: e.uid, defId: 'narazumono', byUid: gau.uid, byDefId: 'gau', neraiuchi: false,
       pos: e.pos,
     });
-    // とどめの一撃も hit イベントとして hitXp が入るので、撃破報酬に上乗せされる
-    expect(gau.xp).toBe(s.reg.enemies.get('narazumono')!.xpReward + s.reg.growth.hitXp);
+    // とどめの一撃も hit イベントとして hitXp が入るので、撃破報酬に上乗せされる。
+    // xpPerLevel が小さいとこの合計だけでレベルが上がり xp が繰り越されるので、
+    // 生の合計ではなく applyXp を通した値と比べる
+    const gained = s.reg.enemies.get('narazumono')!.xpReward + s.reg.growth.hitXp;
+    const expected = applyXp({ level: 1, xp: 0 }, gained, s.reg.growth);
+    expect({ level: gau.level, xp: gau.xp }).toEqual(expected);
   });
 
   it('ガルムは 30% を切ると撤退し unitFled が出る', () => {
@@ -296,6 +305,16 @@ describe('ひしょうたい', () => {
     const ines = unitOf(s, 'ines');
     ines.pos = { x: 16, y: 16 };
     const enemy = spawnEnemy(s, 'narazumono', { x: 20, y: 16 }, 1); // hp=1, 距離4px
+
+    // とどめの一撃で hitXp + xpReward ぶん経験値が入り、しきいち次第では
+    // レベルアップで現在HPが増える（growth.ts の仕様）。それがこのテストの
+    // 「反撃されていない」判定に紛れ込まないよう、レベルアップが絶対に
+    // 起きない余裕を持たせてから測定する
+    const growth = s.reg.growth;
+    const potentialGain = s.reg.enemies.get('narazumono')!.xpReward + growth.hitXp;
+    ines.level = Math.ceil((potentialGain + 1) / growth.xpPerLevel);
+    ines.xp = 0;
+
     step(s, [], 0.01); // 交戦成立
 
     ines.attackCooldown = 0;
@@ -309,6 +328,7 @@ describe('ひしょうたい', () => {
     enemy.attackCooldown = 0; // 次の tick で反撃準備完了
     step(s, [], 1 / 60); // 着弾 tick
     expect(enemy.hp).toBeLessThanOrEqual(0);
+    expect(ines.level).toBe(Math.ceil((potentialGain + 1) / growth.xpPerLevel)); // レベルアップしていないことの確認
     expect(ines.hp).toBe(inesHpBefore); // 死んだユニットに反撃されていない
   });
 

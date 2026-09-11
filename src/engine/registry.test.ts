@@ -27,9 +27,9 @@ const GROWTH = {
 const STAGE = {
   id: 'stage1', order: 10, name: 'はじまりの しま', cell: 32,
   mapRows: ['####', '#..#', '#..#', '####'],
-  placement: { minY: 0, starts: [{ x: 48, y: 48 }] },
+  placement: { minY: 64, starts: [{ x: 48, y: 80 }] },
   roster: ['roran'],
-  enemies: [{ defId: 'narazumono', pos: { x: 80, y: 80 }, ai: { kind: 'aggressive' } }],
+  enemies: [{ defId: 'narazumono', pos: { x: 80, y: 48 }, ai: { kind: 'aggressive' } }],
   victory: { type: 'reach', pos: { x: 80, y: 80 }, radius: 24, by: 'any' },
   defeat: [{ type: 'unitLost', defIds: ['roran'] }],
 };
@@ -120,7 +120,7 @@ describe('buildRegistry', () => {
     const r = buildRegistry(files({
       'assets/stages/stage1.json': {
         ...STAGE,
-        enemies: [{ defId: 'yuurei', pos: { x: 80, y: 80 }, ai: { kind: 'aggressive' } }],
+        enemies: [{ defId: 'yuurei', pos: { x: 80, y: 48 }, ai: { kind: 'aggressive' } }],
       },
     }), KNOWN_SKILLS);
     expect(r.ok).toBe(false);
@@ -248,7 +248,7 @@ describe('growth', () => {
   it('assets/growth.json を読んで registry に入れる', () => {
     const reg = testRegistry();
     expect(reg.growth.maxLevel).toBe(12);
-    expect(reg.growth.xpPerLevel).toBe(12);
+    expect(reg.growth.xpPerLevel).toBe(4);
     expect(reg.growth.assistRatio).toBe(0.5);
   });
 });
@@ -332,5 +332,22 @@ describe('sprites の ファイルの そんざい', () => {
     if (r.ok) return;
     expect(r.errors[0]?.path).toBe('sprites.map.sheet');
     expect(r.errors[0]?.reason).toContain('nai.png');
+  });
+});
+
+describe('実アセットのステージ', () => {
+  it('10本ある', () => {
+    expect(testRegistry().stages.length).toBe(10);
+  });
+
+  it('order は昇順で 重複しない', () => {
+    const orders = testRegistry().stages.map((s) => s.order);
+    expect(orders).toEqual([...orders].sort((a, b) => a - b));
+    expect(new Set(orders).size).toBe(orders.length);
+  });
+
+  it('ガルム戦が いちばん最後', () => {
+    const stages = testRegistry().stages;
+    expect(stages[stages.length - 1]!.id).toBe('stage3');
   });
 });

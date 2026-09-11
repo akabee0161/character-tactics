@@ -41,8 +41,8 @@
   "enemies": [
     { "defId": "narazumono", "pos": { "x": 240, "y": 336 }, "ai": { "kind": "sentry", "sightRange": 110 } },
     { "defId": "tatemochi",  "pos": { "x": 112, "y": 336 }, "ai": { "kind": "sentry", "sightRange": 110 } },
-    { "defId": "narazumono", "pos": { "x": 208, "y": 560 }, "ai": { "kind": "sentry", "sightRange": 90 } },
-    { "defId": "narazumono", "pos": { "x": 400, "y": 560 }, "ai": { "kind": "sentry", "sightRange": 90 } },
+    { "defId": "narazumono", "pos": { "x": 208, "y": 520 }, "ai": { "kind": "sentry", "sightRange": 90 } },
+    { "defId": "narazumono", "pos": { "x": 400, "y": 520 }, "ai": { "kind": "sentry", "sightRange": 90 } },
     { "defId": "tatemochi",  "pos": { "x": 240, "y": 144 }, "ai": { "kind": "aggressive" } }
   ],
   "spawners": [

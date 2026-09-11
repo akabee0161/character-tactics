@@ -1,0 +1,65 @@
+{
+  "id": "stage8",
+  "order": 70,
+  "name": "関所",
+  "cell": 32,
+  "mapRows": [
+    "################",
+    "#..............#",
+    "#....#....#....#",
+    "#....#....#....#",
+    "#....#....#....#",
+    "#..............#",
+    "#..............#",
+    "##....####....##",
+    "##....####....##",
+    "#..............#",
+    "#..............#",
+    "#....#....#....#",
+    "#....#....#....#",
+    "#....#....#....#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "################"
+  ],
+  "placement": {
+    "minY": 528,
+    "starts": [
+      { "x": 144, "y": 656 },
+      { "x": 240, "y": 656 },
+      { "x": 144, "y": 592 },
+      { "x": 240, "y": 592 }
+    ]
+  },
+  "roster": ["roran", "ines", "mist", "gau"],
+  "enemies": [
+    { "defId": "narazumono", "pos": { "x": 176, "y": 464 }, "ai": { "kind": "sentry", "sightRange": 100 } },
+    { "defId": "narazumono", "pos": { "x": 336, "y": 464 }, "ai": { "kind": "sentry", "sightRange": 100 } },
+    { "defId": "majinaishi", "pos": { "x": 240, "y": 336 }, "ai": { "kind": "sentry", "sightRange": 150 } },
+    { "defId": "yumihei",    "pos": { "x": 112, "y": 304 }, "ai": { "kind": "sentry", "sightRange": 130 } },
+    { "defId": "yumihei",    "pos": { "x": 400, "y": 304 }, "ai": { "kind": "sentry", "sightRange": 130 } },
+    { "defId": "tatemochi",  "pos": { "x": 176, "y": 176 }, "ai": { "kind": "guard", "post": { "x": 176, "y": 176 }, "leash": 130, "sightRange": 120 } },
+    { "defId": "tatemochi",  "pos": { "x": 336, "y": 176 }, "ai": { "kind": "guard", "post": { "x": 336, "y": 176 }, "leash": 130, "sightRange": 120 } }
+  ],
+  "spawners": [
+    { "defId": "narazumono", "pos": { "x": 112, "y": 48 }, "firstAfter": 20, "every": 15, "total": 3 },
+    { "defId": "yumihei",    "pos": { "x": 368, "y": 48 }, "firstAfter": 30, "every": 20, "total": 2 }
+  ],
+  "victory": { "type": "reach", "pos": { "x": 240, "y": 48 }, "radius": 40, "by": "any" },
+  "defeat": [{ "type": "unitLost", "defIds": ["roran"] }],
+  "intro": [
+    { "text": "道を ふさぐように、関所が 建っている。" },
+    { "speaker": "gau", "text": "奥から 増えてくるぞ。\nもたもたしてられない" },
+    { "speaker": "roran", "text": "決めて 進もう。\n止まったら 囲まれる" }
+  ],
+  "outro": [
+    { "speaker": "roran", "text": "門を 抜けた" },
+    { "speaker": "ines", "text": "この 先は ガルムの 領地です" }
+  ]
+}

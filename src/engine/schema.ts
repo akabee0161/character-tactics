@@ -538,14 +538,16 @@ function readPlacement(
   mapRows: string[],
   cell: number,
   checkWalkable: (path: string, pos: Vec2) => void,
-): PlacementDef {
+): PlacementDef & { minYValid: boolean } {
   const o = requireObject(ctx, 'placement', v);
-  if (!o) return { minY: 0, starts: [] };
+  if (!o) return { minY: 0, starts: [], minYValid: false };
 
   const maxY = mapRows.length * cell;
-  const minY = requireNumber(
+  const minYRaw = requireNumber(
     ctx, 'placement.minY', o.minY, maxY > 0 ? { min: 0, max: maxY - 1 } : { min: 0 },
-  ) ?? 0;
+  );
+  const minY = minYRaw ?? 0;
+  const minYValid = minYRaw !== null;
 
   const raw = requireArray(ctx, 'placement.starts', o.starts, { min: 1 }) ?? [];
   const starts: Vec2[] = [];
@@ -558,11 +560,14 @@ function readPlacement(
     starts.push(pos);
   });
 
-  return { minY, starts };
+  return { minY, starts, minYValid };
 }
 
 function readSpawners(
-  ctx: Ctx, v: unknown, checkWalkable: (path: string, pos: Vec2) => void,
+  ctx: Ctx,
+  v: unknown,
+  checkWalkable: (path: string, pos: Vec2) => void,
+  checkAboveLine: (path: string, pos: Vec2) => void,
 ): SpawnerDef[] {
   if (v === undefined) return [];
   const arr = requireArray(ctx, 'spawners', v) ?? [];
@@ -573,6 +578,7 @@ function readSpawners(
     if (!o) return;
     const pos = requireVec2(ctx, `${path}.pos`, o.pos) ?? { x: 0, y: 0 };
     checkWalkable(`${path}.pos`, pos);
+    checkAboveLine(`${path}.pos`, pos);
     out.push({
       defId: requireString(ctx, `${path}.defId`, o.defId) ?? '',
       pos,
@@ -619,12 +625,24 @@ export function validateStageDef(file: string, raw: unknown): Validated<StageDef
     }
   };
 
+  const placement = readPlacement(ctx, o.placement, mapRows, cell, checkWalkable);
+  // placement 自体が読めなかった、または minY が無効（欠落・非数値・範囲外）だったときは
+  // minY がフォールバックの 0 になり、すべての敵が「線より下」と誤検出される。
+  // その場合はこの検査を止める（placement 自体のエラーは readPlacement 側で報告済み）
+  const zoneMinY = placement.minYValid ? placement.minY : null;
+  const checkAboveLine = (path: string, pos: Vec2): void => {
+    if (zoneMinY !== null && pos.y >= zoneMinY) {
+      fail(ctx, path, `placement.minY（${zoneMinY}）より うえに ないと いけない`);
+    }
+  };
+
   const enemiesRaw = requireArray(ctx, 'enemies', o.enemies) ?? [];
   const enemies = enemiesRaw.map((item, i) => {
     const path = `enemies[${i}]`;
     const e = requireObject(ctx, path, item);
     const pos = (e && requireVec2(ctx, `${path}.pos`, e.pos)) ?? { x: 0, y: 0 };
     checkWalkable(`${path}.pos`, pos);
+    checkAboveLine(`${path}.pos`, pos);
     const ai = readAiDef(ctx, `${path}.ai`, e?.ai);
     if (ai.kind === 'guard') checkWalkable(`${path}.ai.post`, ai.post);
     return {
@@ -640,10 +658,10 @@ export function validateStageDef(file: string, raw: unknown): Validated<StageDef
     name: requireString(ctx, 'name', o.name) ?? '',
     cell,
     mapRows,
-    placement: readPlacement(ctx, o.placement, mapRows, cell, checkWalkable),
+    placement: { minY: placement.minY, starts: placement.starts },
     roster: readStringArray(ctx, 'roster', o.roster, 1),
     enemies,
-    spawners: readSpawners(ctx, o.spawners, checkWalkable),
+    spawners: readSpawners(ctx, o.spawners, checkWalkable, checkAboveLine),
     victory: readVictory(ctx, o.victory),
     defeat: readDefeat(ctx, o.defeat),
   };

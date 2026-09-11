@@ -1,6 +1,6 @@
 {
   "id": "stage3",
-  "order": 30,
+  "order": 100,
   "name": "ガルムの 最後",
   "cell": 32,
   "mapRows": [
@@ -39,8 +39,8 @@
   },
   "roster": ["roran", "ines", "mist", "gau"],
   "enemies": [
-    { "defId": "narazumono", "pos": { "x": 176, "y": 528 }, "ai": { "kind": "sentry", "sightRange": 100 } },
-    { "defId": "narazumono", "pos": { "x": 368, "y": 528 }, "ai": { "kind": "sentry", "sightRange": 100 } },
+    { "defId": "narazumono", "pos": { "x": 176, "y": 496 }, "ai": { "kind": "sentry", "sightRange": 100 } },
+    { "defId": "narazumono", "pos": { "x": 368, "y": 496 }, "ai": { "kind": "sentry", "sightRange": 100 } },
     { "defId": "tatemochi",  "pos": { "x": 176, "y": 304 }, "ai": { "kind": "guard", "post": { "x": 176, "y": 272 }, "leash": 140, "sightRange": 120 } },
     { "defId": "tatemochi",  "pos": { "x": 336, "y": 304 }, "ai": { "kind": "guard", "post": { "x": 336, "y": 272 }, "leash": 140, "sightRange": 120 } },
     { "defId": "garum",      "pos": { "x": 240, "y": 112 }, "ai": { "kind": "aggressive" } }

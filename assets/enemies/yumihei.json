@@ -1,0 +1,20 @@
+{
+  "id": "yumihei", "name": "弓兵", "role": "敵",
+  "combat": true,
+  "maxHp": 10, "power": 4, "guard": 0,
+  "attack": "bow", "range": 120,
+  "attackInterval": 1.8, "speed": 30,
+  "skillId": null,
+  "color": "#7a6a3a",
+  "sprites": {
+    "role": "role-teki-yumi.png",
+    "face": "yumihei-face.png",
+    "map": {
+      "sheet": "yumihei-map.png", "frame": 32,
+      "idle": { "frames": 2, "fps": 4 },
+      "walk": { "frames": 4, "fps": 8 },
+      "attack": { "frames": 3, "fps": 12 }
+    }
+  },
+  "xpReward": 10, "bowDamageCap": null, "fleeAtHpRatio": null
+}

@@ -18,7 +18,7 @@ const GRID = makeGrid(32, [
 function unit(uid: string, x: number, y: number, def: AiDef | null, home = { x, y }): Unit {
   return {
     uid, pos: { x, y }, retired: false, side: def ? 'enemy' : 'player',
-    ai: def ? { def, mode: 'idle', targetUid: null, home } : null,
+    ai: def ? { def, mode: 'idle', targetUid: null, home, spottedAt: null } : null,
   } as unknown as Unit;
 }
 

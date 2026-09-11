@@ -1,6 +1,6 @@
 {
   "maxLevel": 12,
-  "xpPerLevel": 12,
+  "xpPerLevel": 4,
   "hpPerLevel": 1,
   "levelsPerPower": 3,
   "hitXp": 1,
