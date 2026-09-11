@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   BOTTOM_PANEL_Y, BTN, MESSAGE_BAR, TALK_WINDOW,
   portraitSlot, roleBadgeIn, rosterSlot, speechLines, stageSlot,
+  STAGE_LIST_VIEW, stageListContentH,
 } from './layout';
 import { LOGICAL_H, LOGICAL_W, MAP_ORIGIN } from '../render/viewport';
 import { testRegistry } from '../core/testing';
@@ -104,4 +105,27 @@ describe('ステージが マップりょういきに おさまる', () => {
       expect(MAP_ORIGIN.y + h).toBeLessThanOrEqual(BOTTOM_PANEL_Y);
     });
   }
+});
+
+describe('ステージ一覧のスクロール', () => {
+  it('3本なら 見える範囲に収まる', () => {
+    expect(stageListContentH(3)).toBeLessThanOrEqual(STAGE_LIST_VIEW.h);
+  });
+
+  it('10本なら あふれる', () => {
+    expect(stageListContentH(10)).toBeGreaterThan(STAGE_LIST_VIEW.h);
+  });
+
+  it('最終行の下端を含む高さを返す', () => {
+    const last = stageSlot(9);
+    expect(stageListContentH(10)).toBe(last.y + last.h - STAGE_LIST_VIEW.y);
+  });
+
+  it('0本なら 0', () => {
+    expect(stageListContentH(0)).toBe(0);
+  });
+
+  it('見える範囲は 仲間一覧に かぶらない', () => {
+    expect(STAGE_LIST_VIEW.y + STAGE_LIST_VIEW.h).toBeLessThanOrEqual(rosterSlot(0).y);
+  });
 });
