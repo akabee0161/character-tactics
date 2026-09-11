@@ -202,6 +202,8 @@ const CHARS = [
   { id: 'garum', color: '#b03a3a', weapon: 'club', frame: 48 },
   { id: 'narazumono', color: '#8a5a4a', weapon: 'sword', frame: 32 },
   { id: 'tatemochi', color: '#6b6b7a', weapon: 'shield', frame: 32 },
+  { id: 'yumihei', color: '#7a6a3a', weapon: 'bow', frame: 32 },
+  { id: 'majinaishi', color: '#6a4a8a', weapon: 'staff', frame: 32 },
 ];
 
 const ROLES = [
@@ -210,6 +212,8 @@ const ROLES = [
   ['role-mahou', 'staff', '#c86fb0'],
   ['role-monomi', 'dagger', '#e0a03c'],
   ['role-teki', 'sword', '#b03a3a'],
+  ['role-teki-yumi', 'bow', '#7a6a3a'],
+  ['role-teki-mahou', 'staff', '#6a4a8a'],
 ];
 
 for (const def of CHARS) {
