@@ -608,6 +608,36 @@ describe('validateStageDef: 敵は配置範囲より上', () => {
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.errors.every((e) => !e.path.startsWith('enemies['))).toBe(true);
   });
+
+  it('placement.minY が欠けているときは、敵の位置では弾かない（フォールバック0による誤検出を防ぐ）', () => {
+    const raw = stageRaw({
+      placement: { starts: [{ x: 48, y: 80 }] },
+      enemies: [{ defId: 'narazumono', pos: { x: 48, y: 48 }, ai: { kind: 'aggressive' } }],
+    });
+    const r = validateStageDef('assets/stages/t.json', raw);
+    expect(r.ok).toBe(false); // minY 自体が無いのでステージとしては不正
+    if (!r.ok) expect(r.errors.every((e) => !e.path.startsWith('enemies['))).toBe(true);
+  });
+
+  it('placement.minY が数値でないときは、敵の位置では弾かない', () => {
+    const raw = stageRaw({
+      placement: { minY: 'abc', starts: [{ x: 48, y: 80 }] },
+      enemies: [{ defId: 'narazumono', pos: { x: 48, y: 48 }, ai: { kind: 'aggressive' } }],
+    });
+    const r = validateStageDef('assets/stages/t.json', raw);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors.every((e) => !e.path.startsWith('enemies['))).toBe(true);
+  });
+
+  it('placement.minY が範囲外のときは、敵の位置では弾かない', () => {
+    const raw = stageRaw({
+      placement: { minY: 200, starts: [{ x: 48, y: 80 }] },
+      enemies: [{ defId: 'narazumono', pos: { x: 48, y: 48 }, ai: { kind: 'aggressive' } }],
+    });
+    const r = validateStageDef('assets/stages/t.json', raw);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors.every((e) => !e.path.startsWith('enemies['))).toBe(true);
+  });
 });
 
 describe('validateGrowthFile', () => {
