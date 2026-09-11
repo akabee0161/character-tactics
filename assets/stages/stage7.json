@@ -1,0 +1,61 @@
+{
+  "id": "stage7",
+  "order": 70,
+  "name": "まじない師の 塔",
+  "cell": 32,
+  "mapRows": [
+    "################",
+    "#..............#",
+    "#..............#",
+    "#..####..####..#",
+    "#..####..####..#",
+    "#..#........#..#",
+    "#..#........#..#",
+    "#..#..####..#..#",
+    "#..#..####..#..#",
+    "#..#........#..#",
+    "#..#........#..#",
+    "#..####..####..#",
+    "#..####..####..#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "################"
+  ],
+  "placement": {
+    "minY": 528,
+    "starts": [
+      { "x": 144, "y": 656 },
+      { "x": 240, "y": 656 },
+      { "x": 144, "y": 592 },
+      { "x": 240, "y": 592 }
+    ]
+  },
+  "roster": ["roran", "ines", "mist", "gau"],
+  "enemies": [
+    { "defId": "narazumono", "pos": { "x": 112, "y": 432 }, "ai": { "kind": "sentry", "sightRange": 100 } },
+    { "defId": "narazumono", "pos": { "x": 368, "y": 432 }, "ai": { "kind": "sentry", "sightRange": 100 } },
+    { "defId": "tatemochi",  "pos": { "x": 240, "y": 432 }, "ai": { "kind": "sentry", "sightRange": 110 } },
+    { "defId": "majinaishi", "pos": { "x": 240, "y": 304 }, "ai": { "kind": "sentry", "sightRange": 150 } },
+    { "defId": "yumihei",    "pos": { "x": 176, "y": 240 }, "ai": { "kind": "sentry", "sightRange": 130 } },
+    { "defId": "yumihei",    "pos": { "x": 336, "y": 240 }, "ai": { "kind": "sentry", "sightRange": 130 } },
+    { "defId": "majinaishi", "pos": { "x": 240, "y": 176 }, "ai": { "kind": "sentry", "sightRange": 150 } }
+  ],
+  "victory": { "type": "reach", "pos": { "x": 240, "y": 48 }, "radius": 40, "by": "any" },
+  "defeat": [{ "type": "unitLost", "defIds": ["roran"] }],
+  "intro": [
+    { "text": "塔の 中は うす暗く、風の 音だけが する。" },
+    { "speaker": "mist", "text": "まじないの 気配です。\n遠くから 撃ってきます" },
+    { "speaker": "roran", "text": "一気に 詰めよう。\n止まっていると 当てられる" }
+  ],
+  "outro": [
+    { "speaker": "mist", "text": "まじないが 止みました" },
+    { "speaker": "roran", "text": "上へ 抜けよう。\nまだ 先は ある" }
+  ]
+}
