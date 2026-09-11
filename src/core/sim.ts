@@ -37,6 +37,12 @@ function updateAi(state: BattleState): void {
     const behavior = AI_BEHAVIORS[u.ai.def.kind];
     if (!behavior) continue;
     const decision = behavior({ self: u, hostiles: hostilesOf(state, u), grid: state.grid });
+    // chase へ入った瞬間だけ時刻を打つ。追い続けているあいだ更新すると印が消えない
+    if (decision.mode === 'chase') {
+      if (u.ai.mode !== 'chase') u.ai.spottedAt = state.time;
+    } else {
+      u.ai.spottedAt = null;
+    }
     u.ai.mode = decision.mode;
     u.ai.targetUid = decision.targetUid;
     u.goalPos = decision.goal;

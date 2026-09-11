@@ -94,7 +94,7 @@ function drawAlertMarks(ctx: CanvasRenderingContext2D, reg: Registry, state: Bat
   ctx.fillStyle = COLORS.alert;
   ctx.font = 'bold 22px sans-serif';
   ctx.textAlign = 'center';
-  for (const m of alertMarks(state.units)) {
+  for (const m of alertMarks(state.units, state.time)) {
     const p = mapToLogical(m.pos);
     const half = drawHalf(defOf(reg, m.defId), UNIT_R);
     ctx.fillText('！', p.x, p.y - half - 10);

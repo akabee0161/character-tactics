@@ -46,7 +46,7 @@ function spawnEnemy(s: BattleState, defId: string, pos: Vec2, hp?: number): Unit
     bowDamageCap: def.bowDamageCap, skillId: def.skillId,
     level: 1, xp: 0,
     goalPos: null, goalField: null, engagedWith: null, attackCooldown: 0, retired: false,
-    ai: { def: { kind: 'aggressive' }, mode: 'idle', targetUid: null, home: { ...pos } },
+    ai: { def: { kind: 'aggressive' }, mode: 'idle', targetUid: null, home: { ...pos }, spottedAt: null },
     skillCooldownUntil: 0, funbaruUntil: -1, neraiuchiArmed: false, pinchShown: false,
     seenDefIds: [], lastHitBy: null, lastHitNeraiuchi: false, damagedBy: [],
   };

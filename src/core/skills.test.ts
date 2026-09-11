@@ -24,7 +24,7 @@ function addEnemy(s: BattleState, x: number, y: number, hp = 12): Unit {
     bowDamageCap: def.bowDamageCap, skillId: def.skillId,
     level: 1, xp: 0,
     goalPos: null, goalField: null, engagedWith: null, attackCooldown: 0, retired: false,
-    ai: { def: { kind: 'aggressive' }, mode: 'idle', targetUid: null, home: { x, y } },
+    ai: { def: { kind: 'aggressive' }, mode: 'idle', targetUid: null, home: { x, y }, spottedAt: null },
     skillCooldownUntil: 0, funbaruUntil: -1, neraiuchiArmed: false, pinchShown: false,
     seenDefIds: [], lastHitBy: null, lastHitNeraiuchi: false, damagedBy: [],
   };

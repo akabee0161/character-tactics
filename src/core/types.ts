@@ -29,6 +29,11 @@ export type AiState = {
   targetUid: string | null;
   /** 初期位置。sentry の帰還先 */
   home: Vec2;
+  /**
+   * 直近に chase へ入ったシム時刻。chase でなければ null。
+   * 「気づかれた」印を一瞬だけ出すために使う（追跡中ずっと出すと意味を失う）
+   */
+  spottedAt: number | null;
 };
 
 export type Unit = {
