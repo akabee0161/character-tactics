@@ -305,6 +305,16 @@ describe('ひしょうたい', () => {
     const ines = unitOf(s, 'ines');
     ines.pos = { x: 16, y: 16 };
     const enemy = spawnEnemy(s, 'narazumono', { x: 20, y: 16 }, 1); // hp=1, 距離4px
+
+    // とどめの一撃で hitXp + xpReward ぶん経験値が入り、しきいち次第では
+    // レベルアップで現在HPが増える（growth.ts の仕様）。それがこのテストの
+    // 「反撃されていない」判定に紛れ込まないよう、レベルアップが絶対に
+    // 起きない余裕を持たせてから測定する
+    const growth = s.reg.growth;
+    const potentialGain = s.reg.enemies.get('narazumono')!.xpReward + growth.hitXp;
+    ines.level = Math.ceil((potentialGain + 1) / growth.xpPerLevel);
+    ines.xp = 0;
+
     step(s, [], 0.01); // 交戦成立
 
     ines.attackCooldown = 0;
@@ -318,10 +328,8 @@ describe('ひしょうたい', () => {
     enemy.attackCooldown = 0; // 次の tick で反撃準備完了
     step(s, [], 1 / 60); // 着弾 tick
     expect(enemy.hp).toBeLessThanOrEqual(0);
-    // 死んだユニットに反撃されていない(反撃されれば減るはず)。
-    // このヒットで得た経験値によりレベルアップし現在HPが増えることがあるので、
-    // 「減っていない」で判定する(反撃を受けていれば下回る)
-    expect(ines.hp).toBeGreaterThanOrEqual(inesHpBefore);
+    expect(ines.level).toBe(Math.ceil((potentialGain + 1) / growth.xpPerLevel)); // レベルアップしていないことの確認
+    expect(ines.hp).toBe(inesHpBefore); // 死んだユニットに反撃されていない
   });
 
   it('どうじ tick に たおれた みかたは しえんしゃに ならない', () => {
