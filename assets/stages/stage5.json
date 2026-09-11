@@ -1,0 +1,61 @@
+{
+  "id": "stage5",
+  "order": 50,
+  "name": "森の 細道",
+  "cell": 32,
+  "mapRows": [
+    "################",
+    "#..............#",
+    "#..###....###..#",
+    "#..###....###..#",
+    "#..............#",
+    "#.###..##..###.#",
+    "#.###..##..###.#",
+    "#..............#",
+    "#..##..##..##..#",
+    "#..##..##..##..#",
+    "#..............#",
+    "#.###..##..###.#",
+    "#.###..##..###.#",
+    "#..............#",
+    "#..###....###..#",
+    "#..###....###..#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "################"
+  ],
+  "placement": {
+    "minY": 528,
+    "starts": [
+      { "x": 144, "y": 656 },
+      { "x": 240, "y": 656 },
+      { "x": 144, "y": 592 },
+      { "x": 240, "y": 592 }
+    ]
+  },
+  "roster": ["roran", "ines", "mist", "gau"],
+  "enemies": [
+    { "defId": "narazumono", "pos": { "x": 144, "y": 432 }, "ai": { "kind": "sentry", "sightRange": 90 } },
+    { "defId": "narazumono", "pos": { "x": 336, "y": 432 }, "ai": { "kind": "sentry", "sightRange": 90 } },
+    { "defId": "yumihei",    "pos": { "x": 112, "y": 336 }, "ai": { "kind": "sentry", "sightRange": 130 } },
+    { "defId": "tatemochi",  "pos": { "x": 240, "y": 336 }, "ai": { "kind": "sentry", "sightRange": 110 } },
+    { "defId": "narazumono", "pos": { "x": 144, "y": 240 }, "ai": { "kind": "sentry", "sightRange": 90 } },
+    { "defId": "narazumono", "pos": { "x": 336, "y": 240 }, "ai": { "kind": "sentry", "sightRange": 90 } },
+    { "defId": "yumihei",    "pos": { "x": 240, "y": 144 }, "ai": { "kind": "sentry", "sightRange": 130 } }
+  ],
+  "victory": { "type": "reach", "pos": { "x": 240, "y": 48 }, "radius": 40, "by": "any" },
+  "defeat": [{ "type": "unitLost", "defIds": ["roran"] }],
+  "intro": [
+    { "text": "木が 立ちならんで、先が 見えない。" },
+    { "speaker": "mist", "text": "気配が いくつも あります。\n数は 多そう" },
+    { "speaker": "roran", "text": "全部と 戦わなくて いい。\n見つからない 道を 探そう" }
+  ],
+  "outro": [
+    { "speaker": "gau", "text": "抜けた！\n気づかれずに 済んだな" },
+    { "speaker": "mist", "text": "森の 先に、石を 切る 音が します" }
+  ]
+}

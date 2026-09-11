@@ -22,7 +22,7 @@ describe('loadRegistry', () => {
     }
     expect(r.value.units.size).toBe(4);
     expect(r.value.enemies.size).toBe(5);
-    expect(r.value.stages.length).toBe(3);
+    expect(r.value.stages.length).toBe(5);
     expect(r.value.skills.size).toBe(4);
     expect(r.value.titles.length).toBe(5);
     expect(r.value.bonds.length).toBe(3);
@@ -73,8 +73,8 @@ describe('ステージの せっけい', () => {
     return r.value;
   })();
 
-  it('3つの ステージが ある', () => {
-    expect(reg.stages.map((s) => s.id)).toEqual(['stage1', 'stage2', 'stage3']);
+  it('5つの ステージが ある', () => {
+    expect(reg.stages.map((s) => s.id)).toEqual(['stage1', 'stage2', 'stage3', 'stage4', 'stage5']);
   });
 
   it('どの ステージにも 敵が 1たい いじょう いる', () => {
@@ -132,7 +132,7 @@ describe('ステージの せっけい', () => {
   });
 
   it('さくてき はんいを もつ 敵が stage2 いこうに いる（かいひの あそびが せいりつする）', () => {
-    for (const id of ['stage2', 'stage3']) {
+    for (const id of ['stage2', 'stage3', 'stage4', 'stage5']) {
       const s = reg.stages.find((x) => x.id === id)!;
       const hasSight = s.enemies.some((e) => e.ai.kind === 'sentry' || e.ai.kind === 'guard');
       expect(`${id} => ${hasSight}`).toContain('true');
