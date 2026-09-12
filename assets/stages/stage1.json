@@ -1,7 +1,7 @@
 {
   "id": "stage1",
   "order": 10,
-  "name": "始まりの 道",
+  "name": "始まりの道",
   "cell": 32,
   "mapRows": [
     "################",
@@ -46,12 +46,12 @@
   "victory": { "type": "reach", "pos": { "x": 240, "y": 48 }, "radius": 40, "by": "any" },
   "defeat": [{ "type": "unitLost", "defIds": ["roran"] }],
   "intro": [
-    { "text": "道の 先に、煙が 見える。" },
-    { "speaker": "roran", "text": "みんな、行くよ。\n前に 進もう" },
-    { "speaker": "gau", "lineId": "stage:stage1:gau" }
+    { "speaker": "roran", "text": "みんな、行くよ。\n敵を倒しながら先に進もう。" },
+    { "speaker": "ines", "text": "前はお願い。私は遠くから攻撃するわ。" },
+    { "speaker": "mist", "text": "傷付いたら私が回復します" },
+    { "speaker": "gau", "text": "みんなで固まって進めば大丈夫のはず！" }
   ],
   "outro": [
-    { "text": "煙は もう 見えない。" },
-    { "speaker": "roran", "text": "ここまで 来れた。\n次へ 行こう" }
+    { "speaker": "roran", "text": "よし、無事辿り着いた。次に進もう！" }
   ]
 }

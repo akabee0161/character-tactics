@@ -1,7 +1,7 @@
 {
   "id": "stage7",
   "order": 60,
-  "name": "まじない師の 塔",
+  "name": "魔導士の塔",
   "cell": 32,
   "mapRows": [
     "################",
@@ -51,11 +51,10 @@
   "defeat": [{ "type": "unitLost", "defIds": ["roran"] }],
   "intro": [
     { "text": "塔の 中は うす暗く、風の 音だけが する。" },
-    { "speaker": "mist", "text": "まじないの 気配です。\n遠くから 撃ってきます" },
-    { "speaker": "roran", "text": "一気に 詰めよう。\n止まっていると 当てられる" }
+    { "speaker": "mist", "text": "魔法の気配がする…。\n遠距離攻撃に気を付けましょう。" },
+    { "speaker": "roran", "text": "一気に近づくぞ。\n止まっていると遠くから攻撃される！" }
   ],
   "outro": [
-    { "speaker": "mist", "text": "まじないが 止みました" },
-    { "speaker": "roran", "text": "上へ 抜けよう。\nまだ 先は ある" }
+    { "speaker": "roran", "text": "まだ先がある！進むぞ！" }
   ]
 }

@@ -54,12 +54,11 @@
   "victory": { "type": "reach", "pos": { "x": 240, "y": 48 }, "radius": 40, "by": "any" },
   "defeat": [{ "type": "unitLost", "defIds": ["roran"] }],
   "intro": [
-    { "text": "道を ふさぐように、関所が 建っている。" },
-    { "speaker": "gau", "text": "奥から 増えてくるぞ。\nもたもたしてられない" },
-    { "speaker": "roran", "text": "決めて 進もう。\n止まったら 囲まれる" }
+    { "speaker": "gau", "text": "奥から増援が来るぞ。\nもたもたしてられない！" },
+    { "speaker": "roran", "text": "止まったら敵に囲まれる。\n一気に駆け抜けよう！" }
   ],
   "outro": [
-    { "speaker": "roran", "text": "門を 抜けた" },
-    { "speaker": "ines", "text": "この 先は ガルムの 領地です" }
+    { "speaker": "roran", "text": "抜けた！" },
+    { "speaker": "ines", "text": "この先はガルムの領地ね。いよいよ本番よ。" }
   ]
 }

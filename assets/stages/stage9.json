@@ -1,7 +1,7 @@
 {
   "id": "stage9",
   "order": 80,
-  "name": "夜の 野営地",
+  "name": "夜の野営地",
   "cell": 32,
   "mapRows": [
     "################",
@@ -52,12 +52,11 @@
   "victory": { "type": "reach", "pos": { "x": 240, "y": 48 }, "radius": 40, "by": "any" },
   "defeat": [{ "type": "unitLost", "defIds": ["roran"] }],
   "intro": [
-    { "text": "たき火が いくつも ともっている。" },
-    { "speaker": "gau", "text": "見張りだらけだ。\n一度 気づかれたら 全部 来るぞ" },
-    { "speaker": "mist", "text": "火の 届かない ところを 選びましょう" }
+    { "text": "たき火がいくつもともっている。" },
+    { "speaker": "gau", "text": "見張りだらけだ。\n一度気づかれたら全部こちらに来るぞ。" },
+    { "speaker": "mist", "text": "できるだけ見つからないように進みたいですね。"}
   ],
   "outro": [
-    { "speaker": "gau", "text": "静かなままで 抜けられた" },
-    { "speaker": "roran", "text": "次で ガルムの 門だ。\n休んでから 行こう" }
+    { "speaker": "roran", "text": "次はガルムの本拠地だ。" }
   ]
 }

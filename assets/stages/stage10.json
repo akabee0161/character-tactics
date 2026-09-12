@@ -55,12 +55,12 @@
   "victory": { "type": "reach", "pos": { "x": 240, "y": 48 }, "radius": 40, "by": "any" },
   "defeat": [{ "type": "unitLost", "defIds": ["roran"] }],
   "intro": [
-    { "text": "大きな 門が、道の 先を ふさいでいる。" },
-    { "speaker": "ines", "text": "この 門の 向こうに ガルムが います" },
-    { "speaker": "roran", "text": "ここを 抜ければ 終わりだ。\n最後まで 気を ぬかないで" }
+    { "text": "大きな門が、道の先をふさいでいる。" },
+    { "speaker": "ines", "text": "この門の向こうにガルムがいるわ。" },
+    { "speaker": "roran", "text": "みんな、最後まで気を抜くな！" }
   ],
   "outro": [
-    { "speaker": "roran", "text": "門が 開いた" },
-    { "text": "その 奥に、ガルムが 立っていた。" }
+    { "speaker": "roran", "text": "門が開いたぞ！" },
+    { "text": "その奥に、ガルムの姿が見えた。" }
   ]
 }

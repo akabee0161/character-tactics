@@ -1,7 +1,7 @@
 {
   "id": "stage4",
   "order": 30,
-  "name": "川原の 渡し",
+  "name": "川原の渡し",
   "cell": 32,
   "mapRows": [
     "################",
@@ -48,12 +48,12 @@
   "victory": { "type": "reach", "pos": { "x": 240, "y": 48 }, "radius": 40, "by": "any" },
   "defeat": [{ "type": "unitLost", "defIds": ["roran"] }],
   "intro": [
-    { "text": "川の 音が 近づいてきた。" },
-    { "speaker": "gau", "text": "渡れる 場所は\nひとつしか ないみたいだ" },
-    { "speaker": "ines", "text": "向こう岸に 弓を 持った 敵。\n壁の かげを 使って 進もう" }
+    { "text": "川の音が近づいてきた。" },
+    { "speaker": "gau", "text": "川を渡れる場所は\nひとつしかないみたいだ" },
+    { "speaker": "ines", "text": "向こう岸に弓を持った敵がいるわ。\n一気に近づいて倒しましょう。" }
   ],
   "outro": [
-    { "speaker": "roran", "text": "渡りきった。\nみんな 無事だね" },
-    { "text": "川の 向こうは、まだ 見えない。" }
+    { "speaker": "roran", "text": "みんな無事だね。" },
+    { "text": "川を越えて一行は先に進む。" }
   ]
 }

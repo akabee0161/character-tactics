@@ -52,12 +52,11 @@
   "victory": { "type": "reach", "pos": { "x": 240, "y": 48 }, "radius": 40, "by": "any" },
   "defeat": [{ "type": "unitLost", "defIds": ["roran"] }],
   "intro": [
-    { "text": "切りかけの 石が、山のように 積んである。" },
-    { "speaker": "roran", "text": "正面は 岩で ふさがれてる。\n回りこもう" },
-    { "speaker": "gau", "text": "盾を 持った やつが 通り道を 見てるぞ" }
+    { "text": "切りかけの石が、山のように積んである。" },
+    { "speaker": "roran", "text": "正面は岩で通れない。\n回りこもう。" },
+    { "speaker": "gau", "text": "盾を持ったやつが待ち伏せしているぞ。" }
   ],
   "outro": [
-    { "speaker": "ines", "text": "岩を 抜けた。\n道は まだ 続いてる" },
-    { "text": "遠くに、細い 塔が 立っていた。" }
+    { "speaker": "ines", "text": "やっと越えたわね。\n道はまだ続いているわ。" }
   ]
 }

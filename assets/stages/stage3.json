@@ -1,7 +1,7 @@
 {
   "id": "stage3",
   "order": 100,
-  "name": "ガルムの 最後",
+  "name": "ガルムの最後",
   "cell": 32,
   "mapRows": [
     "################",
@@ -51,12 +51,11 @@
   "victory": { "type": "reach", "pos": { "x": 240, "y": 48 }, "radius": 40, "by": "any" },
   "defeat": [{ "type": "unitLost", "defIds": ["roran", "mist"] }],
   "intro": [
-    { "speaker": "garum", "lineId": "stage:stage3:garum" },
-    { "speaker": "roran", "lineId": "stage:stage3:roran" }
+    { "speaker": "garum", "text": "暴れまわってくれたな。\nしかしそれもここで終わりだ！" },
+    { "speaker": "roran", "text": "お前こそ、ここで終わりだ！" }
   ],
   "outro": [
-    { "speaker": "garum", "text": "……まさか、\n君たちに 敗れるとは" },
-    { "speaker": "roran", "text": "もう 誰のことも\n脅かさないで" },
-    { "text": "砦に 朝日が 差した。" }
+    { "speaker": "garum", "text": "……まさか、\nきさまらに敗れるとは" },
+    { "text": "ゲームクリア！おめでとう！" }
   ]
 }
