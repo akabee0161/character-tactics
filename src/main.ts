@@ -57,6 +57,19 @@ function resize(): void {
 }
 // window の resize ではブラウザズームによる devicePixelRatio の変化を拾えない
 new ResizeObserver(resize).observe(stageBox);
+
+/**
+ * 要素のサイズが変わらずに devicePixelRatio だけが変わった場合は ResizeObserver が発火しない。
+ * resolution のメディアクエリは今の dpr にしか一致しないので、変わるたびに新しい dpr で張り直す
+ */
+function watchDpr(): void {
+  const mq = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
+  mq.addEventListener('change', () => {
+    resize();
+    watchDpr();
+  }, { once: true });
+}
+watchDpr();
 resize();
 
 const loadResult = loadRegistry(SKILL_EFFECT_IDS);
