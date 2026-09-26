@@ -1,75 +1,44 @@
 # Session Handover
-## Generated: 2026-09-07T12:52:00+00:00
+## Generated: 2026-09-26
 
 ## Current State
 
-- **Branch**: `feat/map-sprite-animation`(`origin/main` の `dfa9d8b` から分岐、**未 push**)
-- **Last Commit**: 全10タスク実装後の最終全体レビュー指摘を反映した修正コミット(直前 HEAD は `8cce2c3 docs: スプライトシートの規約と差し替え手順を README に書く`)
+- **Branch**: `feat/issue17-fixes`（`origin/main` の `87baf57` = PR #16 マージ後から分岐）
+- **状態**: issue #17（修正事項-20260926）の設計と実装計画を書き終えた。**実装は未着手**（コードの変更は0）
 - **Uncommitted Changes**: なし
-- **状態**: `npm test` / `npm run build` とも成功。実装は完了しており、ブランチの push と PR 作成が残っている
 
-PR #9(縦画面化)は `dfa9d8b` として `main` にマージ済み。その続きの作業。
+## 次のセッションでやること
 
-## What Was Done
+1. `docs/superpowers/plans/2026-09-26-issue17-fixes.md` の Task 1 から実装する
+2. 実行方法は依頼者が **subagent-driven（タスクごとに実装→レビュー）** を選択済み。`superpowers:subagent-driven-development` で進める。まだ ledger（`.superpowers/sdd/`）は作っていない。着手前の計画スキャン（タスク間の衝突チェック）から始める
+3. 全タスク完了後、最終レビュー → PR 作成（PR 作成は依頼者の確認を取ってから）
 
-`docs/superpowers/plans/2026-09-07-map-sprite-animation.md` の全10タスクを、タスクごとに TDD(失敗するテスト → 実装 → 通す → コミット)で実装し、各タスクでレビューを受けてコミットした。
+## 資料
 
-1. Task 1: `schema.ts` に `MapSheet` を追加(`sprites.map` を文字列からオブジェクトへ)
-2. Task 2: `registry.ts` で `sprites.map.sheet` の実在を検証
-3. Task 3: `core` に `attack` イベントを追加(`sim.ts` の `resolveAttacks`)
-4. Task 4: `src/render/anim.ts` を新設(`dirOf` / `frameOf` などの純粋関数)
-5. Task 5: `anim.ts` に状態更新を追加(`noteAttacks` / `updateMotion` / `frameFor`)
-6. Task 6: `sprites.ts` の `drawMapUnit` をシート対応にし、`drawHalf` を追加
-7. Task 7: `draw.ts` と `main.ts` を配線(オフセット・ドラッグ残像・`imageSmoothingEnabled`)
-8. Task 8: `tools/gen-placeholder-sprites.mjs` で仮アセットを生成し同梱
-9. Task 9: 7体の JSON をシートにつなぎ、PNG 実寸のテストを追加(`@types/node` もここ)
-10. Task 10: README と `assets/images/README.txt` を更新し、CDP でブラウザ目視確認
+- 設計: `docs/superpowers/specs/2026-09-26-issue17-fixes-design.md`（依頼者承認済み）
+- 計画: `docs/superpowers/plans/2026-09-26-issue17-fixes.md`（全11タスク）
+  - A. 描画の土台: Task 1 足元アンカー / 2 dpr 追従 / 3 ステージの legend / 4 ステージ1のタイル
+  - B. 攻撃モーション: Task 5 `?debug` スロー再生 / 6 ダメージを最後のコマに合わせる / 7 fps 12→6
+  - C. 移動と戦闘: Task 8 最小距離24 / 9 近接の自動詰め寄り64px / 10 歩けない場所のタップ
+  - Task 11 README 更新と CDP での通し確認
+- issue: https://github.com/akabee0161/character-tactics/issues/17
 
-途中で fix round(小さな指摘の修正)を何度か挟みつつ全タスクを完了させたあと、ブランチ全体を通した最終全体レビューを実施した。そこで挙がった5点(`drawEffects` のサイズ追随・`main.ts` の重複ヘルパー・`STILL` のミュータブル共有・`HANDOVER.md` の陳腐化・README のスプライト説明の不正確な記述)を今回まとめて修正した。これが本コミットの内容。
+## 依頼者と決めたこと（設計に書いてあるものの要約）
 
-## What Remains
+- ③「ドット絵を縮尺しない」は**対応しない**。540×945 より小さい画面では縮小が避けられないため
+- 最小距離は 24px（近接の射程と同じ）。32px にすると近接の射程を伸ばす必要があるので採らない
+- ダメージは攻撃モーションの最後のコマに合わせる。攻撃モーションは 0.5秒
+- 詰め寄りは2マス（64px）以内。倒した後は元の位置へ戻らない
+- ステージ1は外周の壁をなくして全面草原にし、木2・岩1・村1を置く。タイルは forge の 16×16 を拡大せず 2×2 で敷く
 
-実装は完了している。残っているのは以下のみ。
+## 未対応として残すもの
 
-- [ ] ブランチを push する
-- [ ] PR を作成する
+- **村のイベント**: 依頼者が後で別件として扱う。今回は歩けないマスとして置くだけ
+- **pixel-asset-forge の CLAUDE.md の記述**: 「ゲーム側で倍率が掛からないよう修正する予定」とあるが、③を見送ったので実態と合わない。forge は別リポジトリなので、直す前に依頼者に確認する
+- 味方どうし・敵どうしの重なりは今回扱わない
 
-## Key Decisions Made
+## 計画を書くときに気づいた注意点
 
-設計時にユーザーと合意済み。
-
-- **フレームは正方形固定。** 縦長(32×48 など)を許すと足元アンカーの規約が別途必要になる
-- **`sprites.map` は `MapSheet` オブジェクトか `null` のみ。** 旧い単体 PNG 文字列との互換は残さない(実アセットがまだ無く、互換を残す相手がいない)
-- **`role` と `face` は静止画のまま。** 動かす対象ではない
-- **シートの実寸検証は起動時ではなく vitest。** `images.ts` は方針として画像の読み込みを待たないので、起動時点では幅も高さも分からない。PNG の IHDR(先頭24バイト)を直接読んで JSON と突き合わせる
-- **必殺技には専用モーションを付けない。** 攻撃モーションは通常攻撃だけに紐づける
-- **攻撃中は向きを攻撃方向に固定する。** 歩きながら撃つゲームなので移動由来の向きと競合する。固定されるのは時間の1〜2割(攻撃 0.25秒 / 攻撃間隔 1.4〜2.4秒)
-- **歩行判定に `WALK_HOLD = 0.12` 秒のヒステリシス。** シムは 1/60 固定ステップ、描画は rAF なので、120Hz 端末では差分ゼロのフレームが必ず出てちらつく
-- **アニメの時計は壁時計ではなく `battle.time`。** 補間描画は無く、シムが止まればアニメも止まるのが正しい
-- **絵が入ると味方は直径 22px → 32px になる。** `UNIT_R` を直接見ているオフセット(HPバー・はた・選択リング・護衛の印)は `drawHalf(def, fallback)` に寄せた
-- **`enemyRadius(maxHp)` は丸フォールバック専用として残す。** スプライトの大小は `frame` で表す(ガルムだけ 48)
-- **仮アセットは生成器で作ってコミットする。** 本番の絵が揃ったら `tools/gen-placeholder-sprites.mjs` ごと消す前提
-- **`drawEffects` のサイズ追随は簡易対応。** 最終レビューで `UNIT_R` 直参照を `EFFECT_R`(32px絵基準)に差し替えたが、ガルムなど48px絵には追随していない。本格対応(Effect に half を持たせる)は別途
-
-## Known Issues / Blockers
-
-- ブロッカーは無い。ベースラインは green
-- `.claude/worktrees/character-tactics-impl/` に古い worktree が残っている(`vite.config.ts` の `exclude` で二重実行は防いである)。今回の作業とは無関係なので触らない
-- 仮アセットの品質はチビ体のシルエット止まり。デバッグの丸よりは良いが本番の絵には遠い、というのは織り込み済み
-- `drawEffects` の被弾/回復/撃破/絆リングは、ガルム(48px絵)に対してはやや小さめのまま表示される(上記「簡易対応」参照)
-
-## Context Files
-
-上から順に読む。
-
-- `docs/superpowers/plans/2026-09-07-map-sprite-animation.md` — 実装計画(ログ)
-- `docs/superpowers/specs/2026-09-06-map-sprite-animation-design.md` — なぜその設計なのか(ログ)
-- `CLAUDE.md` — コミット規約・テスト方針・ドキュメントの扱い
-- `README.md` — 現状の仕様と CDP でのブラウザ確認手順
-- `src/engine/schema.ts` — `MapSheet` の定義と検証
-- `src/render/sprites.ts` / `src/render/draw.ts` / `src/render/anim.ts` — 描画・アニメの実体
-
-## Recommended Next Steps
-
-1. ブランチを push する(`git push -u origin feat/map-sprite-animation`)
-2. PR を作成する(`main` の `dfa9d8b` を base に)
+- 既存のテストは実際の `assets/` を読むので、Task 6 で振りかぶりが入ると多くのテストが落ちる。計画どおり `instantAttacks(state)` で振りかぶりを 0 にしてそろえる（期待値は変えない）
+- Task 8 の最小距離で押し戻した位置は浮動小数点で射程 24 をわずかに超えうるので、交戦判定に `RANGE_EPS` を足す（計画に記載済み）
+- Task 8 / 9 で既存テストが落ちたら、テストの意図が最小距離や詰め寄りと無関係なら配置を変えて直す（計画の各タスクの最後の Step に記載）
