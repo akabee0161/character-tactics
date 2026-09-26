@@ -4,11 +4,12 @@ import { playerUnits } from '../core/sim';
 import { lookupDef } from '../engine/registry';
 import type { Registry } from '../engine/registry';
 import type { StageDef } from '../engine/schema';
+import { imageFor } from './images';
 import type { ImageCache } from './images';
 import { alertMarks } from './objectives-view';
 import { STILL, frameFor } from './anim';
 import type { AnimStore } from './anim';
-import { FOOT_INSET, bodyCenter, drawHalf, drawMapUnit } from './sprites';
+import { FOOT_INSET, TILE_PX, bodyCenter, drawHalf, drawMapUnit } from './sprites';
 import type { SpriteDef } from './sprites';
 import { LOGICAL_H, LOGICAL_W, MAP_ORIGIN, mapToLogical } from './viewport';
 import {
@@ -75,7 +76,7 @@ export function drawBattle(
   ctx.fillStyle = COLORS.sea;
   ctx.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
 
-  drawTerrain(ctx, state);
+  drawTerrain(ctx, state, images);
   drawVictoryMarker(ctx, state.stage);
   drawGoalMarkers(ctx, reg, state, selected);
   drawBonds(ctx, state);
@@ -88,12 +89,25 @@ export function drawBattle(
   ctx.restore();
 }
 
-function drawTerrain(ctx: CanvasRenderingContext2D, state: BattleState): void {
-  const { grid } = state;
+function drawTerrain(ctx: CanvasRenderingContext2D, state: BattleState, images: ImageCache): void {
+  const { grid, stage } = state;
+  // タイルは拡大せず、1マスに per × per 枚並べる。キャラの絵（等倍）と画素の細かさをそろえるため
+  const per = Math.floor(grid.cell / TILE_PX);
   for (let i = 0; i < grid.walkable.length; i++) {
     const cx = i % grid.cols;
     const cy = Math.floor(i / grid.cols);
     const p = mapToLogical({ x: cx * grid.cell, y: cy * grid.cell });
+    const ch = stage.mapRows[cy]?.[cx];
+    const tile = ch === undefined ? null : imageFor(images, stage.legend?.[ch]?.tile ?? null);
+    if (tile !== null && per >= 1) {
+      for (let ty = 0; ty < per; ty++) {
+        for (let tx = 0; tx < per; tx++) {
+          ctx.drawImage(tile, p.x + tx * TILE_PX, p.y + ty * TILE_PX, TILE_PX, TILE_PX);
+        }
+      }
+      continue;
+    }
+    // legend の無いステージと、タイルの読み込み前は単色
     ctx.fillStyle = grid.walkable[i] ? COLORS.ground : COLORS.rock;
     ctx.fillRect(p.x, p.y, grid.cell, grid.cell);
   }

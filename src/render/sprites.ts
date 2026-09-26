@@ -91,6 +91,9 @@ export function drawHalf(def: SpriteDef, fallback: number): number {
 /** 足元の行は、コマの下端から何 px 上か。pixel-asset-forge の unit 規約（32px のコマで y=30）に合わせる */
 export const FOOT_INSET = 2;
 
+/** マップのタイルの一辺。拡大せず、1マスに (cell / TILE_PX)² 枚並べる */
+export const TILE_PX = 16;
+
 /**
  * ユニットの位置（足元）から、絵の中心を求める。
  * シートがあれば足元の行（frame - FOOT_INSET）が feet に来るように、
