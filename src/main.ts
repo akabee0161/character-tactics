@@ -6,13 +6,14 @@ import { SKILL_EFFECT_IDS } from './core/skills';
 import { beginBattle, canPlaceAt, createBattleState, placeUnit } from './core/state';
 import { playerUnits, step } from './core/sim';
 import type { SimCommand } from './core/sim';
-import { UNIT_R, drawBattle, drawDragPreview } from './render/draw';
+import { UNIT_R, drawBattle, drawDebugOverlay, drawDragPreview } from './render/draw';
 import { bodyCenter } from './render/sprites';
 import { escortDefIds } from './render/objectives-view';
 import { isWalkableAt } from './core/field';
 import { makeEffectState, resetEffects, spawnEffects, syncDisplayedHp, tickEffects } from './render/effects';
 import { makeAnimStore, noteAttacks, resetAnim, updateMotion } from './render/anim';
 import { LOGICAL_H, LOGICAL_W, computeViewport, fitCanvas, logicalToMap, screenToLogical } from './render/viewport';
+import { debugKey, debugLabel, isDebugMode, makeDebugClock, simDt } from './ui/debug';
 import { clearSpeech, makeSpeechState, pushSpeech, tickSpeech } from './ui/speech';
 import { applyStageClear, hasReadIntro, isStageUnlocked, markIntroRead } from './ui/flow';
 import { hitRect, pickUnit } from './ui/hit';
@@ -145,6 +146,15 @@ const images = makeImageCache(imageUrls());
 const commands: SimCommand[] = [];
 let accumulator = 0;
 let lastTime = performance.now();
+
+/** ?debug のときだけ、戦闘中の一時停止・コマ送り・スロー再生を効かせる（攻撃コマの確認用） */
+const debugMode = isDebugMode(window.location.search);
+const debugClock = makeDebugClock();
+if (debugMode) {
+  window.addEventListener('keydown', (ev) => {
+    if (debugKey(debugClock, ev.key)) ev.preventDefault();
+  });
+}
 
 function toLogical(ev: PointerEvent): Vec2 {
   const rect = canvas.getBoundingClientRect();
@@ -367,7 +377,9 @@ canvas.addEventListener('pointermove', onPointerMove);
 canvas.addEventListener('pointerup', onPointerUp);
 canvas.addEventListener('pointercancel', onPointerCancel);
 
-function update(dt: number): void {
+function update(realDt: number): void {
+  // 一時停止とスロー再生は戦闘中だけ。会話や画面遷移まで止めると操作できなくなる
+  const dt = debugMode && phase === 'battle' ? simDt(debugClock, realDt, FIXED_DT) : realDt;
   tickEffects(effects, dt);
   if ((phase === 'talk' || phase === 'outro') && talk) {
     tickTalk(talk, dt);
@@ -441,6 +453,7 @@ function render(): void {
       if (battle) {
         drawBattle(ctx, registry, battle, selected, effects, escorts, images, anim);
         drawBottomBar(ctx, registry, battle, selected, escorts, images);
+        if (debugMode) drawDebugOverlay(ctx, registry, battle, anim, debugLabel(debugClock));
         if (speech.current !== null) drawSpeechBar(ctx, registry, speech.current, images);
       }
       break;

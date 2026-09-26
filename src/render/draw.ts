@@ -7,7 +7,7 @@ import type { StageDef } from '../engine/schema';
 import { imageFor } from './images';
 import type { ImageCache } from './images';
 import { alertMarks } from './objectives-view';
-import { STILL, frameFor } from './anim';
+import { STILL, frameFor, stateOf } from './anim';
 import type { AnimStore } from './anim';
 import { FOOT_INSET, TILE_PX, bodyCenter, drawHalf, drawMapUnit } from './sprites';
 import type { SpriteDef } from './sprites';
@@ -526,4 +526,25 @@ export function drawDragPreview(
     ctx.arc(body.x, body.y, half + 3, 0, Math.PI * 2);
     ctx.stroke();
   }
+}
+
+/** ?debug のときだけ。各ユニットの足元の下に、今のモーション名とコマ番号を出す */
+export function drawDebugOverlay(
+  ctx: CanvasRenderingContext2D, reg: Registry, state: BattleState, anim: AnimStore, label: string,
+): void {
+  ctx.save();
+  ctx.font = '10px monospace';
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'center';
+  for (const u of state.units) {
+    if (u.retired) continue;
+    const sheet = defOf(reg, u.defId).sprites.map;
+    if (sheet === null) continue;
+    const frame = frameFor(anim, u.uid, sheet, state.time);
+    const feet = mapToLogical(u.pos);
+    ctx.fillText(`${stateOf(anim, u.uid, state.time)} ${frame.col}`, feet.x, feet.y + 12);
+  }
+  ctx.textAlign = 'left';
+  ctx.fillText(label, 4, MAP_ORIGIN.y + 12);
+  ctx.restore();
 }
