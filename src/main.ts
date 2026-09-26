@@ -6,7 +6,8 @@ import { SKILL_EFFECT_IDS } from './core/skills';
 import { beginBattle, canPlaceAt, createBattleState, placeUnit } from './core/state';
 import { playerUnits, step } from './core/sim';
 import type { SimCommand } from './core/sim';
-import { drawBattle, drawDragPreview } from './render/draw';
+import { UNIT_R, drawBattle, drawDragPreview } from './render/draw';
+import { bodyCenter } from './render/sprites';
 import { escortDefIds } from './render/objectives-view';
 import { isWalkableAt } from './core/field';
 import { makeEffectState, resetEffects, spawnEffects, syncDisplayedHp, tickEffects } from './render/effects';
@@ -31,7 +32,7 @@ import type { Measure, TalkState } from './ui/talk';
 import { loadSave, newSave, writeSave } from './save/save';
 import type { SaveData } from './save/save';
 import type { XpGain } from './ui/flow';
-import type { BattleState, Vec2 } from './core/types';
+import type { BattleState, Unit, Vec2 } from './core/types';
 
 const FIXED_DT = 1 / 60;
 
@@ -121,6 +122,11 @@ function attackDuration(defId: string): number | null {
   const sheet = def?.sprites.map;
   if (!sheet) return null;
   return sheet.attack.frames / sheet.attack.fps;
+}
+/** タップの判定に使う絵の中心（マップ座標）。足元より下の何も無い所で掴めないようにする */
+function unitBody(u: Unit): Vec2 {
+  const def = lookupDef(registry, u.defId);
+  return def ? bodyCenter(u.pos, def, UNIT_R) : u.pos;
 }
 const images = makeImageCache(imageUrls());
 const commands: SimCommand[] = [];
@@ -270,7 +276,7 @@ function beginMapPointer(state: BattleState, p: Vec2, ev: PointerEvent): void {
     return;
   }
   const startMap = logicalToMap(p);
-  const uid = pickUnit(playerUnits(state), startMap);
+  const uid = pickUnit(playerUnits(state), startMap, undefined, unitBody);
   pointerStart = {
     uid,
     startMap,
