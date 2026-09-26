@@ -1,5 +1,5 @@
 export type { AttackKind, Vec2 } from '../engine/schema';
-export type { AiDef, DefeatCond, EnemyPlacement, StageDef, VictoryCond } from '../engine/schema';
+export type { AiDef, DefeatCond, EnemyPlacement, Legend, StageDef, VictoryCond } from '../engine/schema';
 
 import type { Registry } from '../engine/registry';
 import type { AiDef, AttackKind, StageDef, Vec2 } from '../engine/schema';

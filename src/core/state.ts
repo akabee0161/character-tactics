@@ -76,7 +76,7 @@ export function createBattleState(
   progress: Record<string, CharProgress>,
   seed: number,
 ): BattleState {
-  const grid = makeGrid(stage.cell, stage.mapRows);
+  const grid = makeGrid(stage.cell, stage.mapRows, stage.legend);
 
   const roster = stage.roster.map((defId, i) => {
     const def = reg.units.get(defId);

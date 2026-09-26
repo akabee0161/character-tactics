@@ -1,6 +1,7 @@
-import type { FlowField, Grid, Vec2 } from './types';
+import type { FlowField, Grid, Legend, Vec2 } from './types';
 
-export function makeGrid(cell: number, rows: string[]): Grid {
+/** legend を渡さなければ '#' だけが歩けない（legend の無いステージとテストの既定） */
+export function makeGrid(cell: number, rows: string[], legend?: Legend): Grid {
   const r = rows.length;
   const c = rows[0]?.length ?? 0;
   const walkable = new Array<boolean>(c * r);
@@ -10,7 +11,8 @@ export function makeGrid(cell: number, rows: string[]): Grid {
       throw new Error(`grid row ${y} has length ${line.length}, expected ${c}`);
     }
     for (let x = 0; x < c; x++) {
-      walkable[y * c + x] = line[x] !== '#';
+      const ch = line[x]!;
+      walkable[y * c + x] = legend ? legend[ch]?.walkable === true : ch !== '#';
     }
   }
   return { cols: c, rows: r, cell, walkable };

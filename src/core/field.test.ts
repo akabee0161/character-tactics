@@ -29,6 +29,15 @@ describe('makeGrid', () => {
     expect(g.walkable[0]).toBe(true);
     expect(g.walkable[1 * 5 + 1]).toBe(false);
   });
+
+  it('legend を渡すと、その walkable で歩行可否を決める', () => {
+    const g = makeGrid(32, ['.T', 'V.'], {
+      '.': { tile: null, walkable: true },
+      T: { tile: null, walkable: false },
+      V: { tile: null, walkable: false },
+    });
+    expect(g.walkable).toEqual([true, false, false, true]);
+  });
 });
 
 describe('cellIndexAt / cellCenter', () => {
