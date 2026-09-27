@@ -202,9 +202,25 @@ function clearOrderedGoal(u: Unit): void {
   u.goalField = null;
 }
 
+/**
+ * 指示された目的地が、すでに接触している敵の最小距離の内側にあるか。
+ * 足元アンカーのスプライトは敵の胴体をタップすると目的地が敵の最小距離circleの内側（向こう側）を
+ * 指してしまう。すでに接触しているなら、そこから先へすべって回り込ませず、指示移動を終える
+ */
+function isGoalInsideContactedHostile(state: BattleState, u: Unit, goal: Vec2): boolean {
+  return hostilesOf(state, u).some((h) => (
+    distance(h.pos, goal) < MIN_SEPARATION && distance(u.pos, h.pos) <= MIN_SEPARATION + RANGE_EPS
+  ));
+}
+
 function moveTowardGoal(state: BattleState, u: Unit, dt: number): void {
   const goal = u.goalPos;
   if (!goal) return;
+
+  if (u.controller === 'player' && isGoalInsideContactedHostile(state, u, goal)) {
+    clearOrderedGoal(u);
+    return;
+  }
 
   const remaining = distance(u.pos, goal);
   const stepLen = u.speed * dt;

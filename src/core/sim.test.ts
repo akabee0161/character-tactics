@@ -731,6 +731,48 @@ describe('敵と味方の最小距離', () => {
     expect(roran.pos.x).toBeCloseTo(160 - MIN_SEPARATION, 6);
   });
 
+  it('敵の絵をタップした指示移動は、向こう側へ回り込まず手前で止まって目的地が消える', () => {
+    // 足元アンカーのスプライトは敵の胴体をタップすると dest ≈ enemy.pos + (0, -14) になり、
+    // 敵の最小距離circleの内側（向こう側）を指す。奥まですべって回り込まず、接触した手前で止まるべき
+    const { state: s } = fresh();
+    const roran = unitOf(s, 'roran');
+    for (const u of s.units) if (u.side === 'player' && u !== roran) u.pos = { x: 16, y: 90 };
+    roran.pos = { x: 150, y: 90 };
+    const e = s.units.find((u) => u.side === 'enemy')!;
+    e.pos = { x: 100, y: 48 };
+    e.speed = 0;
+    e.combat = false;
+    const dest = { x: e.pos.x, y: e.pos.y - 14 };
+    step(s, [{ type: 'move', uid: roran.uid, dest }], 1 / 60);
+    for (let i = 0; i < 600 && roran.goalPos; i++) step(s, [], 1 / 60);
+    expect(roran.goalPos).toBeNull();
+    expect(roran.pos.y).toBeGreaterThan(e.pos.y); // 手前側（すり抜ける前の近い側）で止まる
+    expect(distance(roran.pos, e.pos)).toBeCloseTo(MIN_SEPARATION, 0);
+  });
+
+  it('敵の手前側をタップした指示移動も、接触したらすぐに目的地が消える（すべって粘らない）', () => {
+    const { state: s } = fresh();
+    const roran = unitOf(s, 'roran');
+    for (const u of s.units) if (u.side === 'player' && u !== roran) u.pos = { x: 16, y: 90 };
+    roran.pos = { x: 150, y: 90 };
+    const e = s.units.find((u) => u.side === 'enemy')!;
+    e.pos = { x: 100, y: 48 };
+    e.speed = 0;
+    e.combat = false;
+    const dest = { x: e.pos.x, y: e.pos.y + 10 };
+    step(s, [{ type: 'move', uid: roran.uid, dest }], 1 / 60);
+    let contactTick = -1;
+    let clearTick = -1;
+    for (let i = 0; i < 600; i++) {
+      step(s, [], 1 / 60);
+      if (contactTick === -1 && distance(roran.pos, e.pos) <= MIN_SEPARATION + 1) contactTick = i;
+      if (roran.goalPos === null) { clearTick = i; break; }
+    }
+    expect(contactTick).toBeGreaterThanOrEqual(0);
+    expect(clearTick).toBeGreaterThanOrEqual(0);
+    expect(clearTick - contactTick).toBeLessThanOrEqual(3);
+  });
+
   it('斜めから詰めてきた敵は、押し戻した先が誤差ぶん24pxを超えても近接脅威とみなされる', () => {
     // 真正面（x軸ぶんだけの移動）だと押し戻し後の距離がちょうど24.0になり、
     // 浮動小数点の誤差が出ない。斜めから詰めさせて、誤差ぶん24pxをわずかに超える
