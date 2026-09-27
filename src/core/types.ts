@@ -66,6 +66,10 @@ export type Unit = {
   attackCooldown: number;
   retired: boolean;
 
+  /** 攻撃を出してからダメージが入るまでの秒数。攻撃モーションの最後のコマが出る時刻。シートが無ければ 0 */
+  windup: number;
+  pendingHit: PendingHit | null;
+
   /** controller === 'ai' のときだけ入る */
   ai: AiState | null;
 
@@ -112,6 +116,15 @@ export type HitSource = {
   neraiuchi: boolean;
   power: number;
   bondBonus: number;
+};
+
+/** 振りかぶり中の攻撃。発動時刻になったら、攻撃した側と相手が生きていればダメージか飛翔体になる */
+export type PendingHit = {
+  targetUid: string;
+  /** 攻撃を出した時点で固定した攻撃側の値 */
+  source: HitSource;
+  /** 発動するシム時刻 */
+  at: number;
 };
 
 export type Projectile = {

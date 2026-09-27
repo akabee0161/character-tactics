@@ -207,6 +207,22 @@ function moveUnits(state: BattleState, dt: number): void {
   }
 }
 
+/** 近接はその場でダメージ、弓と魔法は飛翔体を出す */
+function deliver(state: BattleState, source: HitSource, target: Unit): void {
+  if (source.attack === 'melee') applyDamage(state, source, target);
+  else spawnProjectile(state, source, target);
+}
+
+/** 振りかぶりが終わった攻撃を出す。相手が倒れていたら捨てる。射程は判定し直さない（空振りは作らない） */
+function resolvePendingHit(state: BattleState, u: Unit, byUid: Map<string, Unit>): void {
+  const pending = u.pendingHit;
+  if (pending === null || state.time < pending.at) return;
+  u.pendingHit = null;
+  const target = byUid.get(pending.targetUid);
+  if (!target || target.retired || target.hp <= 0) return;
+  deliver(state, pending.source, target);
+}
+
 function resolveAttacks(state: BattleState, dt: number): void {
   const byUid = new Map(state.units.map((u) => [u.uid, u]));
 
@@ -214,8 +230,13 @@ function resolveAttacks(state: BattleState, dt: number): void {
     // hp <= 0 は resolveRemoval がまだ retired にしていない状態。飛翔体の着弾を
     // resolveAttacks の前に処理するようにしたため、着弾で倒れたユニットが同じ
     // tick でまだ反撃できてしまう。retired と合わせて hp も見て弾く
-    if (u.retired || u.hp <= 0) continue;
+    if (u.retired || u.hp <= 0) {
+      // 振りかぶり中に倒れたら、その攻撃は出ない
+      u.pendingHit = null;
+      continue;
+    }
     u.attackCooldown -= dt;
+    resolvePendingHit(state, u, byUid);
     if (!u.combat || u.engagedWith === null) continue;
     const target = byUid.get(u.engagedWith);
     if (!target || target.retired || target.hp <= 0) continue;
@@ -252,8 +273,9 @@ function resolveAttacks(state: BattleState, dt: number): void {
       pos: { ...u.pos }, targetPos: { ...target.pos },
     });
 
-    if (u.attack === 'melee') applyDamage(state, source, target);
-    else spawnProjectile(state, source, target);
+    // ダメージと飛翔体は、攻撃モーションの最後のコマ（振り下ろし）に合わせて出す
+    if (u.windup <= 0) deliver(state, source, target);
+    else u.pendingHit = { targetUid: target.uid, source, at: state.time + u.windup };
   }
 }
 
@@ -284,6 +306,7 @@ function resolveRemoval(state: BattleState): void {
 
     if (u.retired) {
       dropUnitField(state.fields, u.uid);
+      u.pendingHit = null;
       u.engagedWith = null;
       u.goalField = null;
       u.goalPos = null;

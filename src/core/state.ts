@@ -19,6 +19,12 @@ export function statsForLevel(
   };
 }
 
+/** 攻撃モーションの最後のコマ（振り下ろし）が出るまでの秒数。シートが無いユニットは即時 */
+export function windupOf(def: UnitDef | EnemyDef): number {
+  const sheet = def.sprites.map;
+  return sheet === null ? 0 : (sheet.attack.frames - 1) / sheet.attack.fps;
+}
+
 type MakeUnitArgs = {
   uid: string;
   def: UnitDef | EnemyDef;
@@ -51,6 +57,7 @@ function makeUnit(a: MakeUnitArgs): Unit {
     skillId: a.def.skillId,
     level: a.level, xp: a.xp,
     goalPos: null, goalField: null, engagedWith: null, attackCooldown: 0, retired: false,
+    windup: windupOf(a.def), pendingHit: null,
     ai: a.ai === null
       ? null
       : { def: a.ai, mode: 'idle', targetUid: null, home: { ...a.pos }, spottedAt: null },

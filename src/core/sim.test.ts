@@ -3,7 +3,7 @@ import type { EnemyDef } from '../engine/schema';
 import { distance, isWalkableAt } from './field';
 import { hostilesOf, step } from './sim';
 import { beginBattle, createBattleState } from './state';
-import { testRegistry } from './testing';
+import { instantAttacks, testRegistry } from './testing';
 import type { AiDef, BattleState, CharProgress, StageDef, Unit, Vec2 } from './types';
 
 function makeTestUnit(s: BattleState, def: EnemyDef, pos: Vec2, ai: AiDef): Unit {
@@ -15,6 +15,7 @@ function makeTestUnit(s: BattleState, def: EnemyDef, pos: Vec2, ai: AiDef): Unit
     bowDamageCap: def.bowDamageCap, skillId: def.skillId,
     level: 1, xp: 0,
     goalPos: null, goalField: null, engagedWith: null, attackCooldown: 0, retired: false,
+    windup: 0, pendingHit: null,
     ai: { def: ai, mode: 'idle', targetUid: null, home: { ...pos }, spottedAt: null },
     skillCooldownUntil: 0, funbaruUntil: -1, neraiuchiArmed: false, pinchShown: false,
     seenDefIds: [], lastHitBy: null, lastHitNeraiuchi: false, damagedBy: [],
@@ -55,6 +56,7 @@ const AI_STAGE: StageDef = {
 function fresh(stage: StageDef = STAGE): { stage: StageDef; state: BattleState } {
   const state = createBattleState(testRegistry(), stage, LV1, 42);
   beginBattle(state);
+  instantAttacks(state);
   // 邪魔にならない場所へ全員どける
   for (const u of state.units) if (u.side === 'player') u.pos = { x: 16, y: 80 };
   return { stage, state };
@@ -76,6 +78,7 @@ function spawnEnemy(s: BattleState, defId: string, pos: { x: number; y: number }
     bowDamageCap: def.bowDamageCap, skillId: def.skillId,
     level: 1, xp: 0,
     goalPos: null, goalField: null, engagedWith: null, attackCooldown: 0, retired: false,
+    windup: 0, pendingHit: null,
     ai: { def: { kind: 'aggressive' }, mode: 'idle', targetUid: null, home: { ...pos }, spottedAt: null },
     skillCooldownUntil: 0, funbaruUntil: -1, neraiuchiArmed: false, pinchShown: false,
     seenDefIds: [], lastHitBy: null, lastHitNeraiuchi: false, damagedBy: [],
