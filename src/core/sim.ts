@@ -1,6 +1,7 @@
 import { AI_BEHAVIORS } from './ai';
 import { bondSupporters } from './bonds';
 import { effectiveInterval, hasThreatWithinMelee, nearestWithin } from './combat';
+import { MIN_SEPARATION, RANGE_EPS } from './constants';
 import { accumulate } from './counters';
 import { applyDamage } from './damage';
 import { computeFlowField, distance, flowDirection, hasLineOfSight, isWalkableAt } from './field';
@@ -8,6 +9,7 @@ import { dropUnitField, fieldToStatic, fieldToUnit } from './fields';
 import { awardXpForEvents } from './growth';
 import { updateObjectives } from './objectives';
 import { spawnProjectile, updateProjectiles } from './projectiles';
+import { separatedStep } from './separation';
 import { useSkill } from './skills';
 import { dueSpawns } from './spawns';
 import { makeEnemyUnit } from './state';
@@ -112,7 +114,7 @@ function updateEngagements(state: BattleState, movedThisTick: Set<string>): void
     if (u.retired) { u.engagedWith = null; continue; }
     if (u.engagedWith === null) continue;
     const target = byUid.get(u.engagedWith);
-    if (!target || target.retired || distance(u.pos, target.pos) > u.range) u.engagedWith = null;
+    if (!target || target.retired || distance(u.pos, target.pos) > u.range + RANGE_EPS) u.engagedWith = null;
   }
 
   // 1ユニットにつき交戦相手は1体。すでに誰かの相手になっている相手は選ばれない
@@ -125,7 +127,7 @@ function updateEngagements(state: BattleState, movedThisTick: Set<string>): void
   for (const u of state.units) {
     if (u.retired || !u.combat || u.engagedWith !== null || movedThisTick.has(u.uid)) continue;
     const available = hostilesOf(state, u).filter((h) => !claimed.has(h.uid));
-    const target = nearestWithin(u.pos, available, u.range);
+    const target = nearestWithin(u.pos, available, u.range + RANGE_EPS);
     if (!target) continue;
 
     u.engagedWith = target.uid;
@@ -156,6 +158,34 @@ function fieldFor(state: BattleState, u: Unit): FlowField | null {
   return u.goalPos ? fieldToStatic(state.fields, state.grid, u.goalPos) : null;
 }
 
+/** 動いた量がこれ未満なら、ふさがれて動けなかったとみなす */
+const BLOCKED_EPS = 1e-3;
+
+type StepResult = 'moved' | 'adjusted' | 'blocked';
+
+/**
+ * next へ動く。敵対ユニットに MIN_SEPARATION より近づくぶんは separatedStep で補正する。
+ * moved: next にそのまま着いた / adjusted: 補正して動いた / blocked: 動けなかった
+ */
+function stepTo(state: BattleState, u: Unit, next: Vec2): StepResult {
+  const p = separatedStep(u.pos, next, hostilesOf(state, u).map((h) => h.pos), MIN_SEPARATION);
+  if (p.x === next.x && p.y === next.y) {
+    u.pos = p;
+    return 'moved';
+  }
+  // 押し戻した先は、見通しやフローフィールドが保証した道から外れうる
+  if (distance(u.pos, p) < BLOCKED_EPS || !isWalkableAt(state.grid, p)) return 'blocked';
+  u.pos = p;
+  return 'adjusted';
+}
+
+/** 自分で指示された移動の目的地を消す。追跡中の AI は相手が動くので消さない */
+function clearOrderedGoal(u: Unit): void {
+  if (u.controller !== 'player') return;
+  u.goalPos = null;
+  u.goalField = null;
+}
+
 function moveTowardGoal(state: BattleState, u: Unit, dt: number): void {
   const goal = u.goalPos;
   if (!goal) return;
@@ -163,12 +193,8 @@ function moveTowardGoal(state: BattleState, u: Unit, dt: number): void {
   const remaining = distance(u.pos, goal);
   const stepLen = u.speed * dt;
   if (remaining <= stepLen) {
-    u.pos = { ...goal };
-    // 追跡中は相手が動くので目的地を消さない。消すのは自分で指示された移動だけ
-    if (u.controller === 'player') {
-      u.goalPos = null;
-      u.goalField = null;
-    }
+    // 着いたか、敵にふさがれて着けないなら指示は終わり。すべって回り込み中なら続ける
+    if (stepTo(state, u, goal) !== 'adjusted') clearOrderedGoal(u);
     return;
   }
 
@@ -181,13 +207,12 @@ function moveTowardGoal(state: BattleState, u: Unit, dt: number): void {
       })();
 
   if (!dir) {
-    if (u.controller === 'player') {
-      u.goalPos = null;
-      u.goalField = null;
-    }
+    clearOrderedGoal(u);
     return;
   }
-  u.pos = { x: u.pos.x + dir.x * stepLen, y: u.pos.y + dir.y * stepLen };
+  const next = { x: u.pos.x + dir.x * stepLen, y: u.pos.y + dir.y * stepLen };
+  // 敵に行く手を完全にふさがれたら、指示された移動はそこで終える
+  if (stepTo(state, u, next) === 'blocked') clearOrderedGoal(u);
 }
 
 /**

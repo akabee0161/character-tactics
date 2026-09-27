@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { EnemyDef } from '../engine/schema';
+import { MIN_SEPARATION } from './constants';
 import { distance, isWalkableAt } from './field';
 import { hostilesOf, step } from './sim';
 import { beginBattle, createBattleState } from './state';
@@ -552,12 +553,12 @@ describe('しじされた いどうは とまらない', () => {
     const enemy = state.units.find((u) => u.side === 'enemy')!;
     isolateRoran(state, roran);
     roran.pos = { x: 100, y: 16 };
-    enemy.pos = { x: 110, y: 16 };   // ロランの射程内
+    enemy.pos = { x: 100, y: 36 };   // ロランの射程内（真横 20px）。進行方向（+x）をふさがない
     enemy.speed = 0;
 
     step(state, [{ type: 'move', uid: roran.uid, dest: { x: 240, y: 16 } }], 1 / 60);
     const before = roran.pos.x;
-    for (let i = 0; i < 30; i++) step(state, [], 1 / 60);
+    for (let i = 0; i < 10; i++) step(state, [], 1 / 60);   // 10px 進んでも敵との距離は射程 24 以内
 
     expect(roran.engagedWith).not.toBeNull();     // 交戦はしている
     expect(roran.pos.x).toBeGreaterThan(before);  // それでも進んでいる
@@ -653,5 +654,77 @@ describe('spottedAt', () => {
     p.pos = { x: e.pos.x + 40, y: e.pos.y };
     step(state, [], 0.1);
     expect(e.ai!.spottedAt).toBeCloseTo(state.time);
+  });
+});
+
+describe('敵と味方の最小距離', () => {
+  /** ロラン1人だけを残す。ほかの味方が割り込んで交戦すると結果が変わるため */
+  function roranOnly(s: BattleState): Unit {
+    const roran = unitOf(s, 'roran');
+    for (const u of s.units) if (u.side === 'player' && u !== roran) u.retired = true;
+    return roran;
+  }
+
+  it('追ってきた敵は MIN_SEPARATION より近づかず、そこで交戦する', () => {
+    const { state: s } = fresh();
+    const roran = roranOnly(s);
+    roran.pos = { x: 100, y: 48 };
+    roran.combat = false;
+    const e = s.units.find((u) => u.side === 'enemy')!;
+    e.pos = { x: 200, y: 48 };
+    for (let i = 0; i < 300; i++) {
+      step(s, [], 1 / 60);
+      expect(distance(e.pos, roran.pos)).toBeGreaterThanOrEqual(MIN_SEPARATION - 1e-6);
+    }
+    expect(e.engagedWith).toBe(roran.uid);
+  });
+
+  it('2体目の敵も重ならず、手前で止まる', () => {
+    const { state: s } = fresh();
+    const roran = roranOnly(s);
+    roran.pos = { x: 100, y: 48 };
+    roran.combat = false;
+    const e1 = s.units.find((u) => u.side === 'enemy')!;
+    e1.pos = { x: 160, y: 48 };
+    const e2 = spawnEnemy(s, 'narazumono', { x: 40, y: 48 });
+    for (let i = 0; i < 300; i++) step(s, [], 1 / 60);
+    expect(distance(e1.pos, roran.pos)).toBeGreaterThanOrEqual(MIN_SEPARATION - 1e-6);
+    expect(distance(e2.pos, roran.pos)).toBeGreaterThanOrEqual(MIN_SEPARATION - 1e-6);
+    expect(distance(e2.pos, roran.pos)).toBeLessThanOrEqual(MIN_SEPARATION + 1);
+  });
+
+  it('指示された移動は、敵の横をすべって回り込み、目的地に着く', () => {
+    const { state: s } = fresh();
+    const roran = roranOnly(s);
+    // y:48 だと回り込みが victory.pos ({x:304,y:16}, radius 40) に入って phase が
+    // victory に切り替わり、シムが凍って目的地に着けなくなる。y:80 にどけて避ける
+    roran.pos = { x: 100, y: 80 };
+    roran.combat = false;
+    const e = s.units.find((u) => u.side === 'enemy')!;
+    e.pos = { x: 160, y: 84 };
+    e.speed = 0;
+    e.combat = false;
+    const dest = { x: 300, y: 80 };
+    step(s, [{ type: 'move', uid: roran.uid, dest }], 1 / 60);
+    for (let i = 0; i < 600 && roran.goalPos; i++) {
+      step(s, [], 1 / 60);
+      expect(distance(e.pos, roran.pos)).toBeGreaterThanOrEqual(MIN_SEPARATION - 1e-6);
+    }
+    expect(roran.pos).toEqual(dest);
+  });
+
+  it('真正面をふさがれた指示移動は、手前で止まって目的地が消える', () => {
+    const { state: s } = fresh();
+    const roran = roranOnly(s);
+    roran.pos = { x: 100, y: 48 };
+    roran.combat = false;
+    const e = s.units.find((u) => u.side === 'enemy')!;
+    e.pos = { x: 160, y: 48 };
+    e.speed = 0;
+    e.combat = false;
+    step(s, [{ type: 'move', uid: roran.uid, dest: { x: 300, y: 48 } }], 1 / 60);
+    for (let i = 0; i < 120; i++) step(s, [], 1 / 60);
+    expect(roran.goalPos).toBeNull();
+    expect(roran.pos.x).toBeCloseTo(160 - MIN_SEPARATION, 6);
   });
 });
