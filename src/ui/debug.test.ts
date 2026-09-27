@@ -50,6 +50,23 @@ describe('simDt', () => {
     expect(simDt(c, 0.02, FIXED)).toBe(0);
   });
 
+  it('押しっぱなしの自動リピートでは P と S を切り替えない', () => {
+    const c = makeDebugClock();
+    debugKey(c, 'p');
+    expect(debugKey(c, 'p', true)).toBe(true);
+    expect(c.paused).toBe(true);
+    debugKey(c, 's');
+    expect(debugKey(c, 's', true)).toBe(true);
+    expect(c.slow).toBe(true);
+  });
+
+  it('. は押しっぱなしでもコマ送りを積む', () => {
+    const c = makeDebugClock();
+    debugKey(c, 'p');
+    debugKey(c, '.', true);
+    expect(simDt(c, 0.02, FIXED)).toBe(FIXED);
+  });
+
   it('知らないキーは false を返す', () => {
     expect(debugKey(makeDebugClock(), 'x')).toBe(false);
   });

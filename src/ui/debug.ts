@@ -12,16 +12,21 @@ export function makeDebugClock(): DebugClock {
   return { paused: false, slow: false, stepQueued: false };
 }
 
-/** キー1つぶんの操作。知らないキーなら false を返す（呼び出し側は preventDefault しない） */
-export function debugKey(clock: DebugClock, key: string): boolean {
+/**
+ * キー1つぶんの操作。知らないキーなら false を返す（呼び出し側は preventDefault しない）。
+ * repeat は押しっぱなしの自動リピート。P と S は切り替えなので、リピートでは何もしない
+ */
+export function debugKey(clock: DebugClock, key: string, repeat = false): boolean {
   switch (key) {
     case 'p':
     case 'P':
+      if (repeat) return true;
       clock.paused = !clock.paused;
       clock.stepQueued = false;
       return true;
     case 's':
     case 'S':
+      if (repeat) return true;
       clock.slow = !clock.slow;
       return true;
     case '.':

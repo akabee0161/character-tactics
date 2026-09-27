@@ -152,7 +152,7 @@ const debugMode = isDebugMode(window.location.search);
 const debugClock = makeDebugClock();
 if (debugMode) {
   window.addEventListener('keydown', (ev) => {
-    if (debugKey(debugClock, ev.key)) ev.preventDefault();
+    if (debugKey(debugClock, ev.key, ev.repeat)) ev.preventDefault();
   });
 }
 
