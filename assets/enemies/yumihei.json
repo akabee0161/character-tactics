@@ -13,7 +13,7 @@
       "sheet": "yumihei-map.png", "frame": 32,
       "idle": { "frames": 2, "fps": 4 },
       "walk": { "frames": 4, "fps": 8 },
-      "attack": { "frames": 3, "fps": 12 }
+      "attack": { "frames": 3, "fps": 6 }
     }
   },
   "xpReward": 10, "bowDamageCap": null, "fleeAtHpRatio": null
