@@ -9,7 +9,7 @@ import type { SimCommand } from './core/sim';
 import { UNIT_R, drawBattle, drawDebugOverlay, drawDragPreview } from './render/draw';
 import { bodyCenter } from './render/sprites';
 import { escortDefIds } from './render/objectives-view';
-import { isWalkableAt } from './core/field';
+import { resolveMoveDest } from './core/field';
 import { makeEffectState, resetEffects, spawnEffects, syncDisplayedHp, tickEffects } from './render/effects';
 import { makeAnimStore, noteAttacks, resetAnim, updateMotion } from './render/anim';
 import { LOGICAL_H, LOGICAL_W, computeViewport, fitCanvas, logicalToMap, screenToLogical } from './render/viewport';
@@ -469,10 +469,14 @@ function render(): void {
   const dragPhaseOk = phase === 'placement' || phase === 'battle';
   if (battle && dragPhaseOk && dragUid !== null && dragMap !== null) {
     const unit = battle.units.find((u) => u.uid === dragUid)!;
-    const blocked = phase === 'placement'
-      ? !canPlaceAt(battle.stage, battle.grid, dragMap)
-      : !isWalkableAt(battle.grid, dragMap);
-    drawDragPreview(ctx, registry, unit.pos, dragMap, unit.defId, blocked, images);
+    if (phase === 'placement') {
+      const blocked = !canPlaceAt(battle.stage, battle.grid, dragMap);
+      drawDragPreview(ctx, registry, unit.pos, dragMap, unit.defId, blocked, images);
+    } else {
+      // 戦闘中は、歩けない場所でも最寄りの歩けるマスへ置き換えて進む。離したときの行き先を見せる
+      const dest = resolveMoveDest(battle.grid, unit.pos, dragMap);
+      drawDragPreview(ctx, registry, unit.pos, dest ?? dragMap, unit.defId, dest === null, images);
+    }
   }
 }
 

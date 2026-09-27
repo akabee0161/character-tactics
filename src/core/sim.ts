@@ -5,7 +5,9 @@ import { effectiveInterval, hasThreatWithinMelee, nearestWithin } from './combat
 import { MIN_SEPARATION, RANGE_EPS } from './constants';
 import { accumulate } from './counters';
 import { applyDamage } from './damage';
-import { computeFlowField, distance, flowDirection, hasLineOfSight, isWalkableAt } from './field';
+import {
+  computeFlowField, distance, flowDirection, hasLineOfSight, isWalkableAt, resolveMoveDest,
+} from './field';
 import { dropUnitField, fieldToStatic, fieldToUnit } from './fields';
 import { awardXpForEvents } from './growth';
 import { updateObjectives } from './objectives';
@@ -96,9 +98,11 @@ function applyCommands(state: BattleState, commands: SimCommand[]): Set<string> 
     if (!u || u.retired || u.side !== 'player') continue;
 
     if (cmd.type === 'move') {
-      if (!isWalkableAt(state.grid, cmd.dest)) continue;
-      u.goalField = computeFlowField(state.grid, cmd.dest);
-      u.goalPos = { ...cmd.dest };
+      // 歩けない場所（マップの外を含む）は、たどり着けるうちで最も近いマスへ置き換える
+      const dest = resolveMoveDest(state.grid, u.pos, cmd.dest);
+      if (dest === null) continue;
+      u.goalField = computeFlowField(state.grid, dest);
+      u.goalPos = dest;
       u.engagedWith = null;
       movedThisTick.add(u.uid);
     } else {

@@ -129,6 +129,30 @@ export function flowDirection(grid: Grid, field: FlowField, pos: Vec2): Vec2 | n
   return { x: dx / len, y: dy / len };
 }
 
+/**
+ * 移動先の置き換え。dest が歩けるならそのまま返す。
+ * 歩けなければ（マップの外を含む）、from からたどり着けるマスのうち dest に最も近いマスの中心を返す。
+ * 近さが同じならフローフィールドの距離が短い方。たどり着けるマスが無ければ null
+ */
+export function resolveMoveDest(grid: Grid, from: Vec2, dest: Vec2): Vec2 | null {
+  if (isWalkableAt(grid, dest)) return { ...dest };
+  const field = computeFlowField(grid, from);
+  let best = -1;
+  let bestDist = Infinity;
+  let bestFlow = Infinity;
+  for (let i = 0; i < field.dist.length; i++) {
+    const flow = field.dist[i]!;
+    if (flow < 0) continue;
+    const d = distance(cellCenter(grid, i), dest);
+    if (d < bestDist - 1e-9 || (Math.abs(d - bestDist) <= 1e-9 && flow < bestFlow)) {
+      best = i;
+      bestDist = d;
+      bestFlow = flow;
+    }
+  }
+  return best < 0 ? null : cellCenter(grid, best);
+}
+
 export function distance(a: Vec2, b: Vec2): number {
   return Math.hypot(a.x - b.x, a.y - b.y);
 }

@@ -130,11 +130,12 @@ describe('step: 移動', () => {
     expect(unitOf(s, 'roran').pos.x).toBeCloseTo(76, 0);
   });
 
-  it('歩けない目的地は無視される', () => {
+  it('歩けない目的地は、最も近い歩けるマスへ置き換える', () => {
     const { state: s } = fresh({ ...STAGE, mapRows: ['..........', '.....#....', '..........'] });
     unitOf(s, 'roran').pos = { x: 16, y: 80 };
-    step(s, [{ type: 'move', uid: unitOf(s, 'roran').uid, dest: { x: 176, y: 48 } }], 1);
-    expect(unitOf(s, 'roran').pos).toEqual({ x: 16, y: 80 });
+    step(s, [{ type: 'move', uid: unitOf(s, 'roran').uid, dest: { x: 176, y: 48 } }], 0.1);
+    // (176,48) の上下左右のマスはどれも 32px。(16,80) からいちばんたどり着きやすいのは左 (144,48)
+    expect(unitOf(s, 'roran').goalPos).toEqual({ x: 144, y: 48 });
   });
 
   it('たいきゃく中の味方は動かない', () => {
@@ -253,11 +254,12 @@ describe('goalPos: 目的地の保持', () => {
     expect(unitOf(s, 'roran').goalPos).toEqual({ x: 200, y: 48 });
   });
 
-  it('歩けない場所への move では目的地が入らない', () => {
+  it('歩けない場所への move では、最も近い歩けるマスが目的地になる', () => {
     const stage: StageDef = { ...STAGE, mapRows: ['..........', '..####....', '..........'] };
     const { state: s } = fresh(stage);
     step(s, [{ type: 'move', uid: unitOf(s, 'roran').uid, dest: { x: 80, y: 48 } }], 0.1);
-    expect(unitOf(s, 'roran').goalPos).toBeNull();
+    // (80,48) の左 (48,48)・上 (80,16)・下 (80,80) はどれも 32px。(16,80) からいちばん近いのは斜め1歩の左
+    expect(unitOf(s, 'roran').goalPos).toEqual({ x: 48, y: 48 });
   });
 
   it('たいきゃくすると目的地が消える', () => {
