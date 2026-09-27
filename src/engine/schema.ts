@@ -474,7 +474,8 @@ function readLegend(ctx: Ctx, v: unknown): Legend | undefined {
   const out: Legend = {};
   for (const [key, raw] of Object.entries(o)) {
     const path = `legend.${key}`;
-    if ([...key].length !== 1) {
+    // makeGrid と drawTerrain は row[x]（UTF-16 の1単位）で引くので、えもじなど2単位の文字は使えない
+    if (key.length !== 1) {
       fail(ctx, path, 'キーは 1もじで ないと いけない');
       continue;
     }

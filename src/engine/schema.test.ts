@@ -545,6 +545,14 @@ describe('validateStageDef: legend', () => {
     if (!r.ok) expect(r.errors[0]?.path).toBe('legend.TT');
   });
 
+  it('えもじの ように row[x] で 1もじとして とりだせない キーは弾く', () => {
+    const r = validateStageDef('stages/x.json', {
+      ...VALID_STAGE, legend: { ...LEGEND, '😀': { tile: null, walkable: false } },
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors[0]?.path).toBe('legend.😀');
+  });
+
   it('walkable が 真偽値で なければ弾く', () => {
     const r = validateStageDef('stages/x.json', {
       ...VALID_STAGE, legend: { ...LEGEND, T: { tile: 'tile-tree.png', walkable: 'no' } },
