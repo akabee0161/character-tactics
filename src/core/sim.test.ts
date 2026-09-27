@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { EnemyDef } from '../engine/schema';
+import { hasThreatWithinMelee } from './combat';
 import { MIN_SEPARATION } from './constants';
 import { distance, isWalkableAt } from './field';
 import { hostilesOf, step } from './sim';
@@ -726,5 +727,22 @@ describe('敵と味方の最小距離', () => {
     for (let i = 0; i < 120; i++) step(s, [], 1 / 60);
     expect(roran.goalPos).toBeNull();
     expect(roran.pos.x).toBeCloseTo(160 - MIN_SEPARATION, 6);
+  });
+
+  it('斜めから詰めてきた敵は、押し戻した先が誤差ぶん24pxを超えても近接脅威とみなされる', () => {
+    // 真正面（x軸ぶんだけの移動）だと押し戻し後の距離がちょうど24.0になり、
+    // 浮動小数点の誤差が出ない。斜めから詰めさせて、誤差ぶん24pxをわずかに超える
+    // ケースを再現する（イネスは弓で、この誤差が hasThreatWithinMelee を素通りすると
+    // 密着されても攻撃間隔が倍にならないまま気づかれない）
+    const { state: s } = fresh();
+    const ines = unitOf(s, 'ines');
+    for (const u of s.units) if (u.side === 'player' && u !== ines) u.pos = { x: 16, y: 300 };
+    ines.pos = { x: 150, y: 48 };
+    const e = s.units.find((u) => u.side === 'enemy')!;
+    e.pos = { x: 240, y: 8 };
+    for (let i = 0; i < 150; i++) step(s, [], 1 / 60);
+    expect(distance(e.pos, ines.pos)).toBeGreaterThanOrEqual(MIN_SEPARATION - 1e-6);
+    expect(e.engagedWith).toBe(ines.uid);
+    expect(hasThreatWithinMelee(ines.pos, [{ pos: e.pos }])).toBe(true);
   });
 });
