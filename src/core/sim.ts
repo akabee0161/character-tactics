@@ -294,7 +294,12 @@ function resolvePendingHit(state: BattleState, u: Unit, byUid: Map<string, Unit>
   u.pendingHit = null;
   const target = byUid.get(pending.targetUid);
   if (!target || target.retired || target.hp <= 0) return;
-  deliver(state, pending.source, target);
+  // 飛翔体は発射地点から出る。振りかぶり中に歩いた分だけ、攻撃を出した時点の位置は
+  // ずれているので、発動する今の位置に差し替える（近接は位置を使わないので影響しない）
+  const source = pending.source.attack === 'melee'
+    ? pending.source
+    : { ...pending.source, pos: { ...u.pos } };
+  deliver(state, source, target);
 }
 
 function resolveAttacks(state: BattleState, dt: number): void {

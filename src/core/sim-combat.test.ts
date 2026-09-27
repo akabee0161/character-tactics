@@ -441,4 +441,21 @@ describe('振りかぶり', () => {
     advanceFine(s, 0.32);
     expect(s.projectiles).toHaveLength(1);
   });
+
+  it('振りかぶり中に動いた弓手の矢は、攻撃を出した位置ではなく発射時点の位置から出る', () => {
+    const { s, enemy } = enemyVsRoran('yumihei', { x: 200, y: 16 }, 0.3);
+    attackNow(s, enemy);
+    // 振りかぶり中に歩いた想定で、攻撃を出した位置から動かす
+    enemy.pos = { x: 200 - 20, y: 16 + 5 };
+    // 発射した瞬間（飛翔体が現れた直後、まだ1ステップも進んでいない状態）で位置を見る
+    let remaining = 0.32;
+    while (s.projectiles.length === 0 && remaining > 1e-9) {
+      const dt = Math.min(1 / 60, remaining);
+      step(s, [], dt);
+      remaining -= dt;
+    }
+    expect(s.projectiles).toHaveLength(1);
+    expect(s.projectiles[0]!.pos).toEqual(enemy.pos);
+    expect(s.projectiles[0]!.pos).not.toEqual({ x: 200, y: 16 });
+  });
 });
