@@ -56,7 +56,7 @@ function makeUnit(a: MakeUnitArgs): Unit {
     bowDamageCap: enemyDef?.bowDamageCap ?? null,
     skillId: a.def.skillId,
     level: a.level, xp: a.xp,
-    goalPos: null, goalField: null, engagedWith: null, attackCooldown: 0, retired: false,
+    goalPos: null, goalField: null, engagedWith: null, closingOn: null, attackCooldown: 0, retired: false,
     windup: windupOf(a.def), pendingHit: null,
     ai: a.ai === null
       ? null

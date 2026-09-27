@@ -63,6 +63,8 @@ export type Unit = {
   goalField: FlowField | null;
   /** 交戦中の相手の uid。null なら非交戦 */
   engagedWith: string | null;
+  /** 自動で詰め寄っている相手の uid。null なら詰め寄っていない。goalPos（プレイヤーの移動指示）とは別に持つ */
+  closingOn: string | null;
   attackCooldown: number;
   retired: boolean;
 

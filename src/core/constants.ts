@@ -18,3 +18,6 @@ export const MIN_SEPARATION = 24;
  * わずかに超えることがあり、そのままだと交戦が成立しないまま止まってしまう
  */
 export const RANGE_EPS = 1e-6;
+
+/** 近接の味方が、移動の指示が無いときに自分から敵へ詰め寄る距離（2マス） */
+export const AUTO_CLOSE_RANGE = 64;

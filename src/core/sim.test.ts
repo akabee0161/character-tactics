@@ -16,7 +16,7 @@ function makeTestUnit(s: BattleState, def: EnemyDef, pos: Vec2, ai: AiDef): Unit
     attack: def.attack, range: def.range, attackInterval: def.attackInterval, speed: def.speed,
     bowDamageCap: def.bowDamageCap, skillId: def.skillId,
     level: 1, xp: 0,
-    goalPos: null, goalField: null, engagedWith: null, attackCooldown: 0, retired: false,
+    goalPos: null, goalField: null, engagedWith: null, closingOn: null, attackCooldown: 0, retired: false,
     windup: 0, pendingHit: null,
     ai: { def: ai, mode: 'idle', targetUid: null, home: { ...pos }, spottedAt: null },
     skillCooldownUntil: 0, funbaruUntil: -1, neraiuchiArmed: false, pinchShown: false,
@@ -79,7 +79,7 @@ function spawnEnemy(s: BattleState, defId: string, pos: { x: number; y: number }
     attack: def.attack, range: def.range, attackInterval: def.attackInterval, speed: def.speed,
     bowDamageCap: def.bowDamageCap, skillId: def.skillId,
     level: 1, xp: 0,
-    goalPos: null, goalField: null, engagedWith: null, attackCooldown: 0, retired: false,
+    goalPos: null, goalField: null, engagedWith: null, closingOn: null, attackCooldown: 0, retired: false,
     windup: 0, pendingHit: null,
     ai: { def: { kind: 'aggressive' }, mode: 'idle', targetUid: null, home: { ...pos }, spottedAt: null },
     skillCooldownUntil: 0, funbaruUntil: -1, neraiuchiArmed: false, pinchShown: false,
@@ -744,5 +744,50 @@ describe('敵と味方の最小距離', () => {
     expect(distance(e.pos, ines.pos)).toBeGreaterThanOrEqual(MIN_SEPARATION - 1e-6);
     expect(e.engagedWith).toBe(ines.uid);
     expect(hasThreatWithinMelee(ines.pos, [{ pos: e.pos }])).toBe(true);
+  });
+});
+
+describe('近接の自動の詰め寄り', () => {
+  function setup(enemyPos: Vec2) {
+    const { state: s } = fresh();
+    const roran = unitOf(s, 'roran');
+    for (const u of s.units) if (u.side === 'player' && u !== roran) u.retired = true;
+    roran.pos = { x: 100, y: 48 };
+    const e = s.units.find((u) => u.side === 'enemy')!;
+    e.pos = enemyPos;
+    e.speed = 0;
+    e.combat = false;
+    return { s, roran, e };
+  }
+
+  it('ロランは 64px 以内の敵へ自分から近づいて交戦する', () => {
+    const { s, roran, e } = setup({ x: 150, y: 48 });
+    for (let i = 0; i < 120; i++) step(s, [], 1 / 60);
+    expect(roran.engagedWith).toBe(e.uid);
+    expect(distance(roran.pos, e.pos)).toBeCloseTo(MIN_SEPARATION, 4);
+  });
+
+  it('64px より遠い敵には近づかない', () => {
+    const { s, roran } = setup({ x: 180, y: 48 });
+    for (let i = 0; i < 60; i++) step(s, [], 1 / 60);
+    expect(roran.pos).toEqual({ x: 100, y: 48 });
+    expect(roran.closingOn).toBeNull();
+  });
+
+  it('移動の指示中は詰め寄らない', () => {
+    const { s, roran } = setup({ x: 150, y: 48 });
+    step(s, [{ type: 'move', uid: roran.uid, dest: { x: 16, y: 48 } }], 1 / 60);
+    for (let i = 0; i < 30; i++) step(s, [], 1 / 60);
+    expect(roran.pos.x).toBeLessThan(100);
+    expect(roran.closingOn).toBeNull();
+  });
+
+  it('敵を倒したあとは元の位置へ戻らない', () => {
+    const { s, roran, e } = setup({ x: 150, y: 48 });
+    for (let i = 0; i < 120; i++) step(s, [], 1 / 60);
+    const at = { ...roran.pos };
+    e.hp = 0;
+    for (let i = 0; i < 60; i++) step(s, [], 1 / 60);
+    expect(roran.pos).toEqual(at);
   });
 });

@@ -1,4 +1,5 @@
 import { AI_BEHAVIORS } from './ai';
+import { pickCloseTarget } from './autoclose';
 import { bondSupporters } from './bonds';
 import { effectiveInterval, hasThreatWithinMelee, nearestWithin } from './combat';
 import { MIN_SEPARATION, RANGE_EPS } from './constants';
@@ -76,6 +77,7 @@ export function step(state: BattleState, commands: SimCommand[], dt: number): vo
   const movedThisTick = applyCommands(state, commands);
   updateAi(state);
   updateEngagements(state, movedThisTick);
+  updateAutoClose(state);
   moveUnits(state, dt);
   // 発射で追加された飛翔体は次の tick まで進めない。同じ tick で着弾させると、
   // 至近距離で撃ったときに飛翔体が1フレームも描画されないままダメージが入る
@@ -141,6 +143,16 @@ function updateEngagements(state: BattleState, movedThisTick: Set<string>): void
     state.events.push({
       type: 'engage', uid: u.uid, defId: u.defId, targetUid: target.uid, targetDefId: target.defId, firstMeeting,
     });
+  }
+}
+
+/** 近接の味方が詰め寄る相手を、毎 tick 選び直す。条件から外れたら（指示・交戦・相手が遠い）null になる */
+function updateAutoClose(state: BattleState): void {
+  const claimed = new Set(
+    state.units.filter((u) => u.engagedWith !== null).map((u) => u.engagedWith as string),
+  );
+  for (const u of state.units) {
+    u.closingOn = pickCloseTarget(u, hostilesOf(state, u), claimed, state.grid)?.uid ?? null;
   }
 }
 
@@ -224,9 +236,26 @@ function hasOrderedMove(u: Unit): boolean {
   return u.controller === 'player' && u.goalPos !== null;
 }
 
+/** 詰め寄り。相手の位置へ直進し、最小距離で止まる（そこで次の tick に交戦が成立する） */
+function closeIn(state: BattleState, u: Unit, dt: number): void {
+  const target = u.closingOn === null ? undefined : unitByUid(state, u.closingOn);
+  if (!target) return;
+  const d = distance(u.pos, target.pos);
+  if (d === 0) return;
+  const stepLen = Math.min(u.speed * dt, d);
+  stepTo(state, u, {
+    x: u.pos.x + ((target.pos.x - u.pos.x) / d) * stepLen,
+    y: u.pos.y + ((target.pos.y - u.pos.y) / d) * stepLen,
+  });
+}
+
 function moveUnits(state: BattleState, dt: number): void {
   for (const u of state.units) {
     if (u.retired) continue;
+    if (u.closingOn !== null) {
+      closeIn(state, u, dt);
+      continue;
+    }
     if (u.engagedWith !== null && !hasOrderedMove(u)) continue;
     moveTowardGoal(state, u, dt);
   }
@@ -333,6 +362,7 @@ function resolveRemoval(state: BattleState): void {
       dropUnitField(state.fields, u.uid);
       u.pendingHit = null;
       u.engagedWith = null;
+      u.closingOn = null;
       u.goalField = null;
       u.goalPos = null;
       for (const other of state.units) {
