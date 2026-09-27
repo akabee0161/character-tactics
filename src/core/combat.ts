@@ -1,5 +1,5 @@
 import { distance } from './field';
-import { MELEE_RANGE } from './constants';
+import { MELEE_RANGE, RANGE_EPS } from './constants';
 import type { AttackKind, Unit, Vec2 } from './types';
 
 export function isFunbaruActive(unit: Unit, time: number): boolean {
@@ -55,7 +55,7 @@ export function nearestWithin<T extends { pos: Vec2 }>(
 }
 
 export function hasThreatWithinMelee(pos: Vec2, threats: { pos: Vec2 }[]): boolean {
-  return threats.some((t) => distance(pos, t.pos) <= MELEE_RANGE);
+  return threats.some((t) => distance(pos, t.pos) <= MELEE_RANGE + RANGE_EPS);
 }
 
 /** 遠距離職は接近されると弱い、という一貫したルールにする */

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { step } from './sim';
 import { applyXp } from './progress';
 import { beginBattle, createBattleState } from './state';
-import { testRegistry } from './testing';
+import { instantAttacks, testRegistry } from './testing';
 import type { StageDef, Unit } from './types';
 import type { BattleState, CharProgress, Vec2 } from './types';
 
@@ -27,6 +27,7 @@ const LV1: Record<string, CharProgress> = {
 function fresh(stage: StageDef = STAGE): BattleState {
   const s = createBattleState(testRegistry(), stage, LV1, 42);
   beginBattle(s);
+  instantAttacks(s);
   for (const u of s.units) if (u.side === 'player') u.pos = { x: 16, y: 300 }; // マップ外の遠くへ退避
   return s;
 }
@@ -46,7 +47,8 @@ function spawnEnemy(s: BattleState, defId: string, pos: Vec2, hp?: number): Unit
     attack: def.attack, range: def.range, attackInterval: def.attackInterval, speed: def.speed,
     bowDamageCap: def.bowDamageCap, skillId: def.skillId,
     level: 1, xp: 0,
-    goalPos: null, goalField: null, engagedWith: null, attackCooldown: 0, retired: false,
+    goalPos: null, goalField: null, engagedWith: null, closingOn: null, attackCooldown: 0, retired: false,
+    windup: 0, pendingHit: null,
     ai: { def: { kind: 'aggressive' }, mode: 'idle', targetUid: null, home: { ...pos }, spottedAt: null },
     skillCooldownUntil: 0, funbaruUntil: -1, neraiuchiArmed: false, pinchShown: false,
     seenDefIds: [], lastHitBy: null, lastHitNeraiuchi: false, damagedBy: [],
@@ -379,3 +381,81 @@ describe('attack イベント', () => {
   });
 });
 
+describe('振りかぶり', () => {
+  /** ロランを相手に、敵が1体だけ攻撃する形にする。ロランは反撃しない */
+  function enemyVsRoran(enemyDefId: string, enemyPos: Vec2, windup: number) {
+    const s = fresh();
+    const roran = unitOf(s, 'roran');
+    for (const u of s.units) if (u !== roran) u.retired = true;
+    roran.pos = { x: 100, y: 16 };
+    roran.combat = false;
+    const enemy = spawnEnemy(s, enemyDefId, enemyPos);
+    enemy.speed = 0;
+    enemy.windup = windup;
+    return { s, roran, enemy };
+  }
+
+  /** 交戦を成立させ、すぐに攻撃を出させる */
+  function attackNow(s: BattleState, attacker: Unit): void {
+    step(s, [], 1 / 60);
+    attacker.attackCooldown = 0;
+    step(s, [], 1 / 60);
+    expect(s.events.some((e) => e.type === 'attack' && e.uid === attacker.uid)).toBe(true);
+  }
+
+  it('攻撃を出してから windup 秒たつまでダメージは入らず、過ぎたら入る', () => {
+    const { s, roran, enemy } = enemyVsRoran('narazumono', { x: 120, y: 16 }, 0.3);
+    const hp0 = roran.hp;
+    attackNow(s, enemy);
+    expect(roran.hp).toBe(hp0);
+    advanceFine(s, 0.25);
+    expect(roran.hp).toBe(hp0);
+    advanceFine(s, 0.1);
+    expect(roran.hp).toBeLessThan(hp0);
+  });
+
+  it('振りかぶり中に攻撃した側が倒れたら、ダメージは入らない', () => {
+    const { s, roran, enemy } = enemyVsRoran('narazumono', { x: 120, y: 16 }, 0.3);
+    const hp0 = roran.hp;
+    attackNow(s, enemy);
+    enemy.hp = 0;
+    advanceFine(s, 0.5);
+    expect(roran.hp).toBe(hp0);
+    expect(enemy.pendingHit).toBeNull();
+  });
+
+  it('振りかぶり中に相手が離れても当たる（空振りは無い）', () => {
+    const { s, roran, enemy } = enemyVsRoran('narazumono', { x: 120, y: 16 }, 0.3);
+    const hp0 = roran.hp;
+    attackNow(s, enemy);
+    // ゴール { x: 304, y: 16 } の到達判定(radius 40)に入らない位置まで離す
+    roran.pos = { x: -300, y: 16 };
+    advanceFine(s, 0.35);
+    expect(roran.hp).toBeLessThan(hp0);
+  });
+
+  it('弓は振りかぶりが終わってから矢が出る', () => {
+    const { s, enemy } = enemyVsRoran('yumihei', { x: 200, y: 16 }, 0.3); // 100px 離れる。yumihei の range は 120
+    attackNow(s, enemy);
+    expect(s.projectiles).toHaveLength(0);
+    advanceFine(s, 0.32);
+    expect(s.projectiles).toHaveLength(1);
+  });
+
+  it('振りかぶり中に動いた弓手の矢は、攻撃を出した位置ではなく発射時点の位置から出る', () => {
+    const { s, enemy } = enemyVsRoran('yumihei', { x: 200, y: 16 }, 0.3);
+    attackNow(s, enemy);
+    // 振りかぶり中に歩いた想定で、攻撃を出した位置から動かす
+    enemy.pos = { x: 200 - 20, y: 16 + 5 };
+    // 発射した瞬間（飛翔体が現れた直後、まだ1ステップも進んでいない状態）で位置を見る
+    let remaining = 0.32;
+    while (s.projectiles.length === 0 && remaining > 1e-9) {
+      const dt = Math.min(1 / 60, remaining);
+      step(s, [], dt);
+      remaining -= dt;
+    }
+    expect(s.projectiles).toHaveLength(1);
+    expect(s.projectiles[0]!.pos).toEqual(enemy.pos);
+    expect(s.projectiles[0]!.pos).not.toEqual({ x: 200, y: 16 });
+  });
+});

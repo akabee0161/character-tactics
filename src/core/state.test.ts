@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { cellIndexAt } from './field';
 import { fieldToStatic } from './fields';
-import { beginBattle, canPlaceAt, createBattleState, placeUnit, statsForLevel } from './state';
+import { beginBattle, canPlaceAt, createBattleState, placeUnit, statsForLevel, windupOf } from './state';
 import { testRegistry } from './testing';
 import type { Registry } from '../engine/registry';
 import type { StageDef } from '../engine/schema';
@@ -181,5 +181,18 @@ describe('beginBattle', () => {
     const { stage, state } = fresh();
     beginBattle(state);
     expect(state.units.filter((u) => u.side === 'enemy').length).toBe(stage.enemies.length);
+  });
+});
+
+describe('windupOf', () => {
+  it('シートの attack から、最後のコマが出るまでの秒数を出す', () => {
+    const def = testRegistry().units.get('roran')!;
+    const a = def.sprites.map!.attack;
+    expect(windupOf(def)).toBeCloseTo((a.frames - 1) / a.fps, 10);
+  });
+
+  it('シートが無ければ 0（即時）', () => {
+    const def = { ...testRegistry().units.get('roran')!, sprites: { role: null, face: null, map: null } };
+    expect(windupOf(def)).toBe(0);
   });
 });

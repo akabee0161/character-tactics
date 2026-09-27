@@ -406,6 +406,16 @@ export type IntroLine = {
   lineId: string | null;
 };
 
+/** mapRows の1文字が何を表すか。tile は assets/images 内のファイル名。null なら単色で描く */
+export type LegendEntry = { tile: string | null; walkable: boolean };
+export type Legend = Record<string, LegendEntry>;
+
+/** legend を書かないステージの既定。'.' 歩ける / '#' 歩けない、どちらも単色 */
+export const DEFAULT_LEGEND: Legend = Object.freeze({
+  '.': Object.freeze({ tile: null, walkable: true }),
+  '#': Object.freeze({ tile: null, walkable: false }),
+}) as Legend;
+
 export type PlacementDef = {
   /** この y 以上（画面で下）なら配置できる */
   minY: number;
@@ -420,8 +430,10 @@ export type StageDef = {
   order: number;
   name: string;
   cell: number;
-  /** '.' 歩ける / '#' 歩けない */
+  /** 1文字 = 1マス。文字の意味は legend（省略時は DEFAULT_LEGEND） */
   mapRows: string[];
+  /** mapRows の文字の意味。省略時は DEFAULT_LEGEND */
+  legend?: Legend;
   placement: PlacementDef;
   roster: string[];
   enemies: EnemyPlacement[];
@@ -432,7 +444,7 @@ export type StageDef = {
   outro?: IntroLine[];
 };
 
-function readMapRows(ctx: Ctx, v: unknown): string[] {
+function readMapRows(ctx: Ctx, v: unknown, legend: Legend): string[] {
   const arr = requireArray(ctx, 'mapRows', v, { min: 1 });
   if (!arr) return [];
   const rows: string[] = [];
@@ -445,13 +457,37 @@ function readMapRows(ctx: Ctx, v: unknown): string[] {
       fail(ctx, `mapRows[${y}]`, `ながさが ${width} で ないと いけない（じっさいは ${row.length}）`);
       return;
     }
-    if (!/^[.#]+$/.test(row)) {
-      fail(ctx, `mapRows[${y}]`, "つかえる もじは '.' と '#' だけ");
+    if (![...row].every((ch) => legend[ch] !== undefined)) {
+      const keys = Object.keys(legend).map((k) => `'${k}'`).join(' と ');
+      fail(ctx, `mapRows[${y}]`, `つかえる もじは ${keys} だけ`);
       return;
     }
     rows.push(row);
   });
   return rows;
+}
+
+function readLegend(ctx: Ctx, v: unknown): Legend | undefined {
+  if (v === undefined) return undefined;
+  const o = requireObject(ctx, 'legend', v);
+  if (!o) return undefined;
+  const out: Legend = {};
+  for (const [key, raw] of Object.entries(o)) {
+    const path = `legend.${key}`;
+    // makeGrid と drawTerrain は row[x]（UTF-16 の1単位）で引くので、えもじなど2単位の文字は使えない
+    if (key.length !== 1) {
+      fail(ctx, path, 'キーは 1もじで ないと いけない');
+      continue;
+    }
+    const e = requireObject(ctx, path, raw);
+    if (!e) continue;
+    const tile = e.tile === null ? null : requireString(ctx, `${path}.tile`, e.tile);
+    const walkable = requireBoolean(ctx, `${path}.walkable`, e.walkable);
+    if (walkable === null) continue;
+    out[key] = { tile, walkable };
+  }
+  if (Object.keys(out).length === 0) fail(ctx, 'legend', '1つ いじょう ひつよう');
+  return out;
 }
 
 function readAiDef(ctx: Ctx, path: string, v: unknown): AiDef {
@@ -525,11 +561,12 @@ function readStringArray(ctx: Ctx, path: string, v: unknown, min: number): strin
   return out;
 }
 
-function isWalkableCell(cell: number, mapRows: string[], pos: Vec2): boolean {
+function isWalkableCell(cell: number, mapRows: string[], legend: Legend, pos: Vec2): boolean {
   const cx = Math.floor(pos.x / cell);
   const cy = Math.floor(pos.y / cell);
   const row = mapRows[cy];
-  return row !== undefined && cx >= 0 && cx < row.length && row[cx] === '.';
+  if (row === undefined || cx < 0 || cx >= row.length) return false;
+  return legend[row[cx]!]?.walkable === true;
 }
 
 function readPlacement(
@@ -616,11 +653,13 @@ export function validateStageDef(file: string, raw: unknown): Validated<StageDef
   const o = requireObject(ctx, '', raw);
   if (!o) return { ok: false, errors: ctx.errors };
 
-  // walkable 検証に使うので、mapRows/cell を先に読む
+  // walkable 検証に使うので、cell / legend / mapRows を先に読む
   const cell = requireNumber(ctx, 'cell', o.cell, { min: 1, int: true }) ?? 32;
-  const mapRows = readMapRows(ctx, o.mapRows);
+  const legend = readLegend(ctx, o.legend);
+  const effectiveLegend = legend ?? DEFAULT_LEGEND;
+  const mapRows = readMapRows(ctx, o.mapRows, effectiveLegend);
   const checkWalkable = (path: string, pos: Vec2): void => {
-    if (mapRows.length > 0 && !isWalkableCell(cell, mapRows, pos)) {
+    if (mapRows.length > 0 && !isWalkableCell(cell, mapRows, effectiveLegend, pos)) {
       fail(ctx, path, 'あるけない マスに ある');
     }
   };
@@ -665,6 +704,8 @@ export function validateStageDef(file: string, raw: unknown): Validated<StageDef
     victory: readVictory(ctx, o.victory),
     defeat: readDefeat(ctx, o.defeat),
   };
+
+  if (legend !== undefined) stage.legend = legend;
 
   if (o.intro !== undefined) {
     const introRaw = requireArray(ctx, 'intro', o.intro) ?? [];

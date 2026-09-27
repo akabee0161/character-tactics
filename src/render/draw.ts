@@ -4,11 +4,12 @@ import { playerUnits } from '../core/sim';
 import { lookupDef } from '../engine/registry';
 import type { Registry } from '../engine/registry';
 import type { StageDef } from '../engine/schema';
+import { imageFor } from './images';
 import type { ImageCache } from './images';
 import { alertMarks } from './objectives-view';
-import { STILL, frameFor } from './anim';
+import { STILL, frameFor, stateOf } from './anim';
 import type { AnimStore } from './anim';
-import { drawHalf, drawMapUnit } from './sprites';
+import { FOOT_INSET, TILE_PX, bodyCenter, drawHalf, drawMapUnit } from './sprites';
 import type { SpriteDef } from './sprites';
 import { LOGICAL_H, LOGICAL_W, MAP_ORIGIN, mapToLogical } from './viewport';
 import {
@@ -34,11 +35,21 @@ const COLORS = {
   escort: '#ffd479',
 };
 
-const UNIT_R = 11;
+export const UNIT_R = 11;
 
 // drawEffects 専用。絵入り味方(32px = half 16)に合わせた半径。
 // ガルムなど大きいスプライトには追随しない簡易対応。本格対応は Effect に half を持たせる形で別途行う
 const EFFECT_R = 16;
+
+/**
+ * 絵入り味方（32px）の、足元から絵の中心までの高さ。
+ * 位置しか持たない飛翔体とエフェクトは、これで絵の中心の高さへ持ち上げる（EFFECT_R と同じ簡易対応）
+ */
+const BODY_LIFT = 32 / 2 - FOOT_INSET;
+
+function atBody(v: Vec2): Vec2 {
+  return mapToLogical({ x: v.x, y: v.y - BODY_LIFT });
+}
 
 const FALLBACK_DEF = { name: '', color: '#888888', role: '', sprites: { role: null, face: null, map: null } };
 
@@ -65,7 +76,7 @@ export function drawBattle(
   ctx.fillStyle = COLORS.sea;
   ctx.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
 
-  drawTerrain(ctx, state);
+  drawTerrain(ctx, state, images);
   drawVictoryMarker(ctx, state.stage);
   drawGoalMarkers(ctx, reg, state, selected);
   drawBonds(ctx, state);
@@ -78,12 +89,25 @@ export function drawBattle(
   ctx.restore();
 }
 
-function drawTerrain(ctx: CanvasRenderingContext2D, state: BattleState): void {
-  const { grid } = state;
+function drawTerrain(ctx: CanvasRenderingContext2D, state: BattleState, images: ImageCache): void {
+  const { grid, stage } = state;
+  // タイルは拡大せず、1マスに per × per 枚並べる。キャラの絵（等倍）と画素の細かさをそろえるため
+  const per = Math.floor(grid.cell / TILE_PX);
   for (let i = 0; i < grid.walkable.length; i++) {
     const cx = i % grid.cols;
     const cy = Math.floor(i / grid.cols);
     const p = mapToLogical({ x: cx * grid.cell, y: cy * grid.cell });
+    const ch = stage.mapRows[cy]?.[cx];
+    const tile = ch === undefined ? null : imageFor(images, stage.legend?.[ch]?.tile ?? null);
+    if (tile !== null && per >= 1) {
+      for (let ty = 0; ty < per; ty++) {
+        for (let tx = 0; tx < per; tx++) {
+          ctx.drawImage(tile, p.x + tx * TILE_PX, p.y + ty * TILE_PX, TILE_PX, TILE_PX);
+        }
+      }
+      continue;
+    }
+    // legend の無いステージと、タイルの読み込み前は単色
     ctx.fillStyle = grid.walkable[i] ? COLORS.ground : COLORS.rock;
     ctx.fillRect(p.x, p.y, grid.cell, grid.cell);
   }
@@ -95,8 +119,9 @@ function drawAlertMarks(ctx: CanvasRenderingContext2D, reg: Registry, state: Bat
   ctx.font = 'bold 22px sans-serif';
   ctx.textAlign = 'center';
   for (const m of alertMarks(state.units, state.time)) {
-    const p = mapToLogical(m.pos);
-    const half = drawHalf(defOf(reg, m.defId), UNIT_R);
+    const def = defOf(reg, m.defId);
+    const p = bodyCenter(mapToLogical(m.pos), def, UNIT_R);
+    const half = drawHalf(def, UNIT_R);
     ctx.fillText('！', p.x, p.y - half - 10);
   }
   ctx.textAlign = 'left';
@@ -124,9 +149,9 @@ function drawVictoryMarker(ctx: CanvasRenderingContext2D, stage: StageDef): void
 /** 飛んでいる矢と魔法。位置はシムが持っているので、ここは見た目だけ */
 function drawProjectiles(ctx: CanvasRenderingContext2D, state: BattleState): void {
   for (const pj of state.projectiles) {
-    const p = mapToLogical(pj.pos);
+    const p = atBody(pj.pos);
     if (pj.kind === 'bow') {
-      const from = mapToLogical(pj.source.pos);
+      const from = atBody(pj.source.pos);
       const dx = p.x - from.x;
       const dy = p.y - from.y;
       const len = Math.hypot(dx, dy) || 1;
@@ -155,8 +180,9 @@ function drawEscortMarks(ctx: CanvasRenderingContext2D, state: BattleState, esco
   ctx.fillStyle = COLORS.escort;
   for (const u of state.units) {
     if (u.retired || u.side !== 'player' || !escorts.has(u.defId)) continue;
-    const p = mapToLogical(u.pos);
-    const half = drawHalf(defOf(state.reg, u.defId), UNIT_R);
+    const def = defOf(state.reg, u.defId);
+    const p = bodyCenter(mapToLogical(u.pos), def, UNIT_R);
+    const half = drawHalf(def, UNIT_R);
     ctx.beginPath();
     ctx.moveTo(p.x, p.y - half - 14);
     ctx.lineTo(p.x - 6, p.y - half - 24);
@@ -176,13 +202,13 @@ function drawBonds(ctx: CanvasRenderingContext2D, state: BattleState): void {
     for (const s of bondSupporters(state.reg, unit.uid, unit.defId, unit.pos, supportersList)) {
       const other = units.find((u) => u.uid === s.uid);
       if (!other) continue;
-      const a = mapToLogical(unit.pos);
-      const b = mapToLogical(other.pos);
+      const a = bodyCenter(mapToLogical(unit.pos), defOf(state.reg, unit.defId), UNIT_R);
+      const b = bodyCenter(mapToLogical(other.pos), defOf(state.reg, other.defId), UNIT_R);
       ctx.beginPath();
       ctx.moveTo(a.x, a.y);
       ctx.lineTo(b.x, b.y);
       ctx.stroke();
-      drawHeart(ctx, mapToLogical({ x: other.pos.x, y: other.pos.y - 20 }));
+      drawHeart(ctx, { x: b.x, y: b.y - 20 });
     }
   }
 }
@@ -226,9 +252,12 @@ function drawUnits(
     const kbOffset = kb
       ? { x: kb.dir.x * (kb.ttl / KNOCKBACK_DURATION) * 6, y: kb.dir.y * (kb.ttl / KNOCKBACK_DURATION) * 6 }
       : { x: 0, y: 0 };
-    const p = mapToLogical({ x: unit.pos.x + kbOffset.x, y: unit.pos.y + kbOffset.y });
     const def = defOf(reg, unit.defId);
     const radius = isAlly ? UNIT_R : enemyRadius(unit.maxHp);
+    // unit.pos は足元。絵と、絵に付いて回る HPバー・旗・リングは絵の中心を基準に置く
+    const p = bodyCenter(
+      mapToLogical({ x: unit.pos.x + kbOffset.x, y: unit.pos.y + kbOffset.y }), def, radius,
+    );
     const sheet = def.sprites.map;
     const frame = sheet === null ? STILL : frameFor(anim, unit.uid, sheet, state.time);
     drawMapUnit(ctx, p, radius, def, images, frame);
@@ -280,7 +309,7 @@ function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void 
   for (const e of effects.items) {
     switch (e.kind) {
       case 'hit': {
-        const p = mapToLogical(e.pos);
+        const p = atBody(e.pos);
         const ratio = Math.max(0, e.ttl / HIT_EFFECT_DURATION);
         ctx.strokeStyle = e.critical ? `rgba(255, 120, 60, ${ratio})` : `rgba(255, 235, 150, ${ratio})`;
         ctx.lineWidth = e.critical ? 4 : 3;
@@ -290,7 +319,7 @@ function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void 
         break;
       }
       case 'damageText': {
-        const p = mapToLogical(e.pos);
+        const p = atBody(e.pos);
         const ratio = Math.max(0, e.ttl / DAMAGE_TEXT_DURATION);
         const rise = (1 - ratio) * 20;
         ctx.globalAlpha = ratio;
@@ -303,7 +332,7 @@ function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void 
         break;
       }
       case 'healText': {
-        const p = mapToLogical(e.pos);
+        const p = atBody(e.pos);
         const ratio = Math.max(0, e.ttl / HEAL_TEXT_DURATION);
         const rise = (1 - ratio) * 20;
         ctx.globalAlpha = ratio;
@@ -316,7 +345,7 @@ function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void 
         break;
       }
       case 'heal': {
-        const p = mapToLogical(e.pos);
+        const p = atBody(e.pos);
         const ratio = Math.max(0, e.ttl / HEAL_RING_DURATION);
         ctx.strokeStyle = `rgba(150, 255, 180, ${ratio})`;
         ctx.lineWidth = 3;
@@ -326,8 +355,8 @@ function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void 
         break;
       }
       case 'healBeam': {
-        const a = mapToLogical(e.from);
-        const b = mapToLogical(e.to);
+        const a = atBody(e.from);
+        const b = atBody(e.to);
         const ratio = Math.max(0, e.ttl / HEAL_BEAM_DURATION);
         ctx.strokeStyle = `rgba(180, 255, 200, ${ratio})`;
         ctx.lineWidth = 2;
@@ -338,7 +367,7 @@ function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void 
         break;
       }
       case 'skillCast': {
-        const p = mapToLogical(e.pos);
+        const p = atBody(e.pos);
         const ratio = Math.max(0, e.ttl / SKILL_CAST_DURATION);
         if (e.skillId === 'funbaru') {
           ctx.strokeStyle = `rgba(255, 226, 122, ${ratio})`;
@@ -360,8 +389,8 @@ function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void 
         break;
       }
       case 'trail': {
-        const a = mapToLogical(e.from);
-        const b = mapToLogical(e.to);
+        const a = atBody(e.from);
+        const b = atBody(e.to);
         const ratio = Math.max(0, e.ttl / TRAIL_DURATION);
         ctx.strokeStyle = `rgba(255, 255, 255, ${ratio})`;
         ctx.lineWidth = 4;
@@ -372,7 +401,7 @@ function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void 
         break;
       }
       case 'defeat': {
-        const p = mapToLogical(e.pos);
+        const p = atBody(e.pos);
         const ratio = Math.max(0, e.ttl / DEFEAT_DURATION);
         ctx.globalAlpha = ratio;
         ctx.strokeStyle = '#ffffff';
@@ -384,7 +413,7 @@ function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void 
         break;
       }
       case 'bondPulse': {
-        const p = mapToLogical(e.pos);
+        const p = atBody(e.pos);
         const ratio = Math.max(0, e.ttl / BOND_PULSE_DURATION);
         ctx.strokeStyle = `rgba(255, 158, 196, ${ratio})`;
         ctx.lineWidth = 3;
@@ -394,7 +423,7 @@ function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void 
         break;
       }
       case 'spawn': {
-        const p = mapToLogical(e.pos);
+        const p = atBody(e.pos);
         const ratio = Math.max(0, e.ttl / SPAWN_DURATION);
         // 外から内へ縮む輪。「出てきた」と読めるように
         ctx.strokeStyle = `rgba(255, 90, 90, ${1 - ratio})`;
@@ -483,8 +512,10 @@ export function drawDragPreview(
   ctx.stroke();
   ctx.setLineDash([]);
 
+  // b は離した地点＝そこに立ったときの足元
+  const body = bodyCenter(b, def, UNIT_R);
   ctx.globalAlpha = 0.5;
-  drawMapUnit(ctx, b, UNIT_R, def, images, STILL);
+  drawMapUnit(ctx, body, UNIT_R, def, images, STILL);
   ctx.globalAlpha = 1;
 
   if (blocked) {
@@ -492,7 +523,28 @@ export function drawDragPreview(
     ctx.strokeStyle = COLORS.hpEnemy;
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.arc(b.x, b.y, half + 3, 0, Math.PI * 2);
+    ctx.arc(body.x, body.y, half + 3, 0, Math.PI * 2);
     ctx.stroke();
   }
+}
+
+/** ?debug のときだけ。各ユニットの足元の下に、今のモーション名とコマ番号を出す */
+export function drawDebugOverlay(
+  ctx: CanvasRenderingContext2D, reg: Registry, state: BattleState, anim: AnimStore, label: string,
+): void {
+  ctx.save();
+  ctx.font = '10px monospace';
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'center';
+  for (const u of state.units) {
+    if (u.retired) continue;
+    const sheet = defOf(reg, u.defId).sprites.map;
+    if (sheet === null) continue;
+    const frame = frameFor(anim, u.uid, sheet, state.time);
+    const feet = mapToLogical(u.pos);
+    ctx.fillText(`${stateOf(anim, u.uid, state.time)} ${frame.col}`, feet.x, feet.y + 12);
+  }
+  ctx.textAlign = 'left';
+  ctx.fillText(label, 4, MAP_ORIGIN.y + 12);
+  ctx.restore();
 }

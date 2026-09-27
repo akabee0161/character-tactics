@@ -335,6 +335,27 @@ describe('sprites の ファイルの そんざい', () => {
   });
 });
 
+describe('legend の タイルの そんざい', () => {
+  const withLegend = () => files({
+    'assets/stages/stage1.json': {
+      ...STAGE,
+      mapRows: ['TTTT', 'T..T', 'T..T', 'TTTT'],
+      legend: { '.': { tile: null, walkable: true }, T: { tile: 'tile-tree.png', walkable: false } },
+    },
+  });
+
+  it('assets/images に ない タイルを弾く', () => {
+    const r = buildRegistry(withLegend(), KNOWN_SKILLS, []);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors[0]?.path).toBe('legend.T.tile');
+  });
+
+  it('ある タイルなら通る', () => {
+    const r = buildRegistry(withLegend(), KNOWN_SKILLS, ['tile-tree.png']);
+    expect(r.ok).toBe(true);
+  });
+});
+
 describe('実アセットのステージ', () => {
   it('10本ある', () => {
     expect(testRegistry().stages.length).toBe(10);

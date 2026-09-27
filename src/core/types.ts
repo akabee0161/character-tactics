@@ -1,5 +1,5 @@
 export type { AttackKind, Vec2 } from '../engine/schema';
-export type { AiDef, DefeatCond, EnemyPlacement, StageDef, VictoryCond } from '../engine/schema';
+export type { AiDef, DefeatCond, EnemyPlacement, Legend, StageDef, VictoryCond } from '../engine/schema';
 
 import type { Registry } from '../engine/registry';
 import type { AiDef, AttackKind, StageDef, Vec2 } from '../engine/schema';
@@ -63,8 +63,14 @@ export type Unit = {
   goalField: FlowField | null;
   /** 交戦中の相手の uid。null なら非交戦 */
   engagedWith: string | null;
+  /** 自動で詰め寄っている相手の uid。null なら詰め寄っていない。goalPos（プレイヤーの移動指示）とは別に持つ */
+  closingOn: string | null;
   attackCooldown: number;
   retired: boolean;
+
+  /** 攻撃を出してからダメージが入るまでの秒数。攻撃モーションの最後のコマが出る時刻。シートが無ければ 0 */
+  windup: number;
+  pendingHit: PendingHit | null;
 
   /** controller === 'ai' のときだけ入る */
   ai: AiState | null;
@@ -112,6 +118,15 @@ export type HitSource = {
   neraiuchi: boolean;
   power: number;
   bondBonus: number;
+};
+
+/** 振りかぶり中の攻撃。発動時刻になったら、攻撃した側と相手が生きていればダメージか飛翔体になる */
+export type PendingHit = {
+  targetUid: string;
+  /** 攻撃を出した時点で固定した攻撃側の値 */
+  source: HitSource;
+  /** 発動するシム時刻 */
+  at: number;
 };
 
 export type Projectile = {

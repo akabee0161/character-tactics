@@ -11,6 +11,7 @@ import {
   hasLineOfSight,
   isWalkableAt,
   makeGrid,
+  resolveMoveDest,
 } from './field';
 
 // '.' = 歩ける / '#' = 歩けない
@@ -28,6 +29,15 @@ describe('makeGrid', () => {
     expect(g.cell).toBe(32);
     expect(g.walkable[0]).toBe(true);
     expect(g.walkable[1 * 5 + 1]).toBe(false);
+  });
+
+  it('legend を渡すと、その walkable で歩行可否を決める', () => {
+    const g = makeGrid(32, ['.T', 'V.'], {
+      '.': { tile: null, walkable: true },
+      T: { tile: null, walkable: false },
+      V: { tile: null, walkable: false },
+    });
+    expect(g.walkable).toEqual([true, false, false, true]);
   });
 });
 
@@ -171,5 +181,40 @@ describe('hasLineOfSight', () => {
     // 点サンプリング（8pxごと）だとこの一点をまたいで「通れる」と誤判定していた。
     const g = makeGrid(32, MAP);
     expect(hasLineOfSight(g, { x: 16, y: 48 }, { x: 50, y: 14 })).toBe(false);
+  });
+});
+
+describe('resolveMoveDest', () => {
+  it('歩ける場所ならそのまま返す', () => {
+    const g = makeGrid(32, MAP);
+    expect(resolveMoveDest(g, { x: 16, y: 16 }, { x: 20, y: 70 })).toEqual({ x: 20, y: 70 });
+  });
+
+  it('歩けない場所なら、たどり着けるマスのうち最も近いマスの中心を返す。同じ近さならたどり着きやすい方', () => {
+    // (80,48) は '#'。上 (80,16) と下 (80,80) はどちらも 32px。(16,16) から近いのは上
+    const g = makeGrid(32, MAP);
+    expect(resolveMoveDest(g, { x: 16, y: 16 }, { x: 80, y: 48 })).toEqual({ x: 80, y: 16 });
+  });
+
+  it('閉じた区画のマスは、より近くても選ばない', () => {
+    const g = makeGrid(32, [
+      '......',
+      '.####.',
+      '.#..#.',
+      '.####.',
+      '......',
+    ]);
+    // (80,60) は '#'。いちばん近いのは閉じた区画の (80,80)（20px）だが、たどり着けない
+    expect(resolveMoveDest(g, { x: 16, y: 16 }, { x: 80, y: 60 })).toEqual({ x: 80, y: 16 });
+  });
+
+  it('マップの外なら、最も近い歩けるマス', () => {
+    const g = makeGrid(32, MAP);
+    expect(resolveMoveDest(g, { x: 80, y: 16 }, { x: -50, y: 16 })).toEqual({ x: 16, y: 16 });
+  });
+
+  it('出発点が歩けない場所なら null', () => {
+    const g = makeGrid(32, MAP);
+    expect(resolveMoveDest(g, { x: 48, y: 48 }, { x: 80, y: 48 })).toBeNull();
   });
 });

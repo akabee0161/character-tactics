@@ -3,6 +3,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { validateEnemyDef, validateUnitDef } from './schema';
 import type { MapSheet } from './schema';
+import { TILE_PX } from '../render/sprites';
 
 /** PNG の IHDR は先頭24バイトに入っている。幅は 16、高さは 20 バイト目から */
 function pngSize(path: string): { w: number; h: number } {
@@ -46,4 +47,31 @@ describe('シートの じっすんと JSON', () => {
     // 3状態 × 4方向 = 12行
     expect(h, `${file}: たては frame × 12`).toBe(sheet.frame * 12);
   });
+});
+
+/** stages/*.json の legend が使うタイル画像の一覧 */
+function legendTiles(): string[] {
+  const tiles = new Set<string>();
+  for (const name of readdirSync('assets/stages')) {
+    if (!name.endsWith('.json')) continue;
+    const raw = JSON.parse(readFileSync(join('assets/stages', name), 'utf8')) as {
+      legend?: Record<string, { tile: string | null }>;
+    };
+    for (const e of Object.values(raw.legend ?? {})) if (e.tile !== null) tiles.add(e.tile);
+  }
+  return [...tiles];
+}
+
+describe('タイルの じっすん', () => {
+  const tiles = legendTiles();
+
+  it('legend が つかう タイルが 1まい いじょう ある', () => {
+    expect(tiles.length).toBeGreaterThan(0);
+  });
+
+  for (const tile of tiles) {
+    it(`${tile} は ${TILE_PX}x${TILE_PX}`, () => {
+      expect(pngSize(join('assets/images', tile))).toEqual({ w: TILE_PX, h: TILE_PX });
+    });
+  }
 });

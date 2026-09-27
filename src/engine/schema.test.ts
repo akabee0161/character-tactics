@@ -495,6 +495,73 @@ describe('validateStageDef', () => {
   });
 });
 
+describe('validateStageDef: legend', () => {
+  const LEGEND = {
+    '.': { tile: 'tile-plain.png', walkable: true },
+    T: { tile: 'tile-tree.png', walkable: false },
+  };
+
+  it('legend の キーで mapRows を書ける', () => {
+    const r = validateStageDef('stages/x.json', {
+      ...VALID_STAGE, mapRows: ['TTTT', 'T..T', 'T..T', 'TTTT'], legend: LEGEND,
+    });
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value.legend?.T).toEqual({ tile: 'tile-tree.png', walkable: false });
+  });
+
+  it('legend を 省略すると legend は undefined で、. と # で書ける', () => {
+    const r = validateStageDef('stages/x.json', VALID_STAGE);
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value.legend).toBeUndefined();
+  });
+
+  it('tile は null でもよい', () => {
+    const r = validateStageDef('stages/x.json', {
+      ...VALID_STAGE, legend: { '.': { tile: null, walkable: true }, '#': { tile: null, walkable: false } },
+    });
+    expect(r.ok).toBe(true);
+  });
+
+  it('legend が あるとき、legend に ない もじは弾く', () => {
+    const r = validateStageDef('stages/x.json', { ...VALID_STAGE, legend: LEGEND }); // mapRows は # を使っている
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors[0]?.path).toBe('mapRows[0]');
+  });
+
+  it('walkable: false の マスに 敵が いれば弾く', () => {
+    // 敵は (80,48) = 2列目・1行目
+    const r = validateStageDef('stages/x.json', {
+      ...VALID_STAGE, mapRows: ['....', '..T.', '....', '....'], legend: LEGEND,
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors[0]?.path).toBe('enemies[0].pos');
+  });
+
+  it('キーが 2もじ いじょうなら弾く', () => {
+    const r = validateStageDef('stages/x.json', {
+      ...VALID_STAGE, legend: { ...LEGEND, TT: { tile: null, walkable: false } },
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors[0]?.path).toBe('legend.TT');
+  });
+
+  it('えもじの ように row[x] で 1もじとして とりだせない キーは弾く', () => {
+    const r = validateStageDef('stages/x.json', {
+      ...VALID_STAGE, legend: { ...LEGEND, '😀': { tile: null, walkable: false } },
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors[0]?.path).toBe('legend.😀');
+  });
+
+  it('walkable が 真偽値で なければ弾く', () => {
+    const r = validateStageDef('stages/x.json', {
+      ...VALID_STAGE, legend: { ...LEGEND, T: { tile: 'tile-tree.png', walkable: 'no' } },
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors[0]?.path).toBe('legend.T.walkable');
+  });
+});
+
 /** 検証を通る最小のステージ。引数で1フィールドだけ差し替える */
 function stageRaw(over: Record<string, unknown> = {}): Record<string, unknown> {
   return {

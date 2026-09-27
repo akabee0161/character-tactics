@@ -1,13 +1,18 @@
 import { AI_BEHAVIORS } from './ai';
+import { pickCloseTarget } from './autoclose';
 import { bondSupporters } from './bonds';
 import { effectiveInterval, hasThreatWithinMelee, nearestWithin } from './combat';
+import { MIN_SEPARATION, RANGE_EPS } from './constants';
 import { accumulate } from './counters';
 import { applyDamage } from './damage';
-import { computeFlowField, distance, flowDirection, hasLineOfSight, isWalkableAt } from './field';
+import {
+  computeFlowField, distance, flowDirection, hasLineOfSight, isWalkableAt, resolveMoveDest,
+} from './field';
 import { dropUnitField, fieldToStatic, fieldToUnit } from './fields';
 import { awardXpForEvents } from './growth';
 import { updateObjectives } from './objectives';
 import { spawnProjectile, updateProjectiles } from './projectiles';
+import { separatedStep } from './separation';
 import { useSkill } from './skills';
 import { dueSpawns } from './spawns';
 import { makeEnemyUnit } from './state';
@@ -74,6 +79,7 @@ export function step(state: BattleState, commands: SimCommand[], dt: number): vo
   const movedThisTick = applyCommands(state, commands);
   updateAi(state);
   updateEngagements(state, movedThisTick);
+  updateAutoClose(state);
   moveUnits(state, dt);
   // 発射で追加された飛翔体は次の tick まで進めない。同じ tick で着弾させると、
   // 至近距離で撃ったときに飛翔体が1フレームも描画されないままダメージが入る
@@ -92,9 +98,11 @@ function applyCommands(state: BattleState, commands: SimCommand[]): Set<string> 
     if (!u || u.retired || u.side !== 'player') continue;
 
     if (cmd.type === 'move') {
-      if (!isWalkableAt(state.grid, cmd.dest)) continue;
-      u.goalField = computeFlowField(state.grid, cmd.dest);
-      u.goalPos = { ...cmd.dest };
+      // 歩けない場所（マップの外を含む）は、たどり着けるうちで最も近いマスへ置き換える
+      const dest = resolveMoveDest(state.grid, u.pos, cmd.dest);
+      if (dest === null) continue;
+      u.goalField = computeFlowField(state.grid, dest);
+      u.goalPos = dest;
       u.engagedWith = null;
       movedThisTick.add(u.uid);
     } else {
@@ -112,7 +120,7 @@ function updateEngagements(state: BattleState, movedThisTick: Set<string>): void
     if (u.retired) { u.engagedWith = null; continue; }
     if (u.engagedWith === null) continue;
     const target = byUid.get(u.engagedWith);
-    if (!target || target.retired || distance(u.pos, target.pos) > u.range) u.engagedWith = null;
+    if (!target || target.retired || distance(u.pos, target.pos) > u.range + RANGE_EPS) u.engagedWith = null;
   }
 
   // 1ユニットにつき交戦相手は1体。すでに誰かの相手になっている相手は選ばれない
@@ -125,7 +133,7 @@ function updateEngagements(state: BattleState, movedThisTick: Set<string>): void
   for (const u of state.units) {
     if (u.retired || !u.combat || u.engagedWith !== null || movedThisTick.has(u.uid)) continue;
     const available = hostilesOf(state, u).filter((h) => !claimed.has(h.uid));
-    const target = nearestWithin(u.pos, available, u.range);
+    const target = nearestWithin(u.pos, available, u.range + RANGE_EPS);
     if (!target) continue;
 
     u.engagedWith = target.uid;
@@ -139,6 +147,16 @@ function updateEngagements(state: BattleState, movedThisTick: Set<string>): void
     state.events.push({
       type: 'engage', uid: u.uid, defId: u.defId, targetUid: target.uid, targetDefId: target.defId, firstMeeting,
     });
+  }
+}
+
+/** 近接の味方が詰め寄る相手を、毎 tick 選び直す。条件から外れたら（指示・交戦・相手が遠い）null になる */
+function updateAutoClose(state: BattleState): void {
+  const claimed = new Set(
+    state.units.filter((u) => u.engagedWith !== null).map((u) => u.engagedWith as string),
+  );
+  for (const u of state.units) {
+    u.closingOn = pickCloseTarget(u, hostilesOf(state, u), claimed, state.grid)?.uid ?? null;
   }
 }
 
@@ -156,19 +174,59 @@ function fieldFor(state: BattleState, u: Unit): FlowField | null {
   return u.goalPos ? fieldToStatic(state.fields, state.grid, u.goalPos) : null;
 }
 
+/** 動いた量がこれ未満なら、ふさがれて動けなかったとみなす */
+const BLOCKED_EPS = 1e-3;
+
+type StepResult = 'moved' | 'adjusted' | 'blocked';
+
+/**
+ * next へ動く。敵対ユニットに MIN_SEPARATION より近づくぶんは separatedStep で補正する。
+ * moved: next にそのまま着いた / adjusted: 補正して動いた / blocked: 動けなかった
+ */
+function stepTo(state: BattleState, u: Unit, next: Vec2): StepResult {
+  const p = separatedStep(u.pos, next, hostilesOf(state, u).map((h) => h.pos), MIN_SEPARATION);
+  if (p.x === next.x && p.y === next.y) {
+    u.pos = p;
+    return 'moved';
+  }
+  // 押し戻した先は、見通しやフローフィールドが保証した道から外れうる
+  if (distance(u.pos, p) < BLOCKED_EPS || !isWalkableAt(state.grid, p)) return 'blocked';
+  u.pos = p;
+  return 'adjusted';
+}
+
+/** 自分で指示された移動の目的地を消す。追跡中の AI は相手が動くので消さない */
+function clearOrderedGoal(u: Unit): void {
+  if (u.controller !== 'player') return;
+  u.goalPos = null;
+  u.goalField = null;
+}
+
+/**
+ * 指示された目的地が、すでに接触している敵の最小距離の内側にあるか。
+ * 足元アンカーのスプライトは敵の胴体をタップすると目的地が敵の最小距離circleの内側（向こう側）を
+ * 指してしまう。すでに接触しているなら、そこから先へすべって回り込ませず、指示移動を終える
+ */
+function isGoalInsideContactedHostile(state: BattleState, u: Unit, goal: Vec2): boolean {
+  return hostilesOf(state, u).some((h) => (
+    distance(h.pos, goal) < MIN_SEPARATION && distance(u.pos, h.pos) <= MIN_SEPARATION + RANGE_EPS
+  ));
+}
+
 function moveTowardGoal(state: BattleState, u: Unit, dt: number): void {
   const goal = u.goalPos;
   if (!goal) return;
 
+  if (u.controller === 'player' && isGoalInsideContactedHostile(state, u, goal)) {
+    clearOrderedGoal(u);
+    return;
+  }
+
   const remaining = distance(u.pos, goal);
   const stepLen = u.speed * dt;
   if (remaining <= stepLen) {
-    u.pos = { ...goal };
-    // 追跡中は相手が動くので目的地を消さない。消すのは自分で指示された移動だけ
-    if (u.controller === 'player') {
-      u.goalPos = null;
-      u.goalField = null;
-    }
+    // 着いたか、敵にふさがれて着けないなら指示は終わり。すべって回り込み中なら続ける
+    if (stepTo(state, u, goal) !== 'adjusted') clearOrderedGoal(u);
     return;
   }
 
@@ -181,13 +239,12 @@ function moveTowardGoal(state: BattleState, u: Unit, dt: number): void {
       })();
 
   if (!dir) {
-    if (u.controller === 'player') {
-      u.goalPos = null;
-      u.goalField = null;
-    }
+    clearOrderedGoal(u);
     return;
   }
-  u.pos = { x: u.pos.x + dir.x * stepLen, y: u.pos.y + dir.y * stepLen };
+  const next = { x: u.pos.x + dir.x * stepLen, y: u.pos.y + dir.y * stepLen };
+  // 敵に行く手を完全にふさがれたら、指示された移動はそこで終える
+  if (stepTo(state, u, next) === 'blocked') clearOrderedGoal(u);
 }
 
 /**
@@ -199,12 +256,50 @@ function hasOrderedMove(u: Unit): boolean {
   return u.controller === 'player' && u.goalPos !== null;
 }
 
+/** 詰め寄り。相手の位置へ直進し、最小距離で止まる（そこで次の tick に交戦が成立する） */
+function closeIn(state: BattleState, u: Unit, dt: number): void {
+  const target = u.closingOn === null ? undefined : unitByUid(state, u.closingOn);
+  if (!target) return;
+  const d = distance(u.pos, target.pos);
+  if (d === 0) return;
+  const stepLen = Math.min(u.speed * dt, d);
+  stepTo(state, u, {
+    x: u.pos.x + ((target.pos.x - u.pos.x) / d) * stepLen,
+    y: u.pos.y + ((target.pos.y - u.pos.y) / d) * stepLen,
+  });
+}
+
 function moveUnits(state: BattleState, dt: number): void {
   for (const u of state.units) {
     if (u.retired) continue;
+    if (u.closingOn !== null) {
+      closeIn(state, u, dt);
+      continue;
+    }
     if (u.engagedWith !== null && !hasOrderedMove(u)) continue;
     moveTowardGoal(state, u, dt);
   }
+}
+
+/** 近接はその場でダメージ、弓と魔法は飛翔体を出す */
+function deliver(state: BattleState, source: HitSource, target: Unit): void {
+  if (source.attack === 'melee') applyDamage(state, source, target);
+  else spawnProjectile(state, source, target);
+}
+
+/** 振りかぶりが終わった攻撃を出す。相手が倒れていたら捨てる。射程は判定し直さない（空振りは作らない） */
+function resolvePendingHit(state: BattleState, u: Unit, byUid: Map<string, Unit>): void {
+  const pending = u.pendingHit;
+  if (pending === null || state.time < pending.at) return;
+  u.pendingHit = null;
+  const target = byUid.get(pending.targetUid);
+  if (!target || target.retired || target.hp <= 0) return;
+  // 飛翔体は発射地点から出る。振りかぶり中に歩いた分だけ、攻撃を出した時点の位置は
+  // ずれているので、発動する今の位置に差し替える（近接は位置を使わないので影響しない）
+  const source = pending.source.attack === 'melee'
+    ? pending.source
+    : { ...pending.source, pos: { ...u.pos } };
+  deliver(state, source, target);
 }
 
 function resolveAttacks(state: BattleState, dt: number): void {
@@ -214,8 +309,13 @@ function resolveAttacks(state: BattleState, dt: number): void {
     // hp <= 0 は resolveRemoval がまだ retired にしていない状態。飛翔体の着弾を
     // resolveAttacks の前に処理するようにしたため、着弾で倒れたユニットが同じ
     // tick でまだ反撃できてしまう。retired と合わせて hp も見て弾く
-    if (u.retired || u.hp <= 0) continue;
+    if (u.retired || u.hp <= 0) {
+      // 振りかぶり中に倒れたら、その攻撃は出ない
+      u.pendingHit = null;
+      continue;
+    }
     u.attackCooldown -= dt;
+    resolvePendingHit(state, u, byUid);
     if (!u.combat || u.engagedWith === null) continue;
     const target = byUid.get(u.engagedWith);
     if (!target || target.retired || target.hp <= 0) continue;
@@ -252,8 +352,9 @@ function resolveAttacks(state: BattleState, dt: number): void {
       pos: { ...u.pos }, targetPos: { ...target.pos },
     });
 
-    if (u.attack === 'melee') applyDamage(state, source, target);
-    else spawnProjectile(state, source, target);
+    // ダメージと飛翔体は、攻撃モーションの最後のコマ（振り下ろし）に合わせて出す
+    if (u.windup <= 0) deliver(state, source, target);
+    else u.pendingHit = { targetUid: target.uid, source, at: state.time + u.windup };
   }
 }
 
@@ -284,7 +385,9 @@ function resolveRemoval(state: BattleState): void {
 
     if (u.retired) {
       dropUnitField(state.fields, u.uid);
+      u.pendingHit = null;
       u.engagedWith = null;
+      u.closingOn = null;
       u.goalField = null;
       u.goalPos = null;
       for (const other of state.units) {

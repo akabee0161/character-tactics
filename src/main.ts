@@ -6,12 +6,14 @@ import { SKILL_EFFECT_IDS } from './core/skills';
 import { beginBattle, canPlaceAt, createBattleState, placeUnit } from './core/state';
 import { playerUnits, step } from './core/sim';
 import type { SimCommand } from './core/sim';
-import { drawBattle, drawDragPreview } from './render/draw';
+import { UNIT_R, drawBattle, drawDebugOverlay, drawDragPreview } from './render/draw';
+import { bodyCenter } from './render/sprites';
 import { escortDefIds } from './render/objectives-view';
-import { isWalkableAt } from './core/field';
+import { resolveMoveDest } from './core/field';
 import { makeEffectState, resetEffects, spawnEffects, syncDisplayedHp, tickEffects } from './render/effects';
 import { makeAnimStore, noteAttacks, resetAnim, updateMotion } from './render/anim';
 import { LOGICAL_H, LOGICAL_W, computeViewport, fitCanvas, logicalToMap, screenToLogical } from './render/viewport';
+import { debugKey, debugLabel, isDebugMode, makeDebugClock, simDt } from './ui/debug';
 import { clearSpeech, makeSpeechState, pushSpeech, tickSpeech } from './ui/speech';
 import { applyStageClear, hasReadIntro, isStageUnlocked, markIntroRead } from './ui/flow';
 import { hitRect, pickUnit } from './ui/hit';
@@ -31,7 +33,7 @@ import type { Measure, TalkState } from './ui/talk';
 import { loadSave, newSave, writeSave } from './save/save';
 import type { SaveData } from './save/save';
 import type { XpGain } from './ui/flow';
-import type { BattleState, Vec2 } from './core/types';
+import type { BattleState, Unit, Vec2 } from './core/types';
 
 const FIXED_DT = 1 / 60;
 
@@ -56,6 +58,19 @@ function resize(): void {
 }
 // window の resize ではブラウザズームによる devicePixelRatio の変化を拾えない
 new ResizeObserver(resize).observe(stageBox);
+
+/**
+ * 要素のサイズが変わらずに devicePixelRatio だけが変わった場合は ResizeObserver が発火しない。
+ * resolution のメディアクエリは今の dpr にしか一致しないので、変わるたびに新しい dpr で張り直す
+ */
+function watchDpr(): void {
+  const mq = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
+  mq.addEventListener('change', () => {
+    resize();
+    watchDpr();
+  }, { once: true });
+}
+watchDpr();
 resize();
 
 const loadResult = loadRegistry(SKILL_EFFECT_IDS);
@@ -122,10 +137,24 @@ function attackDuration(defId: string): number | null {
   if (!sheet) return null;
   return sheet.attack.frames / sheet.attack.fps;
 }
+/** タップの判定に使う絵の中心（マップ座標）。足元より下の何も無い所で掴めないようにする */
+function unitBody(u: Unit): Vec2 {
+  const def = lookupDef(registry, u.defId);
+  return def ? bodyCenter(u.pos, def, UNIT_R) : u.pos;
+}
 const images = makeImageCache(imageUrls());
 const commands: SimCommand[] = [];
 let accumulator = 0;
 let lastTime = performance.now();
+
+/** ?debug のときだけ、戦闘中の一時停止・コマ送り・スロー再生を効かせる（攻撃コマの確認用） */
+const debugMode = isDebugMode(window.location.search);
+const debugClock = makeDebugClock();
+if (debugMode) {
+  window.addEventListener('keydown', (ev) => {
+    if (debugKey(debugClock, ev.key, ev.repeat)) ev.preventDefault();
+  });
+}
 
 function toLogical(ev: PointerEvent): Vec2 {
   const rect = canvas.getBoundingClientRect();
@@ -270,7 +299,7 @@ function beginMapPointer(state: BattleState, p: Vec2, ev: PointerEvent): void {
     return;
   }
   const startMap = logicalToMap(p);
-  const uid = pickUnit(playerUnits(state), startMap);
+  const uid = pickUnit(playerUnits(state), startMap, undefined, unitBody);
   pointerStart = {
     uid,
     startMap,
@@ -348,7 +377,9 @@ canvas.addEventListener('pointermove', onPointerMove);
 canvas.addEventListener('pointerup', onPointerUp);
 canvas.addEventListener('pointercancel', onPointerCancel);
 
-function update(dt: number): void {
+function update(realDt: number): void {
+  // 一時停止とスロー再生は戦闘中だけ。会話や画面遷移まで止めると操作できなくなる
+  const dt = debugMode && phase === 'battle' ? simDt(debugClock, realDt, FIXED_DT) : realDt;
   tickEffects(effects, dt);
   if ((phase === 'talk' || phase === 'outro') && talk) {
     tickTalk(talk, dt);
@@ -422,6 +453,7 @@ function render(): void {
       if (battle) {
         drawBattle(ctx, registry, battle, selected, effects, escorts, images, anim);
         drawBottomBar(ctx, registry, battle, selected, escorts, images);
+        if (debugMode) drawDebugOverlay(ctx, registry, battle, anim, debugLabel(debugClock));
         if (speech.current !== null) drawSpeechBar(ctx, registry, speech.current, images);
       }
       break;
@@ -437,10 +469,14 @@ function render(): void {
   const dragPhaseOk = phase === 'placement' || phase === 'battle';
   if (battle && dragPhaseOk && dragUid !== null && dragMap !== null) {
     const unit = battle.units.find((u) => u.uid === dragUid)!;
-    const blocked = phase === 'placement'
-      ? !canPlaceAt(battle.stage, battle.grid, dragMap)
-      : !isWalkableAt(battle.grid, dragMap);
-    drawDragPreview(ctx, registry, unit.pos, dragMap, unit.defId, blocked, images);
+    if (phase === 'placement') {
+      const blocked = !canPlaceAt(battle.stage, battle.grid, dragMap);
+      drawDragPreview(ctx, registry, unit.pos, dragMap, unit.defId, blocked, images);
+    } else {
+      // 戦闘中は、歩けない場所でも最寄りの歩けるマスへ置き換えて進む。離したときの行き先を見せる
+      const dest = resolveMoveDest(battle.grid, unit.pos, dragMap);
+      drawDragPreview(ctx, registry, unit.pos, dest ?? dragMap, unit.defId, dest === null, images);
+    }
   }
 }
 

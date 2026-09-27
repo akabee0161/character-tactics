@@ -61,4 +61,11 @@ describe('pickUnit', () => {
     expect(pickUnit(list, { x: 132, y: 100 })).toBe('u-roran');
     expect(pickUnit(list, { x: 133, y: 100 })).toBeNull();
   });
+
+  it('中心の求め方を渡すと、その点からの距離で選ぶ（足元ではなく絵の中心で判定する）', () => {
+    const list = [unit('u-roran', 100, 100)];
+    const lifted = (u: Unit) => ({ x: u.pos.x, y: u.pos.y - 14 });
+    expect(pickUnit(list, { x: 100, y: 60 }, 32, lifted)).toBe('u-roran');  // 中心 (100,86) から 26
+    expect(pickUnit(list, { x: 100, y: 125 }, 32, lifted)).toBeNull();      // 中心から 39
+  });
 });

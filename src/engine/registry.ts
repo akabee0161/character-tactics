@@ -172,6 +172,11 @@ export function buildRegistry(
   for (const stage of reg.stages) {
     const file = `assets/stages/${stage.id}.json`;
     const roster = new Set(stage.roster);
+    for (const [key, entry] of Object.entries(stage.legend ?? {})) {
+      if (entry.tile !== null && !images.has(entry.tile)) {
+        errors.push({ file, path: `legend.${key}.tile`, reason: `assets/images/ に ない ファイル: ${entry.tile}` });
+      }
+    }
     stage.roster.forEach((defId, i) => {
       if (!reg.units.has(defId)) {
         errors.push({ file, path: `roster[${i}]`, reason: `units に ない id: ${defId}` });

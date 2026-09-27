@@ -87,3 +87,20 @@ export function drawRoleBadge(
 export function drawHalf(def: SpriteDef, fallback: number): number {
   return def.sprites.map === null ? fallback : def.sprites.map.frame / 2;
 }
+
+/** 足元の行は、コマの下端から何 px 上か。pixel-asset-forge の unit 規約（32px のコマで y=30）に合わせる */
+export const FOOT_INSET = 2;
+
+/** マップのタイルの一辺。拡大せず、1マスに (cell / TILE_PX)² 枚並べる */
+export const TILE_PX = 16;
+
+/**
+ * ユニットの位置（足元）から、絵の中心を求める。
+ * シートがあれば足元の行（frame - FOOT_INSET）が feet に来るように、
+ * シートが無ければ丸の下端が feet に来るようにする。
+ * HPバー・旗・リングなど、絵に付いて回るものはこの点を基準に置く
+ */
+export function bodyCenter(feet: Vec2, def: SpriteDef, fallback: number): Vec2 {
+  const lift = def.sprites.map === null ? fallback : def.sprites.map.frame / 2 - FOOT_INSET;
+  return { x: feet.x, y: feet.y - lift };
+}

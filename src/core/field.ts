@@ -1,6 +1,7 @@
-import type { FlowField, Grid, Vec2 } from './types';
+import type { FlowField, Grid, Legend, Vec2 } from './types';
 
-export function makeGrid(cell: number, rows: string[]): Grid {
+/** legend を渡さなければ '#' だけが歩けない（legend の無いステージとテストの既定） */
+export function makeGrid(cell: number, rows: string[], legend?: Legend): Grid {
   const r = rows.length;
   const c = rows[0]?.length ?? 0;
   const walkable = new Array<boolean>(c * r);
@@ -10,7 +11,8 @@ export function makeGrid(cell: number, rows: string[]): Grid {
       throw new Error(`grid row ${y} has length ${line.length}, expected ${c}`);
     }
     for (let x = 0; x < c; x++) {
-      walkable[y * c + x] = line[x] !== '#';
+      const ch = line[x]!;
+      walkable[y * c + x] = legend ? legend[ch]?.walkable === true : ch !== '#';
     }
   }
   return { cols: c, rows: r, cell, walkable };
@@ -125,6 +127,30 @@ export function flowDirection(grid: Grid, field: FlowField, pos: Vec2): Vec2 | n
   const len = Math.hypot(dx, dy);
   if (len === 0) return null;
   return { x: dx / len, y: dy / len };
+}
+
+/**
+ * 移動先の置き換え。dest が歩けるならそのまま返す。
+ * 歩けなければ（マップの外を含む）、from からたどり着けるマスのうち dest に最も近いマスの中心を返す。
+ * 近さが同じならフローフィールドの距離が短い方。たどり着けるマスが無ければ null
+ */
+export function resolveMoveDest(grid: Grid, from: Vec2, dest: Vec2): Vec2 | null {
+  if (isWalkableAt(grid, dest)) return { ...dest };
+  const field = computeFlowField(grid, from);
+  let best = -1;
+  let bestDist = Infinity;
+  let bestFlow = Infinity;
+  for (let i = 0; i < field.dist.length; i++) {
+    const flow = field.dist[i]!;
+    if (flow < 0) continue;
+    const d = distance(cellCenter(grid, i), dest);
+    if (d < bestDist - 1e-9 || (Math.abs(d - bestDist) <= 1e-9 && flow < bestFlow)) {
+      best = i;
+      bestDist = d;
+      bestFlow = flow;
+    }
+  }
+  return best < 0 ? null : cellCenter(grid, best);
 }
 
 export function distance(a: Vec2, b: Vec2): number {
