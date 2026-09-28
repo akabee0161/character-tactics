@@ -6,9 +6,9 @@ import { drawFace, drawRoleBadge } from '../render/sprites';
 import { readyGlowAlpha } from '../render/effects';
 import { LOGICAL_H, LOGICAL_W, mapToLogical } from '../render/viewport';
 import {
-  BOTTOM_PANEL_Y, BTN, MESSAGE_BAR, SPEECH_BODY_X, SPEECH_FONT_PX, SPEECH_LINE_H,
+  BOTTOM_PANEL_Y, BTN, FACE_PX, MESSAGE_BAR, SPEECH_BODY_X, SPEECH_FONT_PX, SPEECH_LINE_H,
   SPEECH_MAX_LINES, STAGE_LIST_VIEW, TALK_BODY_X, TALK_FONT, TALK_LINE_H, TALK_PAD, TALK_WINDOW,
-  portraitSlot, roleBadgeIn, rosterSlot, speechLines, stageListContentH, stageSlot,
+  hpBarIn, portraitSlot, roleBadgeIn, rosterSlot, speechLines, stageListContentH, stageSlot,
 } from './layout';
 import { currentSpeaker, pageCount, visibleLines } from './talk';
 import { isStageUnlocked } from './flow';
@@ -192,11 +192,11 @@ export function drawBottomBar(
 
       const def = lookupDef(reg, unit.defId) ?? FALLBACK_DEF;
       ctx.globalAlpha = unit.retired ? 0.4 : 1;
-      drawFace(ctx, { x: r.x + 22, y: r.y + 22 }, 13, def, images);
+      drawFace(ctx, { x: r.x + 22, y: r.y + 24 }, FACE_PX.small / 2, def, images);
 
       ctx.fillStyle = INK;
       ctx.font = '18px sans-serif';
-      ctx.fillText(def.name, r.x + 42, r.y + 28);
+      ctx.fillText(def.name, r.x + 42, r.y + 26);
 
       // レベルは枠の右上。名前の右は roleBadgeIn と重なる
       ctx.font = '14px sans-serif';
@@ -207,10 +207,11 @@ export function drawBottomBar(
 
       drawRoleBadge(ctx, roleBadgeIn(r), def, images);
 
+      const bar = hpBarIn(r);
       ctx.fillStyle = '#000';
-      ctx.fillRect(r.x + 8, r.y + 60, 113, 7);
+      ctx.fillRect(bar.x, bar.y, bar.w, bar.h);
       ctx.fillStyle = unit.retired ? '#666' : '#5ad06a';
-      ctx.fillRect(r.x + 8, r.y + 60, 113 * Math.max(0, unit.hp / unit.maxHp), 7);
+      ctx.fillRect(bar.x, bar.y, bar.w * Math.max(0, unit.hp / unit.maxHp), bar.h);
 
       ctx.globalAlpha = 1;
 

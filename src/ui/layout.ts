@@ -59,12 +59,24 @@ export function portraitSlot(index: number): Rect {
 }
 
 /**
+ * 顔の枠の直径。顔は 64px のドット絵で、大きい枠（会話・セリフ欄）は等倍、
+ * 小さい枠（仲間一覧・リザルト・下のバー）は半分で描く（README「アセットの大きさの規約」）
+ */
+export const FACE_PX = { large: 64, small: 32 } as const;
+
+/**
  * ポートレートの中でクラス（役割）を出す場所。
  * 画像・プレースホルダの文字・テストの3者が必ずこの1本を見る。
- * 別々に持つと、画像を入れたときだけ位置がずれる
+ * 別々に持つと、画像を入れたときだけ位置がずれる。
+ * 高さは 16px のアイコンを2倍にした 32px
  */
 export function roleBadgeIn(slot: Rect): Rect {
-  return { x: slot.x + 42, y: slot.y + 32, w: 84, h: 26 };
+  return { x: slot.x + 42, y: slot.y + 30, w: 84, h: 32 };
+}
+
+/** ポートレートの HP バー。クラスの枠の下、技のゲージ（slot.y + 70）の上に置く */
+export function hpBarIn(slot: Rect): Rect {
+  return { x: slot.x + 8, y: slot.y + 62, w: 113, h: 7 };
 }
 
 export const SPEECH_FONT_PX = 18;
