@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { FOOT_BELOW } from '../engine/footprint';
-import { FOOT_INSET, bodyCenter, smoothFor } from './sprites';
+import { FOOT_INSET, TILE_SIDES, bodyCenter, smoothFor, tileSide } from './sprites';
 import type { SpriteDef } from './sprites';
 
 const ANIM = { frames: 1, fps: 1 };
@@ -49,5 +49,23 @@ describe('smoothFor', () => {
 describe('足元の箱', () => {
   it('下の幅は、足元の行から絵の下端までの FOOT_INSET と同じ', () => {
     expect(FOOT_BELOW).toBe(FOOT_INSET);
+  });
+});
+
+describe('tileSide', () => {
+  const img = (w: number) => ({ naturalWidth: w }) as HTMLImageElement;
+
+  it('16px と 32px の画像は、その一辺を返す', () => {
+    expect(tileSide(img(16))).toBe(16);
+    expect(tileSide(img(32))).toBe(32);
+  });
+
+  it('それ以外の大きさ（読み込み前の 0 を含む）は 0（単色で描く）', () => {
+    expect(tileSide(img(24))).toBe(0);
+    expect(tileSide(img(0))).toBe(0);
+  });
+
+  it('描けるタイルの一辺は、どれも1マス（32px）を割り切る', () => {
+    for (const side of TILE_SIDES) expect(32 % side).toBe(0);
   });
 });
