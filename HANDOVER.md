@@ -4,7 +4,7 @@
 ## Current State
 
 - **Branch**: `docs/asset-size-conventions`（`origin/main` の `e6b89b7` から分岐）
-- **状態**: pixel-asset-forge の issue #6（ドット絵の確認結果）を受けて、アセットの大きさの規約を決めた。spec `docs/superpowers/specs/2026-09-28-asset-size-conventions-design.md` を書き、依頼者のレビュー待ち。承認後に実装計画を書く
+- **状態**: pixel-asset-forge の issue #6（ドット絵の確認結果）を受けて、アセットの大きさの規約を決めた。spec（`docs/superpowers/specs/2026-09-28-asset-size-conventions-design.md`）は承認済み。実装計画（`docs/superpowers/plans/2026-09-28-asset-size-conventions.md`、全4タスク）を書き、依頼者のレビュー待ち
 - issue #17 は PR #18 のマージ後にクローズ済み（2026-09-28）
 
 ## issue #6 への対応の順番（依頼者と合意、2026-09-28）
