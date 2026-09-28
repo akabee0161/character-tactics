@@ -1,3 +1,4 @@
+import { FOOT_BELOW, FOOT_HALF_W, footCorners } from '../engine/footprint';
 import type { FlowField, Grid, Legend, Vec2 } from './types';
 
 /** legend を渡さなければ '#' だけが歩けない（legend の無いステージとテストの既定） */
@@ -34,6 +35,30 @@ export function cellCenter(grid: Grid, index: number): Vec2 {
 export function isWalkableAt(grid: Grid, pos: Vec2): boolean {
   const i = cellIndexAt(grid, pos);
   return i >= 0 && grid.walkable[i] === true;
+}
+
+/** 足元の箱（engine/footprint.ts）の四隅が、すべて通れるマスの中にあるか。マップの外は通れない扱い */
+export function fitsAt(grid: Grid, pos: Vec2): boolean {
+  return footCorners(pos).every((c) => isWalkableAt(grid, c));
+}
+
+/**
+ * 箱が収まらない位置を、同じマスの中で箱が収まる位置へ寄せる。
+ * 横だけ・縦だけ・両方を寄せた候補のうち、収まって元の位置に最も近いもの。
+ * どれも収まらなければマスの中心（通れるマスの中心には必ず収まる）。マス自体が通れなければ null
+ */
+export function fitInCell(grid: Grid, pos: Vec2): Vec2 | null {
+  const i = cellIndexAt(grid, pos);
+  if (i < 0 || grid.walkable[i] !== true) return null;
+  if (fitsAt(grid, pos)) return { ...pos };
+  const left = (i % grid.cols) * grid.cell;
+  const top = Math.floor(i / grid.cols) * grid.cell;
+  const x = Math.min(Math.max(pos.x, left + FOOT_HALF_W), left + grid.cell - FOOT_HALF_W);
+  const y = Math.min(pos.y, top + grid.cell - FOOT_BELOW);
+  const fitting = [{ x, y: pos.y }, { x: pos.x, y }, { x, y }]
+    .filter((p) => fitsAt(grid, p))
+    .sort((a, b) => distance(a, pos) - distance(b, pos));
+  return fitting[0] ?? cellCenter(grid, i);
 }
 
 /** セル距離を整数で持つためのスケール。斜めは √2 ≒ 1.4 倍 */
@@ -127,6 +152,31 @@ export function flowDirection(grid: Grid, field: FlowField, pos: Vec2): Vec2 | n
   const len = Math.hypot(dx, dy);
   if (len === 0) return null;
   return { x: dx / len, y: dy / len };
+}
+
+/**
+ * from から to へ、足元の箱ごと直進できるか。箱の四隅から引いた4本の線を hasLineOfSight で確かめる。
+ * 「見えるか」の判定（ai.ts・autoclose.ts）は1本の線のままでよいので、移動にだけ使う
+ */
+export function hasClearPath(grid: Grid, from: Vec2, to: Vec2): boolean {
+  const a = footCorners(from);
+  const b = footCorners(to);
+  return a.every((c, k) => hasLineOfSight(grid, c, b[k]!));
+}
+
+/**
+ * from から to への1歩を、足元の箱が収まるように直す。収まらなければ x だけ・y だけの移動を試し、
+ * 進む量が大きいほうを返す（壁に沿って横すべりする）。どちらも収まらなければ from。
+ * from 自体に箱が収まらないとき（テストで置いた位置など）は、閉じ込めないよう足元の1点で判定する
+ */
+export function slideStep(grid: Grid, from: Vec2, to: Vec2): Vec2 {
+  if (fitsAt(grid, to)) return { ...to };
+  if (!fitsAt(grid, from)) return isWalkableAt(grid, to) ? { ...to } : { ...from };
+  let best = { ...from };
+  for (const p of [{ x: to.x, y: from.y }, { x: from.x, y: to.y }]) {
+    if (fitsAt(grid, p) && distance(from, p) > distance(from, best)) best = p;
+  }
+  return best;
 }
 
 /**

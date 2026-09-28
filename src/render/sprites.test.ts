@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { FOOT_BELOW } from '../engine/footprint';
 import { FOOT_INSET, bodyCenter, smoothFor } from './sprites';
 import type { SpriteDef } from './sprites';
 
@@ -42,5 +43,11 @@ describe('smoothFor', () => {
   it('差し替え前の 128px の顔は、64px の枠でも 32px の枠でもぼかす', () => {
     expect(smoothFor(128, 64)).toBe(true);
     expect(smoothFor(128, 32)).toBe(true);
+  });
+});
+
+describe('足元の箱', () => {
+  it('下の幅は、足元の行から絵の下端までの FOOT_INSET と同じ', () => {
+    expect(FOOT_BELOW).toBe(FOOT_INSET);
   });
 });
