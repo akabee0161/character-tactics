@@ -130,6 +130,13 @@ describe('canPlaceAt', () => {
     const { stage, state } = fresh();
     expect(canPlaceAt(stage, state.grid, { x: 0, y: 0 })).toBe(false);
   });
+
+  it('通れないマスの脇で、足元の箱がかかる位置には置けない', () => {
+    // stage1 の 18行目・13列目（x:416-448, y:576-608）が木。x=413 は箱の右端 419 が木にかかる
+    const { stage, state } = fresh();
+    expect(canPlaceAt(stage, state.grid, { x: 410, y: 592 })).toBe(true);
+    expect(canPlaceAt(stage, state.grid, { x: 413, y: 592 })).toBe(false);
+  });
 });
 
 describe('placeUnit', () => {

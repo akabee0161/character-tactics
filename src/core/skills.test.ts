@@ -221,6 +221,22 @@ describe('かけぬける', () => {
     expect(canUseSkill(s, gau.uid)).toBe(true);
   });
 
+  it('壁の脇を指すと、足元の箱がかからない位置まで寄せて移動する', () => {
+    const reg = testRegistry();
+    // row6（y:192-224）の col6-8（x:192-288）を壁にする。(190,208) は箱の右端 196 が壁にかかる
+    const stage: StageDef = {
+      ...reg.stages[0]!,
+      mapRows: reg.stages[0]!.mapRows.map((row, y) =>
+        y === 6 ? `${row.slice(0, 6)}###${row.slice(9)}` : row,
+      ),
+    };
+    const s = fresh(stage);
+    const gau = unitOf(s, 'gau');
+    gau.pos = { x: 80, y: 208 };
+    expect(useSkill(s, gau.uid, { x: 190, y: 208 })).toBe(true);
+    expect(unitOf(s, 'gau').pos).toEqual({ x: 186, y: 208 });
+  });
+
   it('倒した敵の lastHitBy が記録され、撃破功績が付く', () => {
     const s = fresh();
     const gau = unitOf(s, 'gau');

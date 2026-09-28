@@ -1,3 +1,5 @@
+import { footCorners } from './footprint';
+
 export type Vec2 = { x: number; y: number };
 export type AttackKind = 'melee' | 'bow' | 'magic';
 
@@ -659,8 +661,10 @@ export function validateStageDef(file: string, raw: unknown): Validated<StageDef
   const effectiveLegend = legend ?? DEFAULT_LEGEND;
   const mapRows = readMapRows(ctx, o.mapRows, effectiveLegend);
   const checkWalkable = (path: string, pos: Vec2): void => {
-    if (mapRows.length > 0 && !isWalkableCell(cell, mapRows, effectiveLegend, pos)) {
-      fail(ctx, path, 'あるけない マスに ある');
+    if (mapRows.length === 0) return;
+    // ユニットは足元の箱（engine/footprint.ts）で立つので、四隅がすべて通れるマスにあること
+    if (!footCorners(pos).every((c) => isWalkableCell(cell, mapRows, effectiveLegend, c))) {
+      fail(ctx, path, '足元が 通れない マスに かかる');
     }
   };
 

@@ -2,7 +2,7 @@ import { bondSupporters, BOND_RANGE } from './bonds';
 import { MELEE_RANGE } from './constants';
 import { hostilesOf, playerUnits } from './sim';
 import { skillParam } from '../engine/registry';
-import { distance, distanceToSegment, isWalkableAt } from './field';
+import { distance, distanceToSegment, fitInCell, fitsAt } from './field';
 import type { BattleState, Unit, Vec2 } from './types';
 
 /** skills.json に値がなかったときのふぉーるばっく。JSON が正なのでふつうは使われない */
@@ -17,7 +17,7 @@ function isPathWalkable(state: BattleState, from: Vec2, dest: Vec2): boolean {
   for (let i = 1; i < steps; i++) {
     const t = i / steps;
     const p = { x: from.x + (dest.x - from.x) * t, y: from.y + (dest.y - from.y) * t };
-    if (!isWalkableAt(state.grid, p)) return false;
+    if (!fitsAt(state.grid, p)) return false;
   }
   return true;
 }
@@ -64,13 +64,15 @@ export const SKILL_EFFECTS: Record<string, SkillEffect> = {
 
   kakenukeru: ({ state, self, dest }) => {
     if (!dest) return null;
-    if (!isWalkableAt(state.grid, dest)) return null;
+    // 壁の脇を指しても、足元の箱が壁にかからない位置へ寄せる
+    const to = fitInCell(state.grid, dest);
+    if (!to) return null;
     const from = { ...self.pos };
-    if (!isPathWalkable(state, from, dest)) return null;
+    if (!isPathWalkable(state, from, to)) return null;
     const damage = skillParam(state.reg, 'kakenukeru', 'damage', KAKENUKERU_DAMAGE);
     let hits = 0;
     for (const enemy of hostilesOf(state, self)) {
-      if (distanceToSegment(enemy.pos, from, dest) > MELEE_RANGE) continue;
+      if (distanceToSegment(enemy.pos, from, to) > MELEE_RANGE) continue;
       enemy.hp -= damage;
       enemy.lastHitBy = self.uid;
       enemy.lastHitNeraiuchi = false;
@@ -81,7 +83,7 @@ export const SKILL_EFFECTS: Record<string, SkillEffect> = {
         sourceUid: self.uid, sourceDefId: self.defId, attackKind: self.attack, sourcePos: { ...from }, neraiuchi: false,
       });
     }
-    self.pos = { ...dest };
+    self.pos = { ...to };
     self.goalField = null;
     self.goalPos = null;
     self.engagedWith = null;

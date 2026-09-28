@@ -537,6 +537,19 @@ describe('validateStageDef: legend', () => {
     if (!r.ok) expect(r.errors[0]?.path).toBe('enemies[0].pos');
   });
 
+  it('敵の足元の箱が 通れない マスに かかれば弾く', () => {
+    // VALID_STAGE の敵を (92,48) に。マス (2,1) は歩けるが、箱の右端 98 が右隣の '#'（x:96-）にかかる
+    const r = validateStageDef('stages/x.json', {
+      ...VALID_STAGE,
+      enemies: [{ defId: 'narazumono', pos: { x: 92, y: 48 }, ai: { kind: 'aggressive' } }],
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.errors[0]?.path).toBe('enemies[0].pos');
+      expect(r.errors[0]?.reason).toBe('足元が 通れない マスに かかる');
+    }
+  });
+
   it('キーが 2もじ いじょうなら弾く', () => {
     const r = validateStageDef('stages/x.json', {
       ...VALID_STAGE, legend: { ...LEGEND, TT: { tile: null, walkable: false } },
