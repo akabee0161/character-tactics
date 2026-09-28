@@ -6,9 +6,9 @@ import { drawFace, drawRoleBadge } from '../render/sprites';
 import { readyGlowAlpha } from '../render/effects';
 import { LOGICAL_H, LOGICAL_W, mapToLogical } from '../render/viewport';
 import {
-  BOTTOM_PANEL_Y, BTN, MESSAGE_BAR, SPEECH_BODY_X, SPEECH_FONT_PX, SPEECH_LINE_H,
+  BOTTOM_PANEL_Y, BTN, FACE_PX, MESSAGE_BAR, SPEECH_BODY_X, SPEECH_FONT_PX, SPEECH_LINE_H,
   SPEECH_MAX_LINES, STAGE_LIST_VIEW, TALK_BODY_X, TALK_FONT, TALK_LINE_H, TALK_PAD, TALK_WINDOW,
-  portraitSlot, roleBadgeIn, rosterSlot, speechLines, stageListContentH, stageSlot,
+  hpBarIn, portraitSlot, roleBadgeIn, rosterSlot, speechLines, stageListContentH, stageSlot,
 } from './layout';
 import { currentSpeaker, pageCount, visibleLines } from './talk';
 import { isStageUnlocked } from './flow';
@@ -140,7 +140,7 @@ function drawRoster(
     const r = rosterSlot(i);
     panel(ctx, r, '#18222c');
     const def = reg.units.get(id)!;
-    drawFace(ctx, { x: r.x + 28, y: r.y + 32 }, 16, def, images);
+    drawFace(ctx, { x: r.x + 28, y: r.y + 32 }, FACE_PX.small / 2, def, images);
     ctx.fillStyle = INK;
     ctx.fillText(`${def.name} Lv${save.units[id]!.level}`, r.x + 56, r.y + 26);
     const own = titlesOf(reg, save.titles, id);
@@ -192,11 +192,11 @@ export function drawBottomBar(
 
       const def = lookupDef(reg, unit.defId) ?? FALLBACK_DEF;
       ctx.globalAlpha = unit.retired ? 0.4 : 1;
-      drawFace(ctx, { x: r.x + 22, y: r.y + 22 }, 13, def, images);
+      drawFace(ctx, { x: r.x + 22, y: r.y + 24 }, FACE_PX.small / 2, def, images);
 
       ctx.fillStyle = INK;
       ctx.font = '18px sans-serif';
-      ctx.fillText(def.name, r.x + 42, r.y + 28);
+      ctx.fillText(def.name, r.x + 42, r.y + 26);
 
       // レベルは枠の右上。名前の右は roleBadgeIn と重なる
       ctx.font = '14px sans-serif';
@@ -207,10 +207,11 @@ export function drawBottomBar(
 
       drawRoleBadge(ctx, roleBadgeIn(r), def, images);
 
+      const bar = hpBarIn(r);
       ctx.fillStyle = '#000';
-      ctx.fillRect(r.x + 8, r.y + 60, 113, 7);
+      ctx.fillRect(bar.x, bar.y, bar.w, bar.h);
       ctx.fillStyle = unit.retired ? '#666' : '#5ad06a';
-      ctx.fillRect(r.x + 8, r.y + 60, 113 * Math.max(0, unit.hp / unit.maxHp), 7);
+      ctx.fillRect(bar.x, bar.y, bar.w * Math.max(0, unit.hp / unit.maxHp), bar.h);
 
       ctx.globalAlpha = 1;
 
@@ -264,7 +265,7 @@ export function drawSpeechBar(
   panel(ctx, r, '#f7f3e6');
 
   const def = lookupDef(reg, speech.defId) ?? FALLBACK_DEF;
-  drawFace(ctx, { x: r.x + 34, y: r.y + r.h / 2 }, 24, def, images);
+  drawFace(ctx, { x: r.x + 36, y: r.y + r.h / 2 }, FACE_PX.large / 2, def, images);
 
   ctx.fillStyle = '#1a1a1a';
   ctx.font = `${SPEECH_FONT_PX}px sans-serif`;
@@ -298,7 +299,7 @@ export function drawTalk(
 
   if (speaker !== null) {
     const info = lookupDef(reg, speaker) ?? { ...FALLBACK_DEF, name: speaker };
-    drawFace(ctx, { x: r.x + 54, y: r.y + 60 }, 30, info, images);
+    drawFace(ctx, { x: r.x + 54, y: r.y + 60 }, FACE_PX.large / 2, info, images);
     ctx.fillStyle = '#1a1a1a';
     ctx.font = '20px sans-serif';
     ctx.fillText(info.name, bodyX, r.y + 34);
@@ -339,7 +340,7 @@ export function drawResult(
   gains.forEach((g, i) => {
     const y = 180 + i * 56;
     const def = lookupDef(reg, g.id) ?? { ...FALLBACK_DEF, name: g.id };
-    drawFace(ctx, { x: 40, y: y - 6 }, 14, def, images);
+    drawFace(ctx, { x: 40, y: y - 6 }, FACE_PX.small / 2, def, images);
     ctx.fillStyle = INK;
     ctx.fillText(def.name, 66, y);
     ctx.fillStyle = g.leveledUp ? '#ffd479' : '#9fb3c4';

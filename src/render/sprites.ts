@@ -16,6 +16,14 @@ function circle(ctx: CanvasRenderingContext2D, c: Vec2, radius: number, color: s
 }
 
 /**
+ * 縮小して描くときだけぼかす。64px の顔を 32px の枠に出すと、最近傍では1画素おきに間引かれて
+ * 1px の線が抜ける。ちょうど半分なら2×2画素の平均になり形が残る。等倍と拡大はドット絵のまま
+ */
+export function smoothFor(srcPx: number, destPx: number): boolean {
+  return destPx < srcPx;
+}
+
+/**
  * 画像とプレースホルダの分岐はこの中だけに置く。呼び出し側で分けると、
  * 片方だけ位置がずれる事故が必ず起きる。
  * 画像は直径 2*radius の正方形に収める。丸くしたいならアセット側でそう描く
@@ -31,7 +39,13 @@ function drawSquareOrCircle(
     circle(ctx, c, radius, color);
     return;
   }
-  ctx.drawImage(img, c.x - radius, c.y - radius, radius * 2, radius * 2);
+  const size = radius * 2;
+  const srcPx = 'naturalWidth' in img ? img.naturalWidth : size;
+  const prev = ctx.imageSmoothingEnabled;
+  ctx.imageSmoothingEnabled = smoothFor(srcPx, size);
+  ctx.drawImage(img, c.x - radius, c.y - radius, size, size);
+  // マップのドット絵までぼけないよう、必ず元に戻す
+  ctx.imageSmoothingEnabled = prev;
 }
 
 export function drawFace(

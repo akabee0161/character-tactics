@@ -1,7 +1,9 @@
+import { readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
-  BOTTOM_PANEL_Y, BTN, MESSAGE_BAR, TALK_WINDOW,
-  portraitSlot, roleBadgeIn, rosterSlot, speechLines, stageSlot,
+  BOTTOM_PANEL_Y, BTN, FACE_PX, MESSAGE_BAR, SPEECH_BODY_X, SPEECH_MAX_LINES, TALK_WINDOW,
+  hpBarIn, portraitSlot, roleBadgeIn, rosterSlot, speechLines, stageSlot,
   STAGE_LIST_VIEW, stageListContentH,
 } from './layout';
 import { LOGICAL_H, LOGICAL_W, MAP_ORIGIN } from '../render/viewport';
@@ -75,8 +77,25 @@ describe('たてがたの レイアウト', () => {
 
   it('クラスの わくは HPバーと かさならない', () => {
     const slot = portraitSlot(0);
-    // drawBottomBar は HP バーを slot.y + 60 に描く
-    expect(roleBadgeIn(slot).y + roleBadgeIn(slot).h).toBeLessThanOrEqual(slot.y + 60);
+    expect(roleBadgeIn(slot).y + roleBadgeIn(slot).h).toBeLessThanOrEqual(hpBarIn(slot).y);
+  });
+
+  it('クラスの わくは 16px の絵を 2倍にした 32px', () => {
+    expect(roleBadgeIn(portraitSlot(0)).h).toBe(32);
+  });
+
+  it('HPバーは ポートレートの なかに ある', () => {
+    const slot = portraitSlot(0);
+    const bar = hpBarIn(slot);
+    expect(bar.x).toBeGreaterThanOrEqual(slot.x);
+    expect(bar.x + bar.w).toBeLessThanOrEqual(slot.x + slot.w);
+    expect(bar.y + bar.h).toBeLessThanOrEqual(slot.y + slot.h);
+  });
+
+  it('HPバーは 技の ゲージと かさならない', () => {
+    const slot = portraitSlot(0);
+    // drawBottomBar は技のゲージを slot.y + 70 に描く
+    expect(hpBarIn(slot).y + hpBarIn(slot).h).toBeLessThanOrEqual(slot.y + 70);
   });
 });
 
@@ -93,6 +112,15 @@ describe('MESSAGE_BAR', () => {
   it('画面の横幅に収まる', () => {
     expect(MESSAGE_BAR.x).toBeGreaterThanOrEqual(0);
     expect(MESSAGE_BAR.x + MESSAGE_BAR.w).toBeLessThanOrEqual(LOGICAL_W);
+  });
+
+  it('64px の顔が枠線（2px）の内側に収まる高さ', () => {
+    expect(MESSAGE_BAR.h).toBeGreaterThanOrEqual(FACE_PX.large + 4);
+  });
+
+  it('本文は顔の右から始まる', () => {
+    // drawSpeechBar は顔の中心を x+36 に置く
+    expect(SPEECH_BODY_X).toBeGreaterThanOrEqual(36 + FACE_PX.large / 2 + 8);
   });
 });
 
@@ -127,5 +155,25 @@ describe('ステージ一覧のスクロール', () => {
 
   it('見える範囲は 仲間一覧に かぶらない', () => {
     expect(STAGE_LIST_VIEW.y + STAGE_LIST_VIEW.h).toBeLessThanOrEqual(rosterSlot(0).y);
+  });
+});
+
+describe('FACE_PX', () => {
+  it('顔の枠は 64px と、その半分の 32px の2通り', () => {
+    expect(FACE_PX.large).toBe(64);
+    expect(FACE_PX.small).toBe(FACE_PX.large / 2);
+  });
+});
+
+describe('戦闘中のセリフ', () => {
+  it('assets/lines のセリフは、どれもセリフ欄の行数に収まる', () => {
+    const dir = 'assets/lines';
+    for (const name of readdirSync(dir)) {
+      if (!name.endsWith('.json')) continue;
+      const lines = JSON.parse(readFileSync(join(dir, name), 'utf8')) as Record<string, string>;
+      for (const [key, text] of Object.entries(lines)) {
+        expect(speechLines(text).length, `${name} の ${key}`).toBeLessThanOrEqual(SPEECH_MAX_LINES);
+      }
+    }
   });
 });

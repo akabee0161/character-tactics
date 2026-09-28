@@ -8,7 +8,7 @@ export const BOTTOM_PANEL_Y = 786;
  * 下パネルの上段。配置フェーズは「始める」ボタン、戦闘中はセリフ欄として使う。
  * 押す場所・読む場所がフェーズで動かないほうが覚えやすい
  */
-export const MESSAGE_BAR: Rect = { x: 8, y: 788, w: 524, h: 64 };
+export const MESSAGE_BAR: Rect = { x: 8, y: 788, w: 524, h: 68 };
 
 export const BTN = {
   titleNew: { x: 120, y: 520, w: 300, h: 76 } as Rect,
@@ -59,12 +59,24 @@ export function portraitSlot(index: number): Rect {
 }
 
 /**
+ * 顔の枠の直径。顔は 64px のドット絵で、大きい枠（会話・セリフ欄）は等倍、
+ * 小さい枠（仲間一覧・リザルト・下のバー）は半分で描く（README「アセットの大きさの規約」）
+ */
+export const FACE_PX = { large: 64, small: 32 } as const;
+
+/**
  * ポートレートの中でクラス（役割）を出す場所。
  * 画像・プレースホルダの文字・テストの3者が必ずこの1本を見る。
- * 別々に持つと、画像を入れたときだけ位置がずれる
+ * 別々に持つと、画像を入れたときだけ位置がずれる。
+ * 高さは 16px のアイコンを2倍にした 32px
  */
 export function roleBadgeIn(slot: Rect): Rect {
-  return { x: slot.x + 42, y: slot.y + 32, w: 84, h: 26 };
+  return { x: slot.x + 42, y: slot.y + 30, w: 84, h: 32 };
+}
+
+/** ポートレートの HP バー。クラスの枠の下、技のゲージ（slot.y + 70）の上に置く */
+export function hpBarIn(slot: Rect): Rect {
+  return { x: slot.x + 8, y: slot.y + 62, w: 113, h: 7 };
 }
 
 export const SPEECH_FONT_PX = 18;
@@ -72,7 +84,7 @@ export const SPEECH_LINE_H = 22;
 /** セリフ欄に出す最大行数。これを超える行は切る */
 export const SPEECH_MAX_LINES = 2;
 /** 本文の描き始め（顔のぶん右へ寄せる） */
-export const SPEECH_BODY_X = 68;
+export const SPEECH_BODY_X = 76;
 /** 本文の折り返し幅。MESSAGE_BAR から顔と右の余白を引いた残り */
 const SPEECH_CONTENT_W = MESSAGE_BAR.w - SPEECH_BODY_X - 12;
 
