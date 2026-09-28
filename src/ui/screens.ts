@@ -140,7 +140,7 @@ function drawRoster(
     const r = rosterSlot(i);
     panel(ctx, r, '#18222c');
     const def = reg.units.get(id)!;
-    drawFace(ctx, { x: r.x + 28, y: r.y + 32 }, 16, def, images);
+    drawFace(ctx, { x: r.x + 28, y: r.y + 32 }, FACE_PX.small / 2, def, images);
     ctx.fillStyle = INK;
     ctx.fillText(`${def.name} Lv${save.units[id]!.level}`, r.x + 56, r.y + 26);
     const own = titlesOf(reg, save.titles, id);
@@ -265,7 +265,7 @@ export function drawSpeechBar(
   panel(ctx, r, '#f7f3e6');
 
   const def = lookupDef(reg, speech.defId) ?? FALLBACK_DEF;
-  drawFace(ctx, { x: r.x + 34, y: r.y + r.h / 2 }, 24, def, images);
+  drawFace(ctx, { x: r.x + 36, y: r.y + r.h / 2 }, FACE_PX.large / 2, def, images);
 
   ctx.fillStyle = '#1a1a1a';
   ctx.font = `${SPEECH_FONT_PX}px sans-serif`;
@@ -299,7 +299,7 @@ export function drawTalk(
 
   if (speaker !== null) {
     const info = lookupDef(reg, speaker) ?? { ...FALLBACK_DEF, name: speaker };
-    drawFace(ctx, { x: r.x + 54, y: r.y + 60 }, 30, info, images);
+    drawFace(ctx, { x: r.x + 54, y: r.y + 60 }, FACE_PX.large / 2, info, images);
     ctx.fillStyle = '#1a1a1a';
     ctx.font = '20px sans-serif';
     ctx.fillText(info.name, bodyX, r.y + 34);
@@ -340,7 +340,7 @@ export function drawResult(
   gains.forEach((g, i) => {
     const y = 180 + i * 56;
     const def = lookupDef(reg, g.id) ?? { ...FALLBACK_DEF, name: g.id };
-    drawFace(ctx, { x: 40, y: y - 6 }, 14, def, images);
+    drawFace(ctx, { x: 40, y: y - 6 }, FACE_PX.small / 2, def, images);
     ctx.fillStyle = INK;
     ctx.fillText(def.name, 66, y);
     ctx.fillStyle = g.leveledUp ? '#ffd479' : '#9fb3c4';

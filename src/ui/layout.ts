@@ -8,7 +8,7 @@ export const BOTTOM_PANEL_Y = 786;
  * 下パネルの上段。配置フェーズは「始める」ボタン、戦闘中はセリフ欄として使う。
  * 押す場所・読む場所がフェーズで動かないほうが覚えやすい
  */
-export const MESSAGE_BAR: Rect = { x: 8, y: 788, w: 524, h: 64 };
+export const MESSAGE_BAR: Rect = { x: 8, y: 788, w: 524, h: 68 };
 
 export const BTN = {
   titleNew: { x: 120, y: 520, w: 300, h: 76 } as Rect,
@@ -84,7 +84,7 @@ export const SPEECH_LINE_H = 22;
 /** セリフ欄に出す最大行数。これを超える行は切る */
 export const SPEECH_MAX_LINES = 2;
 /** 本文の描き始め（顔のぶん右へ寄せる） */
-export const SPEECH_BODY_X = 68;
+export const SPEECH_BODY_X = 76;
 /** 本文の折り返し幅。MESSAGE_BAR から顔と右の余白を引いた残り */
 const SPEECH_CONTENT_W = MESSAGE_BAR.w - SPEECH_BODY_X - 12;
 
