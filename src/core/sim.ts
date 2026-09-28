@@ -6,7 +6,7 @@ import { MIN_SEPARATION, RANGE_EPS } from './constants';
 import { accumulate } from './counters';
 import { applyDamage } from './damage';
 import {
-  computeFlowField, distance, flowDirection, hasClearPath, resolveMoveDest, slideStep,
+  cellIndexAt, computeFlowField, distance, flowDirection, hasClearPath, resolveMoveDest, slideStep,
 } from './field';
 import { dropUnitField, fieldToStatic, fieldToUnit } from './fields';
 import { awardXpForEvents } from './growth';
@@ -231,8 +231,12 @@ function moveTowardGoal(state: BattleState, u: Unit, dt: number): void {
     return;
   }
 
-  // 目的地まで足元の箱ごと直進できるならフローフィールドを使わず直行する
-  const dir = hasClearPath(state.grid, u.pos, goal)
+  // 目的地まで足元の箱ごと直進できるならフローフィールドを使わず直行する。
+  // 目的地と同じマスにいるときも直行する。フローフィールドは同じマスの中では向きを出せず（距離0）、
+  // 指示が黙って消えてしまう。壁にかかるぶんは stepTo の slideStep が横すべりで吸収する
+  const direct = hasClearPath(state.grid, u.pos, goal)
+    || cellIndexAt(state.grid, u.pos) === cellIndexAt(state.grid, goal);
+  const dir = direct
     ? { x: (goal.x - u.pos.x) / remaining, y: (goal.y - u.pos.y) / remaining }
     : (() => {
         const field = fieldFor(state, u);

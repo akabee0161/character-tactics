@@ -159,6 +159,19 @@ describe('step: 移動', () => {
     expect(distance(unitOf(s, 'roran').pos, { x: 158, y: 80 })).toBeLessThan(1);
   });
 
+  it('目的地と同じマスに入ってから箱ごとの直進が通らなくても、指示は消えずに目的地に着く', () => {
+    // (0,1) が '#'。(34,31) は下の段の斜め隣が壁なので (34,30) に寄る。
+    // (60,40) から向かうと、同じマス (1,0) に入ったあとも箱の左下の線が壁を通る
+    const { state: s } = fresh({ ...STAGE, mapRows: ['..........', '#.........', '..........'], enemies: [] });
+    const roran = unitOf(s, 'roran');
+    roran.pos = { x: 60, y: 40 };
+    step(s, [{ type: 'move', uid: roran.uid, dest: { x: 34, y: 31 } }], 1 / 60);
+    for (let i = 0; i < 120; i++) {
+      step(s, [], 1 / 60);
+      expect(fitsAt(s.grid, unitOf(s, 'roran').pos), `tick ${i}`).toBe(true);    }
+    expect(distance(unitOf(s, 'roran').pos, { x: 34, y: 30 })).toBeLessThan(1);
+  });
+
   it('たいきゃく中の味方は動かない', () => {
     const { state: s } = fresh();
     const roran = unitOf(s, 'roran');
