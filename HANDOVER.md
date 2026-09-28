@@ -4,7 +4,9 @@
 ## Current State
 
 - **Branch**: `docs/asset-size-conventions`（`origin/main` の `e6b89b7` から分岐）
-- **状態**: pixel-asset-forge の issue #6（ドット絵の確認結果）を受けて、アセットの大きさの規約を決めた。spec（`docs/superpowers/specs/2026-09-28-asset-size-conventions-design.md`）は承認済み。実装計画（`docs/superpowers/plans/2026-09-28-asset-size-conventions.md`、全4タスク）を書き、依頼者のレビュー待ち
+- **状態**: pixel-asset-forge の issue #6（ドット絵の確認結果）を受けて、アセットの大きさの規約を決めた。spec（`docs/superpowers/specs/2026-09-28-asset-size-conventions-design.md`）は承認済み。実装計画（`docs/superpowers/plans/2026-09-28-asset-size-conventions.md`、全4タスク）を書いた。**実装は次のセッションで行う**（依頼者、2026-09-28）
+- **次のセッションの入り口:** 計画を依頼者に確認してもらい、実行方法（Subagent-driven / Native）を選んでもらってから Task 1 に入る。提案は Native（タスクが4つと少なく、issue #17 でトークン消費が激しいと言われたため）
+- 計画は spec から1点変えている: ぼかす条件を「32px の枠だけ」ではなく「縮小して描くときだけ」にした。64px の顔では同じ結果で、違うのは差し替え前の 128px の顔を 64px の枠でもぼかす点（依頼者に説明済み）
 - issue #17 は PR #18 のマージ後にクローズ済み（2026-09-28）
 
 ## issue #6 への対応の順番（依頼者と合意、2026-09-28）
@@ -12,7 +14,7 @@
 pixel-asset-forge #6: https://github.com/akabee0161/pixel-asset-forge/issues/6
 
 1. #6 の5項目め（リポジトリごとのアセット方針・移設）を forge の ISSUES.md に記録 → **済み**（forge のブランチ `docs/issue6-asset-policy`。PR は forge 側の変更とまとめて出す）
-2. **アセットの大きさの規約を決めて README に書く ← 今ここ**
+2. **アセットの大きさの規約を決めて README に書く ← 今ここ（spec・計画まで済み、実装が残り）**
 3. ゲーム側: 通れないマスへのめり込み（足元の1点判定 → 幅を持たせる）と、タイルを元の大きさで描く
 4. forge 側: 待機アニメで剣を持つ腕を動かす、村・岩・木を 16px×2×2 のセットで描き直す、森の絵
 5. ゲーム側: 森で移動が遅くなる（legend に速度の倍率、フローフィールドのコストにも反映）
