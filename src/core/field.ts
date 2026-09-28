@@ -180,12 +180,13 @@ export function slideStep(grid: Grid, from: Vec2, to: Vec2): Vec2 {
 }
 
 /**
- * 移動先の置き換え。dest が歩けるならそのまま返す。
+ * 移動先の置き換え。dest が歩けるマスなら、足元の箱が収まる位置へ寄せて返す（fitInCell）。
  * 歩けなければ（マップの外を含む）、from からたどり着けるマスのうち dest に最も近いマスの中心を返す。
  * 近さが同じならフローフィールドの距離が短い方。たどり着けるマスが無ければ null
  */
 export function resolveMoveDest(grid: Grid, from: Vec2, dest: Vec2): Vec2 | null {
-  if (isWalkableAt(grid, dest)) return { ...dest };
+  const fitted = fitInCell(grid, dest);
+  if (fitted) return fitted;
   const field = computeFlowField(grid, from);
   let best = -1;
   let bestDist = Infinity;

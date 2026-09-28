@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { EnemyDef } from '../engine/schema';
 import { hasThreatWithinMelee } from './combat';
 import { MIN_SEPARATION } from './constants';
-import { distance, isWalkableAt } from './field';
+import { distance, fitsAt, isWalkableAt } from './field';
 import { hostilesOf, step } from './sim';
 import { beginBattle, createBattleState } from './state';
 import { instantAttacks, testRegistry } from './testing';
@@ -136,6 +136,27 @@ describe('step: 移動', () => {
     step(s, [{ type: 'move', uid: unitOf(s, 'roran').uid, dest: { x: 176, y: 48 } }], 0.1);
     // (176,48) の上下左右のマスはどれも 32px。(16,80) からいちばんたどり着きやすいのは左 (144,48)
     expect(unitOf(s, 'roran').goalPos).toEqual({ x: 144, y: 48 });
+  });
+
+  it('壁の脇を指すと、足元の箱が壁にかからない位置へ寄せる', () => {
+    // (5,1) が '#'（x:160-192）。(158,48) の箱の右端は 164 で壁にかかるので、x=154 に寄る
+    const { state: s } = fresh({ ...STAGE, mapRows: ['..........', '.....#....', '..........'], enemies: [] });
+    unitOf(s, 'roran').pos = { x: 16, y: 80 };
+    step(s, [{ type: 'move', uid: unitOf(s, 'roran').uid, dest: { x: 158, y: 48 } }], 1 / 60);
+    expect(unitOf(s, 'roran').goalPos).toEqual({ x: 154, y: 48 });
+  });
+
+  it('壁の脇を通り抜けるあいだ、足元の箱は一度も壁にかからず、目的地に着く', () => {
+    // (158,16) から真下の (158,80) へ。まっすぐ下りると (5,1) の壁に箱がかかる
+    const { state: s } = fresh({ ...STAGE, mapRows: ['..........', '.....#....', '..........'], enemies: [] });
+    const roran = unitOf(s, 'roran');
+    roran.pos = { x: 158, y: 16 };
+    step(s, [{ type: 'move', uid: roran.uid, dest: { x: 158, y: 80 } }], 1 / 60);
+    for (let i = 0; i < 300; i++) {
+      step(s, [], 1 / 60);
+      expect(fitsAt(s.grid, unitOf(s, 'roran').pos), `tick ${i}`).toBe(true);
+    }
+    expect(distance(unitOf(s, 'roran').pos, { x: 158, y: 80 })).toBeLessThan(1);
   });
 
   it('たいきゃく中の味方は動かない', () => {

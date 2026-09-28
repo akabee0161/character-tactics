@@ -221,6 +221,12 @@ describe('resolveMoveDest', () => {
     const g = makeGrid(32, MAP);
     expect(resolveMoveDest(g, { x: 48, y: 48 }, { x: 80, y: 48 })).toBeNull();
   });
+
+  it('歩けるマスでも、足元の箱が壁にかかる位置なら内側へ寄せる', () => {
+    // (30,48) は歩けるマス (0,1)。右隣 (1,1) が '#' なので x=26 まで寄せる
+    const g = makeGrid(32, RING);
+    expect(resolveMoveDest(g, { x: 16, y: 16 }, { x: 30, y: 48 })).toEqual({ x: 26, y: 48 });
+  });
 });
 
 // 3×3 マスの真ん中だけ歩けない。マスは 32px
