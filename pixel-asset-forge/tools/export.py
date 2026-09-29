@@ -87,7 +87,12 @@ def export(mapping_path: Path, dest_dir: Path, build_dir: Path = BUILD_DIR) -> l
 
 
 def build() -> int:
-    """Render every asset, assemble every set and every sheet into build/."""
+    """Render every asset, assemble every set and every sheet into a fresh build/.
+
+    build/ is emptied first: a PNG left over from a grid that has since been
+    renamed or deleted would otherwise pass for current output.
+    """
+    shutil.rmtree(BUILD_DIR, ignore_errors=True)
     steps = (
         lambda: render.main([str(REPO_ROOT / "assets")]),
         lambda: sets.main([]),

@@ -102,5 +102,17 @@ class ExportTest(unittest.TestCase):
         self.assertFalse(missing.exists())
 
 
+class BuildTest(unittest.TestCase):
+    def test_a_png_left_from_an_earlier_build_is_removed(self):
+        # A grid renamed or deleted since the last build must not leave its old
+        # PNG behind, or export() would copy it as if it were current.
+        stale = export.BUILD_DIR / "tile" / "stale_from_an_earlier_build.png"
+        stale.parent.mkdir(parents=True, exist_ok=True)
+        stale.write_bytes(b"old")
+        self.assertEqual(export.build(), 0)
+        self.assertFalse(stale.exists())
+        self.assertTrue((export.BUILD_DIR / "tile" / "forest.png").is_file())
+
+
 if __name__ == "__main__":
     unittest.main()
