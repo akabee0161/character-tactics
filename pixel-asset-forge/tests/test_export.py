@@ -4,11 +4,14 @@
 """
 from __future__ import annotations
 
+import contextlib
+import io
 import json
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "tools"))
@@ -95,6 +98,20 @@ class ExportTest(unittest.TestCase):
         with self.assertRaisesRegex(export.ExportError, "nope.json.*not found"):
             export.export(self.mapping.parent / "nope.json", self.dest, self.build)
 
+    def test_a_folder_in_the_way_of_a_destination_stops_everything(self):
+        (self.dest / "tile-village.png").mkdir()
+        with self.assertRaisesRegex(export.ExportError, "tile-village.png.*not a file"):
+            self.run_export({"tile/forest.png": "tile-forest.png", "sets/village.png": "tile-village.png"})
+        self.assertFalse((self.dest / "tile-forest.png").exists())
+
+    def test_a_source_written_twice_is_rejected(self):
+        self.mapping.write_text(
+            '{"tile/forest.png": "tile-forest.png", "tile/forest.png": "tile-woods.png"}', encoding="utf-8"
+        )
+        with self.assertRaisesRegex(export.ExportError, "tile/forest.png.*more than once"):
+            export.export(self.mapping, self.dest, self.build)
+        self.assert_nothing_copied()
+
     def test_a_missing_destination_folder_is_not_created(self):
         missing = self.dest.parent / "missing"
         with self.assertRaisesRegex(export.ExportError, "missing.*not a folder"):
@@ -112,6 +129,37 @@ class BuildTest(unittest.TestCase):
         self.assertEqual(export.build(), 0)
         self.assertFalse(stale.exists())
         self.assertTrue((export.BUILD_DIR / "tile" / "forest.png").is_file())
+
+
+class MainTest(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        root = Path(self.tmp.name)
+        self.dest = root / "images"
+        self.dest.mkdir()
+        self.mapping = root / "sprites.json"
+        self.mapping.write_text(json.dumps({"tile/forest.png": "tile-forest.png"}), encoding="utf-8")
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def quiet_main(self, argv):
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            return export.main(argv)
+
+    def test_a_failed_build_copies_nothing_and_passes_its_code_on(self):
+        with mock.patch.object(export.render, "main", return_value=2):
+            code = self.quiet_main([str(self.mapping), str(self.dest)])
+        self.assertEqual(code, 2)
+        self.assertEqual(list(self.dest.iterdir()), [])
+
+    def test_a_bad_mapping_exits_1(self):
+        self.mapping.write_text("{", encoding="utf-8")
+        self.assertEqual(self.quiet_main([str(self.mapping), str(self.dest)]), 1)
+
+    def test_a_good_run_exits_0_and_copies(self):
+        self.assertEqual(self.quiet_main([str(self.mapping), str(self.dest)]), 0)
+        self.assertTrue((self.dest / "tile-forest.png").is_file())
 
 
 if __name__ == "__main__":

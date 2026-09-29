@@ -137,6 +137,8 @@ uv pip install --python pixel-asset-forge/.venv/bin/python -r pixel-asset-forge/
 pixel-asset-forge/.venv/bin/python pixel-asset-forge/tools/export.py sprites.json assets/images
 ```
 
+`export.py` は書き出しの前に `build/` を空にして、forge の全アセットを描き直す。`sprites.json` に書いていない絵でも、1枚でも検査に通らなければ `FAIL` で止まり、何も書き出さない（原因の `FAIL` の行は標準エラーに出る。`2>&1 >/dev/null` を付けると原因の行だけが見える）。
+
 エンジン・規約・道具を直したら、`pixel-asset-forge/.venv/bin/python -m unittest discover -s pixel-asset-forge/tests` を通し、`UPSTREAM.md` の「forge に戻す候補」に1行足す。
 
 ## コンテンツの足しかた
