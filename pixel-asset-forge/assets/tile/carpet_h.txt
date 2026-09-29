@@ -1,0 +1,6 @@
+# The same runner turned sideways. A rotation moves the light with the image,
+# which is allowed here. carpet_v's lit edge is its left column and its
+# shadowed edge is its right one, so a clockwise turn puts the lit edge along
+# the top and the shadow along the bottom - still upper-left light.
+# from: carpet_v.txt
+# transform: rotate_cw

@@ -1,0 +1,25 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# A rocky patch - five rocks of about the same size with loose stones between them.
+# One big boulder, and a big rock with smaller ones piled against it, both read as a single
+# out of place rock. Rocks of one size spread over the cell read as rough ground instead.
+# Same stone ramp as the single tile rock and the castle, lit from the upper left.
+# map: g=grass_base a=grass_hi s=grass_shadow o=outline
+# map: t=stone_hi n=stone_base m=stone_shadow k=stone_dark
+ggaagggggggggggg
+gggggggggggggggg
+gggggggggggggggg
+gggggggggggggggg
+gggggggooooggggg
+ggggggottnmooggg
+gggggotttnmmmogg
+agggottttkmmmosg
+ggggonnnnkmmmosg
+gggonnnnnkmmmmog
+ggggonnnnkmmmoss
+ggggoonnnkmmoosg
+gggggsoooooosssg
+gggggggssssssgoo
+ggggggggggggoott
+gggggggggggotttt

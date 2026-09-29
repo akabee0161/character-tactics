@@ -1,0 +1,28 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# A dirt road running north to south.
+# Every path tile puts the road in the same 10 cells (index 3 to 12) on all
+# four edges, so straights, bends, crossings and T junctions all meet without a
+# step. The wiggle in the road's edge is kept off rows 0, 7, 8 and 15 for the
+# same reason - those are the rows a neighbouring tile has to match.
+# There is no rim colour along the edge. The river's uniform 1px bank is what
+# makes it read as a canal, so here the irregular edge does that work instead.
+# map: g=grass_base a=grass_hi s=grass_shadow
+# map: d=dirt_base h=dirt_hi k=dirt_shadow
+gggddddddddddgaa
+gggdddkkdddddggg
+ggdddddddddddggg
+ssgdddddddhhddgg
+gggddddddddddggg
+ggggddddkkdddgag
+gggdhhdddddddgss
+gggddddddddddggg
+gggddddddddddgaa
+gggdddkkdddddggg
+ggdddddddddddggg
+ssgdddddddhhddgg
+gggddddddddddggg
+ggggddddkkdddgag
+gggdhhdddddddgss
+gggddddddddddggg

@@ -1,0 +1,30 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# map: g=grass_base a=grass_hi s=grass_shadow
+# map: h=water_hi w=water_base d=water_shadow
+#
+# The first version of river_v after the seam bug was fixed, kept as the
+# counterpart to river_v_seam_bug.txt.
+#
+# The pair used to be "the fixture" and "the live tile", but the live tile was
+# redrawn when the grassland set gave the river a two-pixel dirt bank, and the
+# two stopped being one edit apart. Pinning both sides here keeps the
+# regression test about the seam bug instead of about whatever river_v looks
+# like today.
+gggsdwwwwwwdsggg
+gggsdwwwwwwdsggg
+gggsdwhhwwwdsggg
+gagsdwwwwwwdsggg
+gggsdddwwwwdsggg
+gggsdwwwwwwdsggg
+gggsdwwwwhhdsggg
+gggsdwwwwwwdsggg
+gggsdwwwwwwdsggg
+gggsdhhwwwwdsggg
+gggsdwwwwdddsggg
+gggsdwwwwwwdsgag
+gggsdwwwhhwdsggg
+gggsdwwwwwwdsggg
+gggsdwwwwwwdsggg
+gggsdwwwwwwdsggg

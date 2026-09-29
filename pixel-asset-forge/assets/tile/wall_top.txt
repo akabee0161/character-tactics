@@ -1,0 +1,25 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# The top of a castle wall, seen from straight above. A wall is two tiles - this
+# one, with wall_face below it wherever the wall's south side is exposed. Side
+# walls are columns of wall_top on their own.
+# The slabs are deliberately larger than floor_stone's flagstones so a wall
+# reads as a wall and not as grey floor.
+# map: n=stone_base t=stone_hi m=stone_shadow
+mmmmmmmmmmmmmmmm
+mttttttttttttttt
+mtnnnnnnnnnnnnnn
+mtnnnnnnnnnnnnnn
+mtnnnnnnnnnnnnnn
+mtnnnnnnnnnnnnnn
+mtnnnnnnnnnnnnnn
+mtnnnnnnnnnnnnnn
+mmmmmmmmmmmmmmmm
+ttttttttmttttttt
+nnnnnnnnmtnnnnnn
+nnnnnnnnmtnnnnnn
+nnnnnnnnmtnnnnnn
+nnnnnnnnmtnnnnnn
+nnnnnnnnmtnnnnnn
+nnnnnnnnmtnnnnnn

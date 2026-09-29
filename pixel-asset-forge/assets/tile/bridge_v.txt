@@ -1,0 +1,9 @@
+# The same bridge across a river running east to west. Until this existed a
+# road could cross river_v and nothing else, so any road meeting river_h simply
+# stopped.
+# Counter-clockwise, not clockwise. The deck's lit edge is its north row, and
+# turning counter-clockwise sends that row to the west column, which is where
+# upper-left light wants it. Clockwise would have put the highlight on the far
+# side from the light.
+# from: bridge_h.txt
+# transform: rotate_ccw

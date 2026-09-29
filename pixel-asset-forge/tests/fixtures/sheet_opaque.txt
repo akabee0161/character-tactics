@@ -1,0 +1,8 @@
+# type: unit
+# size: 4x4
+# bg: #000000
+# map: o=outline
+....
+.o..
+.o..
+....

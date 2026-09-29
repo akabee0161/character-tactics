@@ -1,0 +1,3 @@
+# The tree set. One map cell in character-tactics (32px), built from four 16px parts.
+tree_nw  tree_ne
+tree_sw  tree_se

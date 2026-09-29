@@ -1,0 +1,21 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# A flat part for tests/test_sets.py. Fixed here so redrawing a live tile never breaks the test.
+# map: g=grass_base
+gggggggggggggggg
+gggggggggggggggg
+gggggggggggggggg
+gggggggggggggggg
+gggggggggggggggg
+gggggggggggggggg
+gggggggggggggggg
+gggggggggggggggg
+gggggggggggggggg
+gggggggggggggggg
+gggggggggggggggg
+gggggggggggggggg
+gggggggggggggggg
+gggggggggggggggg
+gggggggggggggggg
+gggggggggggggggg

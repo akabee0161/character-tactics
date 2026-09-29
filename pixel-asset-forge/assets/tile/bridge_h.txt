@@ -1,0 +1,23 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# A plank bridge across river_v, with the same two-pixel dirt bank.
+# map: g=grass_base a=grass_hi b=dirt_base
+# map: h=water_hi w=water_base d=water_shadow
+# map: o=outline p=wood_hi q=wood_base r=wood_shadow t=wood_dark
+ggbbdwwwwwwdbbgg
+ggbbdwwwwwwdbbgg
+gabbdwhhwwwdbbgg
+ggbbdwwwwwwdbbgg
+ggbbdddwwwwdbbgg
+ggbbdwwwwwwdbbgg
+gpptpptpptpptppg
+gqqtqqtqqtqqtqqg
+gqqtqqtqqtqqtqqg
+grrtrrtrrtrrtrrg
+goooooooooooooog
+ggbbddddddddbbgg
+ggbbdwwwhhwdbbgg
+ggbbdwwwwwwdbbga
+ggbbdwwwwwwdbbgg
+ggbbdwwwwwwdbbgg

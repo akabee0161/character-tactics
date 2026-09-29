@@ -1,0 +1,23 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# A flight going down. Same steps and side walls as stairs_up, but the treads
+# darken towards the top and the last two rows are outline, so the flight ends
+# in a hole instead of a landing.
+# map: o=outline n=stone_base t=stone_hi m=stone_shadow d=stone_dark
+oooooooooooooooo
+oooooooooooooooo
+mnddddddddddddmm
+mndoooooooooodmm
+mndmmmmmmmmmmdmm
+mndmmmmmmmmmmdmm
+mnddddddddddddmm
+mndoooooooooodmm
+mndnnnnnnnnnndmm
+mndmmmmmmmmmmdmm
+mndmmmmmmmmmmdmm
+mnddddddddddddmm
+mndttttttttttdmm
+mndnnnnnnnnnndmm
+mndnnnnnnnnnndmm
+mnddddddddddddmm

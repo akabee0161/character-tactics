@@ -1,0 +1,23 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# Long grass, for river banks and the edge of a wood. Upright blades instead of
+# plain's flat dashes - two lit pixels with a shadow at the root - scattered so
+# no two blades share a column.
+# map: g=grass_base a=grass_hi s=grass_shadow
+gggggggagggggggg
+ggaggggagggggggg
+ggaggggsggggaggg
+ggsgggggggggaggg
+ggggggggggggsggg
+gggggggggagggggg
+ggggaggggagggggg
+ggggaggggsggggag
+ggggsgggggggggag
+gggggggggggaggsg
+gagggggggggagggg
+gaggggaggggsgggg
+gsggggaggggggggg
+ggggggsgggggggga
+ggggggggggggggga
+gggggggggggggggs

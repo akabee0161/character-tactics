@@ -1,0 +1,25 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# A closed double door in a stone frame, for one tile of a wall_face run. Each
+# leaf is lit on its left edge and shaded on its right, so the pair of dark and
+# light columns in the middle reads as the seam where they meet.
+# map: n=stone_base t=stone_hi m=stone_shadow d=stone_dark
+# map: w=wood_base v=wood_hi b=wood_shadow x=wood_dark
+# map: y=metal_base l=metal_hi z=metal_shadow
+dddddddddddddddd
+dnttttttttttttnn
+dmtvwwwbvwwwbtmm
+dmtvwwwbvwwwbtmm
+dmtlyyyzlyyyztmm
+dmtyyyyzyyyyztmm
+dmtvwwwbvwwwbtmm
+dmtvwwwbvwwwbtmm
+ddtvwwlbvlwwbtdd
+nntvwwybvywwbtnn
+mmtlyyyzlyyyztmm
+mmtyyyyzyyyyztmm
+mmtvwwwbvwwwbtmm
+mmtvwwwbvwwwbtmm
+mmtvwwwbvwwwbtmm
+mmtxxxxxxxxxxtmm

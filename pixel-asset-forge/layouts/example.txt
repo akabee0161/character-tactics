@@ -1,0 +1,12 @@
+# A sample map for tools/tilemap.py --layout.
+# Whitespace-separated tile names, one map row per line. `.` leaves a cell empty.
+#
+# It exercises every connection the river set is supposed to make: a straight
+# run, a bridge, all four bends, and the castle sitting on open ground.
+
+plain     plain     river_v   plain     plain     plain     plain     plain
+plain     plain     river_v   plain     plain     river_se  river_h   river_sw
+plain     plain     bridge_h  plain     plain     river_v   plain     river_v
+castle_nw castle_ne river_v   plain     plain     river_v   plain     river_v
+castle_sw castle_se river_ne  river_h   river_h   river_nw  plain     river_v
+plain     plain     plain     plain     plain     plain     plain     river_v

@@ -1,0 +1,22 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# The east end of a run of wall_face. Its return faces away from the light, so
+# the edge goes dark where wall_corner_nw's goes bright.
+# map: n=stone_base m=stone_shadow d=stone_dark
+ddddddddddddddmd
+dnnnnnnndnnnnnmd
+dmmmmmmmdmmmmmmd
+dmmmmmmmdmmmmmmd
+dmmmmmmmdmmmmmmd
+dmmmmmmmdmmmmmmd
+dmmmmmmmdmmmmmmd
+dmmmmmmmdmmmmmmd
+ddddddddddddddmd
+nnnndnnnnnnndnmd
+mmmmdmmmmmmmdmmd
+mmmmdmmmmmmmdmmd
+mmmmdmmmmmmmdmmd
+mmmmdmmmmmmmdmmd
+mmmmdmmmmmmmdmmd
+mmmmdmmmmmmmdmmd

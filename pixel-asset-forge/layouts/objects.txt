@@ -1,0 +1,16 @@
+# The 32px object sets (tools/sets.py) on the grass they are laid on in character-tactics.
+# Each set takes 2x2 of these 16px cells, which is one map cell in the game.
+# The side-by-side pairs are there to check two sets next to each other.
+
+plain      plain      plain      plain      plain      plain      plain      plain      plain      plain
+plain      village_nw village_ne plain      plain      village_nw village_ne village_nw village_ne plain
+plain      village_sw village_se plain      plain      village_sw village_se village_sw village_se plain
+plain      plain      plain      plain      plain      plain      plain      plain      plain      plain
+plain      rock_nw    rock_ne    plain      plain      rock_nw    rock_ne    village_nw village_ne plain
+plain      rock_sw    rock_se    plain      plain      rock_sw    rock_se    village_sw village_se plain
+plain      plain      plain      plain      plain      plain      plain      plain      plain      plain
+plain      tree_nw    tree_ne    plain      tree_nw    tree_ne    forest     forest     forest     forest
+plain      tree_sw    tree_se    plain      tree_sw    tree_se    forest     forest     forest     forest
+plain      plain      plain      plain      rock_nw    rock_ne    forest     forest     forest     forest
+plain      plain      plain      plain      rock_sw    rock_se    forest     forest     forest     forest
+plain      plain      plain      plain      plain      plain      plain      plain      plain      plain

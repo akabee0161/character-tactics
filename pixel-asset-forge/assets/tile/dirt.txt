@@ -1,0 +1,23 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# Bare earth. The ground under a path, and usable on its own for a worn patch
+# in front of a gate. It reuses plain's mark layout in earth colours, so grass
+# and dirt laid next to each other have the same texture density.
+# map: d=dirt_base h=dirt_hi k=dirt_shadow
+ddhhdddddddddddd
+dddddddddddddddd
+dddddddddkkddddd
+dddddddddddddkkd
+dddddhdddddddddd
+dddddhdddddddddd
+dddddddddddddddd
+hddddddddddddddh
+dddddddkkddddddd
+ddddddddddddhhdd
+dddddddddddddddd
+dddkkddddddddddd
+ddddddddddkkdddd
+ddddddddhhdddddd
+dddddkkddddddddd
+dddddddddddddddd

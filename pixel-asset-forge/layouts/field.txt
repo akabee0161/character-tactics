@@ -1,0 +1,19 @@
+# The grassland set laid out as one map, for tools/tilemap.py --layout.
+#
+# It is here to check what a single tile cannot show: that the grass, flowers,
+# long grass and dirt share one texture density, that a road can leave a
+# village, bend, branch, cross itself and cross both rivers, and that the trees
+# and rocks sit on the same ground the roads run over.
+
+forest    forest    forest    pine      plain     plain      mountain  mountain  plain     plain     grass_tall river_v
+forest    forest    pine      plain     plain     mountain   mountain  plain     plain     grass_tall river_v   river_v
+pine      plain     plain     rock      plain     plain      plain     plain     grass_tall river_se  river_sw  plain
+plain     plain     tree      plain     path_v    plain      tree      plain     plain     river_v   river_v   plain
+plain     tree      stump     plain     path_v    plain      plain     rock      plain     bridge_h  bridge_h  plain
+plain     plain     plain     path_se   path_cross path_h    path_h    path_h    path_h    river_v   river_v   plain
+grass_flowers plain plain     path_v    path_v    plain      plain     plain     plain     river_ne  river_h   river_h
+grass_flowers grass_flowers well path_v path_t_e  path_h     path_h    path_nw   plain     plain     plain     plain
+plain     village   shop      path_v    plain     plain      plain     path_v    plain     pond      plain     plain
+fence_h   fence_h   fence_h   path_v    crop_field crop_field crop_field path_v   plain     plain     grass_flowers plain
+crop_field crop_field crop_field path_v crop_field crop_field crop_field path_ne  path_h    path_h    path_h    signpost
+crop_field crop_field crop_field path_ne path_h   path_h     path_h    path_nw   plain     plain     plain     plain

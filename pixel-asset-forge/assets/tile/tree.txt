@@ -1,0 +1,27 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# A broadleaf tree. The crown uses leaf_* rather than grass_*, because a crown
+# painted in the ground's own greens sinks into the field - leaf_hi against
+# grass_base measured dE 5.9, which is a hard failure in check_colors.
+# The outline around the crown is the tile type's rule for objects, and it also
+# means leaf and grass never actually touch.
+# map: g=grass_base a=grass_hi s=grass_shadow o=outline
+# map: e=leaf_hi f=leaf_base j=leaf_shadow
+# map: w=wood_base b=wood_shadow
+ggaagggggggggggg
+ggggggoooogggggg
+ggggooeeeeoogggg
+gggoeeeeffffoggg
+ggoeeeeefffffogg
+ggoeeeefffffjogg
+ggoeeefffffjjogg
+ggoeefffffjjjogg
+gggofffffjjjoggg
+ggggoffffjjogggg
+gggggoffjjoggggg
+ggggggojjogggggg
+ggggggowbogggggg
+ggggggowbogggggg
+gggggowwbboggggg
+gggggssssssggggg

@@ -1,0 +1,3 @@
+# The south-west bend.
+# from: path_ne.txt
+# transform: rotate_180

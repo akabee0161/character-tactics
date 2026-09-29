@@ -1,0 +1,23 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# A crossroads. The four inner corners are flared by one pixel on rows 2 and
+# 13, because a hard right angle there reads as a cut rather than as ground.
+# map: g=grass_base a=grass_hi s=grass_shadow
+# map: d=dirt_base h=dirt_hi k=dirt_shadow
+gggddddddddddgaa
+gggdddkkdddddggg
+ggddddddddddddgg
+dddddddddddddddd
+dddddddddhhddddd
+dddddddddddddddd
+dddkkddddddddddd
+dddddddddddddddd
+dddddddddddddddd
+ddddddddddddhhdd
+dddddddddddddddd
+ddddddkkdddddddd
+dddddddddddddddd
+ggddddddddddddgg
+sggddddddddddggg
+gggddddddddddggg

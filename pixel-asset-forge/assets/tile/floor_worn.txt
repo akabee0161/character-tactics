@@ -1,0 +1,25 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# floor_stone with damage, for breaking up a large hall. The joints are
+# identical to floor_stone so the two mix freely.
+# The cracks run from joint to joint in one unbroken line. Short 2px dashes
+# were tried first and read as litter on the floor, the same way a lone dark
+# pixel read as an insect on the grass tile.
+# map: f=floor_base h=floor_hi s=floor_shadow k=floor_dark
+ssssssssssssssss
+shhhhhhhshhhhhhh
+shffffffshffsfff
+shffffffshffsfff
+shffffffshfsffff
+shffffffshfsffff
+shffffffshffsfff
+shffffffshffsfff
+ssssssssssssssss
+hhhhshhhhhhhshhh
+ffffshffffffshff
+ffffshffffffshff
+ffffshssssffshff
+ffkkshffffffshff
+ffkkshffffffshff
+ffffshffffffshff

@@ -1,0 +1,22 @@
+# A throne room for tools/tilemap.py --layout, using every interior tile once.
+#
+# It is here to check the things a single tile cannot show: that wall_face sits
+# under wall_top without a step, that the two corners finish the run, that the
+# runner reaches the throne and crosses itself, and that the objects keep the
+# floor's joints running through them.
+#
+# A wall is two rows - wall_top, then wall_face where the wall's south side is
+# exposed. The south wall is wall_top on its own, because its face points away.
+
+wall_top       wall_top        wall_top   wall_top          wall_top          wall_top     wall_top          wall_top          wall_top   wall_top        wall_top     wall_top
+wall_corner_nw wall_face_torch wall_face  wall_face_window  wall_face_banner  wall_face    wall_face_banner  wall_face_window  wall_face  wall_face_torch door_closed  wall_corner_ne
+floor_stone    bookshelf       floor_stone floor_stone      floor_stone       throne       floor_stone       floor_stone       floor_stone bookshelf      floor_stone  floor_stone
+floor_stone    floor_stone     floor_stone floor_stone      floor_stone       carpet_end_n floor_stone       floor_stone       floor_stone floor_stone    floor_stone  floor_stone
+floor_stone    pillar          floor_stone floor_worn       floor_stone       carpet_v     floor_stone       floor_stone       floor_stone pillar         floor_stone  floor_stone
+floor_stone    brazier         floor_stone floor_stone      floor_stone       carpet_v     floor_stone       floor_stone       floor_stone brazier        floor_stone  floor_stone
+carpet_h       carpet_h        carpet_h   carpet_h          carpet_h          carpet_cross carpet_h          carpet_h          carpet_h   carpet_h        carpet_h     carpet_h
+floor_stone    floor_stone     floor_worn floor_stone       floor_stone       carpet_v     floor_stone       floor_stone       floor_stone floor_stone    floor_stone  floor_stone
+floor_stone    pillar          floor_stone floor_stone      floor_stone       carpet_v     floor_stone       floor_stone       floor_stone pillar         floor_stone  floor_stone
+floor_stone    floor_stone     floor_stone floor_stone      floor_stone       carpet_v     floor_stone       floor_worn        floor_stone floor_stone    floor_stone  floor_stone
+stairs_up      floor_stone     floor_stone floor_stone      floor_stone       carpet_v     floor_stone       floor_stone       floor_stone floor_stone    stairs_down  floor_stone
+wall_top       wall_top        wall_top   wall_top          wall_top          wall_top     wall_top          wall_top          wall_top   wall_top        wall_top     wall_top

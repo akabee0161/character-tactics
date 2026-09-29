@@ -1,0 +1,3 @@
+# A T junction with the branch going west.
+# from: path_t_n.txt
+# transform: rotate_ccw

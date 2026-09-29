@@ -1,0 +1,24 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# A pond that fits in one tile, for a field with no room for a river. The damp
+# grass around the edge is grass_shadow, which is what keeps the water from
+# looking like a hole cut in the ground.
+# map: g=grass_base a=grass_hi s=grass_shadow
+# map: u=water_base q=water_hi i=water_shadow
+gggggggggggggggg
+ggaagggggggggggg
+ggggggssssgggggg
+ggggssiiiissgggg
+gggsiiuuuuiisggg
+ggsiqquuuuuuisgg
+ggsiuuuuuuuuisgg
+ggsiuuuuuuuuisgg
+ggsiuuuuuuuiisgg
+gggsiuuuuuiisggg
+ggggssiiiissgggg
+ggggggssssgggggg
+gggggggggggggggg
+gggggggggggggggg
+ggggggggggssgggg
+gggggggggggggggg

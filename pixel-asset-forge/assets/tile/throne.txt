@@ -1,0 +1,24 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# The seat at the head of the hall - gilt frame, crimson cushion, on the same
+# floor as floor_stone so the flagstone joints carry on through the tile.
+# map: f=floor_base h=floor_hi s=floor_shadow k=floor_dark o=outline
+# map: c=carpet_base r=carpet_hi p=carpet_shadow
+# map: y=metal_base l=metal_hi z=metal_shadow
+ssssssssssssssss
+shhhoooooooohhhh
+shffolyyyyzoffff
+shffolrrrczoffff
+shffolrccczoffff
+shffolrccczoffff
+shffolrccpzoffff
+shffolccppzoffff
+ssssolcpppzossss
+hhhholyyyyzohhhh
+fffolrrrccczohff
+fffoycccpppzohff
+fffoyyyyyyzzohff
+ffffoyzooyzoshff
+ffffozzoozzoshff
+ffffkkkkkkkkshff

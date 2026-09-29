@@ -1,0 +1,6 @@
+# The same river turned sideways. It used to be a second hand-drawn copy that
+# had to be kept in step with river_v by hand; nothing in it was specific to
+# the horizontal case. Water shaded the same on both banks survives a rotation,
+# which is the test HANDOFF 2.4 asks for.
+# from: river_v.txt
+# transform: rotate_cw

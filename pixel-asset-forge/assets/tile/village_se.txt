@@ -1,0 +1,26 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# Three small cottages sharing one map cell. The front one is the largest and
+# sits lowest, so the cell reads as a hamlet seen from above rather than one big house.
+# Same colours as the single tile village - stone walls, timber door, metal_hi window.
+# map: g=grass_base a=grass_hi s=grass_shadow o=outline
+# map: r=roof_hi f=roof_base c=roof_shadow
+# map: t=stone_hi n=stone_base
+# map: w=wood_base b=wood_shadow x=wood_dark l=metal_hi
+ogaagsssssssssgg
+cogggggggggggggg
+fcoggggggssggggg
+fccogggggggggssg
+ffccoagggggggggg
+ffcccogggggggggg
+fffcccoggggggggg
+ooooooogggggggga
+txxttogssggggggg
+twbttoggggggaagg
+twbttogggggggggg
+nwbnnogggggggggg
+ooooooggggssgggg
+sssssssgaagggggg
+gggggssggggggggg
+gggggggggggggggg

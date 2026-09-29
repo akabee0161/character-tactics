@@ -1,0 +1,27 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# A single rocky peak.
+# The old version of this file was two chevrons of grass_hi and grass_shadow on
+# flat grass. It did not read as terrain at all, and worse, it shared its name
+# with mountain_{nw,ne,sw,se} while being made of entirely different colours.
+# This one uses the 2x2 massif's stone ramp and its diagonal, so a lone peak
+# and a range read as the same rock.
+# map: g=grass_base s=grass_shadow
+# map: k=stone_dark m=stone_shadow n=stone_base t=stone_hi
+gggssggggggggggg
+ggggggggggggssgg
+gggggggkkggggggg
+ggggggkkmmgggggg
+gggggkkkmmmggggg
+gggggkkmmmnggggg
+ggggkkmmmmnngggg
+gggkkmmmmmnntggg
+gggkkmmmmnnnttgg
+ggkkmmmmmnnnttgg
+ggkkmmmmnnnnttgg
+gkkmmmmmnnnnttgg
+gkkkmmmmnnnttttg
+ggssssssssssssgg
+ggssgggggggggggg
+ggggggggggssgggg

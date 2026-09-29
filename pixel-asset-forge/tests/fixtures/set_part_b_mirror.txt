@@ -1,0 +1,2 @@
+# from: set_part_b.txt
+# transform: mirror_x

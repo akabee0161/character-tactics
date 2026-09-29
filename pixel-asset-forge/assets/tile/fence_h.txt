@@ -1,0 +1,25 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# A run of fence going east to west. The posts land every 8px once the tile
+# repeats, and the rails cross the whole tile so a run joins up.
+# No outline on this one. A post is 2px wide, and an outline around it would
+# leave a single pixel of wood inside.
+# map: g=grass_base s=grass_shadow
+# map: w=wood_base v=wood_hi b=wood_shadow
+gggggggggggggggg
+ggssgggggggggggg
+gggggggggggggggg
+gggggggggggssggg
+gggggggggggggggg
+gggvbggggggvbggg
+wwwvbwwwwwwvbwww
+gggvbggggggvbggg
+gggvbggggggvbggg
+bbbvbbbbbbbvbbbb
+gggvbggggggvbggg
+gggvbggggggvbggg
+gggssggggggssggg
+gggggggggggggggg
+gggggggggggggggg
+ggggggssgggggggg

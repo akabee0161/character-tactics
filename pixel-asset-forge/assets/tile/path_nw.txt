@@ -1,0 +1,4 @@
+# The north-west bend. Mirrored rather than drawn, for the same reason the road
+# can be rotated - flat ground carries no light direction.
+# from: path_ne.txt
+# transform: mirror_x
