@@ -411,8 +411,11 @@ export type IntroLine = {
   lineId: string | null;
 };
 
-/** mapRows の1文字が何を表すか。tile は assets/images 内のファイル名。null なら単色で描く */
-export type LegendEntry = { tile: string | null; walkable: boolean };
+/**
+ * mapRows の1文字が何を表すか。tile は assets/images 内のファイル名。null なら単色で描く。
+ * speed はそのマスでの移動の速さの倍率（0 より大きく 1 以下）。省略時は 1 で、書かれたときだけ入る
+ */
+export type LegendEntry = { tile: string | null; walkable: boolean; speed?: number };
 export type Legend = Record<string, LegendEntry>;
 
 /** legend を書かないステージの既定。'.' 歩ける / '#' 歩けない、どちらも単色 */
@@ -489,7 +492,21 @@ function readLegend(ctx: Ctx, v: unknown): Legend | undefined {
     const tile = e.tile === null ? null : requireString(ctx, `${path}.tile`, e.tile);
     const walkable = requireBoolean(ctx, `${path}.walkable`, e.walkable);
     if (walkable === null) continue;
-    out[key] = { tile, walkable };
+    if (e.speed === undefined) {
+      out[key] = { tile, walkable };
+      continue;
+    }
+    if (!walkable) {
+      fail(ctx, `${path}.speed`, 'とおれない マスには かけない');
+      continue;
+    }
+    const speed = requireNumber(ctx, `${path}.speed`, e.speed, { max: 1 });
+    if (speed === null) continue;
+    if (speed <= 0) {
+      fail(ctx, `${path}.speed`, '0 より 大きい かずが ひつよう');
+      continue;
+    }
+    out[key] = { tile, walkable, speed };
   }
   if (Object.keys(out).length === 0) fail(ctx, 'legend', '1つ いじょう ひつよう');
   return out;
