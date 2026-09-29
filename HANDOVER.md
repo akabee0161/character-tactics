@@ -1,25 +1,51 @@
 # Session Handover
-## Generated: 2026-09-28
+## Generated: 2026-09-29
 
 ## Current State
 
-- **Branch**: `feat/foot-box-and-tile-size`（`docs/asset-size-conventions` から分岐。そちらは `origin/main` の `e6b89b7` から分岐）
-- **状態**: issue #6 対応の③（足元の箱・タイルの描き方。計画 `docs/superpowers/plans/2026-09-28-foot-box-and-tile-size.md` の全5タスク）の実装が完了。PR 未作成。規約のブランチ（②）の PR を先にマージする必要がある
-- ②の規約の実装（計画 `docs/superpowers/plans/2026-09-28-asset-size-conventions.md`）も完了済み・PR 未作成。規約は README「アセットの大きさの規約」
-- 計画は spec から1点変えている: ぼかす条件を「32px の枠だけ」ではなく「縮小して描くときだけ」にした。64px の顔では同じ結果で、違うのは差し替え前の 128px の顔を 64px の枠でもぼかす点（依頼者に説明済み）
-- 実装中に計画を1点直した（依頼者の判断、2026-09-28）: 下のバーの HP バーを計画の y+66 ではなく y+62 に置いた。y+66 だと技のゲージ（y+70〜y+75）と重なるため
+- **Branch**: `feat/forest-slow-tile`（⑤用。`origin/main` の `5656bc5` = PR #20 のマージから分岐。この HANDOVER の更新だけをコミットしてある。push していない）
+- **main**: PR #19（②規約）と PR #20（③足元の箱・タイル描画、④の PNG、CodeRabbit の指摘5件の修正）はマージ済み（2026-09-29）
+- **pixel-asset-forge**: ブランチ `docs/issue6-asset-policy` に12コミット（#6 方針の ISSUES.md 2件＋④の10件）。**まだ push も PR も無い**。依頼者は push と PR 作成を了承済み（2026-09-29）で、次のセッションの最初に行う
 - issue #17 は PR #18 のマージ後にクローズ済み（2026-09-28）
+
+## What Remains（上から順に）
+
+- [ ] forge の `docs/issue6-asset-policy` を push し、main 向きの PR を作る（PR の本文は forge 側の変更: ISSUES.md の方針2件、`tools/sets.py`、村・岩・木の 32px セット、ロランの待機の2コマ目、正典の更新。ゲームへのコピーは character-tactics の PR #20 でマージ済みと書く）
+- [ ] ⑤ 森で移動が遅くなる（このブランチ `feat/forest-slow-tile` で。brainstorming から。下記「⑤の前提」）
+- [ ] ⑥ アセットのテキストとビルドを forge からこのリポジトリへ移設する（下記）
 
 ## issue #6 への対応の順番（依頼者と合意、2026-09-28）
 
 pixel-asset-forge #6: https://github.com/akabee0161/pixel-asset-forge/issues/6
 
-1. #6 の5項目め（リポジトリごとのアセット方針・移設）を forge の ISSUES.md に記録 → **済み**（forge のブランチ `docs/issue6-asset-policy`。PR は forge 側の変更とまとめて出す）
-2. アセットの大きさの規約を決めて README に書く → **済み**（ブランチ `docs/asset-size-conventions`、PR 未作成）
-3. ゲーム側: 通れないマスへのめり込み（足元の1点判定 → 幅を持たせる）と、タイルを元の大きさで描く → **済み**（ブランチ `feat/foot-box-and-tile-size`、PR 未作成）
-4. forge 側: 待機アニメで剣を持つ腕を動かす、村・岩・木を 16px×2×2 のセットで描き直す、森の絵 → **済み**（forge のブランチ `docs/issue6-asset-policy`、PNG はこのブランチ `feat/foot-box-and-tile-size` にコピー済み。待機は剣を持つ拳を2px上げる。村は小さな家3軒、岩は岩5つの岩場、木は小さい木5本の林。森は今の `forest` をそのまま使い、⑤でコピーする）
+1. #6 の5項目め（リポジトリごとのアセット方針・移設）を forge の ISSUES.md に記録 → **済み**（forge のブランチ `docs/issue6-asset-policy`、未 push）
+2. アセットの大きさの規約を決めて README に書く → **済み**（PR #19 でマージ）
+3. ゲーム側: 通れないマスへのめり込みと、タイルを元の大きさで描く → **済み**（PR #20 でマージ）
+4. forge 側: 待機アニメ・村/岩/木の 32px セット・森の絵 → **済み**（forge の絵は `docs/issue6-asset-policy`、未 push。PNG は PR #20 でこのリポジトリにマージ済み）。待機は剣を持つ拳を2px上げる。村は小さな家3軒、岩は同じくらいの岩5つの岩場、木は小さい木5本の林。森は今の forge の `forest` をそのまま使う
 5. **← 次はここ** ゲーム側: 森で移動が遅くなる（legend に速度の倍率、フローフィールドのコストにも反映）
 6. アセットのテキストとビルドを forge からこのリポジトリへ移設する（下記）
+
+## ⑤の前提（2026-09-29 時点で分かっていること）
+
+- 森の絵は forge の `assets/tile/forest.txt`（16px、上下左右に継ぎ目なくつながる樹冠）をそのまま使う（依頼者の判断）。`build/tile/forest.png` を `assets/images/tile-forest.png` としてコピーする（まだコピーしていない）。森の端が四角く切れる弱点は、依頼者が「いずれ解消する」としていて⑤の範囲外
+- 1マスの物（村・岩・木）の 32px の絵は forge の `build/sets/` から、地面の 16px の絵は `build/tile/` から取る（README「コンテンツの足しかた」）。forge の `build/tile/` にも同じ名前の 16px の旧版 `village` `rock` `tree` がある
+- 1歩の移動の補正（`slideStep`）は、候補の途中が壁にかからないこと（`hasClearPath`）も調べる。寄せた点だけは縦→横の2段の道筋も認める（CodeRabbit の指摘への対応、PR #20）。速度の倍率を足すと1歩の長さが変わるので、ここを通る
+- ステージの `cell` は 32 だけを受け付ける（`CELL_PX`、`src/engine/schema.ts`）
+
+## この2日で決まった進め方（依頼者の指示）
+
+- superpowers の brainstorming → spec → 実装計画 → 実行方法の選択、の順に、それぞれ承認を取る。質問は1回に1つ、短く
+- **計画に不備が見つかったら、直す前に止めて報告する**（④では3回あった。CDP の表示領域、コマ送りのキー、`slideStep` の既存テストの期待値）
+- 作った絵・撮った画面は Read で見せる。絵は何案か並べて選んでもらうと早い（岩・木はこの形で決まった）
+- PR は依頼者の指示で作る。CodeRabbit のレビューは依頼者が依頼する。指摘はまず正しいかをコードで確かめ、修正方針を示して承認を得てから直す（直すときは TDD）。コメントへの返信はしない
+
+## Context Files（次のセッションで最初に読むもの）
+
+- この `HANDOVER.md`
+- `README.md`「アセットの大きさの規約」「コンテンツの足しかた」（ステージの `legend`）
+- `src/core/field.ts`（`computeFlowField`・`slideStep`・`hasClearPath`）と `src/core/sim.ts`（`stepTo`・移動の速さ）
+- forge の `ISSUES.md`（④で見つけて残した軽微な点）と `types/tile/SPEC.md`「物のセット（32px）」
+- forge の④の spec と計画: `docs/2026-09-28-issue6-forge-assets-spec.md`・`docs/2026-09-28-issue6-forge-assets-plan.md`（作成時点のログ）
 
 ## アセットの大きさの規約: ここまでに決まったこと
 
