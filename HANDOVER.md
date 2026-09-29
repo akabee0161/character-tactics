@@ -5,13 +5,12 @@
 
 - **main**: PR #19（②規約）、PR #20（③足元の箱・タイル描画、④の PNG、CodeRabbit の指摘5件の修正）、PR #21（⑤森、CodeRabbit の指摘1件の修正）はマージ済み（2026-09-29）
 - **issue #6 で予定していた作業（①〜⑤）はすべて終わった。** forge の issue #6 は対応結果をコメントして閉じた（2026-09-29）。⑥の移設は時期未定で、予定の作業ではない。forge の issue #8 に切り出した（下記）
-- **pixel-asset-forge**: ブランチ `docs/issue6-asset-policy`（12コミット）を push し、PR #7 を作った（2026-09-29、未マージ）
+- **pixel-asset-forge**: PR #7（ブランチ `docs/issue6-asset-policy`。CodeRabbit の指摘2件の修正を含む）はマージ済み（2026-09-29）
 - issue #17 は PR #18 のマージ後にクローズ済み（2026-09-28）
 
 ## What Remains
 
 - 予定している作業は無い
-- forge の PR #7 は未マージ（2026-09-29 時点）。マージは依頼者が行う
 
 ## issue #6 への対応の順番（依頼者と合意、2026-09-28）
 
