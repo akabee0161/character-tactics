@@ -2,7 +2,7 @@ import { bondSupporters, BOND_RANGE } from './bonds';
 import { MELEE_RANGE } from './constants';
 import { hostilesOf, playerUnits } from './sim';
 import { skillParam } from '../engine/registry';
-import { distance, distanceToSegment, fitInCell, fitsAt } from './field';
+import { distance, distanceToSegment, fitInCell, hasClearPath } from './field';
 import type { BattleState, Unit, Vec2 } from './types';
 
 /** skills.json に値がなかったときのふぉーるばっく。JSON が正なのでふつうは使われない */
@@ -10,17 +10,6 @@ export const FUNBARU_DURATION = 5;
 export const OMAJINAI_HEAL = 12;
 export const KAKENUKERU_DAMAGE = 5;
 export const DEFAULT_SKILL_COOLDOWN = 10;
-
-function isPathWalkable(state: BattleState, from: Vec2, dest: Vec2): boolean {
-  const step = state.grid.cell / 2;
-  const steps = Math.max(1, Math.ceil(distance(from, dest) / step));
-  for (let i = 1; i < steps; i++) {
-    const t = i / steps;
-    const p = { x: from.x + (dest.x - from.x) * t, y: from.y + (dest.y - from.y) * t };
-    if (!fitsAt(state.grid, p)) return false;
-  }
-  return true;
-}
 
 export type SkillContext = { state: BattleState; self: Unit; dest?: Vec2 };
 
@@ -68,7 +57,8 @@ export const SKILL_EFFECTS: Record<string, SkillEffect> = {
     const to = fitInCell(state.grid, dest);
     if (!to) return null;
     const from = { ...self.pos };
-    if (!isPathWalkable(state, from, to)) return null;
+    // 移動と同じ基準。点をまばらに調べると、点と点のあいだで箱が壁の角をかすめる経路を通してしまう
+    if (!hasClearPath(state.grid, from, to)) return null;
     const damage = skillParam(state.reg, 'kakenukeru', 'damage', KAKENUKERU_DAMAGE);
     let hits = 0;
     for (const enemy of hostilesOf(state, self)) {
