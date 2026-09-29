@@ -5,12 +5,12 @@
 
 - **Branch**: `feat/forest-slow-tile`（⑤用。`origin/main` の `5656bc5` = PR #20 のマージから分岐。この HANDOVER の更新だけをコミットしてある。push していない）
 - **main**: PR #19（②規約）と PR #20（③足元の箱・タイル描画、④の PNG、CodeRabbit の指摘5件の修正）はマージ済み（2026-09-29）
-- **pixel-asset-forge**: ブランチ `docs/issue6-asset-policy` に12コミット（#6 方針の ISSUES.md 2件＋④の10件）。**まだ push も PR も無い**。依頼者は push と PR 作成を了承済み（2026-09-29）で、次のセッションの最初に行う
+- **pixel-asset-forge**: ブランチ `docs/issue6-asset-policy`（12コミット）を push し、PR #7 を作った（2026-09-29、未マージ）
 - issue #17 は PR #18 のマージ後にクローズ済み（2026-09-28）
 
 ## What Remains（上から順に）
 
-- [ ] forge の `docs/issue6-asset-policy` を push し、main 向きの PR を作る（PR の本文は forge 側の変更: ISSUES.md の方針2件、`tools/sets.py`、村・岩・木の 32px セット、ロランの待機の2コマ目、正典の更新。ゲームへのコピーは character-tactics の PR #20 でマージ済みと書く）
+- [x] forge の `docs/issue6-asset-policy` を push し、main 向きの PR を作る → forge の PR #7（2026-09-29）
 - [ ] ⑤ 森で移動が遅くなる（このブランチ `feat/forest-slow-tile` で。brainstorming から。下記「⑤の前提」）
 - [ ] ⑥ アセットのテキストとビルドを forge からこのリポジトリへ移設する（下記）
 
@@ -18,10 +18,10 @@
 
 pixel-asset-forge #6: https://github.com/akabee0161/pixel-asset-forge/issues/6
 
-1. #6 の5項目め（リポジトリごとのアセット方針・移設）を forge の ISSUES.md に記録 → **済み**（forge のブランチ `docs/issue6-asset-policy`、未 push）
+1. #6 の5項目め（リポジトリごとのアセット方針・移設）を forge の ISSUES.md に記録 → **済み**（forge の PR #7）
 2. アセットの大きさの規約を決めて README に書く → **済み**（PR #19 でマージ）
 3. ゲーム側: 通れないマスへのめり込みと、タイルを元の大きさで描く → **済み**（PR #20 でマージ）
-4. forge 側: 待機アニメ・村/岩/木の 32px セット・森の絵 → **済み**（forge の絵は `docs/issue6-asset-policy`、未 push。PNG は PR #20 でこのリポジトリにマージ済み）。待機は剣を持つ拳を2px上げる。村は小さな家3軒、岩は同じくらいの岩5つの岩場、木は小さい木5本の林。森は今の forge の `forest` をそのまま使う
+4. forge 側: 待機アニメ・村/岩/木の 32px セット・森の絵 → **済み**（forge の絵は forge の PR #7。PNG は PR #20 でこのリポジトリにマージ済み）。待機は剣を持つ拳を2px上げる。村は小さな家3軒、岩は同じくらいの岩5つの岩場、木は小さい木5本の林。森は今の forge の `forest` をそのまま使う
 5. **← 次はここ** ゲーム側: 森で移動が遅くなる（legend に速度の倍率、フローフィールドのコストにも反映）
 6. アセットのテキストとビルドを forge からこのリポジトリへ移設する（下記）
 
