@@ -48,6 +48,13 @@ forge #8: https://github.com/akabee0161/pixel-asset-forge/issues/8
 
 `new-game` スキル（`.claude/skills/new-game/SKILL.md`）に、「ドット絵を使うなら」という手順を1つ足す。このスクリプトの呼び方と、コピーした後にゲーム側で行うこと（対応表を書く・書き出す）を書く。
 
+経緯が分かるように、この手順から次の2つへリンクする（依頼者の希望）:
+
+- この spec（character-tactics の main 上の `docs/superpowers/specs/2026-09-30-move-pixel-asset-forge-design.md` の GitHub の URL）
+- character-tactics の移設の PR
+
+PR は ankardo の作業より後にできる。そのため、ankardo の PR は character-tactics の PR ができるまでマージせず、PR の番号がわかった時点でリンクを足してからマージする。
+
 ## 2. character-tactics
 
 ### コピー
@@ -110,7 +117,8 @@ forge #8: https://github.com/akabee0161/pixel-asset-forge/issues/8
 
 1. ankardo: `copy-forge.sh` を作り、`new-game` スキルを更新する
 2. character-tactics: コピー → 書き出しのスクリプトと対応表 → 6枚に差分が無いことの確認 → README・HANDOVER の更新
-3. forge: #8 に結果を書いて閉じる
+3. ankardo: `new-game` スキルに character-tactics の PR へのリンクを足す
+4. forge: #8 に結果を書いて閉じる
 
 PR はリポジトリごとに分かれる（ankardo と character-tactics）。PR は依頼者の指示で作る。
 
