@@ -581,6 +581,74 @@ describe('validateStageDef: legend', () => {
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.errors[0]?.path).toBe('legend.T.walkable');
   });
+
+  it('speed を 書けば legend に はいる', () => {
+    const r = validateStageDef('stages/x.json', {
+      ...VALID_STAGE,
+      mapRows: ['FFFF', 'F..F', 'F..F', 'FFFF'],
+      legend: { ...LEGEND, F: { tile: 'tile-forest.png', walkable: true, speed: 0.5 } },
+    });
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value.legend?.F).toEqual({ tile: 'tile-forest.png', walkable: true, speed: 0.5 });
+  });
+
+  it('speed を 省略すると speed は はいらない', () => {
+    const r = validateStageDef('stages/x.json', {
+      ...VALID_STAGE, mapRows: ['TTTT', 'T..T', 'T..T', 'TTTT'], legend: LEGEND,
+    });
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value.legend?.['.']).not.toHaveProperty('speed');
+  });
+
+  it('speed は 1 ちょうどでも よい', () => {
+    const r = validateStageDef('stages/x.json', {
+      ...VALID_STAGE,
+      mapRows: ['TTTT', 'T..T', 'T..T', 'TTTT'],
+      legend: { ...LEGEND, '.': { tile: null, walkable: true, speed: 1 } },
+    });
+    expect(r.ok).toBe(true);
+  });
+
+  it('speed は 下限の 0.1 ちょうどでも よい', () => {
+    const r = validateStageDef('stages/x.json', {
+      ...VALID_STAGE,
+      mapRows: ['TTTT', 'T..T', 'T..T', 'TTTT'],
+      legend: { ...LEGEND, '.': { tile: null, walkable: true, speed: 0.1 } },
+    });
+    expect(r.ok).toBe(true);
+  });
+
+  it.each([
+    ['0', 0, '0.1 いじょうが ひつよう'],
+    ['マイナス', -0.5, '0.1 いじょうが ひつよう'],
+    ['下限の 0.1 より 小さい', 0.05, '0.1 いじょうが ひつよう'],
+    ['1 より 大きい', 1.5, '1 いかが ひつよう'],
+    ['かずで ない', 'slow', 'かずが ひつよう'],
+  ])('speed が %s なら弾く', (_label, speed, reason) => {
+    const r = validateStageDef('stages/x.json', {
+      ...VALID_STAGE,
+      mapRows: ['TTTT', 'T..T', 'T..T', 'TTTT'],
+      legend: { ...LEGEND, '.': { tile: null, walkable: true, speed } },
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.errors[0]?.path).toBe('legend...speed');
+      expect(r.errors[0]?.reason).toBe(reason);
+    }
+  });
+
+  it('walkable: false の こうもくに speed が あれば弾く', () => {
+    const r = validateStageDef('stages/x.json', {
+      ...VALID_STAGE,
+      mapRows: ['TTTT', 'T..T', 'T..T', 'TTTT'],
+      legend: { ...LEGEND, T: { tile: 'tile-tree.png', walkable: false, speed: 0.5 } },
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.errors[0]?.path).toBe('legend.T.speed');
+      expect(r.errors[0]?.reason).toBe('とおれない マスには かけない');
+    }
+  });
 });
 
 /** 検証を通る最小のステージ。引数で1フィールドだけ差し替える */

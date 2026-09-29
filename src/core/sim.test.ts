@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { EnemyDef } from '../engine/schema';
 import { hasThreatWithinMelee } from './combat';
 import { MIN_SEPARATION } from './constants';
-import { distance, fitsAt, isWalkableAt } from './field';
+import { distance, fitsAt, isWalkableAt, speedAt } from './field';
 import { hostilesOf, step } from './sim';
 import { beginBattle, createBattleState } from './state';
 import { instantAttacks, testRegistry } from './testing';
@@ -867,5 +867,103 @@ describe('近接の自動の詰め寄り', () => {
     e.hp = 0;
     for (let i = 0; i < 60; i++) step(s, [], 1 / 60);
     expect(roran.pos).toEqual(at);
+  });
+});
+
+describe('森', () => {
+  const FOREST_LEGEND = {
+    '.': { tile: null, walkable: true },
+    F: { tile: null, walkable: true, speed: 0.5 },
+  };
+  const ALL_FOREST: StageDef = {
+    ...STAGE, mapRows: ['FFFFFFFFFF', 'FFFFFFFFFF', 'FFFFFFFFFF'], legend: FOREST_LEGEND,
+  };
+
+  it('森の中では指示した移動が半分の速さになる（ロランは 30px/秒）', () => {
+    const { state: s } = fresh(ALL_FOREST);
+    const roran = unitOf(s, 'roran');
+    roran.pos = { x: 16, y: 80 };
+    step(s, [{ type: 'move', uid: roran.uid, dest: { x: 304, y: 80 } }], 1);
+    expect(roran.pos.x).toBeCloseTo(46, 0);
+    expect(roran.pos.y).toBeCloseTo(80, 4);
+  });
+
+  it('森の中では敵も半分の速さになる', () => {
+    const { state: s } = fresh(ALL_FOREST);
+    const e = spawnEnemy(s, 'narazumono', { x: 304, y: 16 });
+    const before = { ...e.pos };
+    step(s, [], 1);
+    expect(distance(before, e.pos)).toBeCloseTo(e.speed * 0.5, 0);
+  });
+
+  it('森の中では詰め寄りも半分の速さになる', () => {
+    const { state: s } = fresh(ALL_FOREST);
+    const roran = unitOf(s, 'roran');
+    for (const u of s.units) if (u.side === 'player' && u !== roran) u.retired = true;
+    roran.pos = { x: 100, y: 48 };
+    const e = s.units.find((u) => u.side === 'enemy')!;
+    e.pos = { x: 150, y: 48 };
+    e.speed = 0;
+    e.combat = false;
+    step(s, [], 1 / 60);
+    expect(roran.closingOn).toBe(e.uid);
+    expect(roran.pos.x).toBeCloseTo(100 + 60 * 0.5 / 60, 6);
+  });
+
+  // 列 3〜6 の行 0〜2 が森。(16,16) から (304,16) は横切ると 140、行3 を回ると 114。
+  // STAGE の勝利地点 (304,16) にロランが入ると戦闘が終わって止まるので、
+  // 勝利は (16,80) から動かないイネスだけにする
+  const DETOUR: StageDef = {
+    ...STAGE,
+    mapRows: ['...FFFF...', '...FFFF...', '...FFFF...', '..........'],
+    legend: FOREST_LEGEND,
+    enemies: [],
+    victory: { ...STAGE.victory, by: 'ines' },
+  };
+
+  it('まっすぐの線が森を通るときは、森を回って目的地に着く', () => {
+    const { state: s } = fresh(DETOUR);
+    const roran = unitOf(s, 'roran');
+    roran.pos = { x: 16, y: 16 };
+    const dest = { x: 304, y: 16 };
+    step(s, [{ type: 'move', uid: roran.uid, dest }], 0.1);
+    let maxY = roran.pos.y;
+    for (let i = 0; i < 600 && unitOf(s, 'roran').goalPos; i++) {
+      step(s, [], 0.1);
+      maxY = Math.max(maxY, unitOf(s, 'roran').pos.y);
+    }
+    expect(maxY).toBeGreaterThanOrEqual(96); // 行3 に下りた
+    expect(unitOf(s, 'roran').pos).toEqual(dest);
+  });
+
+  it('まっすぐの線が森を通らなければ、今までどおり直行する', () => {
+    const { state: s } = fresh(DETOUR);
+    const roran = unitOf(s, 'roran');
+    roran.pos = { x: 16, y: 112 };
+    const dest = { x: 304, y: 112 };
+    step(s, [{ type: 'move', uid: roran.uid, dest }], 0.1);
+    expect(roran.pos.y).toBeCloseTo(112, 4);
+    expect(roran.pos.x).toBeCloseTo(22, 4);
+  });
+
+  it('森の中の目的地を指示すると、森に入って目的地に着く', () => {
+    const { state: s } = fresh(DETOUR);
+    const roran = unitOf(s, 'roran');
+    roran.pos = { x: 16, y: 16 };
+    const dest = { x: 176, y: 48 };
+    step(s, [{ type: 'move', uid: roran.uid, dest }], 0.1);
+    for (let i = 0; i < 600 && unitOf(s, 'roran').goalPos; i++) step(s, [], 0.1);
+    expect(unitOf(s, 'roran').pos).toEqual(dest);
+    expect(speedAt(s.grid, dest)).toBe(0.5);
+  });
+
+  it('森の中から森の外の目的地へ、止まらずに着く', () => {
+    const { state: s } = fresh(DETOUR);
+    const roran = unitOf(s, 'roran');
+    roran.pos = { x: 144, y: 48 };
+    const dest = { x: 304, y: 112 };
+    step(s, [{ type: 'move', uid: roran.uid, dest }], 0.1);
+    for (let i = 0; i < 600 && unitOf(s, 'roran').goalPos; i++) step(s, [], 0.1);
+    expect(unitOf(s, 'roran').pos).toEqual(dest);
   });
 });

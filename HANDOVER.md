@@ -1,25 +1,55 @@
 # Session Handover
-## Generated: 2026-09-28
+## Generated: 2026-09-29
 
 ## Current State
 
-- **Branch**: `feat/foot-box-and-tile-size`（`docs/asset-size-conventions` から分岐。そちらは `origin/main` の `e6b89b7` から分岐）
-- **状態**: issue #6 対応の③（足元の箱・タイルの描き方。計画 `docs/superpowers/plans/2026-09-28-foot-box-and-tile-size.md` の全5タスク）の実装が完了。PR 未作成。規約のブランチ（②）の PR を先にマージする必要がある
-- ②の規約の実装（計画 `docs/superpowers/plans/2026-09-28-asset-size-conventions.md`）も完了済み・PR 未作成。規約は README「アセットの大きさの規約」
-- 計画は spec から1点変えている: ぼかす条件を「32px の枠だけ」ではなく「縮小して描くときだけ」にした。64px の顔では同じ結果で、違うのは差し替え前の 128px の顔を 64px の枠でもぼかす点（依頼者に説明済み）
-- 実装中に計画を1点直した（依頼者の判断、2026-09-28）: 下のバーの HP バーを計画の y+66 ではなく y+62 に置いた。y+66 だと技のゲージ（y+70〜y+75）と重なるため
+- **Branch**: `feat/forest-slow-tile`（⑤用。`origin/main` の `5656bc5` = PR #20 のマージから分岐。⑤の spec・計画・実装をコミット済み。push していない）
+- **main**: PR #19（②規約）と PR #20（③足元の箱・タイル描画、④の PNG、CodeRabbit の指摘5件の修正）はマージ済み（2026-09-29）
+- **pixel-asset-forge**: ブランチ `docs/issue6-asset-policy`（12コミット）を push し、PR #7 を作った（2026-09-29、未マージ）
 - issue #17 は PR #18 のマージ後にクローズ済み（2026-09-28）
+
+## What Remains（上から順に）
+
+- [x] forge の `docs/issue6-asset-policy` を push し、main 向きの PR を作る → forge の PR #7（2026-09-29）
+- [x] ⑤ 森で移動が遅くなる（このブランチ `feat/forest-slow-tile`。下記「⑤で決めたこと」）
+- [ ] ⑥ アセットのテキストとビルドを forge からこのリポジトリへ移設する（下記）
 
 ## issue #6 への対応の順番（依頼者と合意、2026-09-28）
 
 pixel-asset-forge #6: https://github.com/akabee0161/pixel-asset-forge/issues/6
 
-1. #6 の5項目め（リポジトリごとのアセット方針・移設）を forge の ISSUES.md に記録 → **済み**（forge のブランチ `docs/issue6-asset-policy`。PR は forge 側の変更とまとめて出す）
-2. アセットの大きさの規約を決めて README に書く → **済み**（ブランチ `docs/asset-size-conventions`、PR 未作成）
-3. ゲーム側: 通れないマスへのめり込み（足元の1点判定 → 幅を持たせる）と、タイルを元の大きさで描く → **済み**（ブランチ `feat/foot-box-and-tile-size`、PR 未作成）
-4. forge 側: 待機アニメで剣を持つ腕を動かす、村・岩・木を 16px×2×2 のセットで描き直す、森の絵 → **済み**（forge のブランチ `docs/issue6-asset-policy`、PNG はこのブランチ `feat/foot-box-and-tile-size` にコピー済み。待機は剣を持つ拳を2px上げる。村は小さな家3軒、岩は岩5つの岩場、木は小さい木5本の林。森は今の `forest` をそのまま使い、⑤でコピーする）
-5. **← 次はここ** ゲーム側: 森で移動が遅くなる（legend に速度の倍率、フローフィールドのコストにも反映）
-6. アセットのテキストとビルドを forge からこのリポジトリへ移設する（下記）
+1. #6 の5項目め（リポジトリごとのアセット方針・移設）を forge の ISSUES.md に記録 → **済み**（forge の PR #7）
+2. アセットの大きさの規約を決めて README に書く → **済み**（PR #19 でマージ）
+3. ゲーム側: 通れないマスへのめり込みと、タイルを元の大きさで描く → **済み**（PR #20 でマージ）
+4. forge 側: 待機アニメ・村/岩/木の 32px セット・森の絵 → **済み**（forge の絵は forge の PR #7。PNG は PR #20 でこのリポジトリにマージ済み）。待機は剣を持つ拳を2px上げる。村は小さな家3軒、岩は同じくらいの岩5つの岩場、木は小さい木5本の林。森は今の forge の `forest` をそのまま使う
+5. ゲーム側: 森で移動が遅くなる → **済み**（ブランチ `feat/forest-slow-tile`、未 push）
+6. **← 次はここ** アセットのテキストとビルドを forge からこのリポジトリへ移設する（下記）
+
+## ⑤で決めたこと（2026-09-29）
+
+設計は `docs/superpowers/specs/2026-09-29-forest-slow-tile-design.md`、計画は `docs/superpowers/plans/2026-09-29-forest-slow-tile.md`。
+
+- 依頼者の判断: stage1 に森を置く（行 9〜12・列 4〜10）。森の中は 0.5倍。まっすぐの線が森を通るときはフローフィールドに従って回り道する（時間を比べる案・Theta* は採らない）
+- `legend` の `speed`（省略時 1、0.1 以上 1 以下、通れないマスには書けない）。下限 0.1 は PR #21 の CodeRabbit の指摘（ごく小さい値でフローフィールドの距離 `Int32Array` があふれる）への対応で、依頼者が承認（根拠は `MIN_TILE_SPEED` のコメント）。どのマスにいるかは足元の点で決める。敵も同じく遅くなり回り道する
+- 森の絵は forge の `build/tile/forest.png` を `tile-forest.png` としてコピーした。森の端が四角く切れるのは範囲外（依頼者が「いずれ解消する」）
+- 計画のテストの不備1件（回り道のテストの目的地がテスト用ステージの勝利地点と重なり、戦闘が終わって止まった）は、依頼者の承認を得てテストの勝利条件を動かないイネスに変えた
+- 画面で確かめたこと（2026-09-29）: 森が描かれる。ロランにゴールを指示すると森の左の草（列3）を通って回る。森の中を指示すると森に入る
+- 気付いた点: 選択中のなかまの目的地への線は、回り道をしていてもまっすぐに引かれる（今までも壁を回るときは同じ）
+
+## この2日で決まった進め方（依頼者の指示）
+
+- superpowers の brainstorming → spec → 実装計画 → 実行方法の選択、の順に、それぞれ承認を取る。質問は1回に1つ、短く
+- **計画に不備が見つかったら、直す前に止めて報告する**（④では3回あった。CDP の表示領域、コマ送りのキー、`slideStep` の既存テストの期待値）
+- 作った絵・撮った画面は Read で見せる。絵は何案か並べて選んでもらうと早い（岩・木はこの形で決まった）
+- PR は依頼者の指示で作る。CodeRabbit のレビューは依頼者が依頼する。指摘はまず正しいかをコードで確かめ、修正方針を示して承認を得てから直す（直すときは TDD）。コメントへの返信はしない
+
+## Context Files（次のセッションで最初に読むもの）
+
+- この `HANDOVER.md`
+- `README.md`「アセットの大きさの規約」「コンテンツの足しかた」（ステージの `legend`）
+- `src/core/field.ts`（`computeFlowField`・`slideStep`・`hasClearPath`）と `src/core/sim.ts`（`stepTo`・移動の速さ）
+- forge の `ISSUES.md`（④で見つけて残した軽微な点）と `types/tile/SPEC.md`「物のセット（32px）」
+- forge の④の spec と計画: `docs/2026-09-28-issue6-forge-assets-spec.md`・`docs/2026-09-28-issue6-forge-assets-plan.md`（作成時点のログ）
 
 ## アセットの大きさの規約: ここまでに決まったこと
 
@@ -53,6 +83,11 @@ pixel-asset-forge #6: https://github.com/akabee0161/pixel-asset-forge/issues/6
 forge 側の記録: forge の ISSUES.md「アセットのテキストとビルドをゲームリポジトリへ移設する」
 
 ## 後回しにした軽微な点（issue #17 から変わらず）
+
+⑤の最終レビュー（2026-09-29）で出た Minor:
+
+- `field.test.ts` のテスト名「森が無いマップの hasLineOfSight は今までどおり」は、実際には森のあるマップで確かめている（「森があっても hasLineOfSight は変わらない」が正しい）
+- `field.ts` の `computeFlowField` のコメント「グリッドは最大でも 30x14」は古い（今は 16x23）。`fields.ts` の「BFS」も実際はダイクストラ（どちらも⑤の前から）
 
 - README の CDP の手順（「描画と入力をブラウザで確認する」）どおり `--window-size=540,945` で headless Chromium を立てると、表示領域が 540×802 になり canvas が 458×802 に縮む。CDP の `Emulation.setDeviceMetricsOverride`（540×945・倍率1）を接続のたびにかけると、論理座標1px＝画面1px になる（2026-09-29、forge の ④ の確認で判明）
 - `?debug` のコマ送り `.` は、同じフレームの中で何回押しても1ステップにしかならない（`DebugClock.stepQueued` が真偽値）。CDP から続けて送るときは1回ごとに1フレーム待つ。また 1/60 秒 × 15 ステップでは浮動小数の丸めで 4fps のコマが切り替わらず、16 ステップ要った

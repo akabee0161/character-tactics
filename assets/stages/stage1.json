@@ -13,10 +13,10 @@
     "................",
     "................",
     "................",
-    "...........R....",
-    "................",
-    "..T.............",
-    "................",
+    "....FFFFFFFR....",
+    "....FFFFFFF.....",
+    "..T.FFFFFFF.....",
+    "....FFFFFFF.....",
     "................",
     "................",
     "................",
@@ -32,7 +32,8 @@
     ".": { "tile": "tile-plain.png", "walkable": true },
     "T": { "tile": "tile-tree.png", "walkable": false },
     "R": { "tile": "tile-rock.png", "walkable": false },
-    "V": { "tile": "tile-village.png", "walkable": false }
+    "V": { "tile": "tile-village.png", "walkable": false },
+    "F": { "tile": "tile-forest.png", "walkable": true, "speed": 0.5 }
   },
   "placement": {
     "minY": 528,

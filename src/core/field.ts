@@ -1,11 +1,12 @@
 import { FOOT_BELOW, FOOT_HALF_W, footCorners } from '../engine/footprint';
 import type { FlowField, Grid, Legend, Vec2 } from './types';
 
-/** legend を渡さなければ '#' だけが歩けない（legend の無いステージとテストの既定） */
+/** legend を渡さなければ '#' だけが歩けない（legend の無いステージとテストの既定）。速さの倍率は legend の speed、無ければ 1 */
 export function makeGrid(cell: number, rows: string[], legend?: Legend): Grid {
   const r = rows.length;
   const c = rows[0]?.length ?? 0;
   const walkable = new Array<boolean>(c * r);
+  const speed = new Array<number>(c * r);
   for (let y = 0; y < r; y++) {
     const line = rows[y] ?? '';
     if (line.length !== c) {
@@ -14,9 +15,10 @@ export function makeGrid(cell: number, rows: string[], legend?: Legend): Grid {
     for (let x = 0; x < c; x++) {
       const ch = line[x]!;
       walkable[y * c + x] = legend ? legend[ch]?.walkable === true : ch !== '#';
+      speed[y * c + x] = legend?.[ch]?.speed ?? 1;
     }
   }
-  return { cols: c, rows: r, cell, walkable };
+  return { cols: c, rows: r, cell, walkable, speed };
 }
 
 export function cellIndexAt(grid: Grid, pos: Vec2): number {
@@ -35,6 +37,12 @@ export function cellCenter(grid: Grid, index: number): Vec2 {
 export function isWalkableAt(grid: Grid, pos: Vec2): boolean {
   const i = cellIndexAt(grid, pos);
   return i >= 0 && grid.walkable[i] === true;
+}
+
+/** 足元の点のマスでの移動の速さの倍率。マップの外は 1 */
+export function speedAt(grid: Grid, pos: Vec2): number {
+  const i = cellIndexAt(grid, pos);
+  return i < 0 ? 1 : (grid.speed[i] ?? 1);
 }
 
 /** 足元の箱（engine/footprint.ts）の四隅が、すべて通れるマスの中にあるか。マップの外は通れない扱い */
@@ -64,6 +72,14 @@ export function fitInCell(grid: Grid, pos: Vec2): Vec2 | null {
 /** セル距離を整数で持つためのスケール。斜めは √2 ≒ 1.4 倍 */
 export const ORTHO_COST = 10;
 export const DIAG_COST = 14;
+
+/**
+ * 隣のマスへ移るコスト。半分は出るマス、半分は入るマスを進むとみなし、それぞれの速さの倍率で割る。
+ * 向きで値が変わらないので、ゴールから逆向きにたどる computeFlowField でもそのまま使える
+ */
+export function stepCost(base: number, fromSpeed: number, toSpeed: number): number {
+  return Math.round(base / 2 / fromSpeed + base / 2 / toSpeed);
+}
 
 const NEIGHBORS: readonly [number, number, number][] = [
   [1, 0, ORTHO_COST],
@@ -117,7 +133,7 @@ export function computeFlowField(grid: Grid, goal: Vec2): FlowField {
       if (!canStep(grid, cx, cy, dx, dy)) continue;
       const ni = (cy + dy) * grid.cols + (cx + dx);
       if (settled[ni] === 1) continue;
-      const nd = curDist + cost;
+      const nd = curDist + stepCost(cost, grid.speed[cur] ?? 1, grid.speed[ni] ?? 1);
       if (dist[ni]! < 0 || nd < dist[ni]!) dist[ni] = nd;
     }
   }
@@ -221,21 +237,32 @@ export function distance(a: Vec2, b: Vec2): number {
   return Math.hypot(a.x - b.x, a.y - b.y);
 }
 
+function insideGrid(grid: Grid, x: number, y: number): boolean {
+  return x >= 0 && y >= 0 && x < grid.cols && y < grid.rows;
+}
+
+/** 2点を結ぶ線分がすべて歩けるセルの上を通るか（壁の角のすり抜けは lineCellsAll が禁止する） */
+export function hasLineOfSight(grid: Grid, from: Vec2, to: Vec2): boolean {
+  return lineCellsAll(grid, from, to, (x, y) => insideGrid(grid, x, y) && grid.walkable[y * grid.cols + x] === true);
+}
+
+/** 2点を結ぶ線分が、速さの倍率が 1 のマスだけを通るか。森を通る線なら false */
+export function isFullSpeedLine(grid: Grid, from: Vec2, to: Vec2): boolean {
+  return lineCellsAll(grid, from, to, (x, y) => insideGrid(grid, x, y) && grid.speed[y * grid.cols + x] === 1);
+}
+
 /**
- * 2点を結ぶ線分がすべて歩けるセルの上を通るか。
+ * 2点を結ぶ線分が通るマスが、すべて ok を満たすか。
  * DDA で線分が通過するセルを漏れなく列挙し、対角に隣のセルへ移る瞬間は
- * 両側の直交セルも歩行可能か確認する（computeFlowField の canStep と同じ理由で、
+ * 両側の直交セルも ok か確認する（computeFlowField の canStep と同じ理由で、
  * 壁の角をかすめてすり抜けるのを禁止する）。
  */
-export function hasLineOfSight(grid: Grid, from: Vec2, to: Vec2): boolean {
-  const walkableCell = (x: number, y: number): boolean =>
-    x >= 0 && y >= 0 && x < grid.cols && y < grid.rows && grid.walkable[y * grid.cols + x] === true;
-
+function lineCellsAll(grid: Grid, from: Vec2, to: Vec2, ok: (x: number, y: number) => boolean): boolean {
   let cx = Math.floor(from.x / grid.cell);
   let cy = Math.floor(from.y / grid.cell);
   const ex = Math.floor(to.x / grid.cell);
   const ey = Math.floor(to.y / grid.cell);
-  if (!walkableCell(cx, cy)) return false;
+  if (!ok(cx, cy)) return false;
 
   const dx = to.x - from.x;
   const dy = to.y - from.y;
@@ -253,18 +280,18 @@ export function hasLineOfSight(grid: Grid, from: Vec2, to: Vec2): boolean {
       // 両方の境界を同時に跨ぐ = 格子点(壁の角)を通過する対角遷移
       const nx = cx + stepX;
       const ny = cy + stepY;
-      if (!walkableCell(nx, ny) || !walkableCell(cx, ny) || !walkableCell(nx, cy)) return false;
+      if (!ok(nx, ny) || !ok(cx, ny) || !ok(nx, cy)) return false;
       cx = nx;
       cy = ny;
       tMaxX += tDeltaX;
       tMaxY += tDeltaY;
     } else if (tMaxX < tMaxY) {
       cx += stepX;
-      if (!walkableCell(cx, cy)) return false;
+      if (!ok(cx, cy)) return false;
       tMaxX += tDeltaX;
     } else {
       cy += stepY;
-      if (!walkableCell(cx, cy)) return false;
+      if (!ok(cx, cy)) return false;
       tMaxY += tDeltaY;
     }
   }

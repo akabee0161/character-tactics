@@ -10,6 +10,8 @@ export type Grid = {
   rows: number;
   cell: number;
   walkable: boolean[];
+  /** マスごとの移動の速さの倍率（legend の speed。省略時 1） */
+  speed: number[];
 };
 
 export type FlowField = {

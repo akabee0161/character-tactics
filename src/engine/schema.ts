@@ -411,8 +411,18 @@ export type IntroLine = {
   lineId: string | null;
 };
 
-/** mapRows の1文字が何を表すか。tile は assets/images 内のファイル名。null なら単色で描く */
-export type LegendEntry = { tile: string | null; walkable: boolean };
+/**
+ * legend の speed の下限。これより遅いマスは事実上通れないので walkable: false を使う。
+ * フローフィールドの距離（Int32Array）もあふれない: 1歩のコストは最大 DIAG_COST / 0.1 = 140 で、
+ * 16x23 のマップで最も長い最短の道（367歩）でも 51,380
+ */
+export const MIN_TILE_SPEED = 0.1;
+
+/**
+ * mapRows の1文字が何を表すか。tile は assets/images 内のファイル名。null なら単色で描く。
+ * speed はそのマスでの移動の速さの倍率（MIN_TILE_SPEED 以上 1 以下）。省略時は 1 で、書かれたときだけ入る
+ */
+export type LegendEntry = { tile: string | null; walkable: boolean; speed?: number };
 export type Legend = Record<string, LegendEntry>;
 
 /** legend を書かないステージの既定。'.' 歩ける / '#' 歩けない、どちらも単色 */
@@ -489,7 +499,17 @@ function readLegend(ctx: Ctx, v: unknown): Legend | undefined {
     const tile = e.tile === null ? null : requireString(ctx, `${path}.tile`, e.tile);
     const walkable = requireBoolean(ctx, `${path}.walkable`, e.walkable);
     if (walkable === null) continue;
-    out[key] = { tile, walkable };
+    if (e.speed === undefined) {
+      out[key] = { tile, walkable };
+      continue;
+    }
+    if (!walkable) {
+      fail(ctx, `${path}.speed`, 'とおれない マスには かけない');
+      continue;
+    }
+    const speed = requireNumber(ctx, `${path}.speed`, e.speed, { min: MIN_TILE_SPEED, max: 1 });
+    if (speed === null) continue;
+    out[key] = { tile, walkable, speed };
   }
   if (Object.keys(out).length === 0) fail(ctx, 'legend', '1つ いじょう ひつよう');
   return out;
