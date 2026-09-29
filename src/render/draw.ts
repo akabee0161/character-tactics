@@ -9,7 +9,7 @@ import type { ImageCache } from './images';
 import { alertMarks } from './objectives-view';
 import { STILL, frameFor, stateOf } from './anim';
 import type { AnimStore } from './anim';
-import { FOOT_INSET, TILE_PX, bodyCenter, drawHalf, drawMapUnit } from './sprites';
+import { FOOT_INSET, bodyCenter, drawHalf, drawMapUnit, tileSide } from './sprites';
 import type { SpriteDef } from './sprites';
 import { LOGICAL_H, LOGICAL_W, MAP_ORIGIN, mapToLogical } from './viewport';
 import {
@@ -91,18 +91,19 @@ export function drawBattle(
 
 function drawTerrain(ctx: CanvasRenderingContext2D, state: BattleState, images: ImageCache): void {
   const { grid, stage } = state;
-  // タイルは拡大せず、1マスに per × per 枚並べる。キャラの絵（等倍）と画素の細かさをそろえるため
-  const per = Math.floor(grid.cell / TILE_PX);
   for (let i = 0; i < grid.walkable.length; i++) {
     const cx = i % grid.cols;
     const cy = Math.floor(i / grid.cols);
     const p = mapToLogical({ x: cx * grid.cell, y: cy * grid.cell });
     const ch = stage.mapRows[cy]?.[cx];
     const tile = ch === undefined ? null : imageFor(images, stage.legend?.[ch]?.tile ?? null);
-    if (tile !== null && per >= 1) {
+    const side = tile === null ? 0 : tileSide(tile);
+    if (tile !== null && side > 0 && grid.cell % side === 0) {
+      // タイルは拡大せず元の大きさで、1マスに per × per 枚並べる。キャラの絵（等倍）と画素の細かさをそろえるため
+      const per = grid.cell / side;
       for (let ty = 0; ty < per; ty++) {
         for (let tx = 0; tx < per; tx++) {
-          ctx.drawImage(tile, p.x + tx * TILE_PX, p.y + ty * TILE_PX, TILE_PX, TILE_PX);
+          ctx.drawImage(tile, p.x + tx * side, p.y + ty * side, side, side);
         }
       }
       continue;

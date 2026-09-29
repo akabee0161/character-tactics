@@ -1,4 +1,4 @@
-import { isWalkableAt, makeGrid } from './field';
+import { fitsAt, makeGrid } from './field';
 import { makeFieldCache } from './fields';
 import { makeRng } from './rng';
 import type { Registry } from '../engine/registry';
@@ -124,7 +124,7 @@ export function createBattleState(
  * 別々に書くと「プレビューは置けそうに見えるのに離すと失敗する」がすぐ起きる
  */
 export function canPlaceAt(stage: StageDef, grid: Grid, pos: Vec2): boolean {
-  if (!isWalkableAt(grid, pos)) return false;
+  if (!fitsAt(grid, pos)) return false;
   return pos.y >= stage.placement.minY;
 }
 

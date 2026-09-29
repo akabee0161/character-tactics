@@ -1,3 +1,5 @@
+import { footCorners } from './footprint';
+
 export type Vec2 = { x: number; y: number };
 export type AttackKind = 'melee' | 'bow' | 'magic';
 
@@ -372,6 +374,9 @@ export type AiDef =
 
 export const AI_KINDS: readonly AiDef['kind'][] = ['sentry', 'aggressive', 'guard'];
 
+/** ステージの1マスの大きさ。これ以外の cell は受け付けない（README「アセットの大きさの規約」） */
+export const CELL_PX = 32;
+
 export type VictoryCond = {
   type: 'reach';
   pos: Vec2;
@@ -654,13 +659,19 @@ export function validateStageDef(file: string, raw: unknown): Validated<StageDef
   if (!o) return { ok: false, errors: ctx.errors };
 
   // walkable 検証に使うので、cell / legend / mapRows を先に読む
-  const cell = requireNumber(ctx, 'cell', o.cell, { min: 1, int: true }) ?? 32;
+  // マスは 32px だけ。足元の箱（幅12px）の四隅だけで調べる判定（footCorners）は、箱より大きいマスでないと
+  // 箱の真ん中にかかる壁を見逃す。タイルの大きさ（TILE_SIDES）も 32px のマスを割り切る前提
+  const cellRaw = requireNumber(ctx, 'cell', o.cell, { int: true });
+  if (cellRaw !== null && cellRaw !== CELL_PX) fail(ctx, 'cell', `${CELL_PX} だけ つかえる`);
+  const cell = CELL_PX;
   const legend = readLegend(ctx, o.legend);
   const effectiveLegend = legend ?? DEFAULT_LEGEND;
   const mapRows = readMapRows(ctx, o.mapRows, effectiveLegend);
   const checkWalkable = (path: string, pos: Vec2): void => {
-    if (mapRows.length > 0 && !isWalkableCell(cell, mapRows, effectiveLegend, pos)) {
-      fail(ctx, path, 'あるけない マスに ある');
+    if (mapRows.length === 0) return;
+    // ユニットは足元の箱（engine/footprint.ts）で立つので、四隅がすべて通れるマスにあること
+    if (!footCorners(pos).every((c) => isWalkableCell(cell, mapRows, effectiveLegend, c))) {
+      fail(ctx, path, '足元が 通れない マスに かかる');
     }
   };
 

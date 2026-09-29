@@ -3,7 +3,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { validateEnemyDef, validateUnitDef } from './schema';
 import type { MapSheet } from './schema';
-import { TILE_PX } from '../render/sprites';
+import { TILE_SIDES } from '../render/sprites';
 
 /** PNG の IHDR は先頭24バイトに入っている。幅は 16、高さは 20 バイト目から */
 function pngSize(path: string): { w: number; h: number } {
@@ -70,8 +70,10 @@ describe('タイルの じっすん', () => {
   });
 
   for (const tile of tiles) {
-    it(`${tile} は ${TILE_PX}x${TILE_PX}`, () => {
-      expect(pngSize(join('assets/images', tile))).toEqual({ w: TILE_PX, h: TILE_PX });
+    it(`${tile} は 正方形で、一辺が ${TILE_SIDES.join(' か ')}`, () => {
+      const { w, h } = pngSize(join('assets/images', tile));
+      expect(w).toBe(h);
+      expect(TILE_SIDES).toContain(w);
     });
   }
 });

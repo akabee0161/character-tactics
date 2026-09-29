@@ -7,11 +7,15 @@ import {
   computeFlowField,
   distance,
   distanceToSegment,
+  fitInCell,
+  fitsAt,
   flowDirection,
+  hasClearPath,
   hasLineOfSight,
   isWalkableAt,
   makeGrid,
   resolveMoveDest,
+  slideStep,
 } from './field';
 
 // '.' = 歩ける / '#' = 歩けない
@@ -216,5 +220,134 @@ describe('resolveMoveDest', () => {
   it('出発点が歩けない場所なら null', () => {
     const g = makeGrid(32, MAP);
     expect(resolveMoveDest(g, { x: 48, y: 48 }, { x: 80, y: 48 })).toBeNull();
+  });
+
+  it('歩けるマスでも、足元の箱が壁にかかる位置なら内側へ寄せる', () => {
+    // (30,48) は歩けるマス (0,1)。右隣 (1,1) が '#' なので x=26 まで寄せる
+    const g = makeGrid(32, RING);
+    expect(resolveMoveDest(g, { x: 16, y: 16 }, { x: 30, y: 48 })).toEqual({ x: 26, y: 48 });
+  });
+});
+
+// 3×3 マスの真ん中だけ歩けない。マスは 32px
+const RING = [
+  '...',
+  '.#.',
+  '...',
+];
+
+describe('fitsAt', () => {
+  it('マスの中心には収まる', () => {
+    expect(fitsAt(makeGrid(32, RING), { x: 16, y: 16 })).toBe(true);
+  });
+
+  it('右隣が通れないマスで、足元から 6px 以内なら収まらない', () => {
+    // (0,1) の右隣 (1,1) が '#'。x=27 なら箱の右端は 33 で、境界 32 を越える
+    const g = makeGrid(32, RING);
+    expect(fitsAt(g, { x: 26, y: 48 })).toBe(true);
+    expect(fitsAt(g, { x: 27, y: 48 })).toBe(false);
+  });
+
+  it('左隣が通れないマスで、足元から 6px 以内なら収まらない', () => {
+    const g = makeGrid(32, RING);
+    expect(fitsAt(g, { x: 70, y: 48 })).toBe(true);
+    expect(fitsAt(g, { x: 69, y: 48 })).toBe(false);
+  });
+
+  it('下が通れないマスなら、足先の 2px がかかる位置には立てない', () => {
+    // (1,0) の下 (1,1) が '#'
+    const g = makeGrid(32, RING);
+    expect(fitsAt(g, { x: 48, y: 30 })).toBe(true);
+    expect(fitsAt(g, { x: 48, y: 31 })).toBe(false);
+  });
+
+  it('上が通れないマスでも、頭のぶんは広げない（下から近づいたら境界まで立てる）', () => {
+    // (1,2) の上 (1,1) が '#'
+    expect(fitsAt(makeGrid(32, RING), { x: 48, y: 64 })).toBe(true);
+  });
+
+  it('マップの外は通れない扱い。端から 6px 以内には立てない', () => {
+    const g = makeGrid(32, RING);
+    expect(fitsAt(g, { x: 6, y: 16 })).toBe(true);
+    expect(fitsAt(g, { x: 5, y: 16 })).toBe(false);
+  });
+});
+
+describe('fitInCell', () => {
+  it('収まる位置はそのまま返す', () => {
+    expect(fitInCell(makeGrid(32, RING), { x: 20, y: 20 })).toEqual({ x: 20, y: 20 });
+  });
+
+  it('右隣が壁なら、箱が収まるところまで左へ寄せる', () => {
+    expect(fitInCell(makeGrid(32, RING), { x: 30, y: 48 })).toEqual({ x: 26, y: 48 });
+  });
+
+  it('下が壁なら、足先が収まるところまで上へ寄せる', () => {
+    expect(fitInCell(makeGrid(32, RING), { x: 48, y: 31 })).toEqual({ x: 48, y: 30 });
+  });
+
+  it('マップの端なら内側へ寄せる', () => {
+    expect(fitInCell(makeGrid(32, RING), { x: 2, y: 16 })).toEqual({ x: 6, y: 16 });
+  });
+
+  it('通れないマスなら null', () => {
+    expect(fitInCell(makeGrid(32, RING), { x: 48, y: 48 })).toBeNull();
+  });
+});
+
+describe('hasClearPath', () => {
+  it('壁から離れた直線なら通れる', () => {
+    expect(hasClearPath(makeGrid(32, RING), { x: 16, y: 16 }, { x: 80, y: 16 })).toBe(true);
+  });
+
+  it('足元の点は壁の外を通っても、箱の端が壁にかかる直線は通れない', () => {
+    // x=28 で縦に下りる。点は (0,1) を通るが、箱の右端 34 は '#' の (1,1) にかかる
+    const g = makeGrid(32, RING);
+    expect(hasLineOfSight(g, { x: 28, y: 16 }, { x: 28, y: 80 })).toBe(true);
+    expect(hasClearPath(g, { x: 28, y: 16 }, { x: 28, y: 80 })).toBe(false);
+  });
+});
+
+describe('slideStep', () => {
+  it('箱が収まるならそのまま進む', () => {
+    expect(slideStep(makeGrid(32, RING), { x: 16, y: 16 }, { x: 18, y: 18 })).toEqual({ x: 18, y: 18 });
+  });
+
+  it('斜めに壁へ寄るときは、箱が収まる範囲で行き先に最も近いところまで進む（壁に沿ってすべる）', () => {
+    // (22,30) から右下 (28,40) へ。x=28 は右の壁に箱がかかる。x=26 まで寄せれば収まる
+    expect(slideStep(makeGrid(32, RING), { x: 22, y: 30 }, { x: 28, y: 40 })).toEqual({ x: 26, y: 40 });
+  });
+
+  it('足元が境界からわずかに下にあって横へ進めないときも、寄せて進む', () => {
+    // 左下 (0,1) だけが壁の地図で、(38,30.004) から左の (37,30.004) へ。
+    // 箱の下端 32.004 が下の段にかかるので x だけの移動は収まらない。y=30 に寄せれば収まる。
+    // 斜めに寄せると途中で箱の左下が壁の角をかすめるが、縦に上がってから横へ動けば壁にかからない
+    const g = makeGrid(32, ['....', '#...']);
+    expect(slideStep(g, { x: 38, y: 30.004 }, { x: 37, y: 30.004 })).toEqual({ x: 37, y: 30 });
+  });
+
+  it('途中が壁にかかっても、壁を避けた縦→横の2段の道筋があれば進む', () => {
+    // (38,30.004) から (37,30) へは両端とも収まるが、まっすぐ動くと途中の (37.5,30.002) で箱の左下が
+    // (0,1) の壁に入る。(38,30) を経由すれば壁にかからない
+    const g = makeGrid(32, ['....', '#...']);
+    expect(slideStep(g, { x: 38, y: 30.004 }, { x: 37, y: 30 })).toEqual({ x: 37, y: 30 });
+  });
+
+  it('寄せた点へ、まっすぐでも縦→横の2段でも壁にかかるなら、その点は選ばない', () => {
+    // (30,29) から (35,33) へ。(35,33) は箱の左端 29 が (0,1) の壁にかかるので、同じマスの (38,33) へ寄せる。
+    // (38,33) がいちばん近い候補だが、まっすぐだと箱の左下が壁を横切り、先に縦に下りても (30,33) で箱が壁に入る。
+    // 残る候補は x だけ動く (35,29)
+    const g = makeGrid(32, ['....', '#...']);
+    expect(slideStep(g, { x: 30, y: 29 }, { x: 35, y: 33 })).toEqual({ x: 35, y: 29 });
+  });
+
+  it('どの向きにも進めなければ動かない', () => {
+    // 右の壁に張り付いた位置からさらに右へ
+    expect(slideStep(makeGrid(32, RING), { x: 26, y: 48 }, { x: 28, y: 48 })).toEqual({ x: 26, y: 48 });
+  });
+
+  it('出発点に箱が収まらないときは、足元の1点で判定して抜け出せる', () => {
+    // (28,48) は箱が壁にかかっている。左へ動くなら点は歩けるので進む
+    expect(slideStep(makeGrid(32, RING), { x: 28, y: 48 }, { x: 27, y: 48 })).toEqual({ x: 27, y: 48 });
   });
 });

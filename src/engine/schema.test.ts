@@ -286,6 +286,14 @@ describe('validateStageDef', () => {
     if (r.ok) expect(r.value.intro).toBeUndefined();
   });
 
+  it('cell が 32 以外なら弾く（足元の箱の四隅だけで調べる判定は、箱より大きいマスが前提）', () => {
+    for (const cell of [8, 16, 64]) {
+      const r = validateStageDef('stages/x.json', { ...VALID_STAGE, cell });
+      expect(r.ok).toBe(false);
+      if (!r.ok) expect(r.errors.map((e) => e.path)).toContain('cell');
+    }
+  });
+
   it('mapRows の行の長さが そろっていなければ弾く', () => {
     const r = validateStageDef('stages/x.json', { ...VALID_STAGE, mapRows: ['####', '#..'] });
     expect(r.ok).toBe(false);
@@ -535,6 +543,19 @@ describe('validateStageDef: legend', () => {
     });
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.errors[0]?.path).toBe('enemies[0].pos');
+  });
+
+  it('敵の足元の箱が 通れない マスに かかれば弾く', () => {
+    // VALID_STAGE の敵を (92,48) に。マス (2,1) は歩けるが、箱の右端 98 が右隣の '#'（x:96-）にかかる
+    const r = validateStageDef('stages/x.json', {
+      ...VALID_STAGE,
+      enemies: [{ defId: 'narazumono', pos: { x: 92, y: 48 }, ai: { kind: 'aggressive' } }],
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.errors[0]?.path).toBe('enemies[0].pos');
+      expect(r.errors[0]?.reason).toBe('足元が 通れない マスに かかる');
+    }
   });
 
   it('キーが 2もじ いじょうなら弾く', () => {

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { FOOT_INSET, bodyCenter, smoothFor } from './sprites';
+import { FOOT_BELOW } from '../engine/footprint';
+import { FOOT_INSET, TILE_SIDES, bodyCenter, smoothFor, tileSide } from './sprites';
 import type { SpriteDef } from './sprites';
 
 const ANIM = { frames: 1, fps: 1 };
@@ -42,5 +43,34 @@ describe('smoothFor', () => {
   it('差し替え前の 128px の顔は、64px の枠でも 32px の枠でもぼかす', () => {
     expect(smoothFor(128, 64)).toBe(true);
     expect(smoothFor(128, 32)).toBe(true);
+  });
+});
+
+describe('足元の箱', () => {
+  it('下の幅は、足元の行から絵の下端までの FOOT_INSET と同じ', () => {
+    expect(FOOT_BELOW).toBe(FOOT_INSET);
+  });
+});
+
+describe('tileSide', () => {
+  const img = (w: number, h = w) => ({ naturalWidth: w, naturalHeight: h }) as HTMLImageElement;
+
+  it('16px と 32px の画像は、その一辺を返す', () => {
+    expect(tileSide(img(16))).toBe(16);
+    expect(tileSide(img(32))).toBe(32);
+  });
+
+  it('それ以外の大きさ（読み込み前の 0 を含む）は 0（単色で描く）', () => {
+    expect(tileSide(img(24))).toBe(0);
+    expect(tileSide(img(0))).toBe(0);
+  });
+
+  it('正方形でない画像は、幅が 16px か 32px でも 0（正方形に引き伸ばさない）', () => {
+    expect(tileSide(img(32, 64))).toBe(0);
+    expect(tileSide(img(16, 32))).toBe(0);
+  });
+
+  it('描けるタイルの一辺は、どれも1マス（32px）を割り切る', () => {
+    for (const side of TILE_SIDES) expect(32 % side).toBe(0);
   });
 });

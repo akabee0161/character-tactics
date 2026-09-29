@@ -105,8 +105,18 @@ export function drawHalf(def: SpriteDef, fallback: number): number {
 /** 足元の行は、コマの下端から何 px 上か。pixel-asset-forge の unit 規約（32px のコマで y=30）に合わせる */
 export const FOOT_INSET = 2;
 
-/** マップのタイルの一辺。拡大せず、1マスに (cell / TILE_PX)² 枚並べる */
-export const TILE_PX = 16;
+/** タイルとして描ける画像の一辺。1マス（32px）を割り切る大きさだけ（README「アセットの大きさの規約」） */
+export const TILE_SIDES: readonly number[] = [16, 32];
+
+/**
+ * タイル画像の一辺。正方形でないか、TILE_SIDES に無い大きさ（読み込み前の 0 を含む）なら 0 を返し、
+ * 呼び出し側は単色で描く（正方形に引き伸ばして描かない）
+ */
+export function tileSide(img: CanvasImageSource): number {
+  const w = 'naturalWidth' in img ? img.naturalWidth : 0;
+  const h = 'naturalHeight' in img ? img.naturalHeight : 0;
+  return w === h && TILE_SIDES.includes(w) ? w : 0;
+}
 
 /**
  * ユニットの位置（足元）から、絵の中心を求める。

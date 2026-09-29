@@ -6,7 +6,7 @@ import { MIN_SEPARATION, RANGE_EPS } from './constants';
 import { accumulate } from './counters';
 import { applyDamage } from './damage';
 import {
-  computeFlowField, distance, flowDirection, hasLineOfSight, isWalkableAt, resolveMoveDest,
+  cellIndexAt, computeFlowField, distance, flowDirection, hasClearPath, resolveMoveDest, slideStep,
 } from './field';
 import { dropUnitField, fieldToStatic, fieldToUnit } from './fields';
 import { awardXpForEvents } from './growth';
@@ -180,17 +180,18 @@ const BLOCKED_EPS = 1e-3;
 type StepResult = 'moved' | 'adjusted' | 'blocked';
 
 /**
- * next へ動く。敵対ユニットに MIN_SEPARATION より近づくぶんは separatedStep で補正する。
+ * next へ動く。敵対ユニットに MIN_SEPARATION より近づくぶんは separatedStep で補正し、
+ * 足元の箱が通れないマスにかかるぶんは slideStep で補正する（壁に沿ってすべる）。
  * moved: next にそのまま着いた / adjusted: 補正して動いた / blocked: 動けなかった
  */
 function stepTo(state: BattleState, u: Unit, next: Vec2): StepResult {
-  const p = separatedStep(u.pos, next, hostilesOf(state, u).map((h) => h.pos), MIN_SEPARATION);
+  const separated = separatedStep(u.pos, next, hostilesOf(state, u).map((h) => h.pos), MIN_SEPARATION);
+  const p = slideStep(state.grid, u.pos, separated);
   if (p.x === next.x && p.y === next.y) {
     u.pos = p;
     return 'moved';
   }
-  // 押し戻した先は、見通しやフローフィールドが保証した道から外れうる
-  if (distance(u.pos, p) < BLOCKED_EPS || !isWalkableAt(state.grid, p)) return 'blocked';
+  if (distance(u.pos, p) < BLOCKED_EPS) return 'blocked';
   u.pos = p;
   return 'adjusted';
 }
@@ -230,8 +231,12 @@ function moveTowardGoal(state: BattleState, u: Unit, dt: number): void {
     return;
   }
 
-  // 目的地まで見通せるならフローフィールドを使わず直行する
-  const dir = hasLineOfSight(state.grid, u.pos, goal)
+  // 目的地まで足元の箱ごと直進できるならフローフィールドを使わず直行する。
+  // 目的地と同じマスにいるときも直行する。フローフィールドは同じマスの中では向きを出せず（距離0）、
+  // 指示が黙って消えてしまう。壁にかかるぶんは stepTo の slideStep が横すべりで吸収する
+  const direct = hasClearPath(state.grid, u.pos, goal)
+    || cellIndexAt(state.grid, u.pos) === cellIndexAt(state.grid, goal);
+  const dir = direct
     ? { x: (goal.x - u.pos.x) / remaining, y: (goal.y - u.pos.y) / remaining }
     : (() => {
         const field = fieldFor(state, u);
