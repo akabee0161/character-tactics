@@ -6,7 +6,8 @@ import { MIN_SEPARATION, RANGE_EPS } from './constants';
 import { accumulate } from './counters';
 import { applyDamage } from './damage';
 import {
-  cellIndexAt, computeFlowField, distance, flowDirection, hasClearPath, resolveMoveDest, slideStep,
+  cellIndexAt, computeFlowField, distance, flowDirection, hasClearPath, isFullSpeedLine, resolveMoveDest,
+  slideStep, speedAt,
 } from './field';
 import { dropUnitField, fieldToStatic, fieldToUnit } from './fields';
 import { awardXpForEvents } from './growth';
@@ -224,17 +225,18 @@ function moveTowardGoal(state: BattleState, u: Unit, dt: number): void {
   }
 
   const remaining = distance(u.pos, goal);
-  const stepLen = u.speed * dt;
+  const stepLen = u.speed * speedAt(state.grid, u.pos) * dt;
   if (remaining <= stepLen) {
     // 着いたか、敵にふさがれて着けないなら指示は終わり。すべって回り込み中なら続ける
     if (stepTo(state, u, goal) !== 'adjusted') clearOrderedGoal(u);
     return;
   }
 
-  // 目的地まで足元の箱ごと直進できるならフローフィールドを使わず直行する。
+  // 目的地まで足元の箱ごと直進でき、線が森（速さの倍率が 1 でないマス）を通らないなら、
+  // フローフィールドを使わず直行する。森を通るなら、回った方が早いかをフローフィールドに任せる。
   // 目的地と同じマスにいるときも直行する。フローフィールドは同じマスの中では向きを出せず（距離0）、
   // 指示が黙って消えてしまう。壁にかかるぶんは stepTo の slideStep が横すべりで吸収する
-  const direct = hasClearPath(state.grid, u.pos, goal)
+  const direct = (hasClearPath(state.grid, u.pos, goal) && isFullSpeedLine(state.grid, u.pos, goal))
     || cellIndexAt(state.grid, u.pos) === cellIndexAt(state.grid, goal);
   const dir = direct
     ? { x: (goal.x - u.pos.x) / remaining, y: (goal.y - u.pos.y) / remaining }
@@ -267,7 +269,7 @@ function closeIn(state: BattleState, u: Unit, dt: number): void {
   if (!target) return;
   const d = distance(u.pos, target.pos);
   if (d === 0) return;
-  const stepLen = Math.min(u.speed * dt, d);
+  const stepLen = Math.min(u.speed * speedAt(state.grid, u.pos) * dt, d);
   stepTo(state, u, {
     x: u.pos.x + ((target.pos.x - u.pos.x) / d) * stepLen,
     y: u.pos.y + ((target.pos.y - u.pos.y) / d) * stepLen,

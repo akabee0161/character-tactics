@@ -237,21 +237,32 @@ export function distance(a: Vec2, b: Vec2): number {
   return Math.hypot(a.x - b.x, a.y - b.y);
 }
 
+function insideGrid(grid: Grid, x: number, y: number): boolean {
+  return x >= 0 && y >= 0 && x < grid.cols && y < grid.rows;
+}
+
+/** 2点を結ぶ線分がすべて歩けるセルの上を通るか（壁の角のすり抜けは lineCellsAll が禁止する） */
+export function hasLineOfSight(grid: Grid, from: Vec2, to: Vec2): boolean {
+  return lineCellsAll(grid, from, to, (x, y) => insideGrid(grid, x, y) && grid.walkable[y * grid.cols + x] === true);
+}
+
+/** 2点を結ぶ線分が、速さの倍率が 1 のマスだけを通るか。森を通る線なら false */
+export function isFullSpeedLine(grid: Grid, from: Vec2, to: Vec2): boolean {
+  return lineCellsAll(grid, from, to, (x, y) => insideGrid(grid, x, y) && grid.speed[y * grid.cols + x] === 1);
+}
+
 /**
- * 2点を結ぶ線分がすべて歩けるセルの上を通るか。
+ * 2点を結ぶ線分が通るマスが、すべて ok を満たすか。
  * DDA で線分が通過するセルを漏れなく列挙し、対角に隣のセルへ移る瞬間は
- * 両側の直交セルも歩行可能か確認する（computeFlowField の canStep と同じ理由で、
+ * 両側の直交セルも ok か確認する（computeFlowField の canStep と同じ理由で、
  * 壁の角をかすめてすり抜けるのを禁止する）。
  */
-export function hasLineOfSight(grid: Grid, from: Vec2, to: Vec2): boolean {
-  const walkableCell = (x: number, y: number): boolean =>
-    x >= 0 && y >= 0 && x < grid.cols && y < grid.rows && grid.walkable[y * grid.cols + x] === true;
-
+function lineCellsAll(grid: Grid, from: Vec2, to: Vec2, ok: (x: number, y: number) => boolean): boolean {
   let cx = Math.floor(from.x / grid.cell);
   let cy = Math.floor(from.y / grid.cell);
   const ex = Math.floor(to.x / grid.cell);
   const ey = Math.floor(to.y / grid.cell);
-  if (!walkableCell(cx, cy)) return false;
+  if (!ok(cx, cy)) return false;
 
   const dx = to.x - from.x;
   const dy = to.y - from.y;
@@ -269,18 +280,18 @@ export function hasLineOfSight(grid: Grid, from: Vec2, to: Vec2): boolean {
       // 両方の境界を同時に跨ぐ = 格子点(壁の角)を通過する対角遷移
       const nx = cx + stepX;
       const ny = cy + stepY;
-      if (!walkableCell(nx, ny) || !walkableCell(cx, ny) || !walkableCell(nx, cy)) return false;
+      if (!ok(nx, ny) || !ok(cx, ny) || !ok(nx, cy)) return false;
       cx = nx;
       cy = ny;
       tMaxX += tDeltaX;
       tMaxY += tDeltaY;
     } else if (tMaxX < tMaxY) {
       cx += stepX;
-      if (!walkableCell(cx, cy)) return false;
+      if (!ok(cx, cy)) return false;
       tMaxX += tDeltaX;
     } else {
       cy += stepY;
-      if (!walkableCell(cx, cy)) return false;
+      if (!ok(cx, cy)) return false;
       tMaxY += tDeltaY;
     }
   }

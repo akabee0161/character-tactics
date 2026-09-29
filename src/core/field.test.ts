@@ -12,6 +12,7 @@ import {
   flowDirection,
   hasClearPath,
   hasLineOfSight,
+  isFullSpeedLine,
   isWalkableAt,
   makeGrid,
   resolveMoveDest,
@@ -276,6 +277,39 @@ describe('hasLineOfSight', () => {
     // 点サンプリング（8pxごと）だとこの一点をまたいで「通れる」と誤判定していた。
     const g = makeGrid(32, MAP);
     expect(hasLineOfSight(g, { x: 16, y: 48 }, { x: 50, y: 14 })).toBe(false);
+  });
+});
+
+describe('isFullSpeedLine', () => {
+  const g = makeGrid(32, ['.....', '..F..', '.....'], {
+    '.': { tile: null, walkable: true },
+    F: { tile: null, walkable: true, speed: 0.5 },
+  });
+
+  it('森を通らない線は true', () => {
+    expect(isFullSpeedLine(g, { x: 16, y: 16 }, { x: 144, y: 16 })).toBe(true);
+  });
+
+  it('森を通る線は false', () => {
+    expect(isFullSpeedLine(g, { x: 16, y: 48 }, { x: 144, y: 48 })).toBe(false);
+  });
+
+  it('端点が森のマスでも false', () => {
+    expect(isFullSpeedLine(g, { x: 16, y: 48 }, { x: 80, y: 48 })).toBe(false);
+  });
+
+  it('森の角をかすめる斜めの線も false（hasLineOfSight と同じく両隣を見る）', () => {
+    // (16,16)→(48,48) は格子点 (32,32) を通る。端点の (0,0)・(1,1) は草だが、
+    // 斜めに移る瞬間に両隣 (1,0)・(0,1) も見るので、(1,0) の森で false になる
+    const g2 = makeGrid(32, ['.F', '..'], {
+      '.': { tile: null, walkable: true },
+      F: { tile: null, walkable: true, speed: 0.5 },
+    });
+    expect(isFullSpeedLine(g2, { x: 16, y: 16 }, { x: 48, y: 48 })).toBe(false);
+  });
+
+  it('森が無いマップの hasLineOfSight は今までどおり', () => {
+    expect(hasLineOfSight(g, { x: 16, y: 48 }, { x: 144, y: 48 })).toBe(true);
   });
 });
 
