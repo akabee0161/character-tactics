@@ -17,6 +17,7 @@ import {
   resolveMoveDest,
   slideStep,
   speedAt,
+  stepCost,
 } from './field';
 
 // '.' = 歩ける / '#' = 歩けない
@@ -114,7 +115,61 @@ describe('speedAt', () => {
   });
 });
 
+describe('stepCost', () => {
+  it('半分ずつ出るマスと入るマスの倍率で割る', () => {
+    expect(stepCost(ORTHO_COST, 1, 1)).toBe(10);
+    expect(stepCost(ORTHO_COST, 1, 0.5)).toBe(15);
+    expect(stepCost(ORTHO_COST, 0.5, 1)).toBe(15);
+    expect(stepCost(ORTHO_COST, 0.5, 0.5)).toBe(20);
+    expect(stepCost(DIAG_COST, 1, 1)).toBe(14);
+    expect(stepCost(DIAG_COST, 1, 0.5)).toBe(21);
+    expect(stepCost(DIAG_COST, 0.5, 0.5)).toBe(28);
+  });
+
+  it('割り切れない倍率でも整数で、向きで値が変わらない', () => {
+    const a = stepCost(ORTHO_COST, 1, 0.3);
+    expect(Number.isInteger(a)).toBe(true);
+    expect(a).toBe(stepCost(ORTHO_COST, 0.3, 1));
+    expect(a).toBe(22); // 5 + 16.67 を丸める
+  });
+});
+
 describe('computeFlowField', () => {
+  const FOREST = {
+    '.': { tile: null, walkable: true },
+    F: { tile: null, walkable: true, speed: 0.5 },
+  };
+
+  it('森に入るマスと森の中のマスはコストが上がる', () => {
+    const g = makeGrid(32, ['.FF'], FOREST);
+    const f = computeFlowField(g, { x: 16, y: 16 });
+    expect(f.dist[1]).toBe(15);
+    expect(f.dist[2]).toBe(35);
+  });
+
+  it('森を横切るより回る方が安ければ、回る向きを出す', () => {
+    // 列 3〜6 の行 0〜2 が森。(16,16) から (304,16) は横切ると 140、行3 を回ると 114
+    const g = makeGrid(32, [
+      '...FFFF...',
+      '...FFFF...',
+      '...FFFF...',
+      '..........',
+    ], FOREST);
+    const f = computeFlowField(g, { x: 304, y: 16 });
+    expect(f.dist[0]).toBe(114);
+    const dir = flowDirection(g, f, { x: 16, y: 16 });
+    expect(dir).not.toBeNull();
+    expect(dir!.y).toBeGreaterThan(0); // 下（行3）へ向かう
+  });
+
+  it('森の中のゴールにも距離が入る', () => {
+    const g = makeGrid(32, ['..F'], FOREST);
+    const f = computeFlowField(g, { x: 80, y: 16 });
+    expect(f.dist[2]).toBe(0);
+    expect(f.dist[1]).toBe(15);
+    expect(f.dist[0]).toBe(25);
+  });
+
   it('ゴールからのコストを 8 近傍で埋める', () => {
     const g = makeGrid(32, MAP);
     const f = computeFlowField(g, { x: 16, y: 16 }); // セル 0

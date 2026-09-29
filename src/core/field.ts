@@ -73,6 +73,14 @@ export function fitInCell(grid: Grid, pos: Vec2): Vec2 | null {
 export const ORTHO_COST = 10;
 export const DIAG_COST = 14;
 
+/**
+ * 隣のマスへ移るコスト。半分は出るマス、半分は入るマスを進むとみなし、それぞれの速さの倍率で割る。
+ * 向きで値が変わらないので、ゴールから逆向きにたどる computeFlowField でもそのまま使える
+ */
+export function stepCost(base: number, fromSpeed: number, toSpeed: number): number {
+  return Math.round(base / 2 / fromSpeed + base / 2 / toSpeed);
+}
+
 const NEIGHBORS: readonly [number, number, number][] = [
   [1, 0, ORTHO_COST],
   [-1, 0, ORTHO_COST],
@@ -125,7 +133,7 @@ export function computeFlowField(grid: Grid, goal: Vec2): FlowField {
       if (!canStep(grid, cx, cy, dx, dy)) continue;
       const ni = (cy + dy) * grid.cols + (cx + dx);
       if (settled[ni] === 1) continue;
-      const nd = curDist + cost;
+      const nd = curDist + stepCost(cost, grid.speed[cur] ?? 1, grid.speed[ni] ?? 1);
       if (dist[ni]! < 0 || nd < dist[ni]!) dist[ni] = nd;
     }
   }
