@@ -74,7 +74,7 @@ pixel-asset-forge #6: https://github.com/akabee0161/pixel-asset-forge/issues/6
 - forge を `pixel-asset-forge/` へ丸ごとコピーした（ankardo の `scripts/copy-forge.sh`）。forge は凍結せず並行して開発する
 - ゲーム側で直したものは `pixel-asset-forge/UPSTREAM.md` の「forge に戻す候補」に書き溜め、ゲームの開発が終わったら forge の issue にまとめる
 - PNG は `sprites.json` と `pixel-asset-forge/tools/export.py` で書き出す（README「ドット絵の作りかた」）。移設直後に書き出した6枚は、コミット済みの PNG と同じだった
-- 手元の python3 は 3.10.12 で、forge のテストのうち `contextlib.chdir`（3.11 から）を使う3件（`test_tools.TargetPathTest`）が落ちる。元の forge でも同じ
+- Python は 3.14 を前提にした（依頼者の判断）。手元の python3 は 3.10.12（2026-10-31 でサポート終了）で、forge のテストのうち `contextlib.chdir`（3.11 から）を使う3件が落ちるため。uv（`~/.local/bin`）で 3.14.7 を入れ、`pixel-asset-forge/.venv` を作り直すと 141件すべて通った
 - 残り: PR を作る（依頼者の指示で）→ ankardo の `new-game` スキルに character-tactics の PR へのリンクを足してから ankardo の PR をマージ → forge #8 に結果を書いて閉じる
 
 ## 後回しにした軽微な点（issue #17 から変わらず）

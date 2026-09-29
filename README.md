@@ -128,9 +128,12 @@ URL に `?debug` を付けると、戦闘中だけ次の操作ができる（攻
 
 forge の生成物のうちゲームで使うものは、ルートの `sprites.json`（forge の `build/` からの相対パス → `assets/images/` のファイル名）に書き、次のコマンドで `assets/images/` へ書き出す。書き出した PNG はコミットする（デプロイでは Python を使わない）。
 
+Python は 3.14 を使う（3.10 では forge のテストが落ちる）。venv は [uv](https://docs.astral.sh/uv/) で作る。
+
 ```sh
-python3 -m venv pixel-asset-forge/.venv   # 初回だけ
-pixel-asset-forge/.venv/bin/pip install -r pixel-asset-forge/requirements.txt   # 初回だけ
+uv python install 3.14   # 初回だけ
+uv venv --python 3.14 pixel-asset-forge/.venv   # 初回だけ
+uv pip install --python pixel-asset-forge/.venv/bin/python -r pixel-asset-forge/requirements.txt   # 初回だけ
 pixel-asset-forge/.venv/bin/python pixel-asset-forge/tools/export.py sprites.json assets/images
 ```
 
