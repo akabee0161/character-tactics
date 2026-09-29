@@ -609,9 +609,19 @@ describe('validateStageDef: legend', () => {
     expect(r.ok).toBe(true);
   });
 
+  it('speed は 下限の 0.1 ちょうどでも よい', () => {
+    const r = validateStageDef('stages/x.json', {
+      ...VALID_STAGE,
+      mapRows: ['TTTT', 'T..T', 'T..T', 'TTTT'],
+      legend: { ...LEGEND, '.': { tile: null, walkable: true, speed: 0.1 } },
+    });
+    expect(r.ok).toBe(true);
+  });
+
   it.each([
-    ['0', 0, '0 より 大きい かずが ひつよう'],
-    ['マイナス', -0.5, '0 より 大きい かずが ひつよう'],
+    ['0', 0, '0.1 いじょうが ひつよう'],
+    ['マイナス', -0.5, '0.1 いじょうが ひつよう'],
+    ['下限の 0.1 より 小さい', 0.05, '0.1 いじょうが ひつよう'],
     ['1 より 大きい', 1.5, '1 いかが ひつよう'],
     ['かずで ない', 'slow', 'かずが ひつよう'],
   ])('speed が %s なら弾く', (_label, speed, reason) => {
