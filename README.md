@@ -95,6 +95,8 @@ URL に `?debug` を付けると、戦闘中だけ次の操作ができる（攻
 | `src/ui/scroll.ts` | 縦スクロールの計算（ステージ選択が使う） |
 | `src/save/` | localStorage の読み書き |
 | `tools/` | 仮アセットの生成器。本番の絵が揃ったら消す |
+| `pixel-asset-forge/` | ドット絵の生成エンジンと絵のテキスト（forge のコピー。「ドット絵の作りかた」） |
+| `sprites.json` | forge の生成物と `assets/images/` のファイル名の対応表 |
 
 `src/core/**` と `src/engine/**` は `window` / `document` / `localStorage` を参照しない。
 
@@ -119,13 +121,26 @@ URL に `?debug` を付けると、戦闘中だけ次の操作ができる（攻
 
 **まだ規約に追いついていないもの:** 複数マスを占める物をマップに置く仕組みはまだ無い。
 顔（128px）と役割アイコン（32px）の画像は規約より大きく、縮小して描いている。
-絵は pixel-asset-forge で作り、PNG をここへコピーしている（アセットのテキストとビルドをこのリポジトリへ移す予定）。
+
+## ドット絵の作りかた
+
+ドット絵は `pixel-asset-forge/` で作る。pixel-asset-forge（forge）をこのリポジトリへ丸ごとコピーしたもので、このゲームに合わせて自由に直してよい。コピー元の commit と、forge に戻す候補は `pixel-asset-forge/UPSTREAM.md` にある。絵の描き方と規約は `pixel-asset-forge/README.md` と `pixel-asset-forge/types/*/SPEC.md`。
+
+forge の生成物のうちゲームで使うものは、ルートの `sprites.json`（forge の `build/` からの相対パス → `assets/images/` のファイル名）に書き、次のコマンドで `assets/images/` へ書き出す。書き出した PNG はコミットする（デプロイでは Python を使わない）。
+
+```sh
+python3 -m venv pixel-asset-forge/.venv   # 初回だけ
+pixel-asset-forge/.venv/bin/pip install -r pixel-asset-forge/requirements.txt   # 初回だけ
+pixel-asset-forge/.venv/bin/python pixel-asset-forge/tools/export.py sprites.json assets/images
+```
+
+エンジン・規約・道具を直したら、`pixel-asset-forge/.venv/bin/python -m unittest discover -s pixel-asset-forge/tests` を通し、`UPSTREAM.md` の「forge に戻す候補」に1行足す。
 
 ## コンテンツの足しかた
 
 コードを書き換えずに足せるもの:
 
-- **ステージ** — `assets/stages/<id>.json` を1本置く。ファイル名と `id` を一致させ、`order` に並び順を書く（昇順に並ぶ。欠番は自由、重複は起動時エラー。10, 20, 30 と空けておくと後から間に挟める）。**並び順を決めるのは `order` だけで、`id` の数字ではない**（ガルム戦は `stage3` のまま `order: 100` で最後尾にいる。`id` はセーブデータのクリア記録が参照するので、あとから振り直さない）。マップは **16列 × 23行、`cell` は 32**。`placement.minY` より下（画面で下）の歩けるマスが配置できる範囲で、`placement.starts` に開始時の立ち位置を並べる（roster より少なければ先頭から繰り返す）。**敵と時間湧きは `placement.minY` より上（`y < minY`）に置く**。線より下はプレイヤーの配置範囲なので、置くと起動時エラーになる。敵・開始位置・時間湧き・見張りの持ち場は、足元の箱（「アセットの大きさの規約」）が通れないマスにかからない位置に置く（かかると起動時エラー）。`victory.pos` は最上段に置く（下から上へ攻める）。マスの文字の意味は `legend` で決められる（`{ ".": { "tile": "tile-plain.png", "walkable": true }, "T": { "tile": "tile-tree.png", "walkable": false }, "F": { "tile": "tile-forest.png", "walkable": true, "speed": 0.5 } }` の形。キーは1文字、`tile` は `assets/images/` のファイル名か `null`。`speed` はそのマスでの移動の速さの倍率で、省略時は 1、0.1 以上 1 以下（これより遅いマスは事実上通れないので `walkable: false` にする）。通れないマスには書けない）。`legend` を書くと `mapRows` にはそのキーだけが使え、書かなければ `.`（歩ける）と `#`（歩けない）を単色で描く。タイル画像は 16×16 か 32×32 で、拡大せず元の大きさで敷く（16px なら1マスに 2×2、32px なら1枚。ほかの大きさだと `npm test` が落ちる）。タイルは pixel-asset-forge から `tile-<名前>.png` としてコピーする。地面（16px）は `build/tile/<名前>.png`、物（村・岩・木など、32px）は `build/sets/<名前>.png` から取る（forge の `build/tile/` にも同じ名前の 16px の旧版 `village` `rock` `tree` があるが、そちらを使うと1マスに4つ並ぶ。16px も 32px も `npm test` は通るので、検査では気付けない）
+- **ステージ** — `assets/stages/<id>.json` を1本置く。ファイル名と `id` を一致させ、`order` に並び順を書く（昇順に並ぶ。欠番は自由、重複は起動時エラー。10, 20, 30 と空けておくと後から間に挟める）。**並び順を決めるのは `order` だけで、`id` の数字ではない**（ガルム戦は `stage3` のまま `order: 100` で最後尾にいる。`id` はセーブデータのクリア記録が参照するので、あとから振り直さない）。マップは **16列 × 23行、`cell` は 32**。`placement.minY` より下（画面で下）の歩けるマスが配置できる範囲で、`placement.starts` に開始時の立ち位置を並べる（roster より少なければ先頭から繰り返す）。**敵と時間湧きは `placement.minY` より上（`y < minY`）に置く**。線より下はプレイヤーの配置範囲なので、置くと起動時エラーになる。敵・開始位置・時間湧き・見張りの持ち場は、足元の箱（「アセットの大きさの規約」）が通れないマスにかからない位置に置く（かかると起動時エラー）。`victory.pos` は最上段に置く（下から上へ攻める）。マスの文字の意味は `legend` で決められる（`{ ".": { "tile": "tile-plain.png", "walkable": true }, "T": { "tile": "tile-tree.png", "walkable": false }, "F": { "tile": "tile-forest.png", "walkable": true, "speed": 0.5 } }` の形。キーは1文字、`tile` は `assets/images/` のファイル名か `null`。`speed` はそのマスでの移動の速さの倍率で、省略時は 1、0.1 以上 1 以下（これより遅いマスは事実上通れないので `walkable: false` にする）。通れないマスには書けない）。`legend` を書くと `mapRows` にはそのキーだけが使え、書かなければ `.`（歩ける）と `#`（歩けない）を単色で描く。タイル画像は 16×16 か 32×32 で、拡大せず元の大きさで敷く（16px なら1マスに 2×2、32px なら1枚。ほかの大きさだと `npm test` が落ちる）。タイルは `sprites.json` に書いて `tile-<名前>.png` として書き出す（「ドット絵の作りかた」）。地面（16px）は `tile/<名前>.png`、物（村・岩・木など、32px）は `sets/<名前>.png` を指す（forge の `build/tile/` にも同じ名前の 16px の旧版 `village` `rock` `tree` があるが、そちらを指すと1マスに4つ並ぶ。16px も 32px も `npm test` は通るので、検査では気付けない）
 - **ステージ開始時の会話** — ステージの `intro` に書く。`speaker` を省略すると地の文になり、本文は `text` に直書きするか `lineId` で `assets/lines/` を参照する（両方書いても、どちらも書かなくてもエラー）
 - **本拠地に到達したときの会話** — ステージの `outro` に書く。書き方は `intro` と同じ
 - **味方・同行 NPC** — `assets/units/<id>.json`。`combat: false` にすると攻撃しない同行者になる

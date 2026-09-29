@@ -12,5 +12,6 @@ face は 64×64、role は 16×16 の正方形（README.md「アセットの大�
 
 units/*.json・enemies/*.json の sprites.role / sprites.face にファイル名を書くと使われる。
 sprites.map には sheet とアニメーション定義を持つオブジェクトを書く(ファイル名の文字列ではない)。
+tile-*.png と roran-map.png は pixel-asset-forge/ から書き出している（ルートの sprites.json と README.md「ドット絵の作りかた」）。
 仮の絵は tools/gen-placeholder-sprites.mjs で作っている。
 本番の絵がそろったら、そのファイルごと消してよい。

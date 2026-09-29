@@ -1,18 +1,19 @@
 # Session Handover
-## Generated: 2026-09-29
+## Generated: 2026-09-30
 
 ## Current State
 
-- **Branch**: `feat/forest-slow-tile`（⑤用。`origin/main` の `5656bc5` = PR #20 のマージから分岐。⑤の spec・計画・実装をコミット済み。push していない）
-- **main**: PR #19（②規約）と PR #20（③足元の箱・タイル描画、④の PNG、CodeRabbit の指摘5件の修正）はマージ済み（2026-09-29）
-- **pixel-asset-forge**: ブランチ `docs/issue6-asset-policy`（12コミット）を push し、PR #7 を作った（2026-09-29、未マージ）
+- **Branch**: `feat/move-pixel-asset-forge`（⑥用。`origin/main` の `befcd83` = PR #21 のマージから分岐。⑥の spec・計画・実装をコミット済み。push していない）
+- **main**: PR #19（②規約）と PR #20（③足元の箱・タイル描画、④の PNG、CodeRabbit の指摘5件の修正）はマージ済み（2026-09-29）。PR #21（⑤森）もマージ済み
+- **pixel-asset-forge**: PR #7 はマージ済み（2026-09-30、main は `00ef131`）
+- **ankardo**: ブランチ `feat/copy-forge-script`（`copy-forge.sh` と `new-game` スキルの手順。push していない）
 - issue #17 は PR #18 のマージ後にクローズ済み（2026-09-28）
 
 ## What Remains（上から順に）
 
 - [x] forge の `docs/issue6-asset-policy` を push し、main 向きの PR を作る → forge の PR #7（2026-09-29）
-- [x] ⑤ 森で移動が遅くなる（このブランチ `feat/forest-slow-tile`。下記「⑤で決めたこと」）
-- [ ] ⑥ アセットのテキストとビルドを forge からこのリポジトリへ移設する（下記）
+- [x] ⑤ 森で移動が遅くなる（PR #21 でマージ。下記「⑤で決めたこと」）
+- [x] ⑥ pixel-asset-forge をこのリポジトリへ移設する → ブランチ `feat/move-pixel-asset-forge`（未 push）。ankardo は `feat/copy-forge-script`（下記「⑥で決めたこと」）
 
 ## issue #6 への対応の順番（依頼者と合意、2026-09-28）
 
@@ -22,8 +23,8 @@ pixel-asset-forge #6: https://github.com/akabee0161/pixel-asset-forge/issues/6
 2. アセットの大きさの規約を決めて README に書く → **済み**（PR #19 でマージ）
 3. ゲーム側: 通れないマスへのめり込みと、タイルを元の大きさで描く → **済み**（PR #20 でマージ）
 4. forge 側: 待機アニメ・村/岩/木の 32px セット・森の絵 → **済み**（forge の絵は forge の PR #7。PNG は PR #20 でこのリポジトリにマージ済み）。待機は剣を持つ拳を2px上げる。村は小さな家3軒、岩は同じくらいの岩5つの岩場、木は小さい木5本の林。森は今の forge の `forest` をそのまま使う
-5. ゲーム側: 森で移動が遅くなる → **済み**（ブランチ `feat/forest-slow-tile`、未 push）
-6. **← 次はここ** アセットのテキストとビルドを forge からこのリポジトリへ移設する（下記）
+5. ゲーム側: 森で移動が遅くなる → **済み**（PR #21 でマージ）
+6. pixel-asset-forge をこのリポジトリへ移設する → **済み**（このブランチ。PR は未作成）
 
 ## ⑤で決めたこと（2026-09-29）
 
@@ -48,8 +49,9 @@ pixel-asset-forge #6: https://github.com/akabee0161/pixel-asset-forge/issues/6
 - この `HANDOVER.md`
 - `README.md`「アセットの大きさの規約」「コンテンツの足しかた」（ステージの `legend`）
 - `src/core/field.ts`（`computeFlowField`・`slideStep`・`hasClearPath`）と `src/core/sim.ts`（`stepTo`・移動の速さ）
-- forge の `ISSUES.md`（④で見つけて残した軽微な点）と `types/tile/SPEC.md`「物のセット（32px）」
-- forge の④の spec と計画: `docs/2026-09-28-issue6-forge-assets-spec.md`・`docs/2026-09-28-issue6-forge-assets-plan.md`（作成時点のログ）
+- `pixel-asset-forge/ISSUES.md`（④で見つけて残した軽微な点）と `pixel-asset-forge/types/tile/SPEC.md`「物のセット（32px）」
+- `pixel-asset-forge/UPSTREAM.md`（コピー元の commit と、forge に戻す候補）
+- forge の④の spec と計画: `pixel-asset-forge/docs/2026-09-28-issue6-forge-assets-spec.md`・`pixel-asset-forge/docs/2026-09-28-issue6-forge-assets-plan.md`（作成時点のログ）
 
 ## アセットの大きさの規約: ここまでに決まったこと
 
@@ -65,22 +67,15 @@ pixel-asset-forge #6: https://github.com/akabee0161/pixel-asset-forge/issues/6
 
 全体は spec を参照。
 
-## アセットのテキストとビルドの移設（方針決定済み・着手は後）
+## ⑥ pixel-asset-forge の移設で決めたこと（2026-09-30）
 
-依頼者の判断（2026-09-28）:
+設計は `docs/superpowers/specs/2026-09-30-move-pixel-asset-forge-design.md`、計画は `docs/superpowers/plans/2026-09-30-move-pixel-asset-forge.md`。
 
-- pixel-asset-forge は**生成エンジンとサンプルだけ**にする
-- アセットのグリッド（テキスト）は**このリポジトリに置き、ビルドもこのリポジトリで行う**
-- ビルドは手元で実行し、生成した PNG をコミットする。デプロイ時の `npm run build` には Python を持ち込まない
-- **着手は、上の2〜3（規約・めり込み・タイル描画）が終わってから、別の作業として行う。** それまでは forge で作った PNG をこのリポジトリへコピーする今のやり方を続ける
-
-移設のときに決めること:
-
-- エンジンの取り込み方（バージョン固定の pip / git submodule / コピー）と、forge を直したときにこちらがいつ追従するか
-- forge の確認用の道具（`tilemap.py` のマップ組み・`sheet.py` のプレビュー）をこちらから使えるようにする
-- 既存アセット（ロラン、草原タイルなど）のテキストをこちらへ移す
-
-forge 側の記録: forge の ISSUES.md「アセットのテキストとビルドをゲームリポジトリへ移設する」
+- forge を `pixel-asset-forge/` へ丸ごとコピーした（ankardo の `scripts/copy-forge.sh`）。forge は凍結せず並行して開発する
+- ゲーム側で直したものは `pixel-asset-forge/UPSTREAM.md` の「forge に戻す候補」に書き溜め、ゲームの開発が終わったら forge の issue にまとめる
+- PNG は `sprites.json` と `pixel-asset-forge/tools/export.py` で書き出す（README「ドット絵の作りかた」）。移設直後に書き出した6枚は、コミット済みの PNG と同じだった
+- 手元の python3 は 3.10.12 で、forge のテストのうち `contextlib.chdir`（3.11 から）を使う3件（`test_tools.TargetPathTest`）が落ちる。元の forge でも同じ
+- 残り: PR を作る（依頼者の指示で）→ ankardo の `new-game` スキルに character-tactics の PR へのリンクを足してから ankardo の PR をマージ → forge #8 に結果を書いて閉じる
 
 ## 後回しにした軽微な点（issue #17 から変わらず）
 
