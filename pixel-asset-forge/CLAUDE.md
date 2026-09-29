@@ -57,7 +57,7 @@
 `tilemap.py --layout layouts/{example,field,castle_interior,objects}.txt` でマップを組む。
 新しいセットを作ったら、その全点を置いたレイアウトを `layouts/` に足すこと。
 
-初回のみ: `python3 -m venv .venv && .venv/bin/pip install -r requirements.txt`
+初回のみ（Python 3.14 を uv で）: `uv python install 3.14 && uv venv --python 3.14 .venv && uv pip install --python .venv/bin/python -r requirements.txt`
 
 等倍 PNG は目視には小さすぎる。見るのは `_x8.png` の方。
 

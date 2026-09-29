@@ -26,9 +26,12 @@ PNG を直接描かず、**1文字＝1ピクセルの文字グリッド**を git
 
 ## 1. セットアップ
 
+Python は 3.14 を使う（3.10 では `contextlib.chdir` を使うテストが落ちる）。venv は [uv](https://docs.astral.sh/uv/) で作る。
+
 ```sh
-python3 -m venv .venv
-.venv/bin/pip install -r requirements.txt
+uv python install 3.14
+uv venv --python 3.14 .venv
+uv pip install --python .venv/bin/python -r requirements.txt
 ```
 
 以降のコマンドは、すべてリポジトリの直下で `.venv/bin/python tools/<ツール>.py` の形で実行する。

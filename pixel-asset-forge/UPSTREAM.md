@@ -13,7 +13,12 @@ forge 本体も並行して開発が続く。forge の改善をこちらへ取�
 ここでエンジン・規約・道具を直したら、何を・なぜ直したかを1行足す。
 
 - `tools/export.py`（と `tests/test_export.py`）: ビルドして、ゲーム側の対応表どおりに PNG をコピーする。どのゲームでも使える。forge の README のツアーにも足す必要がある
-- Python 3.14 を前提にする: forge の README のセットアップは `python3 -m venv` だけで、バージョンの前提が書かれていない。`tests/test_tools.py` の `contextlib.chdir` は 3.11 からなので、3.10（2026-10-31 でサポート終了）では3件落ちる。ゲーム側は uv で 3.14 の venv を作る手順にした（README「ドット絵の作りかた」）
+
+## forge から持ってきたもの
+
+コピーした後に forge で直され、手でこちらへ持ってきたもの。ゲームの開発が終わって差分を見るとき、ここにあるものはゲーム側の改善ではない。
+
+- forge `9d2b89a`: Python を 3.14 前提にし、uv で venv を作る手順にする（`README.md`・`CLAUDE.md`・`ISSUES.md`）
 
 ## ゲームの開発が終わったら
 
