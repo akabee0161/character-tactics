@@ -286,6 +286,14 @@ describe('validateStageDef', () => {
     if (r.ok) expect(r.value.intro).toBeUndefined();
   });
 
+  it('cell が 32 以外なら弾く（足元の箱の四隅だけで調べる判定は、箱より大きいマスが前提）', () => {
+    for (const cell of [8, 16, 64]) {
+      const r = validateStageDef('stages/x.json', { ...VALID_STAGE, cell });
+      expect(r.ok).toBe(false);
+      if (!r.ok) expect(r.errors.map((e) => e.path)).toContain('cell');
+    }
+  });
+
   it('mapRows の行の長さが そろっていなければ弾く', () => {
     const r = validateStageDef('stages/x.json', { ...VALID_STAGE, mapRows: ['####', '#..'] });
     expect(r.ok).toBe(false);

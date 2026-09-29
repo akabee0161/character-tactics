@@ -374,6 +374,9 @@ export type AiDef =
 
 export const AI_KINDS: readonly AiDef['kind'][] = ['sentry', 'aggressive', 'guard'];
 
+/** ステージの1マスの大きさ。これ以外の cell は受け付けない（README「アセットの大きさの規約」） */
+export const CELL_PX = 32;
+
 export type VictoryCond = {
   type: 'reach';
   pos: Vec2;
@@ -656,7 +659,11 @@ export function validateStageDef(file: string, raw: unknown): Validated<StageDef
   if (!o) return { ok: false, errors: ctx.errors };
 
   // walkable 検証に使うので、cell / legend / mapRows を先に読む
-  const cell = requireNumber(ctx, 'cell', o.cell, { min: 1, int: true }) ?? 32;
+  // マスは 32px だけ。足元の箱（幅12px）の四隅だけで調べる判定（footCorners）は、箱より大きいマスでないと
+  // 箱の真ん中にかかる壁を見逃す。タイルの大きさ（TILE_SIDES）も 32px のマスを割り切る前提
+  const cellRaw = requireNumber(ctx, 'cell', o.cell, { int: true });
+  if (cellRaw !== null && cellRaw !== CELL_PX) fail(ctx, 'cell', `${CELL_PX} だけ つかえる`);
+  const cell = CELL_PX;
   const legend = readLegend(ctx, o.legend);
   const effectiveLegend = legend ?? DEFAULT_LEGEND;
   const mapRows = readMapRows(ctx, o.mapRows, effectiveLegend);
