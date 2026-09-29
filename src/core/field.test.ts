@@ -16,6 +16,7 @@ import {
   makeGrid,
   resolveMoveDest,
   slideStep,
+  speedAt,
 } from './field';
 
 // '.' = 歩ける / '#' = 歩けない
@@ -42,6 +43,20 @@ describe('makeGrid', () => {
       V: { tile: null, walkable: false },
     });
     expect(g.walkable).toEqual([true, false, false, true]);
+  });
+
+  it('legend が無ければ 全マスの speed は 1', () => {
+    const g = makeGrid(32, MAP);
+    expect(g.speed).toEqual(new Array(15).fill(1));
+  });
+
+  it('legend の speed を マスに入れる。省略した項目は 1', () => {
+    const g = makeGrid(32, ['.F', 'T.'], {
+      '.': { tile: null, walkable: true },
+      F: { tile: null, walkable: true, speed: 0.5 },
+      T: { tile: null, walkable: false },
+    });
+    expect(g.speed).toEqual([1, 0.5, 1, 1]);
   });
 });
 
@@ -75,6 +90,27 @@ describe('isWalkableAt', () => {
   it('マップ外は false', () => {
     const g = makeGrid(32, MAP);
     expect(isWalkableAt(g, { x: -5, y: -5 })).toBe(false);
+  });
+});
+
+describe('speedAt', () => {
+  const g = makeGrid(32, ['.F', '..'], {
+    '.': { tile: null, walkable: true },
+    F: { tile: null, walkable: true, speed: 0.5 },
+  });
+
+  it('足元の点のマスの倍率を返す', () => {
+    expect(speedAt(g, { x: 48, y: 16 })).toBe(0.5);
+    expect(speedAt(g, { x: 16, y: 16 })).toBe(1);
+  });
+
+  it('境界ちょうどは cellIndexAt と同じく右のマス', () => {
+    expect(speedAt(g, { x: 32, y: 16 })).toBe(0.5);
+    expect(speedAt(g, { x: 31.99, y: 16 })).toBe(1);
+  });
+
+  it('マップの外は 1', () => {
+    expect(speedAt(g, { x: -5, y: 16 })).toBe(1);
   });
 });
 

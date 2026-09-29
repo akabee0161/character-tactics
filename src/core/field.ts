@@ -1,11 +1,12 @@
 import { FOOT_BELOW, FOOT_HALF_W, footCorners } from '../engine/footprint';
 import type { FlowField, Grid, Legend, Vec2 } from './types';
 
-/** legend を渡さなければ '#' だけが歩けない（legend の無いステージとテストの既定） */
+/** legend を渡さなければ '#' だけが歩けない（legend の無いステージとテストの既定）。速さの倍率は legend の speed、無ければ 1 */
 export function makeGrid(cell: number, rows: string[], legend?: Legend): Grid {
   const r = rows.length;
   const c = rows[0]?.length ?? 0;
   const walkable = new Array<boolean>(c * r);
+  const speed = new Array<number>(c * r);
   for (let y = 0; y < r; y++) {
     const line = rows[y] ?? '';
     if (line.length !== c) {
@@ -14,9 +15,10 @@ export function makeGrid(cell: number, rows: string[], legend?: Legend): Grid {
     for (let x = 0; x < c; x++) {
       const ch = line[x]!;
       walkable[y * c + x] = legend ? legend[ch]?.walkable === true : ch !== '#';
+      speed[y * c + x] = legend?.[ch]?.speed ?? 1;
     }
   }
-  return { cols: c, rows: r, cell, walkable };
+  return { cols: c, rows: r, cell, walkable, speed };
 }
 
 export function cellIndexAt(grid: Grid, pos: Vec2): number {
@@ -35,6 +37,12 @@ export function cellCenter(grid: Grid, index: number): Vec2 {
 export function isWalkableAt(grid: Grid, pos: Vec2): boolean {
   const i = cellIndexAt(grid, pos);
   return i >= 0 && grid.walkable[i] === true;
+}
+
+/** 足元の点のマスでの移動の速さの倍率。マップの外は 1 */
+export function speedAt(grid: Grid, pos: Vec2): number {
+  const i = cellIndexAt(grid, pos);
+  return i < 0 ? 1 : (grid.speed[i] ?? 1);
 }
 
 /** 足元の箱（engine/footprint.ts）の四隅が、すべて通れるマスの中にあるか。マップの外は通れない扱い */
