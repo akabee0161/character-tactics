@@ -167,17 +167,24 @@ export function hasClearPath(grid: Grid, from: Vec2, to: Vec2): boolean {
 /**
  * from から to への1歩を、足元の箱が収まるように直す（壁に沿って横すべりする）。
  * 候補は x だけ・y だけの移動と、to を同じマスの中で箱が収まる位置へ寄せた点（寄せる量が1歩ぶん以内のとき）。
- * 箱が収まる候補のうち to に最も近いものを返し、どれも from より近くなければ from。
+ * 箱が収まり、from からの途中でも箱が壁にかからない（hasClearPath）候補のうち to に最も近いものを返し、
+ * どれも from より近くなければ from。両端だけを見ると、1歩のあいだに箱が壁の角をかすめる動きを通してしまう。
  * 寄せた点を候補に入れるのは、足元が境界から数px食い込んでいるだけで横へ進めず、
- * 縦の成分でしか近づけないまま止まるのを防ぐため。
+ * 縦の成分でしか近づけないまま止まるのを防ぐため。寄せた点だけは、まっすぐでなくても
+ * 縦→横の2段で壁にかからずに行けるなら選ぶ（まっすぐだけにすると、寄せる動きが壁の角で塞がれて止まる）。
  * from 自体に箱が収まらないとき（テストで置いた位置など）は、閉じ込めないよう足元の1点で判定する
  */
 export function slideStep(grid: Grid, from: Vec2, to: Vec2): Vec2 {
-  if (fitsAt(grid, to)) return { ...to };
   if (!fitsAt(grid, from)) return isWalkableAt(grid, to) ? { ...to } : { ...from };
-  const candidates = [{ x: to.x, y: from.y }, { x: from.x, y: to.y }].filter((p) => fitsAt(grid, p));
+  const reachable = (p: Vec2): boolean => fitsAt(grid, p) && hasClearPath(grid, from, p);
+  if (reachable(to)) return { ...to };
+  const candidates = [{ x: to.x, y: from.y }, { x: from.x, y: to.y }].filter(reachable);
   const nudged = fitInCell(grid, to);
-  if (nudged && distance(to, nudged) <= distance(from, to)) candidates.push(nudged);
+  if (nudged && distance(to, nudged) <= distance(from, to) && fitsAt(grid, nudged)) {
+    const corner = { x: from.x, y: nudged.y };
+    const inTwo = hasClearPath(grid, from, corner) && hasClearPath(grid, corner, nudged);
+    if (hasClearPath(grid, from, nudged) || inTwo) candidates.push(nudged);
+  }
   let best = { ...from };
   for (const p of candidates) {
     if (distance(p, to) < distance(best, to)) best = p;
