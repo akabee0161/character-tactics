@@ -84,6 +84,12 @@ forge 側の記録: forge の ISSUES.md「アセットのテキストとビル�
 
 ## 後回しにした軽微な点（issue #17 から変わらず）
 
+⑤の最終レビュー（2026-09-29）で出た Minor:
+
+- `legend` の `speed` に下限が無い。2e-6 のようなごく小さい値だと、フローフィールドの距離（`Int32Array`）があふれて「たどり着けない」扱いになる。森以外の遅いマスを足すときに下限（例 0.1）を決める
+- `field.test.ts` のテスト名「森が無いマップの hasLineOfSight は今までどおり」は、実際には森のあるマップで確かめている（「森があっても hasLineOfSight は変わらない」が正しい）
+- `field.ts` の `computeFlowField` のコメント「グリッドは最大でも 30x14」は古い（今は 16x23）。`fields.ts` の「BFS」も実際はダイクストラ（どちらも⑤の前から）
+
 - README の CDP の手順（「描画と入力をブラウザで確認する」）どおり `--window-size=540,945` で headless Chromium を立てると、表示領域が 540×802 になり canvas が 458×802 に縮む。CDP の `Emulation.setDeviceMetricsOverride`（540×945・倍率1）を接続のたびにかけると、論理座標1px＝画面1px になる（2026-09-29、forge の ④ の確認で判明）
 - `?debug` のコマ送り `.` は、同じフレームの中で何回押しても1ステップにしかならない（`DebugClock.stepQueued` が真偽値）。CDP から続けて送るときは1回ごとに1フレーム待つ。また 1/60 秒 × 15 ステップでは浮動小数の丸めで 4fps のコマが切り替わらず、16 ステップ要った
 - `npx vite preview` は `localhost` でだけ待ち受けるので、`127.0.0.1` では繋がらない
