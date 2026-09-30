@@ -97,7 +97,13 @@ def export(mapping_path: Path, dest_dir: Path, build_dir: Path | None = None) ->
         raise ExportError(f"{dest_dir}: not a folder")
     pairs = plan(load_mapping(mapping_path), build_dir or BUILD_DIR, dest_dir)
     for source, destination in pairs:
-        shutil.copyfile(source, destination)
+        # Checked up front, but the copy itself can still fail (a full disk, a
+        # read-only file). The destination is under git, so a partial copy is
+        # undone with git checkout; report it cleanly rather than stage it.
+        try:
+            shutil.copyfile(source, destination)
+        except OSError as exc:
+            raise ExportError(f"{destination.name}: copy failed ({exc})") from None
     return [destination for _, destination in pairs]
 
 

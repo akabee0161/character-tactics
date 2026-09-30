@@ -112,6 +112,12 @@ class ExportTest(unittest.TestCase):
             export.export(self.mapping, self.dest, self.build)
         self.assert_nothing_copied()
 
+    def test_a_failed_copy_is_reported_as_an_export_error(self):
+        # A full disk or a read-only file must end in one FAIL line, not a traceback.
+        with mock.patch.object(export.shutil, "copyfile", side_effect=OSError("No space left on device")):
+            with self.assertRaisesRegex(export.ExportError, "tile-forest.png.*No space left on device"):
+                self.run_export({"tile/forest.png": "tile-forest.png"})
+
     def test_a_missing_destination_folder_is_not_created(self):
         missing = self.dest.parent / "missing"
         with self.assertRaisesRegex(export.ExportError, "missing.*not a folder"):
