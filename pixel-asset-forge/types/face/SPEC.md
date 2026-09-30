@@ -7,7 +7,7 @@
 
 | 項目 | 値 |
 |---|---|
-| 寸法 | `32x32`（`reference/knight.txt` で実用水準に到達した数字） |
+| 寸法 | `64x64`（README の「アセットの大きさの規約」。旧規約の 32x32 の手本が `reference/knight.txt`） |
 | 光源 | 左上固定（`# light: upper-left`） |
 | 背景 | 縦グラデーション `gradient:#1c1834->#323256`。透過にしない |
 | 輪郭 | `outline` を全周に1pxで回す |
