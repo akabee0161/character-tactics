@@ -76,7 +76,8 @@ pixel-asset-forge #6: https://github.com/akabee0161/pixel-asset-forge/issues/6
 - Python は 3.14 を前提にした（依頼者の判断）。手元の python3 は 3.10.12（2026-10-31 でサポート終了）で、forge のテストのうち `contextlib.chdir`（3.11 から）を使う3件が落ちるため。uv（`~/.local/bin`）で 3.14.7 を入れ、`pixel-asset-forge/.venv` を作り直すと forge のテストがすべて通った
 - PR: このリポジトリ #22、ankardo #18（`new-game` スキルに #22 へのリンクを足し済み）、forge #9（Python 3.14 前提）。いずれも未マージ（2026-09-30）
 - 2026-09-28 に合意した「forge は生成エンジンとサンプルだけにする」「アセットのテキストとビルドはこのリポジトリで行い、PNG をコミットする（デプロイで Python を使わない）」は、この移設で満たした
-- 残り: PR のマージ（forge #9 → #22 → ankardo #18 の順。#9 は squash マージなので、マージ後に `pixel-asset-forge/UPSTREAM.md` の forge の commit 番号を main 上のものに直してから #22 をマージする）→ forge #8 に結果を書いて閉じる
+- pixel-asset-forge の PR（Python 3.14 前提）はマージ済み（2026-09-30、squash で main は `95c2501`）。`pixel-asset-forge/UPSTREAM.md` の記録もこの番号に直した
+- 残り: character-tactics の PR → ankardo の PR の順にマージ（ankardo のスキルの spec へのリンクが character-tactics の main を指すため）→ pixel-asset-forge の issue #8 に結果を書いて閉じる
 
 ## 後回しにした軽微な点（issue #17 から変わらず）
 
