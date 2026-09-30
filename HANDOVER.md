@@ -24,7 +24,7 @@ pixel-asset-forge #6: https://github.com/akabee0161/pixel-asset-forge/issues/6
 3. ゲーム側: 通れないマスへのめり込みと、タイルを元の大きさで描く → **済み**（PR #20 でマージ）
 4. forge 側: 待機アニメ・村/岩/木の 32px セット・森の絵 → **済み**（forge の絵は forge の PR #7。PNG は PR #20 でこのリポジトリにマージ済み）。待機は剣を持つ拳を2px上げる。村は小さな家3軒、岩は同じくらいの岩5つの岩場、木は小さい木5本の林。森は今の forge の `forest` をそのまま使う
 5. ゲーム側: 森で移動が遅くなる → **済み**（PR #21 でマージ）
-6. pixel-asset-forge をこのリポジトリへ移設する → **済み**（このブランチ。PR は未作成）
+6. pixel-asset-forge をこのリポジトリへ移設する → **済み**（PR #22、未マージ）
 
 ## ⑤で決めたこと（2026-09-29）
 
@@ -75,7 +75,8 @@ pixel-asset-forge #6: https://github.com/akabee0161/pixel-asset-forge/issues/6
 - ゲーム側で直したものは `pixel-asset-forge/UPSTREAM.md` の「forge に戻す候補」に書き溜め、ゲームの開発が終わったら forge の issue にまとめる
 - PNG は `sprites.json` と `pixel-asset-forge/tools/export.py` で書き出す（README「ドット絵の作りかた」）。移設直後に書き出した6枚は、コミット済みの PNG と同じだった
 - Python は 3.14 を前提にした（依頼者の判断）。手元の python3 は 3.10.12（2026-10-31 でサポート終了）で、forge のテストのうち `contextlib.chdir`（3.11 から）を使う3件が落ちるため。uv（`~/.local/bin`）で 3.14.7 を入れ、`pixel-asset-forge/.venv` を作り直すと 141件すべて通った
-- 残り: PR を作る（依頼者の指示で）→ ankardo の `new-game` スキルに character-tactics の PR へのリンクを足してから ankardo の PR をマージ → forge #8 に結果を書いて閉じる
+- PR: このリポジトリ #22、ankardo #18（`new-game` スキルに #22 へのリンクを足し済み）、forge #9（Python 3.14 前提）。いずれも未マージ（2026-09-30）
+- 残り: PR のマージ（ankardo #18 は #22 の後。spec へのリンクが main を指すため）→ forge #8 に結果を書いて閉じる
 
 ## 後回しにした軽微な点（issue #17 から変わらず）
 
