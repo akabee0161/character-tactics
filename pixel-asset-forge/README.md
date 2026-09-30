@@ -322,7 +322,7 @@ seed/face32.py             リポジトリ化前の原型。もう使ってい�
 
 | 型 | 点数 | 寸法 | 規約 |
 |---|---|---|---|
-| `face`（顔グラ） | reference 1点（`knight`） | 32x32 | [`types/face/SPEC.md`](types/face/SPEC.md) |
+| `face`（顔グラ） | 1点（`roran`）。reference 2点（`roran`、旧規約 32x32 の `knight`） | 64x64 | [`types/face/SPEC.md`](types/face/SPEC.md) |
 | `item`（小物） | 1点（`chest`） | 16x16 | まだ無い |
 | `tile`（マップ） | 77点（草原57・城内20）。うち12点は物のセット3つ（村・岩・木）の部品 | 16x16（セットは 32x32） | [`types/tile/SPEC.md`](types/tile/SPEC.md) |
 | `unit`（マップ上のキャラ） | 1体24コマ（ロラン）＋素体4方向 | 32x32 | [`types/unit/SPEC.md`](types/unit/SPEC.md) |
