@@ -1,7 +1,7 @@
 # type: face
 # size: 64x64
 # light: upper-left
-# bg: gradient:#1c1834->#323256
+# bg: transparent
 # map: o=outline e=hair_slate_hi f=hair_slate_base g=hair_slate_shadow H=hair_slate_dark
 # map: a=skin_rose_hi b=skin_rose_base c=skin_rose_shadow d=skin_rose_deep
 # map: p=cloak_dark_hi r=cloak_dark_base q=cloak_dark_shadow

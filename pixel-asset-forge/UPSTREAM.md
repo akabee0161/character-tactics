@@ -16,6 +16,7 @@ forge 本体も並行して開発が続く。forge の改善をこちらへ取�
 - `ISSUES.md`: 「行の長さがそろわないグリッドを回転すると `IndexError` で止まる」（`gridfile.py`）の課題を足した
 - `ISSUES.md`: 「アセットのテキストとビルドをゲームリポジトリへ移設する」「タイルの受け渡し方が未定」の2行を消した（移設が済んだため。pixel-asset-forge の移設の issue は 2026-09-30 に閉じた）
 - face 型の寸法を 32x32 から 64x64 にした（ゲームの「アセットの大きさの規約」。`types/face/SPEC.md`・`CLAUDE.md`。character-tactics の issue #23）
+- face 型の背景をグラデーションから透明にした（ゲームのほかの顔にそろえる。`types/face/SPEC.md`。character-tactics の issue #23）
 - 元絵と並べて見る `tools/compare.py` を足した（テスト `tests/test_compare.py`、README 2.11。character-tactics の issue #23）
 
 ## forge から持ってきたもの
