@@ -1,18 +1,49 @@
 # Session Handover
-## Generated: 2026-09-30
+## Generated: 2026-09-30（issue #23 の顔グラの途中で更新）
 
 ## Current State
 
-- **Branch**: `main`（⑥は character-tactics の PR・ankardo の PR・pixel-asset-forge の PR がすべてマージ済み、2026-09-30）
-- **main**: PR #19（②規約）、PR #20（③足元の箱・タイル描画、④の PNG、CodeRabbit の指摘5件の修正）、PR #21（⑤森、CodeRabbit の指摘1件の修正）はマージ済み（2026-09-29）
-- **issue #6 で予定していた作業（①〜⑤）はすべて終わった。** forge の issue #6 は対応結果をコメントして閉じた（2026-09-29）。⑥の移設は forge の issue #8 に切り出し、2026-09-30 に着手した（下記「⑥で決めたこと」）
-- **pixel-asset-forge**: PR #7（ブランチ `docs/issue6-asset-policy`。CodeRabbit の指摘2件の修正を含む）はマージ済み（2026-09-29、main は `00ef131`）
-- **ankardo**: ブランチ `feat/copy-forge-script`（ankardo の PR #18。`copy-forge.sh` と `new-game` スキルの手順）
-- issue #17 は PR #18 のマージ後にクローズ済み（2026-09-28）
+- **Branch**: `feat/roran-face`（main から分岐、**未 push**・PR なし）。issue #23（ロランのアセット修正）の1番目「ロランの顔グラを forge で描く」の途中
+- **main**: issue #6 の①〜⑥はすべてマージ済み（PR #19〜#22、2026-09-30）。issue #17 もクローズ済み
+- **作業の記録（進捗台帳）**: `.superpowers/sdd/2026-09-30-roran-face/progress.md`（git 管理外。Task 1〜6 完了、Task 7 は保留。判断はすべて `Ruling:` 行にある）
+- **`git stash@{0}`**「64px face export (on hold, 32px rework)」: 64px の顔の書き出し（`sprites.json` に `face/roran.png` を足し、`roran-face.png` を 64px に差し替え、README と `assets/images/README.txt` の記述を直したもの）。32px に決まれば捨てる、64px に戻るなら使う
+- forge の `.venv`（Python 3.14.7）と uv（`~/.local/bin/uv`）はこの端末に用意済み
 
 ## What Remains
 
-- 予定している作業は無い。pixel-asset-forge に戻すものは `pixel-asset-forge/UPSTREAM.md` の「forge に戻す候補」にある（反映の時期は未定）
+**次にやること: ロランの顔を 32px で描き直す**（下の「issue #23 の1番目で決めたこと」の最後の決定）。
+
+1. シルエット: `a886c2a` の 32px のシルエット（元絵の升目の地図から1行ずつ手で書いたもの。依頼者は一度「一旦進めましょう」とした）を土台にする。目は消して描き直す。背景は透明
+2. 目の輪郭 → 色 → 陰影 → 鼻・口、の順に、**段階ごとに等倍（32px の枠）と2倍（64px の枠）の見え方を見せて止まる**
+3. 64px で決めた部品の描き方を使う: 目の形は C（丸め）、瞳の色は灰青（`iris_slate` / `iris_slate_dark`）、眉は B3（目頭が低く目じりが高い）、鼻は垂直に近い黒い線（V1、鼻の穴なし）、口は閉じた薄い線で両端をやわらげる（M2）、目と眉は顔の上下のバランスで下げた位置（P1）。32px の試作では白黒の目（上まぶたと瞳を黒、白目を白、瞳は縦線）が「それなり」だった
+4. 仕上がったらゲームの2つの枠で見比べ、依頼者が規約を 32px に戻すか決める。戻すなら README「アセットの大きさの規約」・`assets/images/README.txt`・forge の `types/face/SPEC.md`・`CLAUDE.md`・`UPSTREAM.md` を 32px に直し、Task 7（書き出し・`npm test`・`npm run build`・CDP で画面確認・HANDOVER）を 32px で行う
+5. 元絵（フリー素材 128px）は `build/` が空になって消えている。見比べるときは `git show aeae90a:assets/images/roran-face.png > pixel-asset-forge/build/face/roran_free.png` で戻す（`export.py` を走らせると再び消える）
+
+見るための道具（git 管理外、`.superpowers/sdd/2026-09-30-roran-face/`）: `view32.py`（32px のグリッドを8倍で元絵と並べ、会話の枠と下のバーの地の色に等倍・2倍で置いた画像を `shots/` に出す。まだ一度も走らせていない）、`cdp.mjs`（ビルドした画面を headless Chromium で操作して撮る。`npx vite preview --port 4178` と組み合わせる）。
+
+issue #23 の残り（2番目以降）は下の「issue #23 の進め方」の順。pixel-asset-forge に戻すものは `pixel-asset-forge/UPSTREAM.md` の「forge に戻す候補」にある
+
+## issue #23 の進め方（依頼者と合意、2026-09-30）
+
+issue #23: https://github.com/akabee0161/character-tactics/issues/23 。1つずつ設計 → spec → 計画 → 実装する。
+
+1. ロランの顔グラを forge で描く（**作業中**。spec `docs/superpowers/specs/2026-09-30-roran-face-design.md`、計画 `docs/superpowers/plans/2026-09-30-roran-face.md`。どちらも 64px 前提の時点のログ）
+2. 顔グラを入力にしてユニットに特徴を反映する。ユニットの目を大きく（少し縦長に）するのもここ
+3. 剣・弓のアイコンを生成する（item 型。役割アイコンと持ち物の元絵を兼ねる）
+4. アイテムを入力にしてユニットの持ち物に反映する
+5. その後、ほかのユニットに移る
+
+## issue #23 の1番目で決めたこと（2026-09-30）
+
+- 顔グラはドット絵（テキストのグリッド）で描く。どうしても届かなければ Stable Diffusion（または SD の下絵を減色してグリッドを手で直す中間の案）を検討する
+- 見た目はフリー素材のロランを引き継ぐ。元絵を縮小・減色して下絵にはしない（見本として横に置くだけ）
+- 元絵と並べて見る `tools/compare.py` を forge に足した（README 2.11）
+- 64px で一度描いた（`fe13e70` → 背景透明化 `2a7628c`）。依頼者は「磨く余地はあるが合格が出せるレベル」として一旦合格にし、face 型の手本 `reference/roran` にした。`reference/knight`（旧 32px）はバックアップとして残す（依頼者は knight の方が質が高いと見ている）
+- 服を一から描く試作（軽い鎧＋マント、立ち襟）は「評価に値しない」で不採用。服も見本からパターンを作って組み合わせる必要がある（forge の `ISSUES.md`「顔グラを部品とパラメタから作る工程（深掘り待ち）」）
+- **64px の顔を 32px の枠に半分で縮めると線がぼけて NG**（依頼者）。調べると、フリー素材の顔は元が **24×24px・18人で14色を共有するドット絵**を約5.3倍に拡大したものだった（依頼者が元の画像を提示）。そこで**顔は 32px で描き、32px の枠は等倍、64px の枠は2倍の整数倍で出す**方針にした（画面のレイアウトは変えない）。依頼者の考え: 低い解像度でいかに上手く描くかが要点。表示の大きさごとに別のアセットを作る考え方もあるが、今の枠なら 32px 1枚で足りる
+- 背景は透明（ほかの顔にそろえる）。64px の枠（会話・セリフ欄）での 64px の顔の見え方は「問題なし」
+- 目の色はキャラクターごとに選べるようにしたい（パレットのキーの組 `iris_<名前>` / `iris_<名前>_dark` で対応）
+- 依頼者が「合格が出せるレベル」と言っても合格ではない。合格かどうかは依頼者の言葉で確かめる
 
 ## issue #6 への対応の順番（依頼者と合意、2026-09-28）
 
@@ -45,12 +76,22 @@ pixel-asset-forge #6: https://github.com/akabee0161/pixel-asset-forge/issues/6
 
 ## Context Files（次のセッションで最初に読むもの）
 
-- この `HANDOVER.md`
-- `README.md`「アセットの大きさの規約」「コンテンツの足しかた」（ステージの `legend`）
-- `src/core/field.ts`（`computeFlowField`・`slideStep`・`hasClearPath`）と `src/core/sim.ts`（`stepTo`・移動の速さ）
-- `pixel-asset-forge/ISSUES.md`（④で見つけて残した軽微な点）と `pixel-asset-forge/types/tile/SPEC.md`「物のセット（32px）」
+- この `HANDOVER.md`（特に「What Remains」と「issue #23 の1番目で決めたこと」）
+- 進捗台帳 `.superpowers/sdd/2026-09-30-roran-face/progress.md`（`Ruling:` 行に途中の判断がすべてある）
+- `pixel-asset-forge/CLAUDE.md`（グリッドの形式・コマンド）と `pixel-asset-forge/types/face/SPEC.md`（手本 roran と部品の描き方）
+- `pixel-asset-forge/assets/face/roran.txt`（64px の顔。部品の形と色のキーの手本）と `git show a886c2a:pixel-asset-forge/assets/face/roran_32.txt`（32px のシルエットと目の試作）、`git show 972e20d:pixel-asset-forge/assets/face/roran_32.txt`（塗りと白黒の目まで進めた 32px の試作）
+- `pixel-asset-forge/ISSUES.md`（「顔グラを部品とパラメタから作る工程（深掘り待ち）」「ロランの顔にまだ磨く余地がある」）
+- `README.md`「アセットの大きさの規約」と `src/render/sprites.ts` の `smoothFor`（縮小するときだけぼかす）・`src/ui/layout.ts` の `FACE_PX`
 - `pixel-asset-forge/UPSTREAM.md`（コピー元の commit と、forge に戻す候補）
-- forge の④の spec と計画: `pixel-asset-forge/docs/2026-09-28-issue6-forge-assets-spec.md`・`pixel-asset-forge/docs/2026-09-28-issue6-forge-assets-plan.md`（作成時点のログ）
+
+## 顔グラの作業で依頼者から受けた指示（2026-09-30）
+
+- 絵は段階ごとに見せて止まる。「一旦進めましょう」は次の段階へ進んでよいという意味で、合格ではない
+- 質問は1つずつ、どの点に答えればよいかを明示する。いくつも並べて「問題ありませんか」と聞かない
+- 自分で気付いた軽微な点を、依頼者の課題のように扱って判断を求めない（出どころ・不都合・直す方向を言えないものは挙げない）
+- 前の案の座標を流用して「新しく描いた」と言わない（32px の最初の試作で 64px の座標を半分にして使い、指摘された）
+- 参考画像を読むときは思い込まない（元絵の淡い瞳を白目と読んで寄り目にした。参考画像の鼻は黒い輪郭線なのに「影だけ」と書いた）
+- 案は顔全体で並べ、等倍の縮小も添える（目だけの拡大では判断できないと言われた）
 
 ## アセットの大きさの規約: ここまでに決まったこと
 
