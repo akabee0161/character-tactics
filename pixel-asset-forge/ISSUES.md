@@ -24,6 +24,7 @@
 
 | 課題 | 詳細・直し方の見当 | 大きさ | 出どころ |
 |---|---|---|---|
+| **行の長さがそろわないグリッドを回転すると `IndexError` で止まる** | `gridfile.py` の `parse` は行が空かだけを見て、各行の長さは見ない。`_derive` は `check` の前に `TRANSFORMS[name](source.rows)` を呼ぶので、短い行がある由来元を `rotate_cw` / `rotate_ccw` すると添字の範囲外になる。`validate.py` は `GridError` しか捕まえないので、1枚の誤りで全体が止まる。回転の前に行の長さをそろっているか確かめ、`GridError` にする | 小 | character-tactics の PR の CodeRabbit の指摘（2026-09-30） |
 | **`probe_colors.py --pairs` が色リテラルをコメントとして捨てる** | `read_pairs()` は行の中の `#` 以降をすべてコメントとして扱う。`#3f8a3c grass_base` の行は丸ごと捨てられ（比較せずに終了コード 0）、`grass_base #3f8a3c` はエラーになる。トークンを見て、`#rrggbb` は色として残し、それ以外の `#` からをコメントにする。両方の順序をテストする | 小 | character-tactics の PR の CodeRabbit の指摘（2026-09-30） |
 | **`probe_colors.py --pairs` の読み込みエラーがトレースバックになる** | `read_pairs()` の呼び出しが `main()` の `try` の外にあるので、1色だけの行の `GridError` や、ファイルが無いときの `OSError` が `FAIL`（終了コード 2）にならずに漏れる | 小 | 同上 |
 | **`RiverDerivationTest` が現役の川のタイルを読んでいる** | `tests/test_tools.py` の `RiverDerivationTest` が `assets/tile/river_*.txt` を直接読んでおり、「回帰テストに現役のアートを参照させない」（CLAUDE.md）に反する。出荷する川の派生宣言の検査は残したまま、比較する入力を `tests/fixtures/` に固定する | 小 | character-tactics#22 の CodeRabbit の指摘（2026-09-30） |
