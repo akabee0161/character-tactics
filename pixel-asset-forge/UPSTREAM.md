@@ -14,6 +14,7 @@ forge 本体も並行して開発が続く。forge の改善をこちらへ取�
 
 - `tools/export.py`: 書き出し先がシンボリックリンクなら止める（`copyfile` がリンクをたどってフォルダの外を上書きしないように）。`build/` を消せないときは描き直す前に `FAIL` で止める（残った古い PNG を書き出さないように）。テストは `tests/test_export.py` に2件（character-tactics の PR の CodeRabbit の指摘、2026-09-30）
 - `ISSUES.md`: 「行の長さがそろわないグリッドを回転すると `IndexError` で止まる」（`gridfile.py`）の課題を足した
+- `ISSUES.md`: 「アセットのテキストとビルドをゲームリポジトリへ移設する」「タイルの受け渡し方が未定」の2行を消した（移設が済んだため。pixel-asset-forge の移設の issue は 2026-09-30 に閉じた）
 
 ## forge から持ってきたもの
 
