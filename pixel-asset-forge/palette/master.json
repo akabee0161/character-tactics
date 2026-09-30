@@ -6,19 +6,27 @@
   "hair_shadow": "#333c66",
   "hair_dark": "#232842",
 
+  "hair_slate_base": "#4f5674",
+
   "skin_hi": "#ffe0c0",
   "skin_base": "#f0c49a",
   "skin_shadow": "#c98f6a",
   "skin_deep": "#96604a",
+
+  "skin_rose_base": "#dcb2b0",
 
   "eye_white": "#f8f0e8",
   "iris": "#5a7ac0",
   "pupil": "#1a1228",
   "mouth": "#a85f52",
 
+  "iris_sage": "#7f9a8c",
+
   "cloth_hi": "#7a8fd0",
   "cloth_base": "#4a5588",
   "cloth_shadow": "#2e3557",
+
+  "cloak_dark_base": "#2e2940",
 
   "wood_hi": "#c08b52",
   "wood_base": "#8a5a30",
