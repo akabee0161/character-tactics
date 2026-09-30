@@ -120,15 +120,60 @@ class ExportTest(unittest.TestCase):
 
 
 class BuildTest(unittest.TestCase):
+    # build() drives render/sets/sheet, which read the live art. The tests stub
+    # them and point BUILD_DIR at a temporary folder, so they neither depend on
+    # the current assets nor wipe the real build/ (CLAUDE.md: no live art in tests).
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        root = Path(self.tmp.name)
+        self.build_dir = root / "build"
+        sheet_dir = root / "sheets"
+        sheet_dir.mkdir()
+        (sheet_dir / "hero.txt").write_text("", encoding="utf-8")
+        self.calls: list[str] = []
+        self.render_code = 0
+        patches = (
+            mock.patch.object(export, "BUILD_DIR", self.build_dir),
+            mock.patch.object(export, "SHEET_DIR", sheet_dir),
+            mock.patch.object(export.render, "main", side_effect=self.fake_render),
+            mock.patch.object(export.sets, "main", side_effect=lambda argv: self.record("sets")),
+            mock.patch.object(export.sheet, "main", side_effect=lambda argv: self.record("sheet")),
+        )
+        for patch in patches:
+            patch.start()
+            self.addCleanup(patch.stop)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def record(self, name: str) -> int:
+        self.calls.append(name)
+        return 0
+
+    def fake_render(self, argv) -> int:
+        self.calls.append("render")
+        (self.build_dir / "tile").mkdir(parents=True, exist_ok=True)
+        (self.build_dir / "tile" / "current.png").write_bytes(b"new")
+        return self.render_code
+
     def test_a_png_left_from_an_earlier_build_is_removed(self):
         # A grid renamed or deleted since the last build must not leave its old
         # PNG behind, or export() would copy it as if it were current.
-        stale = export.BUILD_DIR / "tile" / "stale_from_an_earlier_build.png"
-        stale.parent.mkdir(parents=True, exist_ok=True)
+        stale = self.build_dir / "tile" / "stale.png"
+        stale.parent.mkdir(parents=True)
         stale.write_bytes(b"old")
         self.assertEqual(export.build(), 0)
         self.assertFalse(stale.exists())
-        self.assertTrue((export.BUILD_DIR / "tile" / "forest.png").is_file())
+        self.assertTrue((self.build_dir / "tile" / "current.png").is_file())
+
+    def test_runs_render_then_sets_then_every_sheet(self):
+        self.assertEqual(export.build(), 0)
+        self.assertEqual(self.calls, ["render", "sets", "sheet"])
+
+    def test_a_failing_step_stops_the_build_with_its_code(self):
+        self.render_code = 2
+        self.assertEqual(export.build(), 2)
+        self.assertEqual(self.calls, ["render"])
 
 
 class MainTest(unittest.TestCase):
@@ -137,8 +182,19 @@ class MainTest(unittest.TestCase):
         root = Path(self.tmp.name)
         self.dest = root / "images"
         self.dest.mkdir()
+        build_dir = root / "build"
+        (build_dir / "tile").mkdir(parents=True)
+        (build_dir / "tile" / "only_in_this_test.png").write_bytes(b"png")
         self.mapping = root / "sprites.json"
-        self.mapping.write_text(json.dumps({"tile/forest.png": "tile-forest.png"}), encoding="utf-8")
+        self.mapping.write_text(json.dumps({"tile/only_in_this_test.png": "tile-test.png"}), encoding="utf-8")
+        self.build_code = 0
+        patches = (
+            mock.patch.object(export, "BUILD_DIR", build_dir),
+            mock.patch.object(export, "build", side_effect=lambda: self.build_code),
+        )
+        for patch in patches:
+            patch.start()
+            self.addCleanup(patch.stop)
 
     def tearDown(self):
         self.tmp.cleanup()
@@ -148,18 +204,17 @@ class MainTest(unittest.TestCase):
             return export.main(argv)
 
     def test_a_failed_build_copies_nothing_and_passes_its_code_on(self):
-        with mock.patch.object(export.render, "main", return_value=2):
-            code = self.quiet_main([str(self.mapping), str(self.dest)])
-        self.assertEqual(code, 2)
+        self.build_code = 2
+        self.assertEqual(self.quiet_main([str(self.mapping), str(self.dest)]), 2)
         self.assertEqual(list(self.dest.iterdir()), [])
 
     def test_a_bad_mapping_exits_1(self):
         self.mapping.write_text("{", encoding="utf-8")
         self.assertEqual(self.quiet_main([str(self.mapping), str(self.dest)]), 1)
 
-    def test_a_good_run_exits_0_and_copies(self):
+    def test_a_good_run_exits_0_and_copies_from_build(self):
         self.assertEqual(self.quiet_main([str(self.mapping), str(self.dest)]), 0)
-        self.assertTrue((self.dest / "tile-forest.png").is_file())
+        self.assertEqual((self.dest / "tile-test.png").read_bytes(), b"png")
 
 
 if __name__ == "__main__":

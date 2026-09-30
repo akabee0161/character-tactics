@@ -92,10 +92,10 @@ def plan(mapping: dict[str, str], build_dir: Path, dest_dir: Path) -> list[tuple
     return [(build_root / source, dest_dir / name) for source, name in mapping.items()]
 
 
-def export(mapping_path: Path, dest_dir: Path, build_dir: Path = BUILD_DIR) -> list[Path]:
+def export(mapping_path: Path, dest_dir: Path, build_dir: Path | None = None) -> list[Path]:
     if not dest_dir.is_dir():
         raise ExportError(f"{dest_dir}: not a folder")
-    pairs = plan(load_mapping(mapping_path), build_dir, dest_dir)
+    pairs = plan(load_mapping(mapping_path), build_dir or BUILD_DIR, dest_dir)
     for source, destination in pairs:
         shutil.copyfile(source, destination)
     return [destination for _, destination in pairs]
