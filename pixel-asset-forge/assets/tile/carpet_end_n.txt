@@ -1,0 +1,25 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# The north end of a runner, for where the carpet stops in front of a throne.
+# Rows 0-2 repeat floor_stone so the exposed floor keeps the hall's joints, and
+# rows 11-13 keep the lozenge on carpet_v's 8-row phase.
+# map: f=floor_base h=floor_hi s=floor_shadow
+# map: c=carpet_base r=carpet_hi p=carpet_shadow
+# map: y=metal_base l=metal_hi
+ssssssssssssssss
+shhhhhhhshhhhhhh
+shffffffshffffff
+ffrrrrrrrrrrrrff
+ffryyyyyyyyyypff
+ffryccccccccypff
+ffryccccccccypff
+ffryccccccccypff
+ffryccccccccypff
+ffryccccccccypff
+ffryccccccccypff
+ffrycccyycccypff
+ffryccyllyccypff
+ffrycccyycccypff
+ffryccccccccypff
+ffryccccccccypff

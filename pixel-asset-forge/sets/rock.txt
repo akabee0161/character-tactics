@@ -1,0 +1,3 @@
+# The rock set. One map cell in character-tactics (32px), built from four 16px parts.
+rock_nw  rock_ne
+rock_sw  rock_se

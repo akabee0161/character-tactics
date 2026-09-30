@@ -1,0 +1,25 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# The interior floor every other castle-interior tile is drawn on top of.
+# Flagstones in running bond, with joints on rows 0 and 8, then x0/x8 on the
+# upper course and x4/x12 on the lower one. The pattern is anchored to row 0 and
+# column 0 of the tile, so any tile that repeats these rows at its edges lines
+# up with a floor laid next to it.
+# map: f=floor_base h=floor_hi s=floor_shadow
+ssssssssssssssss
+shhhhhhhshhhhhhh
+shffffffshffffff
+shffffffshffffff
+shffffffshffffff
+shffffffshffffff
+shffffffshffffff
+shffffffshffffff
+ssssssssssssssss
+hhhhshhhhhhhshhh
+ffffshffffffshff
+ffffshffffffshff
+ffffshffffffshff
+ffffshffffffshff
+ffffshffffffshff
+ffffshffffffshff

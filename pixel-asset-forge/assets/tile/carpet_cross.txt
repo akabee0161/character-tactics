@@ -1,0 +1,24 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# Where the vertical and horizontal runners meet. The first two and last two
+# rows repeat carpet_v's body, and column 0 repeats carpet_h's right edge, so
+# it joins either run without a step.
+# map: f=floor_base c=carpet_base r=carpet_hi p=carpet_shadow
+# map: y=metal_base l=metal_hi
+ffryccccccccypff
+ffryccccccccypff
+rrrrrrrrrrrrrrrr
+yyyyyyyyyyyyyyyy
+cccccccccccccccc
+cccccccccccccccc
+cccccccyyccccccc
+ccccccyllycccccc
+ccccccyllycccccc
+cccccccyyccccccc
+cccccccccccccccc
+cccccccccccccccc
+yyyyyyyyyyyyyyyy
+pppppppppppppppp
+ffryccccccccypff
+ffryccccccccypff

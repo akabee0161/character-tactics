@@ -1,0 +1,28 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# Dense canopy seen from above, seamless in both directions. Round crowns on an
+# 8px period, with the lower half of the tile offset by 4px so the crowns sit
+# in a brick bond instead of a square grid. The shadow between crowns is what
+# makes them read as separate trees.
+# The first version scattered flat 3x3 patches of leaf_hi and read as green
+# confetti on a dark field - a canopy needs crowns, not marks.
+# There is no outline here. An outline is for an object's silhouette, and this
+# tile has no silhouette; it is a surface.
+# map: e=leaf_hi f=leaf_base j=leaf_shadow
+jjffffjjjjffffjj
+jfeeeffjjfeeeffj
+feeeeefffeeeeeff
+feeeeffffeeeefff
+feeefffjfeeefffj
+ffffffjjffffffjj
+jfffffjjjfffffjj
+jjfffjjjjjfffjjj
+ffjjjjffffjjjjff
+effjjfeeeffjjfee
+eefffeeeeefffeee
+effffeeeeffffeee
+fffjfeeefffjfeee
+ffjjffffffjjffff
+ffjjjfffffjjjfff
+fjjjjjfffjjjjjff

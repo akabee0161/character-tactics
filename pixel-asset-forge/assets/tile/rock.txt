@@ -1,0 +1,23 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# A boulder. Same stone ramp as the castle and the mountains, lit from the
+# upper left, with the cast shadow on the grass below it.
+# map: g=grass_base a=grass_hi s=grass_shadow o=outline
+# map: n=stone_base t=stone_hi m=stone_shadow
+gggggggggggggggg
+ggaagggggggggggg
+gggggggggssggggg
+gggggggggggggggg
+gggggggggggggggg
+ggggggoooogggggg
+ggggoottttoogggg
+gggottttnnnogggg
+ggottttnnnnnoggg
+ggonnnmmmmmmoggg
+ggonnnmmmmmmoggg
+gggonnnmmmmmoggg
+gggommmmmmmmoggg
+ggggoooooooogggg
+ggggssssssssgggg
+gggggggggggggggg

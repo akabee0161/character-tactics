@@ -1,0 +1,29 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# The bank is two pixels of dirt with a ragged outer edge. The old version put
+# a single pixel of grass_shadow between the water and the grass on every row,
+# and that dead straight seam is what made the river read as a canal.
+# A first attempt kept the 1px bank and only nudged it here and there; laid out
+# three by three the nudges themselves turned into a regular pattern of
+# notches. The bank had to get wider before the wiggle could hide in it.
+# Rows 0, 7, 8 and 15 keep the plain profile, because those are the rows the
+# bends and the bridges have to meet.
+# map: g=grass_base a=grass_hi b=dirt_base k=dirt_shadow
+# map: h=water_hi w=water_base d=water_shadow
+ggbbdwwwwwwdbbgg
+ggkbdwhhwwwdbbgg
+gbbbdwwwwwwdbbgg
+ggbbdwwwwwwdbbbg
+ggbbdwwwhhwdbbga
+gggbdwwwwwwdbbgg
+ggbbdwwwwwwdbggg
+ggbbdwwwwwwdbbgg
+ggbbdwwwwwwdbbgg
+ggbbdwhhwwwdbkgg
+gbbbdwwwwwwdbbgg
+ggbbdwwwwwwdbbbg
+ggbbdwwwhhwdbbgg
+gggbdwwwwwwdbbgg
+agbbdwwwwwwdbggg
+ggbbdwwwwwwdbbgg

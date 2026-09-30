@@ -1,0 +1,4 @@
+# A T junction with the branch going east. Turning path_t_n clockwise sends its
+# north branch to the east and stands the through road up vertically.
+# from: path_t_n.txt
+# transform: rotate_cw

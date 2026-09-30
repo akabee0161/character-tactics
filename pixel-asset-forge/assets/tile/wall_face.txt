@@ -1,0 +1,26 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# The front of a castle wall, for the row directly below wall_top. Darker than
+# wall_top because it is a vertical plane under light coming from above. Two
+# courses of masonry with the mortar on rows 0 and 8, so it repeats both
+# sideways and downward if a wall needs to be two faces tall.
+# The window, torch, banner and door tiles keep columns 0-3 and 12-15 identical
+# to this file; that is what lets them sit anywhere in a run of wall.
+# map: n=stone_base m=stone_shadow d=stone_dark
+dddddddddddddddd
+dnnnnnnndnnnnnnn
+dmmmmmmmdmmmmmmm
+dmmmmmmmdmmmmmmm
+dmmmmmmmdmmmmmmm
+dmmmmmmmdmmmmmmm
+dmmmmmmmdmmmmmmm
+dmmmmmmmdmmmmmmm
+dddddddddddddddd
+nnnndnnnnnnndnnn
+mmmmdmmmmmmmdmmm
+mmmmdmmmmmmmdmmm
+mmmmdmmmmmmmdmmm
+mmmmdmmmmmmmdmmm
+mmmmdmmmmmmmdmmm
+mmmmdmmmmmmmdmmm

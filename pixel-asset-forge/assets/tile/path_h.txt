@@ -1,0 +1,5 @@
+# The same road turned sideways. A road is flat ground with no lit or shadowed
+# side, so a rotation has nothing to get wrong here - unlike the wall corners,
+# which had to be drawn twice.
+# from: path_v.txt
+# transform: rotate_cw

@@ -1,0 +1,25 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# A conifer, for hills and the edge of a wood. Three tiers that step out as
+# they go down, so it reads as a different species from tree rather than as a
+# smaller version of it.
+# map: g=grass_base s=grass_shadow o=outline
+# map: e=leaf_hi f=leaf_base j=leaf_shadow
+# map: w=wood_base b=wood_shadow
+ggssgggooggggggg
+ggggggoeeogggggg
+gggggoeeffoggggg
+ggggoeeefffogggg
+gggggoeeffoggggg
+ggggoeeefffogggg
+gggoeeeeffffoggg
+ggggoeeefffogggg
+gggoeeeeffffoggg
+ggoeeeeefffffogg
+ggofffffjjjjjogg
+gggoffffjjjjoggg
+ggggggowbogggggg
+ggggggowboggssgg
+gggggowwbboggggg
+gggggssssssggggg

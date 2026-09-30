@@ -1,0 +1,26 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# A grove - five small broadleaf trees scattered over one map cell, placed at random
+# (seed 58) and chosen by eye. One big tree filling the cell looked out of place, like the
+# single big rock did. More trees per cell made the grass between two groves look unnatural.
+# Crowns in leaf_* not grass_*, as in the single tile tree, so they do not sink into the field.
+# map: g=grass_base a=grass_hi s=grass_shadow o=outline
+# map: e=leaf_hi f=leaf_base j=leaf_shadow
+# map: w=wood_base b=wood_shadow
+oooosggoffjjoggg
+ggssssgooooooggg
+goooogggowbogggg
+oeeefoggowbogggg
+eeefffogowbogggg
+eeffffogoooosggg
+effffjogggssssgg
+ffffjjogggggggga
+fffjjjoggggggggg
+oooooogggggggggg
+gowboggggggggggg
+gowboggggggggggg
+gowboggggggggggg
+goooosgggggggggg
+gggssssggggggggg
+gggggggggggggggg

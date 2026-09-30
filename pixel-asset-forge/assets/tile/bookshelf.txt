@@ -1,0 +1,25 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# A three-shelf case for a study or a library wing. The spines borrow colours
+# the set already has rather than adding book colours to the palette, and a few
+# books are shorter than their neighbours so the row does not read as a bar.
+# map: f=floor_base h=floor_hi s=floor_shadow o=outline
+# map: w=wood_base v=wood_hi b=wood_shadow x=wood_dark
+# map: c=carpet_base j=hair_base e=grass_shadow l=metal_hi
+ssssssssssssssss
+shovvvvvvvvvvohh
+showccjbeeblboff
+showccjjeeclboff
+showccjjeeclboff
+showccjjeeclboff
+shobbbbbbbbbboff
+showjbccleebboff
+ssowjjccleecboss
+hhowjjccleecbohh
+ffowjjccleecboff
+ffobbbbbbbbbboff
+ffoweebjjcclboff
+ffoweejjcclbboff
+ffoweejjcclbboff
+ffoxxxxxxxxxxoff

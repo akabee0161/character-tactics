@@ -1,16 +1,18 @@
 # Session Handover
-## Generated: 2026-09-29
+## Generated: 2026-09-30
 
 ## Current State
 
+- **Branch**: `feat/move-pixel-asset-forge`（⑥用。PR #22。main の最新を取り込み済み）
 - **main**: PR #19（②規約）、PR #20（③足元の箱・タイル描画、④の PNG、CodeRabbit の指摘5件の修正）、PR #21（⑤森、CodeRabbit の指摘1件の修正）はマージ済み（2026-09-29）
-- **issue #6 で予定していた作業（①〜⑤）はすべて終わった。** forge の issue #6 は対応結果をコメントして閉じた（2026-09-29）。⑥の移設は時期未定で、予定の作業ではない。forge の issue #8 に切り出した（下記）
-- **pixel-asset-forge**: PR #7（ブランチ `docs/issue6-asset-policy`。CodeRabbit の指摘2件の修正を含む）はマージ済み（2026-09-29）
+- **issue #6 で予定していた作業（①〜⑤）はすべて終わった。** forge の issue #6 は対応結果をコメントして閉じた（2026-09-29）。⑥の移設は forge の issue #8 に切り出し、2026-09-30 に着手した（下記「⑥で決めたこと」）
+- **pixel-asset-forge**: PR #7（ブランチ `docs/issue6-asset-policy`。CodeRabbit の指摘2件の修正を含む）はマージ済み（2026-09-29、main は `00ef131`）
+- **ankardo**: ブランチ `feat/copy-forge-script`（ankardo の PR #18。`copy-forge.sh` と `new-game` スキルの手順）
 - issue #17 は PR #18 のマージ後にクローズ済み（2026-09-28）
 
 ## What Remains
 
-- 予定している作業は無い
+- [ ] ⑥ の PR のマージと forge #8 のクローズ（下記「⑥で決めたこと」の「残り」）
 
 ## issue #6 への対応の順番（依頼者と合意、2026-09-28）
 
@@ -21,7 +23,7 @@ pixel-asset-forge #6: https://github.com/akabee0161/pixel-asset-forge/issues/6
 3. ゲーム側: 通れないマスへのめり込みと、タイルを元の大きさで描く → **済み**（PR #20 でマージ）
 4. forge 側: 待機アニメ・村/岩/木の 32px セット・森の絵 → **済み**（forge の絵は forge の PR #7。PNG は PR #20 でこのリポジトリにマージ済み）。待機は剣を持つ拳を2px上げる。村は小さな家3軒、岩は同じくらいの岩5つの岩場、木は小さい木5本の林。森は今の forge の `forest` をそのまま使う
 5. ゲーム側: 森で移動が遅くなる → **済み**（PR #21 でマージ）
-6. アセットのテキストとビルドを forge からこのリポジトリへ移設する → **時期未定**（予定の作業ではない。forge の issue #8: https://github.com/akabee0161/pixel-asset-forge/issues/8）
+6. pixel-asset-forge をこのリポジトリへ移設する（forge の issue #8: https://github.com/akabee0161/pixel-asset-forge/issues/8）→ **済み**（PR #22、未マージ）
 
 ## ⑤で決めたこと（2026-09-29）
 
@@ -46,8 +48,9 @@ pixel-asset-forge #6: https://github.com/akabee0161/pixel-asset-forge/issues/6
 - この `HANDOVER.md`
 - `README.md`「アセットの大きさの規約」「コンテンツの足しかた」（ステージの `legend`）
 - `src/core/field.ts`（`computeFlowField`・`slideStep`・`hasClearPath`）と `src/core/sim.ts`（`stepTo`・移動の速さ）
-- forge の `ISSUES.md`（④で見つけて残した軽微な点）と `types/tile/SPEC.md`「物のセット（32px）」
-- forge の④の spec と計画: `docs/2026-09-28-issue6-forge-assets-spec.md`・`docs/2026-09-28-issue6-forge-assets-plan.md`（作成時点のログ）
+- `pixel-asset-forge/ISSUES.md`（④で見つけて残した軽微な点）と `pixel-asset-forge/types/tile/SPEC.md`「物のセット（32px）」
+- `pixel-asset-forge/UPSTREAM.md`（コピー元の commit と、forge に戻す候補）
+- forge の④の spec と計画: `pixel-asset-forge/docs/2026-09-28-issue6-forge-assets-spec.md`・`pixel-asset-forge/docs/2026-09-28-issue6-forge-assets-plan.md`（作成時点のログ）
 
 ## アセットの大きさの規約: ここまでに決まったこと
 
@@ -63,22 +66,18 @@ pixel-asset-forge #6: https://github.com/akabee0161/pixel-asset-forge/issues/6
 
 全体は spec を参照。
 
-## アセットのテキストとビルドの移設（方向性は合意済み・時期は未定）
+## ⑥ pixel-asset-forge の移設で決めたこと（2026-09-30）
 
-依頼者の判断（2026-09-28）:
+設計は `docs/superpowers/specs/2026-09-30-move-pixel-asset-forge-design.md`、計画は `docs/superpowers/plans/2026-09-30-move-pixel-asset-forge.md`。
 
-- pixel-asset-forge は**生成エンジンとサンプルだけ**にする
-- アセットのグリッド（テキスト）は**このリポジトリに置き、ビルドもこのリポジトリで行う**
-- ビルドは手元で実行し、生成した PNG をコミットする。デプロイ時の `npm run build` には Python を持ち込まない
-- **いつ着手するかは決めていない**（依頼者の確認、2026-09-29）。「着手は別の作業として後で行う」は時期未定の意味で、⑤の次に行う予定ではない。着手するまでは forge で作った PNG をこのリポジトリへコピーする今のやり方を続ける
-
-移設のときに決めること:
-
-- エンジンの取り込み方（バージョン固定の pip / git submodule / コピー）と、forge を直したときにこちらがいつ追従するか
-- forge の確認用の道具（`tilemap.py` のマップ組み・`sheet.py` のプレビュー）をこちらから使えるようにする
-- 既存アセット（ロラン、草原タイルなど）のテキストをこちらへ移す
-
-forge 側の記録: forge の ISSUES.md「アセットのテキストとビルドをゲームリポジトリへ移設する」
+- forge を `pixel-asset-forge/` へ丸ごとコピーした（ankardo の `scripts/copy-forge.sh`）。forge は凍結せず並行して開発する
+- ゲーム側で直したものは `pixel-asset-forge/UPSTREAM.md` の「forge に戻す候補」に書き溜め、ゲームの開発が終わったら forge の issue にまとめる
+- PNG は `sprites.json` と `pixel-asset-forge/tools/export.py` で書き出す（README「ドット絵の作りかた」）。移設直後に書き出した6枚は、コミット済みの PNG と同じだった
+- Python は 3.14 を前提にした（依頼者の判断）。手元の python3 は 3.10.12（2026-10-31 でサポート終了）で、forge のテストのうち `contextlib.chdir`（3.11 から）を使う3件が落ちるため。uv（`~/.local/bin`）で 3.14.7 を入れ、`pixel-asset-forge/.venv` を作り直すと forge のテストがすべて通った
+- PR: このリポジトリ #22、ankardo #18（`new-game` スキルに #22 へのリンクを足し済み）、forge #9（Python 3.14 前提）。いずれも未マージ（2026-09-30）
+- 2026-09-28 に合意した「forge は生成エンジンとサンプルだけにする」「アセットのテキストとビルドはこのリポジトリで行い、PNG をコミットする（デプロイで Python を使わない）」は、この移設で満たした
+- pixel-asset-forge の PR（Python 3.14 前提）はマージ済み（2026-09-30、squash で main は `95c2501`）。`pixel-asset-forge/UPSTREAM.md` の記録もこの番号に直した
+- 残り: character-tactics の PR → ankardo の PR の順にマージ（ankardo のスキルの spec へのリンクが character-tactics の main を指すため）→ pixel-asset-forge の issue #8 に結果を書いて閉じる
 
 ## 後回しにした軽微な点（issue #17 から変わらず）
 

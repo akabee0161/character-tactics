@@ -1,0 +1,25 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# wall_face with an iron torch bracket. The flame is the only place the set
+# uses flame_*; the wall around it is left unlit on purpose, because a glow
+# painted into the tile would repeat wherever the tile repeats.
+# map: n=stone_base m=stone_shadow d=stone_dark
+# map: y=metal_base l=metal_hi z=metal_shadow
+# map: 1=flame_hi 2=flame_base 3=flame_deep
+dddddddddddddddd
+dnnnnnn22nnnnnnn
+dmmmmm3123mmmmmm
+dmmmm321123mmmmm
+dmmmm321123mmmmm
+dmmmm332233mmmmm
+dmmmm333333mmmmm
+dmmmmmylyzmmmmmm
+ddddddzyyzdddddd
+nnnndnnyznnndnnn
+mmmmdmmyzmmmdmmm
+mmmmdmzyyzmmdmmm
+mmmmdmmmmmmmdmmm
+mmmmdmmmmmmmdmmm
+mmmmdmmmmmmmdmmm
+mmmmdmmmmmmmdmmm

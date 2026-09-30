@@ -1,0 +1,26 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# A signboard on a post, for a fork in the road. The board was 8px wide and sat
+# high on a long post, which read as a table from across the map; widening it
+# to 10px and dropping it onto a short post fixes that.
+# The marks on the board are wood_shadow rather than any attempt at letters -
+# at this size letters turn into noise.
+# map: g=grass_base s=grass_shadow o=outline
+# map: w=wood_base v=wood_hi b=wood_shadow
+gggssggggggggggg
+ggggggggggggssgg
+gggggggggggggggg
+ggoooooooooooogg
+ggovvvvvvvvvvogg
+ggovbbvbbvbbvogg
+ggowwwwwwwwwwogg
+ggobbbbbbbbbbogg
+ggoooooooooooogg
+ggggggowbogggggg
+ggggggowbogggggg
+gssgggowbogggggg
+ggggggowbogggggg
+ggggggowbogggggg
+gggggowwbboggggg
+gggggssssssggggg

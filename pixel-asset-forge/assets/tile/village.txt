@@ -1,0 +1,27 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# A cottage. The old one was a 10x11 house floating in a field of grass, which
+# left it looking like a doll's house next to the castle; this one fills the
+# tile the way the castle quadrants do.
+# Plastered walls in the stone ramp, timbered door in wood, window in metal_hi.
+# map: g=grass_base s=grass_shadow o=outline
+# map: r=roof_hi f=roof_base c=roof_shadow
+# map: t=stone_hi n=stone_base
+# map: w=wood_base b=wood_shadow x=wood_dark l=metal_hi
+ggssggggggggssgg
+gggggggooggggggg
+ggggggorrogggggg
+gggggorrffoggggg
+ggggorrrfffogggg
+gggorrrrfffccogg
+ggorrrrrfffcccog
+gorrrrrffffcccog
+goooooooooooooog
+ggottttttttttogg
+ggotllttxxxttogg
+ggotllttwwbttogg
+ggotttttwwbttogg
+ggonnnnnwwbnnogg
+ggoooooooooooogg
+ggssssssssssssgg

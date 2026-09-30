@@ -1,0 +1,3 @@
+# The south-east bend.
+# from: path_ne.txt
+# transform: mirror_y

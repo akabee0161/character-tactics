@@ -1,0 +1,24 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# wall_face with an arched window. The glass is lit at the top left and falls
+# into shadow at the bottom right, matching the light the rest of the set uses.
+# Columns 0-3 and 12-15 are wall_face's, so it drops into any run of wall.
+# map: n=stone_base t=stone_hi m=stone_shadow d=stone_dark
+# map: u=water_base q=water_hi i=water_shadow
+dddddddddddddddd
+dnnnnnnndnnnnnnn
+dmmmmmttttmmmmmm
+dmmmmtuuuutmmmmm
+dmmmtqquuuutmmmm
+dmmmtquuuuutmmmm
+dmmmtuuuuuutmmmm
+dmmmtuuuuuutmmmm
+ddddtuuuuuutdddd
+nnnntuuuuuitdnnn
+mmmmtuuuuiitdmmm
+mmmmtuuuiiitdmmm
+mmmmtiiiiiitdmmm
+mmmmttttttttdmmm
+mmmmdmmmmmmmdmmm
+mmmmdmmmmmmmdmmm

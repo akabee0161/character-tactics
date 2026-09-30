@@ -1,0 +1,24 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# A flight going up, away from the viewer. Side walls on both edges and a hard
+# dark riser under every tread - the first version was four bands of flat grey
+# and read as stripes, not steps. The landing across the top two rows is what
+# separates this from stairs_down.
+# map: n=stone_base t=stone_hi m=stone_shadow d=stone_dark
+tttttttttttttttt
+nnnnnnnnnnnnnnnn
+mndnnnnnnnnnndmm
+mnddddddddddddmm
+mndttttttttttdmm
+mndnnnnnnnnnndmm
+mndnnnnnnnnnndmm
+mnddddddddddddmm
+mndttttttttttdmm
+mndnnnnnnnnnndmm
+mndnnnnnnnnnndmm
+mnddddddddddddmm
+mndttttttttttdmm
+mndnnnnnnnnnndmm
+mndnnnnnnnnnndmm
+mnddddddddddddmm

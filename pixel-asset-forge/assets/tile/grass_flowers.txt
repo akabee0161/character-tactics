@@ -1,0 +1,25 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# plain with flowers, for breaking up an open field. It keeps plain's exact
+# tuft layout and only adds blooms, so the two mix without the texture shifting
+# at the join. The flower colours are borrowed rather than new - metal_hi for
+# yellow and stone_hi for white.
+# map: g=grass_base a=grass_hi s=grass_shadow
+# map: l=metal_hi t=stone_hi
+ggaagggggggggggg
+gggggggggggllggg
+gggggggggssggggg
+gggggggggggggssg
+gggggaggggggttgg
+gggggagggggggggg
+ggttgggggggggggg
+agggggggggggggga
+gggggggssggggggg
+gggggllgggggaagg
+gggggggggggggggg
+gggssgggggggllgg
+ggggggggggssgggg
+ggggggggaagggggg
+gggggssgggttgggg
+gggggggggggggggg

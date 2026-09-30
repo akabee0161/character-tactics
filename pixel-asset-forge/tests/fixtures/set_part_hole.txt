@@ -1,0 +1,21 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# A part with one background cell (row 3, column 5) for tests/test_sets.py. A set part must fill every cell.
+# map: g=grass_base
+gggggggggggggggg
+gggggggggggggggg
+gggggggggggggggg
+ggggg.gggggggggg
+gggggggggggggggg
+gggggggggggggggg
+gggggggggggggggg
+gggggggggggggggg
+gggggggggggggggg
+gggggggggggggggg
+gggggggggggggggg
+gggggggggggggggg
+gggggggggggggggg
+gggggggggggggggg
+gggggggggggggggg
+gggggggggggggggg

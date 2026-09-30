@@ -1,0 +1,30 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# map: g=grass_base a=grass_hi s=grass_shadow
+# map: h=water_hi w=water_base d=water_shadow
+#
+# The first version of river_v, kept as a regression fixture.
+#
+# The shading rule was "water touching a bank takes the shadow tone", and the
+# generator treated everything outside the tile as not-water. So row 0 and row
+# 15 were shaded as if the river ended at the tile edge. Stacked, that puts two
+# dark rows together and draws a band across every seam.
+#
+# It passes validate.py and check_colors.py, and looks correct on its own.
+gggsddddddddsggg
+gggsdwwwwwwdsggg
+gggsdwhhwwwdsggg
+gagsdwwwwwwdsggg
+gggsdddwwwwdsggg
+gggsdwwwwwwdsggg
+gggsdwwwwhhdsggg
+gggsdwwwwwwdsggg
+gggsdwwwwwwdsggg
+gggsdhhwwwwdsggg
+gggsdwwwwdddsggg
+gggsdwwwwwwdsgag
+gggsdwwwhhwdsggg
+gggsdwwwwwwdsggg
+gggsdwwwwwwdsggg
+gggsddddddddsggg

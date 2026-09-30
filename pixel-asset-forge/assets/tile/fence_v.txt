@@ -1,0 +1,24 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# A run of fence going north to south. Drawn rather than rotated from fence_h,
+# because the rails read as two lit faces from the side and as one flat top
+# from above; a rotation would carry the wrong one.
+# map: g=grass_base s=grass_shadow
+# map: w=wood_base v=wood_hi b=wood_shadow
+ggggggwggbgggggg
+ggggggwggbgggggg
+ggssggwggbgggggg
+gggggvvvvvvggggg
+gggggwwwwwwggggg
+ggggggwggbgggggg
+ggggggwggbgggggg
+ggggggwggbgggggg
+ggggggwggbgggssg
+ggggggwggbgggggg
+ggggggwggbgggggg
+gggggvvvvvvggggg
+gggggwwwwwwggggg
+ggggggwggbgggggg
+ggggggwggbgggggg
+ggggggwggbgggggg

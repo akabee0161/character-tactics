@@ -1,0 +1,22 @@
+# type: item
+# size: 16x16
+# light: upper-left
+# bg: transparent
+# map: o=outline h=wood_hi w=wood_base s=wood_shadow
+# map: d=wood_dark l=metal_hi n=metal_base v=metal_shadow
+................
+....oooooooo....
+...ohhhhhwwwo...
+..onhhhwwwwsno..
+.ownhhwwwwssnso.
+.ownhwwwwsssnso.
+.ownssssssddndo.
+.osnddvnnvddndo.
+.ownhhnlvnssnso.
+.ownhhvnnvssnso.
+.ownhhwwwwssnso.
+.ownhhwwwwssnso.
+.ownhwwwssssndo.
+.osnsssssdddndo.
+.oooooooooooooo.
+................

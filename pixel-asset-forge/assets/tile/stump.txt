@@ -1,0 +1,25 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# A cut stump. The first version was a straight-sided block with a flat dark
+# band under it and read as a wooden crate on the map; this one narrows the top
+# face at front and back so it reads as a round cut, and the rings run all the
+# way across it.
+# map: g=grass_base a=grass_hi s=grass_shadow o=outline
+# map: w=wood_base v=wood_hi b=wood_shadow x=wood_dark
+gggggggggggggggg
+gggggggggggggggg
+ggggggggggggaagg
+gggggggggggggggg
+gggggggggggggggg
+gggssggggggggggg
+gggggggggggggggg
+gggggooooooggggg
+ggggovvvvvvogggg
+gggovwwbbwwvoggg
+gggovwwbbwwvoggg
+ggggovvvvvvogggg
+ggggobbbbbbogggg
+ggggobbxxbbogggg
+gggggooooooggggg
+gggggssssssggggg

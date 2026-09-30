@@ -1,0 +1,16 @@
+# 組織の画面（Organization UI）の設定を引き継ぎ、ここではレビューから外すパスだけを足す。
+# inheritance が無いと、このファイルだけが使われ、画面の設定（日本語・CHILL など）が効かなくなる。
+inheritance: true
+reviews:
+  path_filters:
+    # pixel-asset-forge/ の絵のテキストと、その組み方・色の定義はレビューしない
+    - "!pixel-asset-forge/assets/**"
+    - "!pixel-asset-forge/types/**/*.txt"
+    - "!pixel-asset-forge/types/**/*.png"
+    - "!pixel-asset-forge/layouts/**"
+    - "!pixel-asset-forge/sets/**"
+    - "!pixel-asset-forge/sheets/**"
+    - "!pixel-asset-forge/palette/**"
+    - "!pixel-asset-forge/tests/fixtures/**"
+    # 作成時点の作業ログ（後から更新しない）
+    - "!pixel-asset-forge/docs/**"

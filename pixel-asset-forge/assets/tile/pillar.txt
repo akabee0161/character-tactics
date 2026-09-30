@@ -1,0 +1,24 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# A stone column with a capital and a base, for breaking up a wide hall. The
+# shaft is narrower than either end, and the cast shadow falls to the lower
+# right to agree with the rest of the set.
+# map: f=floor_base h=floor_hi s=floor_shadow k=floor_dark o=outline
+# map: n=stone_base t=stone_hi m=stone_shadow d=stone_dark
+ssssssssssssssss
+shhhoooooooohhhh
+shffotnnnnmoffff
+shffommmmmdoffff
+shfffotnnmofffff
+shfffotnnmofffff
+shfffotnnmofffff
+shfffotnnmofffff
+sssssotnnmosssss
+hhhhsotnnmohshhh
+ffffsotnnmofshff
+ffffsotnnmofshff
+ffffsotnnmofshff
+ffffotnnnnmoshff
+ffffonnnnnmoshff
+ffffommmmmdokkff

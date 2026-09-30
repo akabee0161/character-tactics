@@ -1,0 +1,26 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# A well for a village square. The first version was a bare ring with a bar
+# over it and read as a bucket with a handle; the little gabled roof is what
+# says "well" at this size.
+# map: g=grass_base s=grass_shadow o=outline
+# map: r=roof_hi f=roof_base
+# map: n=stone_base t=stone_hi m=stone_shadow k=stone_dark
+# map: w=wood_base b=wood_shadow
+ggssgggggggggggg
+gggggggooggggggg
+ggggggorrogggssg
+gggggorrffoggggg
+ggggorrrfffogggg
+gggorrrrffffoggg
+gggooooooooooggg
+ggggwgggggggbggg
+ggggwgggggggbggg
+gggottttttttoggg
+gggotkkkkkkmoggg
+gggotkkkkkkmoggg
+gggonnnnnnnnoggg
+gggommmmmmmmoggg
+ggggoooooooogggg
+ggggssssssssgggg

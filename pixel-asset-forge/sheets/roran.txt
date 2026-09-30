@@ -1,0 +1,17 @@
+# ロランのシート定義。tools/sheet.py が読む。
+# 12行 = 3状態 x 4方向。空白区切り、`.` は透明のまま。
+# 行 0-3 idle / 4-7 walk / 8-11 attack、各ブロック内は down, up, left, right
+# コマ数は character-tactics 側の JSON に合わせる。idle 2 / walk 4 / attack 3
+
+down_base   down_breathe   .  .
+up_base     up_breathe     .  .
+left_base   left_breathe   .  .
+right_base  right_breathe  .  .
+down_base   down_walk_a   down_base   down_walk_b
+up_base     up_walk_a     up_base     up_walk_b
+left_base   left_walk_a   left_base   left_walk_b
+right_base  right_walk_a  right_base  right_walk_b
+down_atk_wind   down_atk_hit   down_base   .
+up_atk_wind     up_atk_hit     up_base     .
+left_atk_wind   left_atk_hit   left_base   .
+right_atk_wind  right_atk_hit  right_base  .

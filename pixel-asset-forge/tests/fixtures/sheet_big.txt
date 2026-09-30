@@ -1,0 +1,12 @@
+# type: unit
+# size: 8x8
+# bg: transparent
+# map: o=outline
+oooooooo
+oooooooo
+oooooooo
+oooooooo
+oooooooo
+oooooooo
+oooooooo
+oooooooo

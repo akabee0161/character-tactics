@@ -1,0 +1,24 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# The west end of a run of wall_face, where the wall turns north and its return
+# catches the light. Not a mirror of wall_corner_ne, because the light is
+# upper left, so one corner is lit and the other is in shadow. That asymmetry is
+# exactly the case CLAUDE.md warns transforms cannot express.
+# map: n=stone_base t=stone_hi m=stone_shadow d=stone_dark
+tndddddddddddddd
+tnnnnnnndnnnnnnn
+tnmmmmmmdmmmmmmm
+tnmmmmmmdmmmmmmm
+tnmmmmmmdmmmmmmm
+tnmmmmmmdmmmmmmm
+tnmmmmmmdmmmmmmm
+tnmmmmmmdmmmmmmm
+tndddddddddddddd
+tnnndnnnnnnndnnn
+tnmmdmmmmmmmdmmm
+tnmmdmmmmmmmdmmm
+tnmmdmmmmmmmdmmm
+tnmmdmmmmmmmdmmm
+tnmmdmmmmmmmdmmm
+tnmmdmmmmmmmdmmm

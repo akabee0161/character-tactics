@@ -1,0 +1,20 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# map: g=grass_base s=grass_shadow k=stone_dark m=stone_shadow n=stone_base t=stone_hi
+ttnnmmmkksssgggg
+nnnmmmkkkssggggg
+nmnmkkkksssggggg
+mmmmkksssggggggg
+mmkkkkssgggggggg
+kkkksssggggggggg
+kkkssssggggggggg
+ksssgggggggggggg
+sssggggggggggggg
+ssgggggggggggggg
+sggggggggggggggg
+gggggggggggggggg
+gggggggggggggggg
+gggggggggggggggg
+gggggggggggggggg
+gggggggggggggggg

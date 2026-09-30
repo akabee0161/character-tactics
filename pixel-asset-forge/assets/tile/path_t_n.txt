@@ -1,0 +1,23 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# A T junction - an east-west road with a branch going north. The three turned
+# copies cover the other orientations.
+# map: g=grass_base a=grass_hi s=grass_shadow
+# map: d=dirt_base h=dirt_hi k=dirt_shadow
+gggddddddddddgaa
+gggdddkkdddddggg
+ggddddddddddddgg
+dddddddddddddddd
+dddddddddhhddddd
+dddddddddddddddd
+dddkkddddddddddd
+dddddddddddddddd
+dddddddddddddddd
+ddddddddddddhhdd
+dddddddddddddddd
+ddddddkkdddddddd
+dddddddddddddddd
+gggggggggggggggg
+ggaagggggggssggg
+gggggggggggggggg

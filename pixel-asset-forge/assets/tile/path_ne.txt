@@ -1,0 +1,24 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# A bend joining the north edge to the east edge, named the way the river bends
+# are. The outer corner is chamfered over three rows and the inner one over a
+# single pixel, which is all 16px has room for.
+# map: g=grass_base a=grass_hi s=grass_shadow
+# map: d=dirt_base h=dirt_hi k=dirt_shadow
+gggddddddddddggg
+gggdddkkdddddggg
+gggdddddddddddgg
+gggddddddddddddd
+gggdddddddhhdddd
+sggddddddddddddd
+ggdddddddddddddd
+gggddddkkddddddd
+gggddddddddddddd
+gagddddddddddddd
+ggggdddddddddddd
+gggggddddddddddd
+gggggggddddddddd
+ggggggggssgggggg
+gggaaggggggggggg
+gggggggggggggggg
