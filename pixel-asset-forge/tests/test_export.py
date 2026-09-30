@@ -112,6 +112,15 @@ class ExportTest(unittest.TestCase):
             export.export(self.mapping, self.dest, self.build)
         self.assert_nothing_copied()
 
+    def test_a_symbolic_link_in_the_destination_is_not_followed(self):
+        # copyfile() follows a link, so it would overwrite a file outside the folder.
+        outside = self.dest.parent / "outside.png"
+        outside.write_bytes(b"keep")
+        (self.dest / "tile-forest.png").symlink_to(outside)
+        with self.assertRaisesRegex(export.ExportError, "tile-forest.png.*symbolic link"):
+            self.run_export({"tile/forest.png": "tile-forest.png"})
+        self.assertEqual(outside.read_bytes(), b"keep")
+
     def test_a_failed_copy_is_reported_as_an_export_error(self):
         # A full disk or a read-only file must end in one FAIL line, not a traceback.
         with mock.patch.object(export.shutil, "copyfile", side_effect=OSError("No space left on device")):
@@ -175,6 +184,13 @@ class BuildTest(unittest.TestCase):
     def test_runs_render_then_sets_then_every_sheet(self):
         self.assertEqual(export.build(), 0)
         self.assertEqual(self.calls, ["render", "sets", "sheet"])
+
+    def test_a_build_folder_that_cannot_be_cleared_stops_before_drawing(self):
+        # Carrying on would leave old PNGs in build/ for export() to copy.
+        with mock.patch.object(export.shutil, "rmtree", side_effect=PermissionError("denied")):
+            with contextlib.redirect_stderr(io.StringIO()):
+                self.assertNotEqual(export.build(), 0)
+        self.assertEqual(self.calls, [])
 
     def test_a_failing_step_stops_the_build_with_its_code(self):
         self.render_code = 2

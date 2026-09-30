@@ -72,6 +72,8 @@ def _problem(source: str, name: str, build_root: Path, dest_dir: Path, seen: dic
     if not (build_root / source).is_file():
         return f"{source}: not in build/ (run the build, or check the name)"
     destination = dest_dir / name
+    if destination.is_symlink():
+        return f"{source}: {name} is a symbolic link in the destination (it would write outside the folder)"
     if destination.exists() and not destination.is_file():
         return f"{source}: {name} is in the destination but is not a file"
     return None
@@ -113,7 +115,13 @@ def build() -> int:
     build/ is emptied first: a PNG left over from a grid that has since been
     renamed or deleted would otherwise pass for current output.
     """
-    shutil.rmtree(BUILD_DIR, ignore_errors=True)
+    try:
+        shutil.rmtree(BUILD_DIR)
+    except FileNotFoundError:
+        pass
+    except OSError as exc:
+        print(f"FAIL cannot clear {display(BUILD_DIR)}: {exc}", file=sys.stderr)
+        return 1
     steps = (
         lambda: render.main([str(REPO_ROOT / "assets")]),
         lambda: sets.main([]),
