@@ -20,6 +20,14 @@ forge 本体も並行して開発が続く。forge の改善をこちらへ取�
 
 - forge `9d2b89a`: Python を 3.14 前提にし、uv で venv を作る手順にする（`README.md`・`CLAUDE.md`・`ISSUES.md`）
 - forge `9be06b1`: CLAUDE.md のセットアップに uv のインストール手順へのリンクを足す（`CLAUDE.md`）
+- forge `dd1c903`: Pillow の下限を 12.3.0 に上げる（`requirements.txt`）
+- forge `c3807c5`: `RiverDerivationTest` の課題を足す（`ISSUES.md`）
+
+## ゲーム側だけの変更
+
+forge に戻さない、コピーだからこそ要る変更。
+
+- `README.md`「1. セットアップ」: ゲームリポジトリでは `pixel-asset-forge/` に `cd` してから実行する、という注意書き
 
 ## ゲームの開発が終わったら
 

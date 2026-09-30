@@ -35,6 +35,7 @@ uv pip install --python .venv/bin/python -r requirements.txt
 ```
 
 以降のコマンドは、すべてリポジトリの直下で `.venv/bin/python tools/<ツール>.py` の形で実行する。
+ゲームリポジトリにコピーした forge では、「リポジトリの直下」は `pixel-asset-forge/` のこと。セットアップも含め、`cd pixel-asset-forge` してから実行する（ゲームのルートから書き出す手順は、ゲームの README にある）。
 どのツールも `--help` で詳細が出る。
 
 PNG は `build/` に出る。`build/` は git 管理外で、いつ消してもよい。
