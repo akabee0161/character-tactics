@@ -51,6 +51,7 @@
 .venv/bin/python tools/sheet.py sheets/roran.txt  # unit のシートとプレビューを出す
 .venv/bin/python tools/sets.py                # 16px の部品を組んで物を出す（build/sets/）
 .venv/bin/python tools/contact_sheet.py       # build/contact_sheet.png
+.venv/bin/python tools/export.py MAP DEST     # 対応表どおりにゲームへ書き出す（README 2.10）
 .venv/bin/python -m unittest discover -s tests  # tools/ を触ったとき
 ```
 

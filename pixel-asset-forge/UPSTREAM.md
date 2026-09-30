@@ -12,13 +12,12 @@ forge 本体も並行して開発が続く。forge の改善をこちらへ取�
 
 ここでエンジン・規約・道具を直したら、何を・なぜ直したかを1行足す。
 
-- `tools/export.py`（と `tests/test_export.py`）: ビルドして、ゲーム側の対応表どおりに PNG をコピーする。どのゲームでも使える。forge の README のツアーにも足す必要がある
-
 ## forge から持ってきたもの
 
 コピーした後に forge で直され、手でこちらへ持ってきたもの。ゲームの開発が終わって差分を見るとき、ここにあるものはゲーム側の改善ではない。
 
 - forge `95c2501`（[pixel-asset-forge#9](https://github.com/akabee0161/pixel-asset-forge/pull/9) の squash マージ）: Python を 3.14 前提にし uv で venv を作る手順とインストール手順へのリンク（`README.md`・`CLAUDE.md`）、Pillow の下限を 12.3.0 に（`requirements.txt`）、`ISSUES.md` の更新（3.10 の課題を消し、`RiverDerivationTest` の課題を足す）
+- forge `ad734ee`・`82162a5`: ここで作った `tools/export.py`（と `tests/test_export.py`）を forge が取り込み、README 2.10・CLAUDE.md に案内を足した。`new-game` スキルの手順が forge の main だけで動くよう、ゲームの開発の終わりを待たずに戻した（依頼者の判断、2026-09-30）。あわせて `probe_colors.py --pairs` の課題2件を `ISSUES.md` に足した
 
 ## ゲーム側だけの変更
 
