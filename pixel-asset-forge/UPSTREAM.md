@@ -19,6 +19,7 @@ forge 本体も並行して開発が続く。forge の改善をこちらへ取�
 コピーした後に forge で直され、手でこちらへ持ってきたもの。ゲームの開発が終わって差分を見るとき、ここにあるものはゲーム側の改善ではない。
 
 - forge `9d2b89a`: Python を 3.14 前提にし、uv で venv を作る手順にする（`README.md`・`CLAUDE.md`・`ISSUES.md`）
+- forge `9be06b1`: CLAUDE.md のセットアップに uv のインストール手順へのリンクを足す（`CLAUDE.md`）
 
 ## ゲームの開発が終わったら
 

@@ -57,7 +57,7 @@
 `tilemap.py --layout layouts/{example,field,castle_interior,objects}.txt` でマップを組む。
 新しいセットを作ったら、その全点を置いたレイアウトを `layouts/` に足すこと。
 
-初回のみ（Python 3.14 を uv で）: `uv python install 3.14 && uv venv --python 3.14 .venv && uv pip install --python .venv/bin/python -r requirements.txt`
+初回のみ（Python 3.14 を uv で。uv が無ければ先に[インストール手順](https://docs.astral.sh/uv/getting-started/installation/)どおりに入れる）: `uv python install 3.14 && uv venv --python 3.14 .venv && uv pip install --python .venv/bin/python -r requirements.txt`
 
 等倍 PNG は目視には小さすぎる。見るのは `_x8.png` の方。
 
