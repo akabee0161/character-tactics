@@ -18,6 +18,7 @@ forge 本体も並行して開発が続く。forge の改善をこちらへ取�
 - face 型の寸法を 32x32 から 64x64 にした（ゲームの「アセットの大きさの規約」。`types/face/SPEC.md`・`CLAUDE.md`。character-tactics の issue #23）
 - face 型の背景をグラデーションから透明にした（ゲームのほかの顔にそろえる。`types/face/SPEC.md`。character-tactics の issue #23）
 - 元絵と並べて見る `tools/compare.py` を足した（テスト `tests/test_compare.py`、README 2.11。character-tactics の issue #23）
+- 顔を部品とバランスから組み合わせる `tools/compose_face.py` と、部品の置き場 `parts/` を足した（テスト `tests/test_compose_face.py`、README 2.12。ISSUES.md の「顔グラを部品とパラメタから作る工程」の試作。character-tactics の issue #23、2026-10-01）
 
 ## forge から持ってきたもの
 

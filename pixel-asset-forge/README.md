@@ -275,6 +275,20 @@ forge をゲームリポジトリへコピーして使うときは、ゲーム�
 
 `build/compare/roran.png` に出る。
 
+### 2.12 顔を部品から組み合わせる（試作）
+
+顔の土台（素の頭）に、髪・目・眉・口・服の部品と、目や口の位置を決める「バランス」を重ねて1枚にする。
+部品は `parts/<名前>/` に置く（`assets/` の外。`validate.py parts/roran_32` で検査する）。重ねる順番・錨の位置・案の一覧は同じフォルダの `parts.json` に書く（書式は `tools/compose_face.py` の先頭）。
+目・眉・口・鼻は、バランスごとの錨に左上を合わせて置き、土台の肌の上だけに描く。`"follow": "hair"` の要素（前髪の下の影）は、髪で選んだ案に連動する。
+
+```sh
+.venv/bin/python tools/compose_face.py parts/roran_32 --pick H1,E2,B2,M1,P1,C1 --scale 8
+.venv/bin/python tools/compose_face.py parts/roran_32 --sheet build/compose/
+.venv/bin/python tools/compose_face.py parts/roran_32 --json build/compose/parts.json
+```
+
+`--pick` は1枚（書かなかった要素は `parts.json` の `default`）、`--sheet` は要素ごとに案を横に並べた一覧、`--json` は部品を選んで見るページ用に、置いた後の層と「前髪が目・眉を何升隠すか」を書き出す。
+
 ### まとめ
 
 ```
@@ -291,6 +305,7 @@ sheet.py ──────────── unit をシートに組む        
 sets.py ───────────── 部品を組んで物にする         ゲームに渡す成果物
 export.py ─────────── 対応表どおりにゲームへ書き出す  ゲームにコピーしたとき
 contact_sheet.py ─── 全点の一覧                     型をまたいだ比較
+compose_face.py ──── 顔を部品から組み合わせる       試作（parts/）
 
 probe_colors.py ──── 描く前に色の候補を測る
 ```
