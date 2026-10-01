@@ -1,9 +1,0 @@
-# type: face
-# size: 5x4
-# light: upper-left
-# bg: transparent
-# map: c=skin_rose_shadow i=iris_slate k=iris_slate_dark o=outline w=eye_white
-ccccc
-ooook
-kwkik
-.wki.

@@ -1,7 +1,0 @@
-# type: face
-# size: 4x2
-# light: upper-left
-# bg: transparent
-# map: i=iris_slate k=iris_slate_dark o=outline
-oooo
-.oki

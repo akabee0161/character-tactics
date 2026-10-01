@@ -20,7 +20,7 @@
  ],
  "default": {
   "hair": "H1",
-  "eyes": "E2",
+  "eyes": "E6",
   "brows": "B2",
   "mouth": "M1",
   "nose": "N1",
@@ -264,41 +264,6 @@
    "label": "目",
    "clip": true,
    "variants": {
-    "E1": {
-     "label": "白黒（上まぶたと瞳を黒、瞳は縦線）",
-     "parts": {
-      "eye_near": "eyes/e1_near.txt",
-      "eye_far": "eyes/e1_far.txt"
-     }
-    },
-    "E2": {
-     "label": "灰青の瞳（64px の部品と同じ描き方）",
-     "parts": {
-      "eye_near": "eyes/e2_near.txt",
-      "eye_far": "eyes/e2_far.txt"
-     }
-    },
-    "E3": {
-     "label": "細い目（鋭い）",
-     "parts": {
-      "eye_near": "eyes/e3_near.txt",
-      "eye_far": "eyes/e3_far.txt"
-     }
-    },
-    "E4": {
-     "label": "大きい目（少し縦長）",
-     "parts": {
-      "eye_near": "eyes/e4_near.txt",
-      "eye_far": "eyes/e4_far.txt"
-     }
-    },
-    "E5": {
-     "label": "伏し目（まぶたが重い）",
-     "parts": {
-      "eye_near": "eyes/e5_near.txt",
-      "eye_far": "eyes/e5_far.txt"
-     }
-    },
     "E6": {
      "label": "元絵ロラン式: 元の 24px のまま（瞳と白目が1升ずつ）",
      "parts": {
@@ -306,124 +271,11 @@
       "eye_far": "eyes/e6_far.txt"
      }
     },
-    "E7": {
-     "label": "元絵ロラン式: 32px に広げる（白目2升）",
-     "parts": {
-      "eye_near": "eyes/e7_near.txt",
-      "eye_far": "eyes/e7_far.txt"
-     }
-    },
-    "E8": {
-     "label": "元絵ロラン式: 2行（瞳を縦に2升）",
-     "parts": {
-      "eye_near": "eyes/e8_near.txt",
-      "eye_far": "eyes/e8_far.txt"
-     }
-    },
-    "E9": {
-     "label": "元絵ロラン式: 瞳を灰青に",
-     "parts": {
-      "eye_near": "eyes/e9_near.txt",
-      "eye_far": "eyes/e9_far.txt"
-     }
-    },
-    "E10": {
-     "label": "元絵ロラン式: 両目の瞳を左（顔の向き）へ",
-     "parts": {
-      "eye_near": "eyes/e10_near.txt",
-      "eye_far": "eyes/e10_far.txt"
-     }
-    },
-    "E11": {
-     "label": "元絵ロラン式: まぶたのくぼみに影",
-     "parts": {
-      "eye_near": {
-       "file": "eyes/e11_near.txt",
-       "dx": 0,
-       "dy": -1
-      },
-      "eye_far": {
-       "file": "eyes/e11_far.txt",
-       "dx": 0,
-       "dy": -1
-      }
-     }
-    },
     "E12": {
      "label": "gau 式: 白目と黒い瞳2升",
      "parts": {
       "eye_near": "eyes/e12_near.txt",
       "eye_far": "eyes/e12_far.txt"
-     }
-    },
-    "E13": {
-     "label": "gau 式: 瞳を灰青に",
-     "parts": {
-      "eye_near": "eyes/e13_near.txt",
-      "eye_far": "eyes/e13_far.txt"
-     }
-    },
-    "E14": {
-     "label": "gau 式: 2行",
-     "parts": {
-      "eye_near": "eyes/e14_near.txt",
-      "eye_far": "eyes/e14_far.txt"
-     }
-    },
-    "E15": {
-     "label": "gau 式: まぶたのくぼみに影",
-     "parts": {
-      "eye_near": {
-       "file": "eyes/e15_near.txt",
-       "dx": 0,
-       "dy": -1
-      },
-      "eye_far": {
-       "file": "eyes/e15_far.txt",
-       "dx": 0,
-       "dy": -1
-      }
-     }
-    },
-    "E16": {
-     "label": "ines 式: 元の描き方のまま",
-     "parts": {
-      "eye_near": {
-       "file": "eyes/e16_near.txt",
-       "dx": 0,
-       "dy": -1
-      },
-      "eye_far": {
-       "file": "eyes/e16_far.txt",
-       "dx": -1,
-       "dy": -1
-      }
-     }
-    },
-    "E17": {
-     "label": "ines 式: 瞳を灰青の2色に",
-     "parts": {
-      "eye_near": {
-       "file": "eyes/e17_near.txt",
-       "dx": 0,
-       "dy": -1
-      },
-      "eye_far": {
-       "file": "eyes/e17_far.txt",
-       "dx": -1,
-       "dy": -1
-      }
-     }
-    },
-    "E18": {
-     "label": "ines 式: くぼみの影なし",
-     "parts": {
-      "eye_near": "eyes/e18_near.txt",
-      "eye_far": {
-       "file": "eyes/e18_far.txt",
-       "dx": -1,
-       "dy": 0
-      }
      }
     },
     "E19": {
@@ -441,115 +293,11 @@
       }
      }
     },
-    "E20": {
-     "label": "ines 式: 瞳を顔の向き（左）へ",
-     "parts": {
-      "eye_near": {
-       "file": "eyes/e20_near.txt",
-       "dx": 0,
-       "dy": -1
-      },
-      "eye_far": {
-       "file": "eyes/e20_far.txt",
-       "dx": -1,
-       "dy": -1
-      }
-     }
-    },
-    "E21": {
-     "label": "mist 式: 瞳に光1升",
-     "parts": {
-      "eye_near": "eyes/e21_near.txt",
-      "eye_far": "eyes/e21_far.txt"
-     }
-    },
-    "E22": {
-     "label": "mist 式: 黒い瞳に光",
-     "parts": {
-      "eye_near": "eyes/e22_near.txt",
-      "eye_far": "eyes/e22_far.txt"
-     }
-    },
-    "E23": {
-     "label": "mist 式: 白目つき",
-     "parts": {
-      "eye_near": "eyes/e23_near.txt",
-      "eye_far": "eyes/e23_far.txt"
-     }
-    },
     "E24": {
      "label": "組み合わせ: 平らなまぶた・白黒・1行",
      "parts": {
       "eye_near": "eyes/e24_near.txt",
       "eye_far": "eyes/e24_far.txt"
-     }
-    },
-    "E25": {
-     "label": "組み合わせ: 平らなまぶた・灰青2色・1行",
-     "parts": {
-      "eye_near": "eyes/e25_near.txt",
-      "eye_far": "eyes/e25_far.txt"
-     }
-    },
-    "E26": {
-     "label": "組み合わせ: 目じりを太く・黒い瞳2升・1行",
-     "parts": {
-      "eye_near": "eyes/e26_near.txt",
-      "eye_far": "eyes/e26_far.txt"
-     }
-    },
-    "E27": {
-     "label": "組み合わせ: まつげを外へ・白黒・1行",
-     "parts": {
-      "eye_near": "eyes/e27_near.txt",
-      "eye_far": {
-       "file": "eyes/e27_far.txt",
-       "dx": -1,
-       "dy": 0
-      }
-     }
-    },
-    "E28": {
-     "label": "組み合わせ: まつげを外へ・灰青・下を明るく・1行",
-     "parts": {
-      "eye_near": "eyes/e28_near.txt",
-      "eye_far": {
-       "file": "eyes/e28_far.txt",
-       "dx": -1,
-       "dy": 0
-      }
-     }
-    },
-    "E29": {
-     "label": "組み合わせ: 平らなまぶた・灰青2色・2行",
-     "parts": {
-      "eye_near": "eyes/e29_near.txt",
-      "eye_far": "eyes/e29_far.txt"
-     }
-    },
-    "E30": {
-     "label": "組み合わせ: 目じりを太く・白黒・2行",
-     "parts": {
-      "eye_near": "eyes/e30_near.txt",
-      "eye_far": "eyes/e30_far.txt"
-     }
-    },
-    "E31": {
-     "label": "組み合わせ: 目じりを太く・灰青・下を明るく・2行",
-     "parts": {
-      "eye_near": "eyes/e31_near.txt",
-      "eye_far": "eyes/e31_far.txt"
-     }
-    },
-    "E32": {
-     "label": "組み合わせ: まつげを外へ・灰青2色・2行",
-     "parts": {
-      "eye_near": "eyes/e32_near.txt",
-      "eye_far": {
-       "file": "eyes/e32_far.txt",
-       "dx": -1,
-       "dy": 0
-      }
      }
     },
     "E33": {
@@ -567,51 +315,6 @@
       }
      }
     },
-    "E34": {
-     "label": "組み合わせ: 目じりを太く・白黒・1行・くぼみの影",
-     "parts": {
-      "eye_near": {
-       "file": "eyes/e34_near.txt",
-       "dx": 0,
-       "dy": -1
-      },
-      "eye_far": {
-       "file": "eyes/e34_far.txt",
-       "dx": 0,
-       "dy": -1
-      }
-     }
-    },
-    "E35": {
-     "label": "組み合わせ: 目じりを太く・灰青・下を明るく・1行・くぼみの影",
-     "parts": {
-      "eye_near": {
-       "file": "eyes/e35_near.txt",
-       "dx": 0,
-       "dy": -1
-      },
-      "eye_far": {
-       "file": "eyes/e35_far.txt",
-       "dx": 0,
-       "dy": -1
-      }
-     }
-    },
-    "E36": {
-     "label": "組み合わせ: まつげを外へ・黒い瞳2升・1行・くぼみの影",
-     "parts": {
-      "eye_near": {
-       "file": "eyes/e36_near.txt",
-       "dx": 0,
-       "dy": -1
-      },
-      "eye_far": {
-       "file": "eyes/e36_far.txt",
-       "dx": -1,
-       "dy": -1
-      }
-     }
-    },
     "E37": {
      "label": "組み合わせ: 平らなまぶた・白黒・2行・くぼみの影",
      "parts": {
@@ -623,51 +326,6 @@
       "eye_far": {
        "file": "eyes/e37_far.txt",
        "dx": 0,
-       "dy": -1
-      }
-     }
-    },
-    "E38": {
-     "label": "組み合わせ: 平らなまぶた・灰青・下を明るく・2行・くぼみの影",
-     "parts": {
-      "eye_near": {
-       "file": "eyes/e38_near.txt",
-       "dx": 0,
-       "dy": -1
-      },
-      "eye_far": {
-       "file": "eyes/e38_far.txt",
-       "dx": 0,
-       "dy": -1
-      }
-     }
-    },
-    "E39": {
-     "label": "組み合わせ: 目じりを太く・灰青2色・2行・くぼみの影",
-     "parts": {
-      "eye_near": {
-       "file": "eyes/e39_near.txt",
-       "dx": 0,
-       "dy": -1
-      },
-      "eye_far": {
-       "file": "eyes/e39_far.txt",
-       "dx": 0,
-       "dy": -1
-      }
-     }
-    },
-    "E40": {
-     "label": "組み合わせ: まつげを外へ・黒い瞳2升・2行・くぼみの影",
-     "parts": {
-      "eye_near": {
-       "file": "eyes/e40_near.txt",
-       "dx": 0,
-       "dy": -1
-      },
-      "eye_far": {
-       "file": "eyes/e40_far.txt",
-       "dx": -1,
        "dy": -1
       }
      }

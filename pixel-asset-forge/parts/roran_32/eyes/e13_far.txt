@@ -1,7 +1,0 @@
-# type: face
-# size: 3x2
-# light: upper-left
-# bg: transparent
-# map: k=iris_slate_dark o=outline w=eye_white
-ooo
-wkk
