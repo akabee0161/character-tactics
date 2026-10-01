@@ -222,8 +222,22 @@ cat sheets/roran.txt
 - `build/sheets/roran_preview.png`：目視用。**赤い横線が足元 y=30**、青い縦線が左右中心。
   コマ間で足元が1pxずれるとアニメがガタつくが、1コマの拡大画像では分からない
 
-最後に出る表は足元と中心の実測である。`atk_hit` と横向きの `atk_wind` の `off` は、剣が体の外に出て
+最後に出る表は足元と中心の実測である。横向きの `atk_wind` と `atk_hit` の `off` は、剣が体の外に出て
 外接矩形が広がるので中心がずれる、という仕様どおりの逸脱で、問題ではない。
+
+動きを見るには、同じ定義から状態ごとの GIF を作る。
+
+```sh
+.venv/bin/python tools/sheet_gif.py sheets/roran.txt                 # idle / walk / attack の3本
+.venv/bin/python tools/sheet_gif.py sheets/roran.txt --state attack  # 1本だけ
+.venv/bin/python tools/sheet_gif.py sheets/roran.txt --fps attack=12 --scale 6
+```
+
+- `build/sheets/roran_<状態>.gif`：4方向（down / up / left / right）を横に並べ、上の段は拡大、下の段は草の上に等倍（ゲームで描かれる大きさ）
+- 速さの既定はゲームのロランと同じ（idle 4fps・walk 8fps・attack 6fps）。ほかのユニットで違うときは `--fps 状態=fps` で指定する（ゲームの JSON は読まない）
+- GIF は表示時間を 1/100 秒単位でしか持てないので、10ms 単位に丸める（6fps の 167ms は 170ms）
+
+静止画のシートでは良く見えた剣が、3コマを続けて動かすと不自然に見えることがある（ロランの攻撃の描き直しで実際にあった）。
 
 ### 2.8 物のセット（16px の部品を組む）
 
@@ -277,6 +291,7 @@ check_colors.py ─── 隣り合う色が見分けられるか（助言）
 render.py ────────── 1枚ずつ PNG（等倍 + x8）      目視の基本
 tilemap.py ───────── タイルを並べる                 検証用
 sheet.py ──────────── unit をシートに組む           ゲームに渡す成果物
+sheet_gif.py ──────── unit の動きを GIF にする       目視用
 sets.py ───────────── 部品を組んで物にする         ゲームに渡す成果物
 export.py ─────────── 対応表どおりにゲームへ書き出す  ゲームにコピーしたとき
 contact_sheet.py ─── 全点の一覧                     型をまたいだ比較
