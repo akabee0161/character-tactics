@@ -1,0 +1,7 @@
+# type: face
+# size: 6x2
+# light: upper-left
+# bg: transparent
+# map: d=skin_rose_deep o=outline
+d...d.
+.ooo..

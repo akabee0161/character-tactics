@@ -1,0 +1,7 @@
+# type: face
+# size: 5x2
+# light: upper-left
+# bg: transparent
+# map: H=hair_slate_dark
+.....
+HHHH.

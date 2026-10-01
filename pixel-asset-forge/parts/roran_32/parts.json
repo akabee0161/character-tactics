@@ -1,0 +1,418 @@
+{
+ "size": [
+  32,
+  32
+ ],
+ "base": "base.txt",
+ "clip_keys": [
+  "skin_rose_hi",
+  "skin_rose_base",
+  "skin_rose_shadow"
+ ],
+ "order": [
+  "hair_shade",
+  "nose",
+  "mouth",
+  "eyes",
+  "brows",
+  "hair",
+  "clothes"
+ ],
+ "default": {
+  "hair": "H1",
+  "eyes": "E2",
+  "brows": "B2",
+  "mouth": "M1",
+  "nose": "N1",
+  "clothes": "C1",
+  "balance": "P1"
+ },
+ "balance": {
+  "P1": {
+   "label": "目と眉を下げた位置（64px の P1）",
+   "anchors": {
+    "eye_far": [
+     8,
+     16
+    ],
+    "eye_near": [
+     13,
+     16
+    ],
+    "brow_far": [
+     8,
+     13
+    ],
+    "brow_near": [
+     13,
+     13
+    ],
+    "nose": [
+     10,
+     18
+    ],
+    "mouth": [
+     11,
+     23
+    ]
+   }
+  },
+  "P2": {
+   "label": "元絵の位置（目が高い）",
+   "anchors": {
+    "eye_far": [
+     8,
+     15
+    ],
+    "eye_near": [
+     13,
+     15
+    ],
+    "brow_far": [
+     8,
+     12
+    ],
+    "brow_near": [
+     13,
+     12
+    ],
+    "nose": [
+     10,
+     17
+    ],
+    "mouth": [
+     11,
+     23
+    ]
+   }
+  },
+  "P3": {
+   "label": "目をさらに下げる",
+   "anchors": {
+    "eye_far": [
+     8,
+     17
+    ],
+    "eye_near": [
+     13,
+     17
+    ],
+    "brow_far": [
+     8,
+     14
+    ],
+    "brow_near": [
+     13,
+     14
+    ],
+    "nose": [
+     10,
+     19
+    ],
+    "mouth": [
+     11,
+     23
+    ]
+   }
+  },
+  "P4": {
+   "label": "両目の間を広げる",
+   "anchors": {
+    "eye_far": [
+     8,
+     16
+    ],
+    "eye_near": [
+     14,
+     16
+    ],
+    "brow_far": [
+     8,
+     13
+    ],
+    "brow_near": [
+     14,
+     13
+    ],
+    "nose": [
+     10,
+     18
+    ],
+    "mouth": [
+     11,
+     23
+    ]
+   }
+  },
+  "P5": {
+   "label": "鼻と口を詰める（顔の下半分を短く）",
+   "anchors": {
+    "eye_far": [
+     8,
+     16
+    ],
+    "eye_near": [
+     13,
+     16
+    ],
+    "brow_far": [
+     8,
+     13
+    ],
+    "brow_near": [
+     13,
+     13
+    ],
+    "nose": [
+     10,
+     18
+    ],
+    "mouth": [
+     11,
+     22
+    ]
+   }
+  }
+ },
+ "elements": {
+  "hair_shade": {
+   "label": "前髪の下の影",
+   "clip": true,
+   "follow": "hair",
+   "variants": {
+    "H1": {
+     "label": "元絵の髪（前髪を2行上げる）",
+     "parts": {
+      "origin": "hair/h1_shade.txt"
+     }
+    },
+    "H2": {
+     "label": "短髪（頭に沿わせ、額を出す）",
+     "parts": {
+      "origin": "hair/h2_shade.txt"
+     }
+    },
+    "H3": {
+     "label": "長め、右で分けて左へ流す",
+     "parts": {
+      "origin": "hair/h3_shade.txt"
+     }
+    },
+    "H4": {
+     "label": "つんつんと立てる",
+     "parts": {
+      "origin": "hair/h4_shade.txt"
+     }
+    },
+    "H5": {
+     "label": "オールバック（額を出して後ろへ流す）",
+     "parts": {
+      "origin": "hair/h5_shade.txt"
+     }
+    }
+   }
+  },
+  "nose": {
+   "label": "鼻",
+   "clip": true,
+   "variants": {
+    "N1": {
+     "label": "垂直に近い線（V1）",
+     "parts": {
+      "nose": "nose/n1.txt"
+     }
+    }
+   }
+  },
+  "mouth": {
+   "label": "口",
+   "clip": true,
+   "variants": {
+    "M1": {
+     "label": "閉じた線、両端をやわらげる（64px の M2）",
+     "parts": {
+      "mouth": "mouth/m1.txt"
+     }
+    },
+    "M2": {
+     "label": "小さい線",
+     "parts": {
+      "mouth": "mouth/m2.txt"
+     }
+    },
+    "M3": {
+     "label": "口角を上げる",
+     "parts": {
+      "mouth": "mouth/m3.txt"
+     }
+    },
+    "M4": {
+     "label": "少し開く",
+     "parts": {
+      "mouth": "mouth/m4.txt"
+     }
+    },
+    "M5": {
+     "label": "への字",
+     "parts": {
+      "mouth": "mouth/m5.txt"
+     }
+    }
+   }
+  },
+  "eyes": {
+   "label": "目",
+   "clip": true,
+   "variants": {
+    "E1": {
+     "label": "白黒（上まぶたと瞳を黒、瞳は縦線）",
+     "parts": {
+      "eye_near": "eyes/e1_near.txt",
+      "eye_far": "eyes/e1_far.txt"
+     }
+    },
+    "E2": {
+     "label": "灰青の瞳（64px の部品と同じ描き方）",
+     "parts": {
+      "eye_near": "eyes/e2_near.txt",
+      "eye_far": "eyes/e2_far.txt"
+     }
+    },
+    "E3": {
+     "label": "細い目（鋭い）",
+     "parts": {
+      "eye_near": "eyes/e3_near.txt",
+      "eye_far": "eyes/e3_far.txt"
+     }
+    },
+    "E4": {
+     "label": "大きい目（少し縦長）",
+     "parts": {
+      "eye_near": "eyes/e4_near.txt",
+      "eye_far": "eyes/e4_far.txt"
+     }
+    },
+    "E5": {
+     "label": "伏し目（まぶたが重い）",
+     "parts": {
+      "eye_near": "eyes/e5_near.txt",
+      "eye_far": "eyes/e5_far.txt"
+     }
+    }
+   }
+  },
+  "brows": {
+   "label": "眉",
+   "clip": true,
+   "variants": {
+    "B1": {
+     "label": "まっすぐ",
+     "parts": {
+      "brow_near": "brows/b1_near.txt",
+      "brow_far": "brows/b1_far.txt"
+     }
+    },
+    "B2": {
+     "label": "目頭が低く目じりが高い（64px の B3）",
+     "parts": {
+      "brow_near": "brows/b2_near.txt",
+      "brow_far": "brows/b2_far.txt"
+     }
+    },
+    "B3": {
+     "label": "太い",
+     "parts": {
+      "brow_near": "brows/b3_near.txt",
+      "brow_far": "brows/b3_far.txt"
+     }
+    },
+    "B4": {
+     "label": "下がり眉（やさしい）",
+     "parts": {
+      "brow_near": "brows/b4_near.txt",
+      "brow_far": "brows/b4_far.txt"
+     }
+    },
+    "B5": {
+     "label": "短い",
+     "parts": {
+      "brow_near": "brows/b5_near.txt",
+      "brow_far": "brows/b5_far.txt"
+     }
+    }
+   }
+  },
+  "hair": {
+   "label": "髪",
+   "clip": false,
+   "variants": {
+    "H1": {
+     "label": "元絵の髪（前髪を2行上げる）",
+     "parts": {
+      "origin": "hair/h1.txt"
+     }
+    },
+    "H2": {
+     "label": "短髪（頭に沿わせ、額を出す）",
+     "parts": {
+      "origin": "hair/h2.txt"
+     }
+    },
+    "H3": {
+     "label": "長め、右で分けて左へ流す",
+     "parts": {
+      "origin": "hair/h3.txt"
+     }
+    },
+    "H4": {
+     "label": "つんつんと立てる",
+     "parts": {
+      "origin": "hair/h4.txt"
+     }
+    },
+    "H5": {
+     "label": "オールバック（額を出して後ろへ流す）",
+     "parts": {
+      "origin": "hair/h5.txt"
+     }
+    }
+   }
+  },
+  "clothes": {
+   "label": "服",
+   "clip": false,
+   "variants": {
+    "C1": {
+     "label": "元絵の首の布（バンダナ）とマント",
+     "parts": {
+      "origin": "clothes/c1.txt"
+     }
+    },
+    "C2": {
+     "label": "丸首のチュニック（首を見せる）",
+     "parts": {
+      "origin": "clothes/c2.txt"
+     }
+    },
+    "C3": {
+     "label": "立ち襟のコート（革）",
+     "parts": {
+      "origin": "clothes/c3.txt"
+     }
+    },
+    "C4": {
+     "label": "赤いスカーフと革の胴着",
+     "parts": {
+      "origin": "clothes/c4.txt"
+     }
+    },
+    "C5": {
+     "label": "鉄の喉当てと肩当て",
+     "parts": {
+      "origin": "clothes/c5.txt"
+     }
+    }
+   }
+  }
+ }
+}
