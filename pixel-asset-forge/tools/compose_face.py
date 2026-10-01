@@ -23,7 +23,8 @@ A parts directory holds grid files and ``parts.json``::
     }
 
 Each part is placed with its top-left at the named anchor of the chosen balance (``origin`` is
-always 0,0, for full-size layers). An element with ``"follow": "hair"`` is not chosen on its own:
+always 0,0, for full-size layers). A part written as ``{"file": "...", "dx": 0, "dy": -1}`` is
+shifted from its anchor, e.g. an eye whose grid starts with a crease row above the lid. An element with ``"follow": "hair"`` is not chosen on its own:
 it uses the variant chosen for ``hair`` (a forehead shadow under the eyes and brows, while the
 hair itself is drawn over them), so it needs a variant of every name ``hair`` has. A clipped part is drawn only where the base has one of
 ``clip_keys``, so eyes and mouths stay on the skin whatever the balance. ``.`` never paints.
@@ -65,6 +66,15 @@ def load_grid(path: Path, palette: dict) -> Pixels:
     }
 
 
+def part_ref(ref) -> tuple[str, int, int]:
+    """A part is ``"file.txt"`` or ``{"file": "file.txt", "dx": 0, "dy": -1}`` (shifted from its anchor)."""
+    if isinstance(ref, str):
+        return ref, 0, 0
+    if isinstance(ref, dict) and isinstance(ref.get("file"), str):
+        return ref["file"], int(ref.get("dx", 0)), int(ref.get("dy", 0))
+    raise ComposeError(f"a part must be a file name or {{'file', 'dx', 'dy'}}, got {ref!r}")
+
+
 @dataclass
 class PartSet:
     root: Path
@@ -94,8 +104,10 @@ class PartSet:
         spec = self.elements[element]
         anchors = self._balance(balance)["anchors"]
         out: Pixels = {}
-        for anchor, rel in self._variant(element, variant)["parts"].items():
+        for anchor, ref in self._variant(element, variant)["parts"].items():
+            rel, dx, dy = part_ref(ref)
             ax, ay = (0, 0) if anchor == "origin" else anchors[anchor]
+            ax, ay = ax + dx, ay + dy
             for (x, y), key in self.grids[rel].items():
                 pos = (x + ax, y + ay)
                 if spec.get("clip"):
@@ -153,7 +165,8 @@ def load_set(root: Path, palette: dict | None = None) -> PartSet:
         if element not in spec["order"]:
             raise ComposeError(f"element {element!r} is not in 'order'")
         for vname, variant in espec["variants"].items():
-            for anchor, rel in variant["parts"].items():
+            for anchor, ref in variant["parts"].items():
+                rel, _, _ = part_ref(ref)
                 for bname, bspec in spec["balance"].items():
                     if anchor != "origin" and anchor not in bspec["anchors"]:
                         raise ComposeError(f"balance {bname} has no anchor {anchor!r} ({element} {vname})")

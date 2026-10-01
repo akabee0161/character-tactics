@@ -109,6 +109,16 @@ class ComposeTest(unittest.TestCase):
         self.assertEqual(pixels[(2, 1)], "pupil")
         self.assertEqual(pixels[(3, 1)], "outline")  # third pixel fell on the outline
 
+    def test_a_part_can_be_shifted_from_its_anchor(self):
+        root = make_set(self.root)
+        spec = json.loads((root / "parts.json").read_text())
+        spec["elements"]["eyes"]["variants"]["E1"]["parts"]["eye"] = {"file": "dot.txt", "dx": 0, "dy": -1}
+        (root / "parts.json").write_text(json.dumps(spec))
+        parts = compose_face.load_set(root)
+        pixels = parts.compose({"eyes": "E1", "hair": "H0", "balance": "P2"})
+        self.assertEqual(pixels[(2, 1)], "pupil")
+        self.assertEqual(pixels[(2, 2)], "skin_base")
+
     def test_unclipped_part_off_the_canvas_is_an_error(self):
         parts = compose_face.load_set(make_set(self.root, eye_anchor=(3, 1), eye_file="wide.txt", clip=False))
         with self.assertRaisesRegex(compose_face.ComposeError, "outside"):
