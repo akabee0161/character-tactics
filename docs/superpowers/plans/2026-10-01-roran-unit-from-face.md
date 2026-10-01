@@ -536,3 +536,38 @@ cd /home/ubuntu/workspace/character-tactics
 git add assets/images/roran-map.png pixel-asset-forge/types/unit/SPEC.md HANDOVER.md
 git commit -m "feat: ロランのユニットのシートを書き出し、SPEC と HANDOVER を直す"
 ```
+
+---
+
+## 追記: Task 6b 攻撃のコマを描き直す（2026-10-01）
+
+spec の「追記: 攻撃のコマの振り方」を実装する。Task 7 の前に行う。
+
+**Files:**
+- Create: `$SDD/cand/atk_*.txt`（案）
+- Modify: `pixel-asset-forge/assets/unit/roran/{down,up,left,right}_atk_hit.txt`
+- Modify: `pixel-asset-forge/types/unit/SPEC.md`（「攻撃は振り下ろし」の `atk_hit` の規約）
+
+- [ ] **Step 1: 正面の `atk_hit` の案**（2〜3案）を `$SDD/cand/` に描く。拳は体の前の中央、刃は真っすぐ下。体・脚・盾は今のコマのまま。輪郭の切れ目は `$SDD/open_edges.py` で main より増えていないことを確かめる。`present.py` で `down_atk_wind`・今の `down_atk_hit`・案を並べて見せる。**止まる**
+- [ ] **Step 2: 背面の `atk_hit` の案**（1〜2案）。剣は隠す。同じく並べて見せる。**止まる**
+- [ ] **Step 3: 横向きの `atk_hit` の案**（2〜3案）。左右は別々に描く。切っ先は左向き x=1・右向き x=30 まで。同じく並べて見せる。**止まる**
+- [ ] **Step 4: 選ばれた案を assets に書き、検査する**
+
+```sh
+cd /home/ubuntu/workspace/character-tactics/pixel-asset-forge
+.venv/bin/python tools/validate.py
+.venv/bin/python tools/check_colors.py assets/unit/roran
+.venv/bin/python tools/sheet.py sheets/roran.txt
+```
+
+Expected: `validate.py` 0、`check_colors.py` hard failure なし、足元はすべて y=30
+
+- [ ] **Step 5: SPEC の `atk_hit` の規約を、選ばれた形に書き直す**
+- [ ] **Step 6: プレビュー（`build/sheets/roran_preview.png`）と `$SDD/frames.py` の並びを見せる。**止まる**
+- [ ] **Step 7: コミット**
+
+```sh
+cd /home/ubuntu/workspace/character-tactics
+git add pixel-asset-forge/assets/unit/roran pixel-asset-forge/types/unit/SPEC.md
+git commit -m "feat: ロランのユニットの攻撃を真っすぐ前へ振り下ろす形にし、unit の攻撃の規約を書き直す"
+```
