@@ -3,7 +3,7 @@
 
 ## Current State
 
-- **Branch**: `feat/roran-face`（main から分岐、**未 push**・PR なし）。issue #23（ロランのアセット修正）の1番目「ロランの顔グラを forge で描く」の途中
+- **Branch**: `feat/roran-face`（main から分岐、2026-10-01 に push 済み・PR なし。依頼者が手元のエディタでグリッドを直すため）。issue #23（ロランのアセット修正）の1番目「ロランの顔グラを forge で描く」の途中
 - **main**: issue #6 の①〜⑥はすべてマージ済み（PR #19〜#22、2026-09-30）。issue #17 もクローズ済み
 - **作業の記録（進捗台帳）**: `.superpowers/sdd/2026-09-30-roran-face/progress.md`（git 管理外。Task 1〜6 完了、Task 7 は保留。判断はすべて `Ruling:` 行にある）
 - **`git stash@{0}`**「64px face export (on hold, 32px rework)」: 64px の顔の書き出し（`sprites.json` に `face/roran.png` を足し、`roran-face.png` を 64px に差し替え、README と `assets/images/README.txt` の記述を直したもの）。32px に決まれば捨てる、64px に戻るなら使う
@@ -99,7 +99,7 @@ pixel-asset-forge #6: https://github.com/akabee0161/pixel-asset-forge/issues/6
 
 - 素の頭の輪郭（髪とバンダナを外した頭・顎・耳・首、`2bdfb7f`）は「一旦これでOKとして次に進む」。顎の線は耳の後ろまで伸ばす（依頼者）。髪のシルエット（`c8f0749`）は「問題ない」が、前髪が目のあたりまで下り過ぎている
 - 依頼者がしばらく確認できないため、段階ごとに止まらず最後まで描き切る。**髪・目・眉・口・顔の要素のバランス・服をそれぞれ 5 パターン**描き、掛け合わせた全部の組み合わせを、**部品を選ぶと組み合わせた顔が出るページ**（案 A）で最後に依頼者が見る。パターンは**男性に絞る**
-- やらないこと: 規約を 32px に戻すこと（README・SPEC・CLAUDE.md の書き換え）、ゲームへの書き出し（Task 7）、push
+- やらないこと: 規約を 32px に戻すこと（README・SPEC・CLAUDE.md の書き換え）、ゲームへの書き出し（Task 7）（push は 2026-10-01 に依頼者の指示で行った）
 
 ## 顔グラの作業で依頼者から受けた指示（2026-09-30）
 
