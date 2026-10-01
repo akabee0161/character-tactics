@@ -23,7 +23,9 @@ A parts directory holds grid files and ``parts.json``::
     }
 
 Each part is placed with its top-left at the named anchor of the chosen balance (``origin`` is
-always 0,0, for full-size layers). A clipped part is drawn only where the base has one of
+always 0,0, for full-size layers). An element with ``"follow": "hair"`` is not chosen on its own:
+it uses the variant chosen for ``hair`` (a forehead shadow under the eyes and brows, while the
+hair itself is drawn over them), so it needs a variant of every name ``hair`` has. A clipped part is drawn only where the base has one of
 ``clip_keys``, so eyes and mouths stay on the skin whatever the balance. ``.`` never paints.
 """
 from __future__ import annotations
@@ -105,11 +107,19 @@ class PartSet:
                     raise ComposeError(f"{element} {variant} ({rel}) at {balance}: {pos} is outside the canvas")
         return out
 
+    def leader(self, element: str) -> str:
+        """The element whose chosen variant this one uses (itself unless it has ``follow``)."""
+        return self.elements[element].get("follow", element)
+
+    def chosen(self) -> list[str]:
+        """Elements a selection names, i.e. those that do not follow another."""
+        return [e for e in self.elements if self.leader(e) == e]
+
     def compose(self, selection: dict[str, str]) -> Pixels:
         pick = {**self.default, **selection}
         pixels = dict(self.base)
         for element in self.order:
-            pixels.update(self.layer(element, pick[element], pick["balance"]))
+            pixels.update(self.layer(element, pick[self.leader(element)], pick["balance"]))
         return pixels
 
     def covered(self, lower: str, lower_variant: str, upper: str, upper_variant: str, balance: str) -> tuple[int, int]:
@@ -152,13 +162,22 @@ def load_set(root: Path, palette: dict | None = None) -> PartSet:
     for element in spec["order"]:
         if element not in spec["elements"]:
             raise ComposeError(f"'order' names {element!r} but 'elements' has no such entry")
+    for element, espec in spec["elements"].items():
+        leader = espec.get("follow")
+        if leader is None:
+            continue
+        if leader not in spec["elements"] or "follow" in spec["elements"][leader]:
+            raise ComposeError(f"{element} follows {leader!r}, which is not an element that is chosen")
+        missing = set(spec["elements"][leader]["variants"]) - set(espec["variants"])
+        if missing:
+            raise ComposeError(f"{element} follows {leader} but has no variant {', '.join(sorted(missing))}")
     return PartSet(root, width, height, base, mask, spec["order"], spec["default"],
                    spec["balance"], spec["elements"], grids)
 
 
 def parse_pick(parts: PartSet, text: str) -> dict[str, str]:
     """``H1,E2,P3`` -> {element: variant}, matched by variant name."""
-    owner = {v: e for e, s in parts.elements.items() for v in s["variants"]}
+    owner = {v: e for e in parts.chosen() for v in parts.elements[e]["variants"]}
     owner.update({b: "balance" for b in parts.balance})
     pick = {}
     for name in filter(None, (t.strip() for t in text.split(","))):
@@ -172,7 +191,7 @@ def write_sheet(parts: PartSet, palette: dict, out_dir: Path, scale: int = 4) ->
     """One PNG per element: its variants side by side, everything else at the default."""
     out_dir.mkdir(parents=True, exist_ok=True)
     written = []
-    rows = [(e, list(s["variants"])) for e, s in parts.elements.items() if len(s["variants"]) > 1]
+    rows = [(e, list(parts.elements[e]["variants"])) for e in parts.chosen() if len(parts.elements[e]["variants"]) > 1]
     rows.append(("balance", list(parts.balance)))
     for element, names in rows:
         w = parts.width * scale
@@ -219,8 +238,10 @@ def export_json(parts: PartSet, palette: dict) -> dict:
         "base": encode(parts.base),
         "order": parts.order,
         "default": parts.default,
-        "elements": {e: {"label": s["label"], "variants": {v: d["label"] for v, d in s["variants"].items()}}
-                     for e, s in parts.elements.items()},
+        "elements": {e: {"label": parts.elements[e]["label"],
+                         "variants": {v: d["label"] for v, d in parts.elements[e]["variants"].items()}}
+                     for e in parts.chosen()},
+        "follow": {e: parts.leader(e) for e in parts.elements if parts.leader(e) != e},
         "balance": {b: d["label"] for b, d in parts.balance.items()},
         "layers": layers,
         "hidden": hidden,

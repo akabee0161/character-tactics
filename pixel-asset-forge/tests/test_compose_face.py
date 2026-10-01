@@ -127,6 +127,30 @@ class ComposeTest(unittest.TestCase):
         with self.assertRaisesRegex(compose_face.ComposeError, "P2.*eye"):
             compose_face.load_set(root)
 
+    def test_a_following_element_takes_the_variant_of_its_leader(self):
+        root = make_set(self.root)
+        spec = json.loads((root / "parts.json").read_text())
+        (root / "shade.txt").write_text(DOT.replace("k=pupil", "k=skin_shadow"))
+        spec["order"] = ["eyes", "shade", "hair"]
+        spec["elements"]["shade"] = {"label": "shade", "clip": True, "follow": "hair", "variants": {
+            "H1": {"label": "h1", "parts": {"eye": "shade.txt"}},
+            "H0": {"label": "none", "parts": {}}}}
+        (root / "parts.json").write_text(json.dumps(spec))
+        parts = compose_face.load_set(root)
+        self.assertEqual(parts.compose({"eyes": "E1", "hair": "H1", "balance": "P2"})[(2, 2)], "skin_shadow")
+        self.assertEqual(parts.compose({"eyes": "E1", "hair": "H0", "balance": "P2"})[(2, 2)], "pupil")
+        self.assertNotIn("shade", compose_face.export_json(parts, compose_face.load_palette())["elements"])
+
+    def test_a_follower_needs_every_variant_of_its_leader(self):
+        root = make_set(self.root)
+        spec = json.loads((root / "parts.json").read_text())
+        spec["order"] = ["shade", "eyes", "hair"]
+        spec["elements"]["shade"] = {"label": "shade", "follow": "hair", "variants": {
+            "H1": {"label": "h1", "parts": {}}}}
+        (root / "parts.json").write_text(json.dumps(spec))
+        with self.assertRaisesRegex(compose_face.ComposeError, "shade.*H0"):
+            compose_face.load_set(root)
+
     def test_covered_counts_the_pixels_a_later_layer_hides(self):
         parts = compose_face.load_set(make_set(self.root, eye_anchor=(1, 1)))
         hidden = parts.covered("eyes", "E1", "hair", "H1", "P1")
