@@ -53,7 +53,7 @@
 .venv/bin/python tools/contact_sheet.py       # build/contact_sheet.png
 .venv/bin/python tools/compare.py GRID REF    # グリッドと元絵を同じ高さに並べる（build/compare/）
 .venv/bin/python tools/export.py MAP DEST     # 対応表どおりにゲームへ書き出す（README 2.10）
-.venv/bin/python tools/compose_face.py parts/roran_32 --pick H1,E2  # 顔を部品から組む（README 2.12、試作）
+.venv/bin/python tools/compose_face.py parts/roran_32 --html build/compose/roran_32.html  # 顔を部品から組んで見るページ（parts/README.md、試作）
 .venv/bin/python -m unittest discover -s tests  # tools/ を触ったとき
 ```
 

@@ -278,16 +278,16 @@ forge をゲームリポジトリへコピーして使うときは、ゲーム�
 ### 2.12 顔を部品から組み合わせる（試作）
 
 顔の土台（素の頭）に、髪・目・眉・口・服の部品と、目や口の位置を決める「バランス」を重ねて1枚にする。
-部品は `parts/<名前>/` に置く（`assets/` の外。`validate.py parts/roran_32` で検査する）。重ねる順番・錨の位置・案の一覧は同じフォルダの `parts.json` に書く（書式は `tools/compose_face.py` の先頭）。
-目・眉・口・鼻は、バランスごとの錨に左上を合わせて置き、土台の肌の上だけに描く。`"follow": "hair"` の要素（前髪の下の影）は、髪で選んだ案に連動する。
+部品は `parts/<名前>/` に置く（`assets/` の外。`validate.py parts/roran_32` で検査する）。重ねる順番・錨の位置・案の一覧・ページの設定は同じフォルダの `parts.json` に書く。
+**使い方・`parts.json` の書き方・部品の足し方は [`parts/README.md`](parts/README.md) にまとめてある。**
 
 ```sh
-.venv/bin/python tools/compose_face.py parts/roran_32 --pick H1,E2,B2,M1,P1,C1 --scale 8
+.venv/bin/python tools/compose_face.py parts/roran_32 --html build/compose/roran_32.html --ref ../assets/images/roran-face.png
+.venv/bin/python tools/compose_face.py parts/roran_32 --pick H1,E19,B2,M4,P4,C5 --scale 8
 .venv/bin/python tools/compose_face.py parts/roran_32 --sheet build/compose/
-.venv/bin/python tools/compose_face.py parts/roran_32 --json build/compose/parts.json
 ```
 
-`--pick` は1枚（書かなかった要素は `parts.json` の `default`）、`--sheet` は要素ごとに案を横に並べた一覧、`--json` は部品を選んで見るページ用に、置いた後の層と「前髪が目・眉を何升隠すか」を書き出す。
+`--html` は部品を選んで組み合わせを見るページ（ブラウザで開く。元は `tools/face_picker.html`）、`--pick` は1枚の PNG（書かなかった要素は `parts.json` の `default`）、`--sheet` は要素ごとに案を横に並べた一覧。`--json` はページに埋め込むデータだけを書き出す。
 
 ### まとめ
 
