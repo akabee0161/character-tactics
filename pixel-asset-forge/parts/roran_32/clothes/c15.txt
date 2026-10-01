@@ -30,9 +30,9 @@
 ................................
 .....................oooouoo....
 ...................uossssttuo...
-..................ttstttttttuooo
-..ooooooooo......uuuuuuuutuuouuu
-oosssssuoPPoooooooooooooovootuuu
-sstttuuuuoRPRRRRRPPPPPPPRotttuuu
-tuuuutttuoQQQQQQQQQQQQQQQotttuuu
-ttttttttuoQQQQQQQQQQQQQQQotttuuu
+..................ttsttttttuo...
+.......oooo......uuuuuuuuutuoooo
+oooooooPPPPooooooooooooooovotuuu
+PPottuuoRRRPRRRRRPPPPPPPRRottuuu
+QouuuttsoQQQQQQQQQQQQQQQQQottuuu
+QotttttuoQQQQQQQQQQQQQQQQQottuuu

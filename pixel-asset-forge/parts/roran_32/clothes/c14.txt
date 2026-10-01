@@ -31,8 +31,8 @@
 .....................oooouoo....
 ...................uossssttuo...
 ..................ttstttttttuooo
-..ooooooooo......uuuuuuuutuuouuu
-oosssssuoPPoooooooooooooovootuuu
-sstttuuuuoRPRRRRRPPPPPPPRotttuuu
-tuuuutttuoQQQQQQQQQQQQQQQotttuuu
-ttttttttuoQQQQQQQQQQQQQQQotttuuu
+..ooooooooo......uuuuutuutuuouuu
+oosssssuoPPotvvvvooooovoovootuuu
+sstttuuuuoRPooooottttuoPRotttuuu
+tuuuutttuoQossssstttttsoQotttuuu
+ttttttttuoQottttttttttuoQotttuuu

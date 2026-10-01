@@ -2,8 +2,8 @@
 # size: 32x32
 # light: upper-left
 # bg: transparent
-# map: P=cloth_hi Q=cloth_shadow R=cloth_base o=outline s=stone_hi t=stone_base
-# map: u=stone_shadow v=stone_dark
+# map: o=outline s=stone_hi t=stone_base u=stone_shadow v=stone_dark x=carpet_hi
+# map: y=carpet_base z=carpet_shadow
 ................................
 ................................
 ................................
@@ -32,7 +32,7 @@
 ...................uossssttuo...
 ..................ttstttttttuooo
 ..ooooooooo......uuuuuuuutuuouuu
-oosssssuoPPoooooooooooooovootuuu
-sstttuuuuoRPRRRRRPPPPPPPRotttuuu
-tuuuutttuoQQQQQQQQQQQQQQQotttuuu
-ttttttttuoQQQQQQQQQQQQQQQotttuuu
+oosssssuoxxoooooooooooooovootuuu
+sstttuuuuoyxyyyyyxxxxxxxyotttuuu
+tuuuutttuozzzzzzzzzzzzzzzotttuuu
+ttttttttuozzzzzzzzzzzzzzzotttuuu

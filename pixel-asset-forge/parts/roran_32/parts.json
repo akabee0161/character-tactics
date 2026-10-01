@@ -20,12 +20,12 @@
  ],
  "default": {
   "hair": "H1",
-  "eyes": "E6",
+  "eyes": "E19",
   "brows": "B2",
-  "mouth": "M1",
+  "mouth": "M4",
   "nose": "N1",
-  "clothes": "C1",
-  "balance": "P1"
+  "clothes": "C5",
+  "balance": "P4"
  },
  "balance": {
   "P1": {
@@ -208,6 +208,66 @@
      "label": "オールバック（額を出して後ろへ流す）",
      "parts": {
       "origin": "hair/h5_shade.txt"
+     }
+    },
+    "H6": {
+     "label": "房をはっきり（元絵の描き方、光は左上）",
+     "parts": {
+      "origin": "hair/h6_shade.txt"
+     }
+    },
+    "H7": {
+     "label": "房をはっきり、光を右上に（元絵の光の向き）",
+     "parts": {
+      "origin": "hair/h7_shade.txt"
+     }
+    },
+    "H8": {
+     "label": "太い房を少なく",
+     "parts": {
+      "origin": "hair/h8_shade.txt"
+     }
+    },
+    "H9": {
+     "label": "細い房を多く",
+     "parts": {
+      "origin": "hair/h9_shade.txt"
+     }
+    },
+    "H10": {
+     "label": "前髪の束の先をとがらせる",
+     "parts": {
+      "origin": "hair/h10_shade.txt"
+     }
+    },
+    "H11": {
+     "label": "前髪を短く、額を広く",
+     "parts": {
+      "origin": "hair/h11_shade.txt"
+     }
+    },
+    "H12": {
+     "label": "頭頂の房2本を大きく立てる",
+     "parts": {
+      "origin": "hair/h12_shade.txt"
+     }
+    },
+    "H13": {
+     "label": "前髪の束に光を入れる",
+     "parts": {
+      "origin": "hair/h13_shade.txt"
+     }
+    },
+    "H14": {
+     "label": "天使の輪（頭頂の光の帯）",
+     "parts": {
+      "origin": "hair/h14_shade.txt"
+     }
+    },
+    "H15": {
+     "label": "影を広く（暗い前髪を厚く）",
+     "parts": {
+      "origin": "hair/h15_shade.txt"
      }
     }
    }
@@ -406,6 +466,66 @@
      "parts": {
       "origin": "hair/h5.txt"
      }
+    },
+    "H6": {
+     "label": "房をはっきり（元絵の描き方、光は左上）",
+     "parts": {
+      "origin": "hair/h6.txt"
+     }
+    },
+    "H7": {
+     "label": "房をはっきり、光を右上に（元絵の光の向き）",
+     "parts": {
+      "origin": "hair/h7.txt"
+     }
+    },
+    "H8": {
+     "label": "太い房を少なく",
+     "parts": {
+      "origin": "hair/h8.txt"
+     }
+    },
+    "H9": {
+     "label": "細い房を多く",
+     "parts": {
+      "origin": "hair/h9.txt"
+     }
+    },
+    "H10": {
+     "label": "前髪の束の先をとがらせる",
+     "parts": {
+      "origin": "hair/h10.txt"
+     }
+    },
+    "H11": {
+     "label": "前髪を短く、額を広く",
+     "parts": {
+      "origin": "hair/h11.txt"
+     }
+    },
+    "H12": {
+     "label": "頭頂の房2本を大きく立てる",
+     "parts": {
+      "origin": "hair/h12.txt"
+     }
+    },
+    "H13": {
+     "label": "前髪の束に光を入れる",
+     "parts": {
+      "origin": "hair/h13.txt"
+     }
+    },
+    "H14": {
+     "label": "天使の輪（頭頂の光の帯）",
+     "parts": {
+      "origin": "hair/h14.txt"
+     }
+    },
+    "H15": {
+     "label": "影を広く（暗い前髪を厚く）",
+     "parts": {
+      "origin": "hair/h15.txt"
+     }
     }
    }
   },
@@ -438,9 +558,69 @@
      }
     },
     "C5": {
-     "label": "鉄の喉当てと肩当て",
+     "label": "鉄の喉当てと肩当て（左の肩当てを顎先より下に直した）",
      "parts": {
       "origin": "clothes/c5.txt"
+     }
+    },
+    "C6": {
+     "label": "鎧: 丸い肩当てに光",
+     "parts": {
+      "origin": "clothes/c6.txt"
+     }
+    },
+    "C7": {
+     "label": "鎧: 板を重ねた肩当て",
+     "parts": {
+      "origin": "clothes/c7.txt"
+     }
+    },
+    "C8": {
+     "label": "鎧: 喉当てを高く",
+     "parts": {
+      "origin": "clothes/c8.txt"
+     }
+    },
+    "C9": {
+     "label": "鎧: 下の布を赤",
+     "parts": {
+      "origin": "clothes/c9.txt"
+     }
+    },
+    "C10": {
+     "label": "鎧: 下の布を暗い色（マントの色）",
+     "parts": {
+      "origin": "clothes/c10.txt"
+     }
+    },
+    "C11": {
+     "label": "革の鎧",
+     "parts": {
+      "origin": "clothes/c11.txt"
+     }
+    },
+    "C12": {
+     "label": "鎧: 金の縁取り",
+     "parts": {
+      "origin": "clothes/c12.txt"
+     }
+    },
+    "C13": {
+     "label": "鎧: 背中にマント",
+     "parts": {
+      "origin": "clothes/c13.txt"
+     }
+    },
+    "C14": {
+     "label": "鎧: 胸当てを見せる",
+     "parts": {
+      "origin": "clothes/c14.txt"
+     }
+    },
+    "C15": {
+     "label": "鎧: 肩当てを小さく",
+     "parts": {
+      "origin": "clothes/c15.txt"
      }
     }
    }
