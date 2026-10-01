@@ -15,7 +15,8 @@
 
 - 部品: `pixel-asset-forge/parts/roran_32/`（土台・鼻1案、髪・目・眉・口・服を5案ずつ、バランス5案は `parts.json`）。組み合わせは `tools/compose_face.py`（README 2.12）
 - 2026-10-01 依頼者: 「なかなかいい感じ。この方向で部品を揃えれば様々なユニットが作れそう」。**目だけは納得できていない**ので、目だけを 20〜50 案に増やす（元絵と同じ描き方も試す）。→ 目を40案にした（E6〜E11 元絵ロラン式、E12〜E15 gau 式、E16〜E20 ines 式、E21〜E23 mist 式、E24〜E40 まぶた・瞳の塗り・行数・くぼみの影の組み合わせ）。フリー素材の顔は、roran・gau が元 24px、ines・mist が元 32px（升の中央を取ると崩れのないドット絵に戻る。`.superpowers/sdd/2026-09-30-roran-face/native.py`）
-- 選ぶページ: https://claude.ai/artifact/SVVHbU24h8Fqyepkb3xGLt （非公開。目40案で 125,000 通り。選んだ組み合わせは `H1-E2-B2-M1-P1-C1` の形の記号で受け取る）
+- 2026-10-01 依頼者が目の候補を **E6・E12・E19・E24・E33・E37** の6案に絞った（「また増やすかもしれない」）。番号は40案のときのまま。外した34案の定義は `build_parts.py` に残っている（`EYES_KEEP` に足せば戻る）。既定の目は E6
+- 選ぶページ: https://claude.ai/artifact/SVVHbU24h8Fqyepkb3xGLt （非公開。目6案で 18,750 通り。選んだ組み合わせは `H1-E2-B2-M1-P1-C1` の形の記号で受け取る）
 - 下書きの道具（git 管理外、`.superpowers/sdd/2026-09-30-roran-face/`）: `build_parts.py`（部品のグリッドの下書き。書き出した `.txt` が正）、`view_pick.py`（組み合わせを8倍・2倍・等倍と元絵で並べる）、`picker/make_picker.py`（ページを作り直す。作り直したら `picker/roran-face-picker.html` を同じ URL に出し直す）
 - 依頼者が組み合わせを選んだら、その組み合わせを `assets/face/roran_32.txt` に1枚のグリッドとして書き出して磨き、下の 4. へ進む
 
