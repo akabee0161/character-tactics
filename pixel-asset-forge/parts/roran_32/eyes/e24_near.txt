@@ -1,0 +1,7 @@
+# type: face
+# size: 4x2
+# light: upper-left
+# bg: transparent
+# map: o=outline w=eye_white
+oooo
+wow.

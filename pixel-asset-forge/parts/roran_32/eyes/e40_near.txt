@@ -1,0 +1,9 @@
+# type: face
+# size: 5x4
+# light: upper-left
+# bg: transparent
+# map: c=skin_rose_shadow o=outline w=eye_white
+ccccc
+ooooo
+wooo.
+.oo..
