@@ -4,6 +4,10 @@
     tools/compose_face.py parts/roran_32 --pick H1,E1,B1,M1,P1,C1 --out face.png
     tools/compose_face.py parts/roran_32 --sheet build/compose/   # each element's variants in a row
     tools/compose_face.py parts/roran_32 --json build/compose/parts.json  # placed layers for a picker
+    tools/compose_face.py parts/roran_32 --html build/compose/roran_32.html --ref ref.png  # picker page
+
+How to use it and how to add parts: parts/README.md. ``picker`` in parts.json (title, pick_order,
+matrix, shortlist) only shapes the --html page.
 
 A parts directory holds grid files and ``parts.json``::
 
@@ -32,9 +36,11 @@ hair itself is drawn over them), so it needs a variant of every name ``hair`` ha
 from __future__ import annotations
 
 import argparse
+import base64
 import json
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from html import escape as html_escape
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -87,6 +93,7 @@ class PartSet:
     balance: dict[str, dict]
     elements: dict[str, dict]
     grids: dict[str, Pixels]  # relative path -> pixels
+    picker: dict = field(default_factory=dict)  # settings for the picker page (--html)
 
     def _variant(self, element: str, name: str) -> dict:
         variants = self.elements[element]["variants"]
@@ -184,8 +191,35 @@ def load_set(root: Path, palette: dict | None = None) -> PartSet:
         missing = set(spec["elements"][leader]["variants"]) - set(espec["variants"])
         if missing:
             raise ComposeError(f"{element} follows {leader} but has no variant {', '.join(sorted(missing))}")
-    return PartSet(root, width, height, base, mask, spec["order"], spec["default"],
-                   spec["balance"], spec["elements"], grids)
+    parts = PartSet(root, width, height, base, mask, spec["order"], spec["default"],
+                    spec["balance"], spec["elements"], grids, spec.get("picker", {}))
+    check_picker(parts)
+    return parts
+
+
+def check_picker(parts: PartSet) -> None:
+    """``picker`` names only elements a selection can choose (or ``balance``) and their variants."""
+    choosable = set(parts.chosen()) | {"balance"}
+
+    def variants(element: str) -> dict:
+        return parts.balance if element == "balance" else parts.elements[element]["variants"]
+
+    picker = parts.picker
+    for element in picker.get("pick_order", []):
+        if element not in choosable:
+            raise ComposeError(f"picker.pick_order: {element!r} is not an element a selection chooses")
+    matrix = picker.get("matrix")
+    if matrix:
+        names = [matrix.get(k) for k in ("groups", "rows", "cols")]
+        bad = [n for n in names if n not in choosable]
+        if bad or len(set(names)) != 3:
+            raise ComposeError(f"picker.matrix needs three different chosen elements, got {names} ({bad})")
+    for element, names in picker.get("shortlist", {}).items():
+        if element not in choosable:
+            raise ComposeError(f"picker.shortlist: {element!r} is not an element a selection chooses")
+        missing = [n for n in names if n not in variants(element)]
+        if missing:
+            raise ComposeError(f"picker.shortlist: {element} has no variant {', '.join(missing)}")
 
 
 def parse_pick(parts: PartSet, text: str) -> dict[str, str]:
@@ -258,7 +292,30 @@ def export_json(parts: PartSet, palette: dict) -> dict:
         "balance": {b: d["label"] for b, d in parts.balance.items()},
         "layers": layers,
         "hidden": hidden,
+        "picker": parts.picker,
     }
+
+
+TEMPLATE = Path(__file__).resolve().parent / "face_picker.html"
+
+
+def write_html(parts: PartSet, palette: dict, out: Path, ref: Path | None = None) -> Path:
+    """A self-contained picker page: choose a variant per element and see the face at 8x and in
+    the game's frames, optionally beside a reference image. Open the file in a browser."""
+    # "</" を "<\/" にして、ラベルに何が書かれても <script> を閉じないようにする
+    data = json.dumps(export_json(parts, palette), ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+    ref_uri = ""
+    if ref is not None:
+        try:
+            ref_uri = "data:image/png;base64," + base64.b64encode(ref.read_bytes()).decode()
+        except OSError as exc:
+            raise ComposeError(f"reference image: {exc}") from None
+    title = html_escape(parts.picker.get("title", f"{parts.root.name} の顔の組み合わせ"))
+    html = TEMPLATE.read_text(encoding="utf-8")
+    html = html.replace("__TITLE__", title).replace("__REF__", ref_uri).replace("__DATA__", data)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(html, encoding="utf-8")
+    return out
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -269,6 +326,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--scale", type=int, default=1)
     parser.add_argument("--sheet", type=Path, help="directory for one sheet per element")
     parser.add_argument("--json", type=Path, help="write placed layers for a picker page")
+    parser.add_argument("--html", type=Path, help="write the picker page (open it in a browser)")
+    parser.add_argument("--ref", type=Path, help="reference image shown beside the face on the --html page")
     args = parser.parse_args(argv)
 
     try:
@@ -287,6 +346,8 @@ def main(argv: list[str] | None = None) -> int:
             args.json.parent.mkdir(parents=True, exist_ok=True)
             args.json.write_text(json.dumps(export_json(parts, palette), separators=(",", ":")), encoding="utf-8")
             print(args.json)
+        if args.html:
+            print(write_html(parts, palette, args.html, args.ref))
     except (ComposeError, GridError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1

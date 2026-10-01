@@ -161,6 +161,47 @@ class ComposeTest(unittest.TestCase):
         with self.assertRaisesRegex(compose_face.ComposeError, "shade.*H0"):
             compose_face.load_set(root)
 
+    def _with_picker(self, picker):
+        root = make_set(self.root)
+        spec = json.loads((root / "parts.json").read_text())
+        spec["picker"] = picker
+        (root / "parts.json").write_text(json.dumps(spec))
+        return root
+
+    def test_html_embeds_the_layers_and_the_title(self):
+        root = self._with_picker({"title": "テストの顔", "pick_order": ["hair", "eyes", "balance"],
+                                  "matrix": {"groups": "balance", "rows": "eyes", "cols": "hair"},
+                                  "shortlist": {"hair": ["H1"]}})
+        parts = compose_face.load_set(root)
+        out = self.root / "out" / "picker.html"
+        compose_face.write_html(parts, compose_face.load_palette(), out)
+        html = out.read_text(encoding="utf-8")
+        self.assertNotIn("__DATA__", html)
+        self.assertNotIn("__TITLE__", html)
+        self.assertIn("<title>テストの顔</title>", html)
+        line = next(l for l in html.splitlines() if l.startswith("const DATA = "))
+        data = json.loads(line[len("const DATA = "):].rstrip(";"))
+        self.assertEqual(data["picker"]["shortlist"], {"hair": ["H1"]})
+        self.assertIn("eyes|E1|P2", data["layers"])
+        self.assertIn('const REF = "";', html)
+
+    def test_html_can_carry_a_reference_image(self):
+        parts = compose_face.load_set(make_set(self.root))
+        ref = self.root / "ref.png"
+        compose_face.load_set(self.root).to_image({(0, 0): "outline"}, compose_face.load_palette()).save(ref)
+        out = self.root / "picker.html"
+        compose_face.write_html(parts, compose_face.load_palette(), out, ref=ref)
+        self.assertIn("data:image/png;base64,", out.read_text(encoding="utf-8"))
+
+    def test_a_shortlist_must_name_existing_variants(self):
+        with self.assertRaisesRegex(compose_face.ComposeError, "shortlist.*E9"):
+            compose_face.load_set(self._with_picker({"shortlist": {"eyes": ["E1", "E9"]}}))
+
+    def test_the_matrix_must_name_chosen_elements(self):
+        with self.assertRaisesRegex(compose_face.ComposeError, "matrix.*mouth"):
+            compose_face.load_set(self._with_picker({"matrix": {"groups": "balance", "rows": "eyes",
+                                                                "cols": "mouth"}}))
+
     def test_covered_counts_the_pixels_a_later_layer_hides(self):
         parts = compose_face.load_set(make_set(self.root, eye_anchor=(1, 1)))
         hidden = parts.covered("eyes", "E1", "hair", "H1", "P1")
