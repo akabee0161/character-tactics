@@ -6,9 +6,9 @@
 # map: h=wood_hi w=wood_base s=wood_shadow
 # map: r=roof_hi q=roof_base t=roof_shadow
 ................
-.............o..
-...........ooio.
-..........oijo..
+............oo..
+...........oijo.
+..........oijko.
 .........oijko..
 ........oijko...
 ....o..oijko....
