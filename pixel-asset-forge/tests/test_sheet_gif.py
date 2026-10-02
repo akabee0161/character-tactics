@@ -22,11 +22,14 @@ from gridfile import load_palette  # noqa: E402
 FIXTURES = REPO_ROOT / "tests" / "fixtures"
 
 
-def definition(rows: list[str]) -> Path:
+def definition(rows: list[str], test: unittest.TestCase) -> Path:
+    """シート定義を一時ファイルに書く。テストが失敗しても消えるよう、後始末を test に登録する"""
     handle = tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False, encoding="utf-8")
     handle.write("".join(f"{row}\n" for row in rows))
     handle.close()
-    return Path(handle.name)
+    path = Path(handle.name)
+    test.addCleanup(path.unlink, missing_ok=True)
+    return path
 
 
 # idle は2コマ、walk は3コマ、attack は1コマ。方向ごとに違う絵を置いて、並びを確かめられるようにする
@@ -35,6 +38,14 @@ ROWS = (
     + ["sheet_block sheet_dot sheet_block ."] * 4
     + ["sheet_dot . . ."] * 4
 )
+
+
+class DefinitionHelperTest(unittest.TestCase):
+    def test_temporary_definition_is_removed_after_the_test(self):
+        path = definition(ROWS, self)
+        self.assertTrue(path.exists())
+        self.doCleanups()
+        self.assertFalse(path.exists())
 
 
 class FpsTest(unittest.TestCase):
@@ -57,7 +68,7 @@ class FpsTest(unittest.TestCase):
 class FramesTest(unittest.TestCase):
     def setUp(self):
         palette = load_palette()
-        self.rows = sheet.read_sheet(definition(ROWS))
+        self.rows = sheet.read_sheet(definition(ROWS, self))
         self.frames = sheet.load_frames(self.rows, palette, FIXTURES)
 
     def test_one_gif_frame_per_column_the_state_uses(self):
@@ -104,7 +115,7 @@ def alpha_mask(image: Image.Image, backdrop: tuple[int, int, int, int]) -> list[
 class MainTest(unittest.TestCase):
     def test_writes_one_gif_per_state_for_all(self):
         with tempfile.TemporaryDirectory() as out:
-            path = definition(ROWS)
+            path = definition(ROWS, self)
             code = sheet_gif.main([str(path), "--state", "all", "--unitdir", str(FIXTURES), "-o", out])
             self.assertEqual(code, 0)
             for state, count in (("idle", 2), ("walk", 3), ("attack", 1)):
@@ -116,13 +127,13 @@ class MainTest(unittest.TestCase):
 
     def test_one_state(self):
         with tempfile.TemporaryDirectory() as out:
-            path = definition(ROWS)
+            path = definition(ROWS, self)
             self.assertEqual(sheet_gif.main([str(path), "--state", "walk", "--unitdir", str(FIXTURES), "-o", out]), 0)
             self.assertEqual(sorted(p.name for p in Path(out).iterdir()), [f"{path.stem}_walk.gif"])
 
     def test_bad_scale_is_rejected(self):
         with self.assertRaises(SystemExit):
-            sheet_gif.main([str(definition(ROWS)), "--scale", "0", "--unitdir", str(FIXTURES)])
+            sheet_gif.main([str(definition(ROWS, self)), "--scale", "0", "--unitdir", str(FIXTURES)])
 
 
 if __name__ == "__main__":
