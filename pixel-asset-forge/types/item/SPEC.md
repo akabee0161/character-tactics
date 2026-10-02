@@ -30,7 +30,7 @@
 | 羽根（青） | `water_hi` / `water_base` / `water_shadow` | `bow` の矢羽根 |
 
 この割り当ては設計時に依頼者が決めた（ロランのユニットの剣の刃も `stone_*`）。
-`ISSUES.md` の「剣が `stone_*`、盾が `metal_*` で命名と見た目が合っていない」は残っている（ユニット側の整理は issue #23 の4番目以降）。
+`ISSUES.md` の「剣が `stone_*`、盾が `metal_*` で命名と見た目が合っていない」は残っている（整理は character-tactics の `feat/roran-face` のマージ後に、独立した作業として行う。2026-10-02 依頼者の判断）。
 
 実測した色数: `chest` 8、`sword` 10、`bow` 10（`outline` を含む）。
 

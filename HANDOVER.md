@@ -13,6 +13,8 @@
 
 - ブランチ全体の最終レビュー → 依頼者の指示で push・PR
 - issue #23 の残り: 1番目（顔グラ、依頼者が作業中）→ 4番目（剣や弓の単独のアセットを元にユニットの持ち物へ反映する。装備を差し替える仕組みではない。画素の写しではなく形と色の特徴を揃える）→ 5番目（ほかのユニット）
+- 4番目はブランチ `feat/roran-sword-from-icon`（main `4e89995` から分岐）で、spec は `docs/superpowers/specs/2026-10-02-roran-sword-from-icon-design.md`。鍔を木・柄頭を赤い宝石にし、尖った切っ先は試して採否を決める。弓は5番目でイネスを描くときに試す
+- **色の命名の整理（`pixel-asset-forge/ISSUES.md` の「剣が `stone_*`、盾が `metal_*`」）は、`feat/roran-face` のマージ後に独立した作業として行う。** 5番目はこれを待たない（依頼者の判断、2026-10-02）
 - 今回の範囲外として残したもの: `sprites.json` への記載、ゲームの役割アイコン（`role-tate.png`・`role-yumi.png`）の差し替えと 32px 表示のレイアウト修正
 - **マージのとき**: パレット（`pixel-asset-forge/palette/master.json`）は変えていない（`git diff main -- pixel-asset-forge/palette` は空）。`feat/roran-face` とはこの `HANDOVER.md` がぶつかるので、両方の内容を残して直す
 - `contact_sheet.py` での「型をまたいだ絵柄のずれ」の確認は、ユニットについては5番目でほかのユニットを描くときに行う（依頼者の指摘、2026-10-02）
