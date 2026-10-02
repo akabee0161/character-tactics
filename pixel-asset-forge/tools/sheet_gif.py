@@ -52,9 +52,13 @@ def parse_fps(specs: list[str]) -> dict[str, float]:
             number = float(value)
         except ValueError:
             raise SystemExit(f"error: --fps {spec!r}: {value!r} is not a number") from None
-        # nan は表示時間の計算で ValueError、inf は 0ms になる
-        if not math.isfinite(number) or number <= 0:
-            raise SystemExit(f"error: --fps {spec!r}: fps must be a finite number greater than 0")
+        # nan は表示時間の計算で ValueError、inf と 200fps を超える値は 0ms になる
+        # （0ms の GIF はビューアーによって再生のされ方が変わる）
+        if not math.isfinite(number) or number <= 0 or duration_ms(number) == 0:
+            raise SystemExit(
+                f"error: --fps {spec!r}: fps must be finite, greater than 0, "
+                "and representable with a 10ms GIF duration (200 or less)"
+            )
         fps[state] = number
     return fps
 

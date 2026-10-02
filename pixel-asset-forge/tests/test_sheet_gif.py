@@ -66,10 +66,15 @@ class FpsTest(unittest.TestCase):
             sheet_gif.parse_fps(["run=8"])
 
     def test_zero_or_garbage_is_rejected(self):
-        # nan は表示時間の計算で ValueError、inf は 0ms になるので、有限の正数だけを受け付ける
-        for spec in ("idle=0", "idle=-1", "idle=fast", "idle", "idle=nan", "idle=inf"):
+        # nan は表示時間の計算で ValueError、inf と 200fps を超える値は 0ms になるので受け付けない
+        for spec in ("idle=0", "idle=-1", "idle=fast", "idle", "idle=nan", "idle=inf", "idle=201"):
             with self.subTest(spec=spec), self.assertRaises(SystemExit):
                 sheet_gif.parse_fps([spec])
+
+    def test_fastest_fps_that_still_has_a_frame_time(self):
+        # 200fps は 10ms で表せる
+        self.assertEqual(sheet_gif.parse_fps(["idle=200"])["idle"], 200.0)
+        self.assertEqual(sheet_gif.duration_ms(200.0), 10)
 
 
 class FramesTest(unittest.TestCase):
