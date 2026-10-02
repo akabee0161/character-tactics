@@ -67,7 +67,10 @@ class FpsTest(unittest.TestCase):
 
     def test_zero_or_garbage_is_rejected(self):
         # nan は表示時間の計算で ValueError、inf と 200fps を超える値は 0ms になるので受け付けない
-        for spec in ("idle=0", "idle=-1", "idle=fast", "idle", "idle=nan", "idle=inf", "idle=201"):
+        # 遅すぎる値は GIF の1コマの上限（65535 x 1/100秒）を超えて Pillow が struct.error で止まり、
+        # 1e-308 は表示時間の計算で OverflowError になる
+        for spec in ("idle=0", "idle=-1", "idle=fast", "idle", "idle=nan", "idle=inf", "idle=201",
+                     "idle=0.0015", "idle=1e-308"):
             with self.subTest(spec=spec), self.assertRaises(SystemExit):
                 sheet_gif.parse_fps([spec])
 
@@ -75,6 +78,11 @@ class FpsTest(unittest.TestCase):
         # 200fps は 10ms で表せる
         self.assertEqual(sheet_gif.parse_fps(["idle=200"])["idle"], 200.0)
         self.assertEqual(sheet_gif.duration_ms(200.0), 10)
+
+    def test_slowest_fps_that_fits_in_a_gif_frame(self):
+        # 0.0016fps は 625,000ms で、GIF の上限 655,350ms に収まる
+        self.assertEqual(sheet_gif.parse_fps(["idle=0.0016"])["idle"], 0.0016)
+        self.assertLessEqual(sheet_gif.duration_ms(0.0016), sheet_gif.MAX_DURATION_MS)
 
 
 class FramesTest(unittest.TestCase):

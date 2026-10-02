@@ -39,6 +39,9 @@ DEFAULT_FPS = {"idle": 4.0, "walk": 8.0, "attack": 6.0}
 BACKDROP = sheet.BACKDROP
 GRASS_KEY = "grass_base"
 PAD = 8
+# GIF の1コマの表示時間は 1/100 秒単位の 16bit（0〜65535）。0 はビューアーによって扱いが変わるので使わない
+MIN_DURATION_MS = 10
+MAX_DURATION_MS = 65535 * 10
 
 
 def parse_fps(specs: list[str]) -> dict[str, float]:
@@ -52,12 +55,19 @@ def parse_fps(specs: list[str]) -> dict[str, float]:
             number = float(value)
         except ValueError:
             raise SystemExit(f"error: --fps {spec!r}: {value!r} is not a number") from None
-        # nan は表示時間の計算で ValueError、inf と 200fps を超える値は 0ms になる
-        # （0ms の GIF はビューアーによって再生のされ方が変わる）
-        if not math.isfinite(number) or number <= 0 or duration_ms(number) == 0:
+        # 1コマの表示時間が GIF に書ける範囲（10ms〜655,350ms）に入る値だけを受け付ける。
+        # nan は表示時間の計算で ValueError、inf と 200fps を超える値は 0ms（ビューアーによって再生が変わる）、
+        # 遅すぎる値は上限を超えて Pillow が struct.error で止まり、1e-308 のような値は OverflowError になる
+        valid = math.isfinite(number) and number > 0
+        if valid:
+            try:
+                valid = MIN_DURATION_MS <= duration_ms(number) <= MAX_DURATION_MS
+            except OverflowError:
+                valid = False
+        if not valid:
             raise SystemExit(
-                f"error: --fps {spec!r}: fps must be finite, greater than 0, "
-                "and representable with a 10ms GIF duration (200 or less)"
+                f"error: --fps {spec!r}: fps must give a GIF frame time of "
+                f"{MIN_DURATION_MS}ms to {MAX_DURATION_MS}ms (about 0.0016 to 200)"
             )
         fps[state] = number
     return fps
