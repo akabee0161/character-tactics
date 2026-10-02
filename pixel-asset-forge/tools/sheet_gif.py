@@ -23,6 +23,7 @@ reads in one frame can still look wrong when the three attack frames play.
 from __future__ import annotations
 
 import argparse
+import math
 import sys
 from pathlib import Path
 
@@ -51,8 +52,9 @@ def parse_fps(specs: list[str]) -> dict[str, float]:
             number = float(value)
         except ValueError:
             raise SystemExit(f"error: --fps {spec!r}: {value!r} is not a number") from None
-        if number <= 0:
-            raise SystemExit(f"error: --fps {spec!r}: fps must be greater than 0")
+        # nan は表示時間の計算で ValueError、inf は 0ms になる
+        if not math.isfinite(number) or number <= 0:
+            raise SystemExit(f"error: --fps {spec!r}: fps must be a finite number greater than 0")
         fps[state] = number
     return fps
 
@@ -64,8 +66,9 @@ def duration_ms(fps: float) -> int:
     return int(1000 / fps / 10 + 0.5) * 10
 
 
-def cell_origin(direction: int, scale: int, frame: int = 0) -> tuple[int, int]:
-    """Top-left of the enlarged cell for a direction (0=down .. 3=right)."""
+def cell_origin(direction: int, scale: int, frame: int) -> tuple[int, int]:
+    """Top-left of the enlarged cell for a direction (0=down .. 3=right).
+    `frame` is required: with a default of 0 every direction landed on direction 0."""
     cell = frame * scale
     return PAD + direction * (cell + PAD), PAD
 
