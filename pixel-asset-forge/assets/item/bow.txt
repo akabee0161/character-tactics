@@ -1,0 +1,23 @@
+# type: item
+# size: 16x16
+# light: upper-left
+# bg: transparent
+# map: o=outline i=stone_hi j=stone_base k=stone_shadow
+# map: h=wood_hi w=wood_base s=wood_shadow
+# map: u=water_hi v=water_base y=water_shadow
+................
+..oooo.....ooo..
+.owwhhoo..oiijo.
+..ojwwwho..ojko.
+...ojoowwoosoko.
+....ojoowwso.o..
+.....ojooswo....
+......ojsoswo...
+......osjooswo..
+....oosoojoowo..
+..oovso..ojoswo.
+.ouvsvo...ojswo.
+.ovsvo.....ojwo.
+.osvyo......owo.
+..ooo........o..
+................
