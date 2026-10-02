@@ -15,6 +15,7 @@ forge 本体も並行して開発が続く。forge の改善をこちらへ取�
 - `tools/export.py`: 書き出し先がシンボリックリンクなら止める（`copyfile` がリンクをたどってフォルダの外を上書きしないように）。`build/` を消せないときは描き直す前に `FAIL` で止める（残った古い PNG を書き出さないように）。テストは `tests/test_export.py` に2件（character-tactics の PR の CodeRabbit の指摘、2026-09-30）
 - `tools/sheet_gif.py`（新規）: unit のシート定義から状態ごとの GIF（4方向を横並び、拡大と等倍）を作る。静止画のシートでは攻撃の動きの違和感が分からなかったため（依頼者の要望、2026-10-01）。テストは `tests/test_sheet_gif.py`。README 2.7・CLAUDE.md に案内
 - `ISSUES.md`: 「行の長さがそろわないグリッドを回転すると `IndexError` で止まる」（`gridfile.py`）の課題を足した
+- `types/item/SPEC.md`（新規）と `assets/item/sword.txt`・`bow.txt`（新規）: item 型の規約が無く、剣・弓のアイコンを描くのに合わせて実測値から規約を作った（向きは右上が先端の45°、形は軸について対称、素材ごとの色の割り当て）。`README.md` の表と `ISSUES.md` の該当行も直した（character-tactics の issue #23 の3番目、2026-10-02）
 - `ISSUES.md`: 「アセットのテキストとビルドをゲームリポジトリへ移設する」「タイルの受け渡し方が未定」の2行を消した（移設が済んだため。pixel-asset-forge の移設の issue は 2026-09-30 に閉じた）
 
 ## forge から持ってきたもの
