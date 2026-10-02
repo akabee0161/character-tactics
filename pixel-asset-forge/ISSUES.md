@@ -36,6 +36,7 @@
 | **同じ処理が4本のツールに重複** | 「パレット読み込み → 対象収集 → 読み込み → 検査 → FAIL 表示」が `validate` / `render` / `check_colors` / `contact_sheet` にある。「読み込み＋検査＋画像化」も `tilemap.load_tile` と `sheet.load_frame` に重複 | 中 | 2026-09-23 |
 | **ツール同士が互いの本体から関数を借りている** | `render` / `check_colors` / `contact_sheet` が `collect` / `default_targets` を `validate.py` から、`sheet.py` が `read_layout` を `tilemap.py` から import している。共通部分は `gridfile.py` に置くのが自然 | 小 | 2026-09-23 |
 | **共有関数が `SystemExit` を投げる** | `tilemap.read_layout` は `sheet.py` と `sets.py` からも呼ばれるのに、エラー時に `SystemExit` で終了する。`sets.py` は `SystemExit` を定義ごとに受け止めて失敗として数えている（2026-09-29、PR #7 の CodeRabbit の指摘）。`load_tile` は型注釈が `str` なのに `Path` も受け付けている | 小 | 2026-09-23 |
+| **テストが一時ファイルを /tmp に残す** | `test_check_colors` / `test_probe_colors` / `test_sheet` / `test_tilemap` / `test_tools` の一時ファイルを作る関数が `NamedTemporaryFile(delete=False)` で作ったまま消さない。2026-10-02 時点でこの端末の /tmp に `tmp*.txt` が約3900個あった。`test_sheet_gif` は `addCleanup` で消すように直した（character-tactics の PR #24 の CodeRabbit の指摘）。同じ形に揃えれば直る | 小 | 2026-10-02 |
 | **パレットを差し替えられない** | `palette/master.json` のパスが `tools/gridfile.py` で固定で、別のパレットを渡すオプションがどのツールにも無い。2Pカラーのような色違いを作るなら `--palette` が要る。必要になるまで作らない | 小 | 2026-09-23 |
 
 ## アセット・構成
