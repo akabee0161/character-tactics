@@ -194,7 +194,7 @@ Expected: すべて ok / `0 failed`。`build/item/sword.png` と `sword_x8.png` 
 - [ ] **Step 4: Commit**
 
 ```
-git add pixel-asset-forge/assets/item/sword.txt
+(cd .. && git add pixel-asset-forge/assets/item/sword.txt)
 git commit -m "feat: item 型の剣（16px、斜め置き）を描く"
 ```
 （`git status` で、`sword.txt` 以外が入っていないことを確かめてから）
@@ -287,7 +287,7 @@ Expected: すべて ok / `0 failed`。`<矢の範囲>` は Task 3 で使った�
 - [ ] **Step 4: Commit**
 
 ```
-git add pixel-asset-forge/assets/item/bow.txt
+(cd .. && git add pixel-asset-forge/assets/item/bow.txt)
 git commit -m "feat: item 型の弓（16px、矢つき・斜め置き）を描く"
 ```
 
@@ -337,7 +337,7 @@ Expected: `validate.py` は全件 ok。unittest は forge の既存の合格数�
 - [ ] **Step 5: Commit**
 
 ```
-git add pixel-asset-forge/types/item/SPEC.md pixel-asset-forge/README.md pixel-asset-forge/ISSUES.md pixel-asset-forge/UPSTREAM.md
+(cd .. && git add pixel-asset-forge/types/item/SPEC.md pixel-asset-forge/README.md pixel-asset-forge/ISSUES.md pixel-asset-forge/UPSTREAM.md)
 git commit -m "docs: item 型の規約（SPEC.md）を作る"
 ```
 
@@ -353,7 +353,7 @@ Run:
 .venv/bin/python tools/validate.py
 .venv/bin/python tools/check_colors.py | tail -3
 .venv/bin/python tools/contact_sheet.py assets/item --scale 8 --columns 3 -o build/item_sheet.png
-git diff main --stat -- pixel-asset-forge/palette
+(cd .. && git diff main --stat -- pixel-asset-forge/palette)
 ```
 Expected: `validate.py` 全件 ok。`check_colors.py` は既存の `knight` 1件の失敗のみ（ISSUES.md に記録済み）で、item の失敗なし。`palette` の差分は空。Read で `build/item_sheet.png` を見せる（chest・sword・bow を並べて輪郭の太さ・光源のずれを確かめる）。
 
@@ -364,7 +364,7 @@ Expected: `validate.py` 全件 ok。`check_colors.py` は既存の `knight` 1件
 - [ ] **Step 3: Commit**
 
 ```
-git add HANDOVER.md
+(cd .. && git add HANDOVER.md)
 git commit -m "docs: HANDOVER.md を issue #23 の3番目の時点に更新する"
 ```
 
