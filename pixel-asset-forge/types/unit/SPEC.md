@@ -2,7 +2,7 @@
 
 タイル上を動くキャラクターのスプライトシート。
 [character-tactics](https://github.com/akabee0161/character-tactics) のマップスプライトに
-差し込む前提。絵柄は本文ではなく手本（`assets/unit/roran/`）で揃えること。以下は機械的な規約のみを書く。
+差し込む前提。絵柄は本文ではなく手本（`assets/unit/roran/`、弓のユニットは `assets/unit/ines/`）で揃えること。以下は機械的な規約のみを書く。
 
 設計の経緯は `docs/2026-09-20-unit-sprite-sheet-spec.md`、
 ロラン1体で測った実測は `docs/2026-09-23-findings.md`、
@@ -29,7 +29,7 @@ assets/unit/<unit>/<frame>.txt    コマの本体
 sheets/<unit>.txt                 シート定義（どのコマをどこに置くか）
 build/sheets/<unit>.png           ゲームに渡すシート
 build/sheets/<unit>_preview.png   目視用のプレビュー
-types/unit/base/<body>_<dir>.txt  素体（装備・髪・顔の造作なし）。新しい unit を複製して作る土台
+types/unit/base/<body>_<dir>.txt  素体（装備・髪・顔の造作なし）。`male_*`・`female_*`。新しい unit を複製して作る土台
 ```
 
 **シート定義を `assets/` の下に置いてはいけない。** `validate.py` と `render.py` は
@@ -163,4 +163,4 @@ types/unit/base/<body>_<dir>.txt  素体（装備・髪・顔の造作なし）�
 - **許す最小の線幅** — 0.796倍表示で1pxの刃が消えた。`unit` を増やす前に決めたい。
   ただし 0.796倍はゲーム側で修正予定の経過的な課題で、いずれ縮小されなくなる
 - **フレームサイズ** — `garum` はゲーム側で `frame=48`。32px 固定のままでよいか再検討が要る
-- **アセットあたりの色数上限** — 未定。ロランは15〜21色（issue #23 の4番目で鍔を木・柄頭を赤にした後、2026-10-03 実測。`wood_base` は鍔とベルトで2文字に割り当てているので、文字の種類ではなく描いた色で数える）
+- **アセットあたりの色数上限** — 未定。ロランは15〜21色（issue #23 の4番目で鍔を木・柄頭を赤にした後、2026-10-03 実測。`wood_base` は鍔とベルトで2文字に割り当てているので、文字の種類ではなく描いた色で数える）。イネスは13〜16色（issue #23 の5番目、2026-10-03 実測。矢の軸・弓の暗い面・ズボンの `wood_shadow` は1色に数える）
