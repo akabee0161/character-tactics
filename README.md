@@ -141,6 +141,16 @@ pixel-asset-forge/.venv/bin/python pixel-asset-forge/tools/export.py sprites.jso
 
 エンジン・規約・道具を直したら、`pixel-asset-forge/.venv/bin/python -m unittest discover -s pixel-asset-forge/tests` を通し、`UPSTREAM.md` の「forge に戻す候補」に1行足す。
 
+### ユニットの動きをページで見る
+
+マップスプライトのアニメーションは、ゲームを動かさなくても、次のコマンドで作るページで見られる。待機・歩き・攻撃を4方向ずつ、ユニットの JSON と同じ fps で再生する（拡大と等倍・2倍、止める・1コマ送る、速さ、背景、足元の線 y=30）。
+
+```sh
+python3 tools/anim-page.py assets/units/roran.json out/anim/roran.html
+```
+
+シートは `assets/images/` に書き出した PNG を読むので、`export.py` の後に作る。ページは画像を埋め込んだ HTML 1枚で、ブラウザでそのまま開ける。依頼者に見せるときは、この HTML を Artifact として公開する。ひな形は `tools/anim-page.html`。
+
 ## コンテンツの足しかた
 
 コードを書き換えずに足せるもの:
