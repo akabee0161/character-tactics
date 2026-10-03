@@ -1,18 +1,17 @@
 # Session Handover
-## Generated: 2026-10-03（issue #23 の4番目を実装した時点）
+## Generated: 2026-10-03（issue #23 の5番目に着手した時点）
 
 ## Current State
 
-- **Branch**: `feat/roran-sword-from-icon`（main `4e89995` = PR #25 のマージから分岐、push していない・PR なし）。issue #23（ロランのアセット修正）の4番目「剣や弓の単独のアセットを元に、ユニットの持ち物へ反映する」。実装は済み、最終レビューの前
-- 3番目（剣・弓のアイコン）は PR #25、2番目（顔グラを入力にしたユニット）は PR #24 でマージ済み
+- **Branch**: `feat/ines-unit-bow`（main `9e7b421` = PR #26 のマージから分岐、push していない・PR なし）。issue #23（ロランのアセット修正）の5番目「ほかのユニット」。brainstorming 中（spec・計画はまだ無い）
+- 4番目（アイコンの剣の特徴をロランの剣へ）は PR #26、3番目（剣・弓のアイコン）は PR #25、2番目（顔グラを入力にしたユニット）は PR #24 でマージ済み
 - issue #23 の1番目（顔グラ）はブランチ `feat/roran-face` で依頼者が `assets/face/roran_32.txt` を手で直している途中。このブランチは触らない（最新の経緯は `git show origin/feat/roran-face:HANDOVER.md`）
-- 設計は `docs/superpowers/specs/2026-10-02-roran-sword-from-icon-design.md`、計画は `docs/superpowers/plans/2026-10-02-roran-sword-from-icon.md`
-- 進捗台帳: `.superpowers/sdd/2026-10-02-roran-sword-from-icon/progress.md`（git 管理外。途中の判断は `Ruling:` 行）
+- 4番目の設計は `docs/superpowers/specs/2026-10-02-roran-sword-from-icon-design.md`、計画は `docs/superpowers/plans/2026-10-02-roran-sword-from-icon.md`、進捗台帳は `.superpowers/sdd/2026-10-02-roran-sword-from-icon/progress.md`（git 管理外。最終レビューで後回しにした Minor は `minor (deferred)` 行）
 
 ## What Remains
 
-- ブランチ全体の最終レビュー → 依頼者の指示で push・PR
-- issue #23 の残り: 1番目（顔グラ、依頼者が作業中）→ 5番目（ほかのユニット）。5番目ではイネスを forge のユニットとして描き、`item/bow.txt` を元に弓をイネスの持ち物として上手く描けるかを試す（依頼者の判断、2026-10-02）
+- issue #23 の残り: 1番目（顔グラ、依頼者が作業中）と5番目（ほかのユニット、このブランチ）。5番目ではイネスを forge のユニットとして描き、`item/bow.txt` を元に弓をイネスの持ち物として上手く描けるかを試す（依頼者の判断、2026-10-02）
+- 4番目の最終レビューで後回しにした Minor: `anim-page.py` のエラー処理の一部、足元の線が 32px 前提、`unit/SPEC.md` の柄頭の記述に `left_atk_hit` の例外が無い
 - **色の命名の整理（`pixel-asset-forge/ISSUES.md` の「剣が `stone_*`、盾が `metal_*`」）は、`feat/roran-face` のマージ後に独立した作業として行う。** 5番目はこれを待たない（依頼者の判断、2026-10-02）
 - 今回の範囲外として残したもの: `sprites.json` への記載、ゲームの役割アイコン（`role-tate.png`・`role-yumi.png`）の差し替えと 32px 表示のレイアウト修正
 - **マージのとき**: パレット（`pixel-asset-forge/palette/master.json`）は変えていない（`git diff main -- pixel-asset-forge/palette` は空）。`feat/roran-face` とはこの `HANDOVER.md` がぶつかるので、両方の内容を残して直す
