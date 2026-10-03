@@ -36,7 +36,10 @@ def main() -> int:
     except KeyError as e:
         print(f"{unit_path}: sprites.map に {e} が無い", file=sys.stderr)
         return 1
-    sheet = IMAGES / m["sheet"]
+    sheet = (IMAGES / m["sheet"]).resolve()
+    if not sheet.is_relative_to(IMAGES.resolve()):
+        print(f"{unit_path}: sprites.map.sheet {m['sheet']!r} は {IMAGES}/ の中のファイルにする", file=sys.stderr)
+        return 1
     for path in (sheet, IMAGES / "tile-plain.png"):
         if not path.is_file():
             print(f"{path} が無い（リポジトリの直下で実行する）", file=sys.stderr)
@@ -50,7 +53,9 @@ def main() -> int:
         "grass": data_uri(IMAGES / "tile-plain.png"),
         "sheetName": m["sheet"],
     }
-    html = TEMPLATE.read_text(encoding="utf-8").replace("/*CONFIG*/null", json.dumps(config, ensure_ascii=False))
+    # 値に "</script>" があっても script 要素が途中で閉じないよう、"<" をエスケープして埋め込む
+    payload = json.dumps(config, ensure_ascii=False).replace("<", "\\u003c")
+    html = TEMPLATE.read_text(encoding="utf-8").replace("/*CONFIG*/null", payload)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(html, encoding="utf-8")
     print(out_path)

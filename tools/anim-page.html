@@ -143,14 +143,20 @@
 <script>
 const CONFIG = /*CONFIG*/null;
 const F = CONFIG.frame;
-const state = { playing: true, zoom: 6, speed: 1, bg: "grass", foot: false };
+// 動きを減らす設定のときは、止めた状態で開く（「再生」で動かせる）
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const state = { playing: !reduceMotion, zoom: 6, speed: 1, bg: "grass", foot: false };
 const timers = CONFIG.states.map(() => ({ acc: 0, index: 0 }));
 const cells = [];
 
 document.title = `${CONFIG.name}の動き`;
 document.getElementById("title").textContent = document.title;
-document.getElementById("sub").innerHTML =
-  `シート <code>${CONFIG.sheetName}</code>（1コマ ${F}px）。行は「状態 × 4方向」で、ゲームと同じ fps で再生する。`;
+{
+  const sub = document.getElementById("sub");
+  const code = document.createElement("code");
+  code.textContent = CONFIG.sheetName;
+  sub.append("シート ", code, `（1コマ ${F}px）。行は「状態 × 4方向」で、ゲームと同じ fps で再生する。`);
+}
 document.getElementById("foot-note").textContent =
   "大きい絵は拡大、右の小さい絵は等倍と2倍。止めているときは「1コマ送る」で全部のマスが1コマずつ進む。";
 
@@ -179,7 +185,9 @@ function build() {
     const sec = document.createElement("section");
     sec.className = "state";
     const h = document.createElement("h2");
-    h.innerHTML = `${st.label}<small>${st.frames}コマ ・ ${st.fps}fps</small>`;
+    const meta = document.createElement("small");
+    meta.textContent = `${st.frames}コマ ・ ${st.fps}fps`;
+    h.append(st.label, meta);
     sec.appendChild(h);
     const row = document.createElement("div");
     row.className = "row";
@@ -276,6 +284,7 @@ function radio(id, key, parse) {
 }
 
 const playBtn = document.getElementById("play");
+playBtn.textContent = state.playing ? "止める" : "再生";
 playBtn.addEventListener("click", () => {
   state.playing = !state.playing;
   playBtn.textContent = state.playing ? "止める" : "再生";
