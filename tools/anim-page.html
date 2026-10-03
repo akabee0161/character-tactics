@@ -1,0 +1,318 @@
+<meta charset="utf-8">
+<title>ユニットの動き</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=M+PLUS+1p:wght@400;700&display=swap">
+<style>
+  :root {
+    color-scheme: dark;
+    --ground: #171b27;
+    --panel: #20263a;
+    --line: #343c57;
+    --ink: #e9e6dc;
+    --muted: #9aa0b8;
+    --gold: #e2b54a;
+    --gold-ink: #1b1608;
+    --foot: #e0524a;
+  }
+  html, body { background: var(--ground); color: var(--ink); }
+  body {
+    font-family: "M PLUS 1p", "Hiragino Sans", "Noto Sans JP", sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    padding-inline: 16px;
+    padding-block: 20px 40px;
+  }
+  .wrap { max-width: 1180px; margin-inline: auto; display: grid; gap: 18px; }
+  header { display: grid; gap: 4px; }
+  h1 {
+    font-family: "DotGothic16", "M PLUS 1p", monospace;
+    font-weight: 400;
+    font-size: 28px;
+    letter-spacing: 0.04em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .sub { color: var(--muted); margin: 0; }
+  .sub code { font-family: ui-monospace, "SFMono-Regular", Menlo, monospace; font-size: 12px; color: var(--ink); }
+
+  .bar {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 2;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 18px;
+    padding: 10px 12px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+  }
+  .group { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .group > .label { color: var(--muted); font-size: 12px; letter-spacing: 0.06em; }
+  button, .seg label {
+    font: inherit;
+    color: var(--ink);
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 4px 10px;
+    cursor: pointer;
+  }
+  button:hover, .seg label:hover { border-color: var(--muted); }
+  button:focus-visible, .seg input:focus-visible + label, input[type=checkbox]:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
+  button.primary { background: var(--gold); color: var(--gold-ink); border-color: var(--gold); font-weight: 700; min-width: 5.5em; }
+  .seg { display: flex; gap: 0; }
+  .seg input { position: absolute; opacity: 0; pointer-events: none; }
+  .seg label { border-radius: 0; margin-left: -1px; }
+  .seg label:first-of-type { border-radius: 4px 0 0 4px; margin-left: 0; }
+  .seg label:last-of-type { border-radius: 0 4px 4px 0; }
+  .seg input:checked + label { background: var(--ink); color: var(--ground); border-color: var(--ink); }
+  .check { display: flex; align-items: center; gap: 6px; color: var(--ink); cursor: pointer; }
+
+  .grid { display: grid; gap: 22px; }
+  .state { display: grid; gap: 8px; }
+  .state h2 {
+    font-family: "DotGothic16", "M PLUS 1p", monospace;
+    font-weight: 400;
+    font-size: 18px;
+    margin: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .state h2 small { font-family: "M PLUS 1p", sans-serif; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .row { display: flex; flex-wrap: wrap; gap: 14px; }
+  .cell { display: grid; gap: 6px; }
+  .cell .views { display: flex; align-items: flex-end; gap: 8px; }
+  .cell .small { display: grid; gap: 6px; justify-items: start; }
+  canvas { image-rendering: pixelated; display: block; max-width: 100%; border: 1px solid var(--line); }
+  .cap { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .cap b { color: var(--ink); font-weight: 400; }
+  footer { color: var(--muted); font-size: 12px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1 id="title">ロランの動き</h1>
+    <p class="sub" id="sub"></p>
+  </header>
+
+  <div class="bar" role="toolbar" aria-label="再生の操作">
+    <div class="group">
+      <button class="primary" id="play" type="button">止める</button>
+      <button id="step" type="button" title="止めているときに1コマ進める">1コマ送る</button>
+    </div>
+    <div class="group">
+      <span class="label">拡大</span>
+      <div class="seg" id="zoom">
+        <input type="radio" name="zoom" id="z4" value="4"><label for="z4">4倍</label>
+        <input type="radio" name="zoom" id="z6" value="6" checked><label for="z6">6倍</label>
+        <input type="radio" name="zoom" id="z8" value="8"><label for="z8">8倍</label>
+      </div>
+    </div>
+    <div class="group">
+      <span class="label">速さ</span>
+      <div class="seg" id="speed">
+        <input type="radio" name="speed" id="s1" value="1" checked><label for="s1">ゲームと同じ</label>
+        <input type="radio" name="speed" id="s05" value="0.5"><label for="s05">1/2</label>
+        <input type="radio" name="speed" id="s025" value="0.25"><label for="s025">1/4</label>
+      </div>
+    </div>
+    <div class="group">
+      <span class="label">背景</span>
+      <div class="seg" id="bg">
+        <input type="radio" name="bg" id="bgGrass" value="grass" checked><label for="bgGrass">草</label>
+        <input type="radio" name="bg" id="bgDark" value="dark"><label for="bgDark">暗い</label>
+        <input type="radio" name="bg" id="bgCheck" value="check"><label for="bgCheck">市松</label>
+      </div>
+    </div>
+    <label class="check"><input type="checkbox" id="foot"> 足元の線（y=30）</label>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <footer id="foot-note"></footer>
+</div>
+
+<script>
+const CONFIG = /*CONFIG*/null;
+const F = CONFIG.frame;
+// 動きを減らす設定のときは、止めた状態で開く（「再生」で動かせる）
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const state = { playing: !reduceMotion, zoom: 6, speed: 1, bg: "grass", foot: false };
+const timers = CONFIG.states.map(() => ({ acc: 0, index: 0 }));
+const cells = [];
+
+document.title = `${CONFIG.name}の動き`;
+document.getElementById("title").textContent = document.title;
+{
+  const sub = document.getElementById("sub");
+  const code = document.createElement("code");
+  code.textContent = CONFIG.sheetName;
+  sub.append("シート ", code, `（1コマ ${F}px）。行は「状態 × 4方向」で、ゲームと同じ fps で再生する。`);
+}
+document.getElementById("foot-note").textContent =
+  "大きい絵は拡大、右の小さい絵は等倍と2倍。止めているときは「1コマ送る」で全部のマスが1コマずつ進む。";
+
+function load(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+function makeCanvas(scale) {
+  const c = document.createElement("canvas");
+  c.width = F * scale;
+  c.height = F * scale;
+  c.style.width = `${F * scale}px`;
+  return c;
+}
+
+function build() {
+  const grid = document.getElementById("grid");
+  grid.textContent = "";
+  cells.length = 0;
+  CONFIG.states.forEach((st, si) => {
+    const sec = document.createElement("section");
+    sec.className = "state";
+    const h = document.createElement("h2");
+    const meta = document.createElement("small");
+    meta.textContent = `${st.frames}コマ ・ ${st.fps}fps`;
+    h.append(st.label, meta);
+    sec.appendChild(h);
+    const row = document.createElement("div");
+    row.className = "row";
+    CONFIG.dirs.forEach((dir, di) => {
+      const cell = document.createElement("div");
+      cell.className = "cell";
+      const views = document.createElement("div");
+      views.className = "views";
+      const big = makeCanvas(state.zoom);
+      const small = document.createElement("div");
+      small.className = "small";
+      const x1 = makeCanvas(1);
+      const x2 = makeCanvas(2);
+      small.append(x1, x2);
+      views.append(big, small);
+      const cap = document.createElement("div");
+      cap.className = "cap";
+      const name = document.createElement("span");
+      name.textContent = dir;
+      const counter = document.createElement("b");
+      cap.append(name, counter);
+      cell.append(views, cap);
+      row.appendChild(cell);
+      cells.push({ si, di, canvases: [[big, state.zoom], [x1, 1], [x2, 2]], counter });
+    });
+    sec.appendChild(row);
+    grid.appendChild(sec);
+  });
+}
+
+let sheet, grassTile;
+
+function paintBackground(ctx, scale) {
+  const w = F * scale;
+  if (state.bg === "dark") {
+    ctx.fillStyle = "#11141d";
+    ctx.fillRect(0, 0, w, w);
+  } else if (state.bg === "check") {
+    const s = 4 * scale;
+    for (let y = 0; y < w; y += s) for (let x = 0; x < w; x += s) {
+      ctx.fillStyle = ((x + y) / s) % 2 ? "#3a3f50" : "#2c3040";
+      ctx.fillRect(x, y, s, s);
+    }
+  } else {
+    const t = 16 * scale;
+    for (let y = 0; y < w; y += t) for (let x = 0; x < w; x += t) ctx.drawImage(grassTile, x, y, t, t);
+  }
+}
+
+function draw() {
+  for (const cell of cells) {
+    const st = CONFIG.states[cell.si];
+    const index = timers[cell.si].index;
+    const row = cell.si * 4 + cell.di;
+    for (const [canvas, scale] of cell.canvases) {
+      const ctx = canvas.getContext("2d");
+      ctx.imageSmoothingEnabled = false;
+      paintBackground(ctx, scale);
+      ctx.drawImage(sheet, index * F, row * F, F, F, 0, 0, F * scale, F * scale);
+      if (state.foot && scale === state.zoom) {
+        ctx.fillStyle = "rgba(224, 82, 74, 0.55)";
+        ctx.fillRect(0, 31 * scale - 1, F * scale, 2);
+      }
+    }
+    cell.counter.textContent = `${index + 1} / ${st.frames}`;
+  }
+}
+
+let last = null;
+function tick(now) {
+  if (last !== null && state.playing) {
+    const dt = (now - last) / 1000 * state.speed;
+    CONFIG.states.forEach((st, i) => {
+      const t = timers[i];
+      t.acc += dt;
+      const per = 1 / st.fps;
+      while (t.acc >= per) {
+        t.acc -= per;
+        t.index = (t.index + 1) % st.frames;
+      }
+    });
+    draw();
+  }
+  last = now;
+  requestAnimationFrame(tick);
+}
+
+function radio(id, key, parse) {
+  document.getElementById(id).addEventListener("change", (e) => {
+    state[key] = parse(e.target.value);
+    if (key === "zoom") build();
+    draw();
+  });
+}
+
+const playBtn = document.getElementById("play");
+playBtn.textContent = state.playing ? "止める" : "再生";
+playBtn.addEventListener("click", () => {
+  state.playing = !state.playing;
+  playBtn.textContent = state.playing ? "止める" : "再生";
+});
+document.getElementById("step").addEventListener("click", () => {
+  if (state.playing) {
+    state.playing = false;
+    playBtn.textContent = "再生";
+  }
+  CONFIG.states.forEach((st, i) => {
+    timers[i].index = (timers[i].index + 1) % st.frames;
+    timers[i].acc = 0;
+  });
+  draw();
+});
+radio("zoom", "zoom", Number);
+radio("speed", "speed", Number);
+radio("bg", "bg", String);
+document.getElementById("foot").addEventListener("change", (e) => {
+  state.foot = e.target.checked;
+  draw();
+});
+
+Promise.all([load(CONFIG.sheet), load(CONFIG.grass)]).then(([s, g]) => {
+  sheet = s;
+  grassTile = g;
+  build();
+  draw();
+  requestAnimationFrame(tick);
+});
+</script>

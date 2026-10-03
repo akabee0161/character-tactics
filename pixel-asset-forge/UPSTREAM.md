@@ -16,6 +16,7 @@ forge 本体も並行して開発が続く。forge の改善をこちらへ取�
 - `tools/sheet_gif.py`（新規）: unit のシート定義から状態ごとの GIF（4方向を横並び、拡大と等倍）を作る。静止画のシートでは攻撃の動きの違和感が分からなかったため（依頼者の要望、2026-10-01）。テストは `tests/test_sheet_gif.py`。README 2.7・CLAUDE.md に案内
 - `ISSUES.md`: 「行の長さがそろわないグリッドを回転すると `IndexError` で止まる」（`gridfile.py`）の課題を足した
 - `types/item/SPEC.md`（新規）と `assets/item/sword.txt`・`bow.txt`（新規）: item 型の規約が無く、剣・弓のアイコンを描くのに合わせて実測値から規約を作った（向きは右上が先端の45°、形は軸について対称、素材ごとの色の割り当て）。`README.md` の表と `ISSUES.md` の該当行も直した（character-tactics の issue #23 の3番目、2026-10-02）
+- `assets/unit/roran/`（23コマ）と `types/unit/SPEC.md`: ロランの剣の鍔を木、柄頭を赤い宝石にして item の剣（`assets/item/sword.txt`）に色を揃えた。鍔と柄頭に専用の文字（`G H J R`）を割り当て、`# map:` 行で色を切り替えた。SPEC に剣の色・平らな切っ先・持ち物の専用の文字の規約を足した。`ISSUES.md` と `types/item/SPEC.md` の色の命名の整理の時期も直した（character-tactics の issue #23 の4番目、2026-10-03）
 - `ISSUES.md`: 「アセットのテキストとビルドをゲームリポジトリへ移設する」「タイルの受け渡し方が未定」の2行を消した（移設が済んだため。pixel-asset-forge の移設の issue は 2026-09-30 に閉じた）
 
 ## forge から持ってきたもの
