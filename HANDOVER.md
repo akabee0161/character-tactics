@@ -1,22 +1,32 @@
 # Session Handover
-## Generated: 2026-10-04（ユニットのドット絵を描く標準のワークフローの spec と計画を書いた時点）
+## Generated: 2026-10-04（ユニットのドット絵を描く標準のワークフローの計画を全10タスク終えた時点）
 
 ## Current State
 
-- **Branch**: `feat/unit-workflow-gau`（main `fe7e79f` = PR #27 イネスのマージから分岐。push 済み・PR なし）
+- **Branch**: `feat/unit-workflow-gau`（main `fe7e79f` = PR #27 イネスのマージから分岐）。計画の Task 1〜10 はすべて完了。**push と PR は依頼者の指示待ち**
 - 目的: ロラン・イネスと同じ品質のユニットを、依頼者の判断を減らして描くワークフローを作り、**ガウ**で試す
-- 設計 `docs/superpowers/specs/2026-10-04-unit-drawing-workflow-design.md`、計画 `docs/superpowers/plans/2026-10-04-unit-drawing-workflow.md`（全10タスク）。どちらも依頼者の承認済み
-- **実行方法は Native（executing-plans）に決定済み。まだ1タスクも着手していない**（次は Task 1）
-- 進捗台帳は Task 5 で `.superpowers/sdd/2026-10-04-unit-workflow-gau/progress.md`（git 管理外）を作る。確認ポイントごとの依頼者の返答を種類 A・B・C 付きで記録する（評価に使う）
+- 結果 `docs/superpowers/specs/2026-10-04-unit-drawing-workflow-results.md`: 品質は依頼者の判断で「ロラン・イネスと同じくらい」。判断の回数は13回でイネス（約12回）から減らなかったが、部品の形への差し戻しは0回になり、差し戻しは組み合わせた後の顔（前髪と目）と動き（構え）に移った
+- forge に入れた道具（TDD）: `unit_check.py`（自己チェック①）・`compose.py`（素体と部品の重ね合わせ）・`present.py`・`face_down.py`・`unit_picker.py`（部品の案の組み合わせを選ぶページ。依頼者の判断で CP1 の必須の道具）。手順の正典は `pixel-asset-forge/types/unit/SPEC.md`「描く手順」、ガウの持ち方と攻撃は同じ SPEC の「短剣の持ち方（ガウ）」
+- ガウ: `pixel-asset-forge/assets/unit/gau/`（24コマと部品）、`assets/part/dagger/`、`compose/gau.json`、`sheets/gau.txt`、`assets/images/gau-map.png`。動きのページ https://claude.ai/artifact/G3Xer2uJFMmte2LoQ4ZMwy
+- 進捗台帳と作業スクリプトは `.superpowers/sdd/2026-10-04-unit-workflow-gau/`（git 管理外。`progress.md`・`finish.py`・`anim.py`・`bodies.py`・`cand_sheets.py` など）。レビューのページ https://claude.ai/artifact/RoTEX6g8bb7HDRE54g38cM
 - issue #23 は開いたまま。1番目（顔グラを forge で作る）は依頼者の判断でしばらく置いておく（`feat/roran-face` は触らない）。2〜5番目は PR #24〜#27 でマージ済み。5番目の「目を大きく」は PR #24 の縦2px で済んだかを依頼者に確認中のまま
 
-## What Remains（この作業）
+## What Remains
 
-1. 計画の Task 1〜4: `unit_check.py`・`compose.py`・`present.py`/`face_down.py` を TDD で forge に入れ、`types/unit/SPEC.md` に「描く手順」を書く
-2. Task 5〜9: ガウを CP0（設定シートと動きの方針）→ CP1（かぶり物・武器を素体抜きで4方向）→ CP2（正面）→ CP3（4方向）→ CP4（アニメ）で描く。**確認ポイントでは必ず止まる**
-3. Task 10: 評価（イネスとの比較、依頼者の品質の判断）と SPEC・HANDOVER の更新。PR は依頼者の指示で作る
+1. push と PR（依頼者の指示で作る）
+2. 次の一体（ミストは別の型なので別作業）。結果の文書の「次の一体で減らせそうな確認ポイント」は Claude の提案で、まだ依頼者と決めていない（CP0 を軽く、CP2 と CP3 をまとめる、CP1・CP4 は残す）
+3. forge の `ISSUES.md` に足したもの: ガウの部品は見える部分だけで完全な単品が無い、組み立て後の描き足し（`finish.py`・`anim.py` など）が forge の道具になっていない（次の一体で要ったら移す）
 
-## この作業で決めたこと（2026-10-04、依頼者と合意）
+## この作業の途中で決めたこと（2026-10-04、依頼者と合意）
+
+- 部品を一括で作って組み合わせるときは、組み合わせを選ぶページ（`unit_picker.py`）を必ず添える。依頼者に組み合わせを頭の中で試させない
+- CP1 の単体スケッチは、形の確認には体に隠れる部分も含めた完全な単品を見せる。髪・耳・かぶり物は1つの「頭パーツ」として扱う（ガウでは見える部分だけを描いた。SPEC は次の一体から直した）
+- 目の左右の隣が髪・かぶり物・耳・顔の輪郭になる案は Claude のチェックで不可にする。目の中心は脚の中心にそろえる
+- 横顔で前髪が目の列にかかるときは、目を描かず前髪だけを描く（ガウの右向き）
+- 奥行きの動きは高さでなく拳の大きさで表し、上端をそろえる。拳は体の横（肘が体の横に来る位置）に置く（ガウの正面・背面の構え）
+- アニメの案は、候補を入れたシートの動きのページで見せる（静止画の並びだけでは動きの違和感が分からなかった）
+
+## 設計の時点で決めたこと（2026-10-04、依頼者と合意）
 
 - issue #23 の総括: 絵はできたが「forge で作れる仕組み」はできていない。実態は Claude が描き案を並べ、依頼者が選び直させる共同制作。自動で高品質に描くのは今は無理で、目標は品質を保ったまま判断を減らすこと（まず案 1: 品質はロラン・イネス並み、判断はゼロにしない）
 - 差し戻しは **かぶり物・髪** と **武器（形でなく持ち方と動き）** に集中していた。依頼者の指摘は「部品の形」と「体に重ねたときの隠れ方」が混ざっていた
