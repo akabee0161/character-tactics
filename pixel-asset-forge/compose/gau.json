@@ -4,33 +4,245 @@
     "down_base": {
       "body": "types/unit/base/male_down.txt",
       "layers": [
-        {"part": "assets/unit/gau/parts/hood_down.txt", "z": "front"},
-        {"part": "assets/unit/gau/parts/hair_down.txt", "z": "front"},
-        {"part": "assets/part/dagger/dagger_down.txt", "z": "front"}
+        {
+          "part": "assets/unit/gau/parts/hood_down.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/gau/parts/hair_down.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/dagger/dagger_down.txt",
+          "z": "front"
+        }
       ]
     },
     "up_base": {
       "body": "types/unit/base/male_up.txt",
       "layers": [
-        {"part": "assets/unit/gau/parts/hood_up.txt", "z": "front"},
-        {"part": "assets/unit/gau/parts/hair_up.txt", "z": "front"},
-        {"part": "assets/part/dagger/dagger_up.txt", "z": "back"}
+        {
+          "part": "assets/unit/gau/parts/hood_up.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/gau/parts/hair_up.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/dagger/dagger_up.txt",
+          "z": "back"
+        }
       ]
     },
     "left_base": {
       "body": "types/unit/base/male_left.txt",
       "layers": [
-        {"part": "assets/unit/gau/parts/hood_left.txt", "z": "front"},
-        {"part": "assets/unit/gau/parts/hair_left.txt", "z": "front"},
-        {"part": "assets/part/dagger/dagger_left.txt", "z": "back"}
+        {
+          "part": "assets/unit/gau/parts/hood_left.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/gau/parts/hair_left.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/dagger/dagger_left.txt",
+          "z": "back"
+        }
       ]
     },
     "right_base": {
       "body": "types/unit/base/male_right.txt",
       "layers": [
-        {"part": "assets/unit/gau/parts/hood_right.txt", "z": "front"},
-        {"part": "assets/unit/gau/parts/hair_right.txt", "z": "front"},
-        {"part": "assets/part/dagger/dagger_right.txt", "z": "front"}
+        {
+          "part": "assets/unit/gau/parts/hood_right.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/gau/parts/hair_right.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/dagger/dagger_right.txt",
+          "z": "front"
+        }
+      ]
+    },
+    "down_breathe": {
+      "body": "assets/unit/gau/parts/body_breathe_down.txt",
+      "layers": [
+        {
+          "part": "assets/unit/gau/parts/hood_down.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/gau/parts/hair_down.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/dagger/dagger_down.txt",
+          "z": "front",
+          "dy": -2
+        }
+      ]
+    },
+    "up_breathe": {
+      "body": "assets/unit/gau/parts/body_breathe_up.txt",
+      "layers": [
+        {
+          "part": "assets/unit/gau/parts/hood_up.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/gau/parts/hair_up.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/dagger/dagger_up.txt",
+          "z": "back",
+          "dy": -2
+        }
+      ]
+    },
+    "left_breathe": {
+      "body": "assets/unit/gau/parts/body_breathe_left.txt",
+      "layers": [
+        {
+          "part": "assets/unit/gau/parts/hood_left.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/gau/parts/hair_left.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/dagger/dagger_left.txt",
+          "z": "back",
+          "dy": -2
+        }
+      ]
+    },
+    "right_breathe": {
+      "body": "assets/unit/gau/parts/body_breathe_right.txt",
+      "layers": [
+        {
+          "part": "assets/unit/gau/parts/hood_right.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/gau/parts/hair_right.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/dagger/dagger_right.txt",
+          "z": "front",
+          "dy": -2
+        }
+      ]
+    },
+    "down_atk_wind": {
+      "body": "assets/unit/gau/parts/body_noarm_down.txt",
+      "layers": [
+        {
+          "part": "assets/unit/gau/parts/hood_down.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/gau/parts/hair_down.txt",
+          "z": "front"
+        }
+      ]
+    },
+    "up_atk_wind": {
+      "body": "assets/unit/gau/parts/body_noarm_up.txt",
+      "layers": [
+        {
+          "part": "assets/unit/gau/parts/hood_up.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/gau/parts/hair_up.txt",
+          "z": "front"
+        }
+      ]
+    },
+    "left_atk_wind": {
+      "body": "assets/unit/gau/parts/body_noarm_left.txt",
+      "layers": [
+        {
+          "part": "assets/unit/gau/parts/hood_left.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/gau/parts/hair_left.txt",
+          "z": "front"
+        }
+      ]
+    },
+    "right_atk_wind": {
+      "body": "assets/unit/gau/parts/body_noarm_right.txt",
+      "layers": [
+        {
+          "part": "assets/unit/gau/parts/hood_right.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/gau/parts/hair_right.txt",
+          "z": "front"
+        }
+      ]
+    },
+    "down_atk_hit": {
+      "body": "assets/unit/gau/parts/body_noarm_down.txt",
+      "layers": [
+        {
+          "part": "assets/unit/gau/parts/hood_down.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/gau/parts/hair_down.txt",
+          "z": "front"
+        }
+      ]
+    },
+    "up_atk_hit": {
+      "body": "assets/unit/gau/parts/body_noarm_up.txt",
+      "layers": [
+        {
+          "part": "assets/unit/gau/parts/hood_up.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/gau/parts/hair_up.txt",
+          "z": "front"
+        }
+      ]
+    },
+    "left_atk_hit": {
+      "body": "assets/unit/gau/parts/body_noarm_left.txt",
+      "layers": [
+        {
+          "part": "assets/unit/gau/parts/hood_left.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/gau/parts/hair_left.txt",
+          "z": "front"
+        }
+      ]
+    },
+    "right_atk_hit": {
+      "body": "assets/unit/gau/parts/body_noarm_right.txt",
+      "layers": [
+        {
+          "part": "assets/unit/gau/parts/hood_right.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/gau/parts/hair_right.txt",
+          "z": "front"
+        }
       ]
     }
   }
