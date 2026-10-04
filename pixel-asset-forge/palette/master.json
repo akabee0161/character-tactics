@@ -82,5 +82,10 @@
 
   "flame_hi": "#ffe9a8",
   "flame_base": "#f5a83c",
-  "flame_deep": "#cf5028"
+  "flame_deep": "#cf5028",
+
+  "orchid_hi": "#f492e4",
+  "orchid_base": "#c059c0",
+  "orchid_shadow": "#7f2783",
+  "orchid_dark": "#571562"
 }
