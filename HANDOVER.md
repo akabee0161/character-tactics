@@ -3,7 +3,7 @@
 
 ## Current State
 
-- **Branch**: `feat/unit-workflow-gau`（main `fe7e79f` = PR #27 イネスのマージから分岐）。計画の Task 1〜10 はすべて完了。**push と PR は依頼者の指示待ち**
+- **Branch**: `feat/unit-workflow-gau`（main `fe7e79f` = PR #27 イネスのマージから分岐）。計画の Task 1〜10 と最終レビューの修正はすべて完了。push 済み、**PR #28**（https://github.com/akabee0161/character-tactics/pull/28）
 - 目的: ロラン・イネスと同じ品質のユニットを、依頼者の判断を減らして描くワークフローを作り、**ガウ**で試す
 - 結果 `docs/superpowers/specs/2026-10-04-unit-drawing-workflow-results.md`: 品質は依頼者の判断で「ロラン・イネスと同じくらい」。判断の回数は13回でイネス（約12回）から減らなかったが、部品の形への差し戻しは0回になり、差し戻しは組み合わせた後の顔（前髪と目）と動き（構え）に移った
 - forge に入れた道具（TDD）: `unit_check.py`（自己チェック①）・`compose.py`（素体と部品の重ね合わせ）・`present.py`・`face_down.py`・`unit_picker.py`（部品の案の組み合わせを選ぶページ。依頼者の判断で CP1 の必須の道具）。手順の正典は `pixel-asset-forge/types/unit/SPEC.md`「描く手順」、ガウの持ち方と攻撃は同じ SPEC の「短剣の持ち方（ガウ）」
@@ -13,9 +13,10 @@
 
 ## What Remains
 
-1. push と PR（依頼者の指示で作る）
-2. 次の一体（ミストは別の型なので別作業）。結果の文書の「次の一体で減らせそうな確認ポイント」は Claude の提案で、まだ依頼者と決めていない（CP0 を軽く、CP2 と CP3 をまとめる、CP1・CP4 は残す）
-3. forge の `ISSUES.md` に足したもの: ガウの部品は見える部分だけで完全な単品が無い、組み立て後の描き足し（`finish.py`・`anim.py` など）が forge の道具になっていない（次の一体で要ったら移す）
+1. PR #28 のレビューとマージ（push と PR は 2026-10-04 に依頼者の指示で作った）
+2. PR のテンプレートを作る（CLAUDE.md「プルリクエスト」。項目は依頼者と決める）
+3. 次の一体（ミストは別の型なので別作業）。結果の文書の「次の一体で減らせそうな確認ポイント」は Claude の提案で、まだ依頼者と決めていない（CP0 を軽く、CP2 と CP3 をまとめる、CP1・CP4 は残す）
+4. forge の `ISSUES.md` に足したもの: ガウの部品は見える部分だけで完全な単品が無い、組み立て後の描き足し（`finish.py`・`anim.py` など）が forge の道具になっていない（次の一体で要ったら移す）
 
 ## この作業の途中で決めたこと（2026-10-04、依頼者と合意）
 
