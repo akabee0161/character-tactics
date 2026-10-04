@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>__TITLE__</title>
+<!-- unit_picker.py が組み合わせのデータを埋め込んで書き出すページの元。直接は開かない -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #eceef3;
+  --panel: #ffffff;
+  --ink: #1a1228;
+  --muted: #5b5f72;
+  --line: #d3d6e0;
+  --accent: #4a63a6;
+  --accent-soft: #dfe5f4;
+  --stage: #c8cad2;
+  --dot: "DotGothic16", "Osaka-Mono", "MS Gothic", monospace;
+  --body: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #14161d; --panel: #1d2029; --ink: #e8e9f0; --muted: #a3a7b8; --line: #333747;
+    --accent: #8ea4e6; --accent-soft: #252d45; --stage: #3a3c4a;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #14161d; --panel: #1d2029; --ink: #e8e9f0; --muted: #a3a7b8; --line: #333747;
+  --accent: #8ea4e6; --accent-soft: #252d45; --stage: #3a3c4a;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.6; }
+.wrap { max-width: 1240px; margin: 0 auto; padding-inline: 16px; padding-block: 24px 48px; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 20px; margin-bottom: 18px; }
+h1 { font-family: var(--dot); font-weight: 400; font-size: 28px; margin: 0; letter-spacing: 0.02em; text-wrap: balance; }
+h2 { font-size: 15px; margin: 0 0 8px; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+h2 .now { font-weight: 400; color: var(--muted); font-size: 13px; }
+.sub { color: var(--muted); margin: 0; font-size: 14px; }
+.jump { font-size: 14px; color: var(--accent); }
+.layout { display: grid; grid-template-columns: minmax(0, 600px) minmax(0, 1fr); gap: 24px; align-items: start; }
+@media (max-width: 980px) { .layout { grid-template-columns: minmax(0, 1fr); } }
+.preview { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); display: grid; gap: 14px; }
+@media (max-width: 980px) { .preview { position: static; } }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 14px; }
+.row { display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; }
+.cell4 { display: grid; gap: 2px; justify-items: center; }
+.cap { font-size: 12px; color: var(--muted); letter-spacing: 0.04em; }
+canvas { image-rendering: pixelated; display: block; }
+.stage { background: var(--stage); }
+.grass { padding: 8px; border-radius: 4px; display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
+.refs { margin-top: 10px; display: grid; gap: 6px; }
+.refs .row canvas { width: 96px; height: 96px; }
+.label { font-size: 13px; color: var(--muted); min-width: 4.5em; align-self: center; }
+.code-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.code { font-family: var(--dot); font-size: 22px; letter-spacing: 0.06em; user-select: all; }
+button { font: inherit; color: inherit; cursor: pointer; }
+.btn { border: 1px solid var(--line); background: var(--panel); border-radius: 4px; padding: 4px 12px; font-size: 13px; }
+.btn:hover, .btn[aria-pressed="true"] { border-color: var(--accent); }
+.btn[aria-pressed="true"] { background: var(--accent-soft); }
+.btn:focus-visible, .opt:focus-visible, .mcell:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.copied { font-size: 12px; color: var(--accent); min-width: 6em; }
+.chosen { margin: 10px 0 0; padding: 0; list-style: none; display: grid; gap: 2px; font-size: 13px; }
+.chosen b { font-weight: 700; display: inline-block; min-width: 5.5em; color: var(--muted); }
+.groups { display: grid; gap: 18px; }
+.opts { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.opt { border: 1px solid var(--line); background: var(--panel); border-radius: 4px; padding: 6px; display: grid; gap: 4px; justify-items: center; text-align: center; }
+.opt[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
+.opt .pair { display: flex; gap: 4px; }
+.opt canvas { width: 64px; height: 64px; }
+.opt .id { font-family: var(--dot); font-size: 14px; }
+.opt .lab { font-size: 11px; line-height: 1.35; color: var(--muted); }
+section.block { margin-top: 36px; border-top: 1px solid var(--line); padding-top: 22px; }
+section.block > h2 { font-family: var(--dot); font-weight: 400; font-size: 22px; }
+section.block > p { color: var(--muted); margin: 0 0 14px; font-size: 14px; max-width: 70ch; }
+.alone { display: grid; gap: 14px; }
+.alone .row canvas { width: 128px; height: 128px; }
+.alone .label { width: 15em; flex: none; }
+@media (max-width: 600px) { .alone .label { width: 100%; } }
+.dirs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.scroll { overflow-x: auto; }
+table.grid { border-collapse: separate; border-spacing: 6px; }
+table.grid th { font-family: var(--dot); font-weight: 400; font-size: 13px; color: var(--muted); padding: 0 2px; }
+table.grid td { padding: 0; }
+.mcell { display: flex; gap: 2px; padding: 3px; border: 1px solid transparent; border-radius: 3px; background: var(--stage); }
+.mcell canvas { width: 64px; height: 64px; }
+.mcell.one canvas { width: 96px; height: 96px; }
+.mcell:hover { border-color: var(--accent); }
+.mcell[aria-current="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+.note { color: var(--muted); font-size: 13px; margin: 18px 0 0; max-width: 70ch; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>__TITLE__</h1>
+    <p class="sub"><span id="counts"></span> ― <span id="total"></span>通り</p>
+    <a class="jump" href="#alone">部品だけ</a>
+    <a class="jump" href="#matrix" id="jump-matrix" hidden>一覧</a>
+  </header>
+  <div class="layout">
+    <section class="preview" aria-label="組み合わせたユニット">
+      <div class="card">
+        <div class="row" id="big"></div>
+        <div class="grass" id="game" style="margin-top:10px"></div>
+        <span class="cap">上は4倍。草の上はゲームの大きさ（2倍と等倍）</span>
+        <div class="refs" id="refs" hidden></div>
+      </div>
+      <div class="card">
+        <div class="code-row">
+          <span class="code" id="code"></span>
+          <button class="btn" id="copy" type="button">記号をコピー</button>
+          <span class="copied" id="copied" aria-live="polite"></span>
+        </div>
+        <ul class="chosen" id="chosen"></ul>
+      </div>
+    </section>
+    <section class="groups" id="groups" aria-label="部品の案を選ぶ"></section>
+  </div>
+  <section class="block" id="alone">
+    <h2>部品だけ（体に重ねない形）</h2>
+    <p>各案の部品を、体に隠れる部分も含めてそのまま4方向に並べたもの。灰色の地は透明。</p>
+    <div class="alone" id="alone-list"></div>
+  </section>
+  <section class="block" id="matrix" hidden>
+    <h2 id="matrix-title"></h2>
+    <p id="matrix-note"></p>
+    <div class="dirs" id="matrix-dirs"></div>
+    <div class="scroll"><table class="grid" id="matrix-table"></table></div>
+  </section>
+  <p class="note">気に入った組み合わせは、上の記号をそのまま伝えてください。</p>
+</div>
+
+<script>
+const DATA = __DATA__;
+const [W, H] = DATA.size;
+const DIRS = DATA.directions;
+const DIR_LABEL = { down: "正面", up: "背面", left: "左向き", right: "右向き" };
+const ELEMENTS = Object.keys(DATA.elements);
+const state = { ...DATA.default };
+
+function decode(str) {
+  const img = new ImageData(W, H);
+  for (let i = 0; i < str.length; i++) {
+    const ch = str[i];
+    if (ch === ".") continue;
+    const hex = DATA.colours[DATA.alphabet.indexOf(ch)];
+    img.data[i * 4] = parseInt(hex.slice(1, 3), 16);
+    img.data[i * 4 + 1] = parseInt(hex.slice(3, 5), 16);
+    img.data[i * 4 + 2] = parseInt(hex.slice(5, 7), 16);
+    img.data[i * 4 + 3] = 255;
+  }
+  return img;
+}
+const cache = new Map();
+function image(key, table) {
+  const id = `${table}:${key}`;
+  if (!cache.has(id)) cache.set(id, decode(DATA[table][key]));
+  return cache.get(id);
+}
+const scratch = document.createElement("canvas");
+scratch.width = W; scratch.height = H;
+const sctx = scratch.getContext("2d");
+function draw(canvas, img) {
+  sctx.putImageData(img, 0, 0);
+  const ctx = canvas.getContext("2d");
+  ctx.imageSmoothingEnabled = false;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(scratch, 0, 0, canvas.width, canvas.height);
+}
+function canvas(scale, cls) {
+  const c = document.createElement("canvas");
+  c.width = W * scale; c.height = H * scale;
+  c.style.width = `${W * scale}px`; c.style.height = `${H * scale}px`;
+  if (cls) c.className = cls;
+  return c;
+}
+function codeOf(pick) { return ELEMENTS.map((el) => pick[el]).join("-"); }
+function frame(pick, dir) { return image(`${codeOf(pick)}|${dir}`, "frames"); }
+
+// 上: 4方向の4倍と、草の上のゲームの大きさ
+const bigs = {}, games = {};
+for (const d of DIRS) {
+  const box = document.createElement("div");
+  box.className = "cell4";
+  const c = canvas(4, "stage");
+  box.append(c);
+  box.insertAdjacentHTML("beforeend", `<span class="cap">${DIR_LABEL[d]}</span>`);
+  document.getElementById("big").append(box);
+  bigs[d] = c;
+}
+const game = document.getElementById("game");
+game.style.background = DATA.grass;
+for (const scale of [2, 1]) for (const d of DIRS) { const c = canvas(scale); game.append(c); games[`${scale}|${d}`] = c; }
+
+// 見本（refs）と並べる
+const refNames = [...new Set(Object.keys(DATA.refs).map((k) => k.split("|")[0]))];
+if (refNames.length) {
+  const refs = document.getElementById("refs");
+  refs.hidden = false;
+  for (const name of refNames) {
+    const row = document.createElement("div");
+    row.className = "row";
+    row.insertAdjacentHTML("beforeend", `<span class="label">${name}</span>`);
+    for (const d of DIRS) { const c = canvas(3, "stage"); row.append(c); draw(c, image(`${name}|${d}`, "refs")); }
+    refs.append(row);
+  }
+  const row = document.createElement("div");
+  row.className = "row";
+  row.insertAdjacentHTML("beforeend", `<span class="label">${DATA.unit}</span>`);
+  for (const d of DIRS) { const c = canvas(3, "stage"); row.append(c); games[`ref|${d}`] = c; }
+  refs.append(row);
+}
+
+// 右: 要素ごとの案。ボタンの絵は「今の組み合わせのうち、その要素だけを差し替えた正面」と「部品だけの正面」
+const groups = document.getElementById("groups");
+const buttons = {};
+for (const el of ELEMENTS) {
+  const sec = document.createElement("div");
+  sec.innerHTML = `<h2><span>${DATA.elements[el].label}</span><span class="now" id="now-${el}"></span></h2>`;
+  const row = document.createElement("div");
+  row.className = "opts";
+  buttons[el] = {};
+  for (const [id, label] of Object.entries(DATA.elements[el].variants)) {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "opt";
+    b.setAttribute("aria-pressed", "false");
+    const pair = document.createElement("div");
+    pair.className = "pair";
+    const withBody = canvas(2, "stage"), alone = canvas(2, "stage");
+    pair.append(withBody, alone);
+    b.append(pair);
+    b.insertAdjacentHTML("beforeend", `<span class="id">${id}</span><span class="lab">${label}</span>`);
+    b.addEventListener("click", () => { state[el] = id; render(); });
+    draw(alone, image(`${id}|${DIRS[0]}`, "parts"));
+    row.append(b);
+    buttons[el][id] = { b, withBody };
+  }
+  sec.append(row);
+  groups.append(sec);
+}
+
+// 部品だけ（4方向）
+const aloneList = document.getElementById("alone-list");
+for (const el of ELEMENTS) {
+  for (const [id, label] of Object.entries(DATA.elements[el].variants)) {
+    const row = document.createElement("div");
+    row.className = "row";
+    row.insertAdjacentHTML("beforeend", `<span class="label">${DATA.elements[el].label} ${id}<br>${label}</span>`);
+    for (const d of DIRS) { const c = canvas(4, "stage"); row.append(c); draw(c, image(`${id}|${d}`, "parts")); }
+    aloneList.append(row);
+  }
+}
+
+// 一覧: matrix の rows×cols。ほかの要素は上で選んだもの
+const M = DATA.matrix;
+let matrixDir = "all";
+const cells = [];
+function buildMatrix() {
+  if (!M.rows) return;
+  const table = document.getElementById("matrix-table");
+  table.innerHTML = "";
+  cells.length = 0;
+  const head = table.createTHead().insertRow();
+  head.append(document.createElement("th"));
+  for (const c of Object.keys(DATA.elements[M.cols].variants)) {
+    const th = document.createElement("th");
+    th.scope = "col"; th.textContent = c; th.title = DATA.elements[M.cols].variants[c];
+    head.append(th);
+  }
+  const body = table.createTBody();
+  for (const r of Object.keys(DATA.elements[M.rows].variants)) {
+    const row = body.insertRow();
+    const th = document.createElement("th");
+    th.scope = "row"; th.textContent = r; th.title = DATA.elements[M.rows].variants[r];
+    row.append(th);
+    for (const c of Object.keys(DATA.elements[M.cols].variants)) {
+      const btn = document.createElement("button");
+      btn.type = "button"; btn.className = matrixDir === "all" ? "mcell" : "mcell one";
+      btn.setAttribute("aria-label", `${r}・${c}`);
+      const dirs = matrixDir === "all" ? DIRS : [matrixDir];
+      const cvs = dirs.map(() => canvas(matrixDir === "all" ? 2 : 3));
+      btn.append(...cvs);
+      btn.addEventListener("click", () => {
+        Object.assign(state, { [M.rows]: r, [M.cols]: c });
+        render();
+        window.scrollTo({ top: 0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+      });
+      row.insertCell().append(btn);
+      cells.push({ pick: { [M.rows]: r, [M.cols]: c }, btn, cvs, dirs });
+    }
+  }
+}
+function renderMatrix() {
+  if (!M.rows) return;
+  const fixed = ELEMENTS.filter((el) => el !== M.rows && el !== M.cols)
+    .map((el) => `${DATA.elements[el].label} ${state[el]}`).join("・");
+  document.getElementById("matrix-note").textContent =
+    (fixed ? `${fixed} で固定（上で選び直すと変わります）。` : "") + "押すとその組み合わせを上に入れます。";
+  for (const { pick, btn, cvs, dirs } of cells) {
+    const full = { ...state, ...pick };
+    dirs.forEach((d, i) => draw(cvs[i], frame(full, d)));
+    btn.setAttribute("aria-current", String(Object.entries(pick).every(([k, v]) => state[k] === v)));
+  }
+}
+if (M.rows) {
+  document.getElementById("matrix").hidden = false;
+  document.getElementById("jump-matrix").hidden = false;
+  document.getElementById("matrix-title").textContent =
+    `${DATA.elements[M.rows].label}×${DATA.elements[M.cols].label}の一覧`;
+  const dirs = document.getElementById("matrix-dirs");
+  for (const d of ["all", ...DIRS]) {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "btn"; b.textContent = d === "all" ? "4方向" : DIR_LABEL[d];
+    b.setAttribute("aria-pressed", String(d === matrixDir));
+    b.addEventListener("click", () => {
+      matrixDir = d;
+      for (const o of dirs.children) o.setAttribute("aria-pressed", String(o === b));
+      buildMatrix(); renderMatrix();
+    });
+    dirs.append(b);
+  }
+}
+
+function render() {
+  for (const d of DIRS) {
+    const img = frame(state, d);
+    draw(bigs[d], img);
+    draw(games[`2|${d}`], img);
+    draw(games[`1|${d}`], img);
+    if (games[`ref|${d}`]) draw(games[`ref|${d}`], img);
+  }
+  document.getElementById("code").textContent = codeOf(state);
+  const chosen = document.getElementById("chosen");
+  chosen.innerHTML = "";
+  for (const el of ELEMENTS) {
+    const label = DATA.elements[el].variants[state[el]];
+    const li = document.createElement("li");
+    li.innerHTML = `<b>${DATA.elements[el].label}</b>${state[el]}　${label}`;
+    chosen.append(li);
+    document.getElementById(`now-${el}`).textContent = `${state[el]}　${label}`;
+    for (const [id, { b, withBody }] of Object.entries(buttons[el])) {
+      b.setAttribute("aria-pressed", String(id === state[el]));
+      draw(withBody, frame({ ...state, [el]: id }, DIRS[0]));
+    }
+  }
+  renderMatrix();
+}
+
+document.getElementById("counts").textContent = ELEMENTS
+  .map((el) => `${DATA.elements[el].label}${Object.keys(DATA.elements[el].variants).length}`).join("・") + "案";
+document.getElementById("total").textContent = ELEMENTS
+  .reduce((n, el) => n * Object.keys(DATA.elements[el].variants).length, 1).toLocaleString("ja-JP");
+document.getElementById("copy").addEventListener("click", () => {
+  const done = (msg) => { document.getElementById("copied").textContent = msg; };
+  function select() {
+    const r = document.createRange();
+    r.selectNodeContents(document.getElementById("code"));
+    const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+    done("選択しました");
+  }
+  try { navigator.clipboard.writeText(codeOf(state)).then(() => done("コピーしました"), select); }
+  catch (e) { select(); }
+});
+buildMatrix();
+render();
+</script>
+</body>
+</html>

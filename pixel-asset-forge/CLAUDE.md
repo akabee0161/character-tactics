@@ -55,6 +55,7 @@
 .venv/bin/python tools/compose.py compose/gau.json   # 素体と部品を重ねて unit のコマを組み立てる
 .venv/bin/python tools/face_down.py IMG N OUT_PREFIX  # 拡大されたドット絵の顔を N 升に戻す
 .venv/bin/python tools/present.py OUT.png A.txt B.txt --ref face.png  # 案を並べて見せる画像
+.venv/bin/python tools/unit_picker.py PICKER.json --out build/picker/gau.html  # unit の部品の案を組み合わせて選ぶページ（CP1 で必須）
 .venv/bin/python tools/sets.py                # 16px の部品を組んで物を出す（build/sets/）
 .venv/bin/python tools/contact_sheet.py       # build/contact_sheet.png
 .venv/bin/python tools/export.py MAP DEST     # 対応表どおりにゲームへ書き出す（README 2.10）
