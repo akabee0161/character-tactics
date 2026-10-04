@@ -15,7 +15,7 @@
 - 4番目の最終レビューで後回しにした Minor: `anim-page.py` のエラー処理の一部、足元の線が 32px 前提、`unit/SPEC.md` の柄頭の記述に `left_atk_hit` の例外が無い
 - **色の命名の整理（`pixel-asset-forge/ISSUES.md` の「剣が `stone_*`、盾が `metal_*`」）は、`feat/roran-face` のマージ後に独立した作業として行う。** イネスの黄色い服も `metal_*` なので、その整理に含める（依頼者の判断、2026-10-02・03）
 - 範囲外として残したもの: ガウ・ミスト、持ち物ごとのテンプレートのグリッド、`male_*` の暫定の点、ゲームの役割アイコン（`role-tate.png`・`role-yumi.png`）の差し替えと 32px 表示のレイアウト修正
-- **マージのとき**: パレットに `orchid_*` の4色を末尾に足した。`git merge-tree` で `feat/roran-face` と比べると `palette/master.json` は自動でマージできる。ぶつかるのは `HANDOVER.md` と `pixel-asset-forge/README.md` で、どちらも main と `feat/roran-face` の間で既にぶつかっているもの（このブランチで増えたぶつかりはない。2026-10-03 確認）
+- **マージのとき**: パレットに `orchid_*` の4色を末尾に足した。`git merge-tree` で `feat/roran-face` と比べると `palette/master.json` は自動でマージできる。ぶつかるのは `HANDOVER.md`・`pixel-asset-forge/README.md`・`pixel-asset-forge/ISSUES.md` の3つ。前の2つは main と `feat/roran-face` の間で既にぶつかっているもの。**`ISSUES.md` はこのブランチで増えたぶつかり**で、場所は「決めてもらう必要があるもの」の表の1か所（こちらは「`unit` が2体しか無い」の行を書き換え、`feat/roran-face` はその直前に顔グラの部品の行を足している）。両方の行を残して直す（2026-10-04、HEAD `daee52d` で `git merge-tree` を流して確認。最初は ISSUES.md の変更をコミットする前に流していて、増えたぶつかりはないと誤って書いていた）
 
 ## issue #23 の5番目で決めたこと（2026-10-03）
 
