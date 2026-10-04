@@ -239,6 +239,38 @@ cat sheets/roran.txt
 
 静止画のシートでは良く見えた剣が、3コマを続けて動かすと不自然に見えることがある（ロランの攻撃の描き直しで実際にあった）。
 
+見せる前に、`tools/unit_check.py` で機械的に確かめられることを確かめる。
+
+```sh
+.venv/bin/python tools/unit_check.py assets/unit/ines --items klmstuw
+```
+
+- **脚の中心**: 向きごとに、全コマの脚（y=24 から下。輪郭と `--items` の持ち物の文字を除く）の中心がそろっているか。そろっていなければ終了コード 1
+- **増えた切れ目**: 同じ向きの `base` に無かった輪郭の切れ目を並べる。歩きの足先のようにわざと切れているものもあるので、報告だけ（終了コードは変わらない）
+
+髪・かぶり物・武器を素体抜きの部品として描いたユニットは、`tools/compose.py` で素体と重ねてコマにする。
+
+```sh
+.venv/bin/python tools/compose.py compose/gau.json --frames down_base --out /tmp/cand   # 案を作業フォルダへ
+.venv/bin/python tools/compose.py compose/gau.json --check                              # assets/unit/gau/ と同じかを確かめる
+```
+
+組み立て方は `compose/<ユニット>.json` に書く（`assets/` の下に置くと `validate.py` がグリッドとして読んで落ちる）。
+部品ごとに `front`（上に描く）か `back`（透明な画素にだけ描く。体に隠れる）を選び、`dx`・`dy` でずらす。
+手順は `types/unit/SPEC.md` の「描く手順」。
+組み立てた後に手で直したコマ（ガウは16コマ。色・目・襟・腕を描き足した）は組み立て結果と違うので、`compose.py` は上書きせずに止まる（`--force` を付けたときだけ上書きする）。
+`compose/gau.json` は組み立ての出発点の記録で、今のガウの絵はこれだけでは再現しない（`ISSUES.md`「組み立てた後の描き足しが forge の道具になっていない」）。
+
+部品の案を一括で作ったら、`tools/unit_picker.py` で組み合わせを選ぶページを書き出して依頼者に渡す（必須。依頼者が頭の中で組み合わせを試さずに済むように）。
+
+```sh
+.venv/bin/python tools/unit_picker.py PICKER.json --out build/picker/gau.html
+```
+
+- 設定ファイルには、素体・要素（頭・短剣など）ごとの案と部品のパス・前後（`z`）・見本のユニットを書く。形は `tools/unit_picker.py` の先頭の説明
+- 組み合わせは全部この道具が `compose.py` と同じ規則で組み立てておく（512 通りまで）。ページは4方向を同時に4倍とゲームの大きさで見せ、部品だけの絵、見本との比較、2つの要素の一覧を出す
+- 選んだ組み合わせは `HA-KA-DB` のような記号で返してもらう
+
 ### 2.8 物のセット（16px の部品を組む）
 
 ```sh
