@@ -1,0 +1,13 @@
+{
+  "unit": "gau",
+  "frames": {
+    "down_base": {
+      "body": "types/unit/base/male_down.txt",
+      "layers": [
+        {"part": "assets/unit/gau/parts/hood_down.txt", "z": "front"},
+        {"part": "assets/unit/gau/parts/hair_down.txt", "z": "front"},
+        {"part": "assets/part/dagger/dagger_down.txt", "z": "front"}
+      ]
+    }
+  }
+}
