@@ -11,6 +11,7 @@
 - **新規アセットを書く前に、必ず `types/<type>/SPEC.md` と `types/<type>/reference/` を読む。**
   絵柄は散文ではなく reference で揃える。
   `unit` は `reference/` を持たない。手本は `assets/unit/roran/`（剣と盾）と `assets/unit/ines/`（弓）、複製の土台は `types/unit/base/` の素体（`male_*`・`female_*`）。
+  新しい `unit` は `types/unit/SPEC.md` の「描く手順」（確認ポイント CP0〜CP4）どおりに描く。
 - **目視の前に `tools/validate.py` を通す。** 行長・未定義文字・パレット外参照は
   機械で落とす。目視はそれを通ってからにする。
 - **パレットに色を足すなら、描く前に `tools/probe_colors.py` で測る。**

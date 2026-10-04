@@ -18,6 +18,10 @@ forge 本体も並行して開発が続く。forge の改善をこちらへ取�
 - `types/item/SPEC.md`（新規）と `assets/item/sword.txt`・`bow.txt`（新規）: item 型の規約が無く、剣・弓のアイコンを描くのに合わせて実測値から規約を作った（向きは右上が先端の45°、形は軸について対称、素材ごとの色の割り当て）。`README.md` の表と `ISSUES.md` の該当行も直した（character-tactics の issue #23 の3番目、2026-10-02）
 - `assets/unit/roran/`（23コマ）と `types/unit/SPEC.md`: ロランの剣の鍔を木、柄頭を赤い宝石にして item の剣（`assets/item/sword.txt`）に色を揃えた。鍔と柄頭に専用の文字（`G H J R`）を割り当て、`# map:` 行で色を切り替えた。SPEC に剣の色・平らな切っ先・持ち物の専用の文字の規約を足した。`ISSUES.md` と `types/item/SPEC.md` の色の命名の整理の時期も直した（character-tactics の issue #23 の4番目、2026-10-03）
 - `ISSUES.md`: 「アセットのテキストとビルドをゲームリポジトリへ移設する」「タイルの受け渡し方が未定」の2行を消した（移設が済んだため。pixel-asset-forge の移設の issue は 2026-09-30 に閉じた）
+- `tools/unit_check.py`（新規）・`tests/test_unit_check.py`: unit の脚の中心と、同じ向きの `base` から増えた輪郭の切れ目を確かめる（自己チェック①）。README 2.7・CLAUDE.md に案内（character-tactics のユニットを描く標準のワークフロー、2026-10-04）
+- `tools/compose.py`（新規）・`tests/test_compose.py`: 素体と部品（髪・かぶり物・武器）を前後の順番で重ねて unit のコマを組み立てる。設定は `compose/<unit>.json`。README 2.7・CLAUDE.md に案内（同、2026-10-04）
+- `tools/present.py`・`tools/face_down.py`（新規）・`tests/test_present_face_down.py`: 案を並べて見せる画像を作る、拡大された顔を元の画素に戻す。ロランとイネスの作業で2回作った使い捨てをまとめた（同、2026-10-04）
+- `types/unit/SPEC.md`: 「描く手順」（確認ポイント CP0〜CP4 と自己チェック①②③）と、部品・組み立ての設定ファイルの配置を足した。`CLAUDE.md` の原則にも案内（同、2026-10-04）
 
 ## forge から持ってきたもの
 
