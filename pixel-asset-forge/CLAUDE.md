@@ -52,7 +52,7 @@
 .venv/bin/python tools/sheet.py sheets/roran.txt  # unit のシートとプレビューを出す
 .venv/bin/python tools/sheet_gif.py sheets/roran.txt  # unit の動きを状態ごとの GIF にする（README 2.7）
 .venv/bin/python tools/unit_check.py assets/unit/ines --items klmstuw  # unit の脚の中心と増えた切れ目（自己チェック①）
-.venv/bin/python tools/compose.py compose/gau.json   # 素体と部品を重ねて unit のコマを組み立てる
+.venv/bin/python tools/compose.py compose/gau.json --out /tmp/cand   # 素体と部品を重ねて unit のコマを組み立てる（手で直したコマは上書きせず止まる）
 .venv/bin/python tools/face_down.py IMG N OUT_PREFIX  # 拡大されたドット絵の顔を N 升に戻す
 .venv/bin/python tools/present.py OUT.png A.txt B.txt --ref face.png  # 案を並べて見せる画像
 .venv/bin/python tools/unit_picker.py PICKER.json --out build/picker/gau.html  # unit の部品の案を組み合わせて選ぶページ（CP1 で必須）

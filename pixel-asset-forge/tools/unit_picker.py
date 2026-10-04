@@ -179,9 +179,13 @@ def load_picker(path: Path, root: Path = REPO_ROOT) -> Picker:
     keys = list(elements)
     matrix = data.get("matrix", {"rows": keys[0], "cols": keys[1]} if len(keys) > 1 else {})
     _keys(matrix, {"rows", "cols"}, "matrix")
+    if matrix and set(matrix) != {"rows", "cols"}:
+        raise PickerError("matrix には rows と cols の両方を書く")
     for role, key in matrix.items():
         if key not in elements:
             raise PickerError(f"matrix の {role}: 要素 {key!r} が無い")
+    if matrix and matrix["rows"] == matrix["cols"]:
+        raise PickerError(f"matrix の rows と cols が同じ要素 {matrix['rows']!r}（別々の要素にする）")
 
     refs = data.get("refs", {})
     _keys(refs, set(refs), "refs")

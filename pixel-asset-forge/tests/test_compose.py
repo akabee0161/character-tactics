@@ -200,6 +200,30 @@ class MainTest(unittest.TestCase):
         code, _, _ = self.run_main([str(self.cfg), "--out", str(self.out), "--check"])
         self.assertEqual(code, 0)
 
+    def test_refuses_to_overwrite_a_hand_edited_frame(self):
+        self.run_main([str(self.cfg), "--out", str(self.out)])
+        target = self.out / "down_base.txt"
+        edited = target.read_text(encoding="utf-8").replace("bh", "hh")
+        target.write_text(edited, encoding="utf-8")
+        code, _, err = self.run_main([str(self.cfg), "--out", str(self.out)])
+        self.assertEqual(code, 2)
+        self.assertIn("down_base", err)
+        self.assertIn("--force", err)
+        self.assertEqual(target.read_text(encoding="utf-8"), edited)
+
+    def test_force_overwrites_a_hand_edited_frame(self):
+        self.run_main([str(self.cfg), "--out", str(self.out)])
+        target = self.out / "down_base.txt"
+        target.write_text(target.read_text(encoding="utf-8").replace("bh", "hh"), encoding="utf-8")
+        code, _, _ = self.run_main([str(self.cfg), "--out", str(self.out), "--force"])
+        self.assertEqual(code, 0)
+        self.assertEqual(parse(target).rows[10][10:12], "bh")
+
+    def test_rewriting_the_same_frame_is_allowed(self):
+        self.run_main([str(self.cfg), "--out", str(self.out)])
+        code, _, _ = self.run_main([str(self.cfg), "--out", str(self.out)])
+        self.assertEqual(code, 0)
+
     def test_unknown_frame_name_exits_two(self):
         code, _, err = self.run_main([str(self.cfg), "--out", str(self.out), "--frames", "up_base"])
         self.assertEqual(code, 2)

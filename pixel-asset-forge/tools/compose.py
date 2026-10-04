@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """素体と部品（髪・かぶり物・武器）を重ねて、unit のコマを組み立てる。
 
-    tools/compose.py compose/gau.json                     # assets/unit/gau/ に書く
+    tools/compose.py compose/gau.json                     # assets/unit/gau/ に書く（手で直したコマがあれば止まる）
     tools/compose.py compose/gau.json --frames down_base --out /tmp/cand
     tools/compose.py compose/gau.json --check             # 書いてあるコマと同じか
 
@@ -15,7 +15,8 @@
 設定ファイルの形は docs/superpowers/specs/2026-10-04-unit-drawing-workflow-design.md と
 types/unit/SPEC.md の「描く手順」を参照。パスは forge の直下からの相対。
 
-組み立てたコマを手で直したら、`--check` は差ありと出る。直したコマは組み立て直さない（上書きされる）。
+組み立てたコマを手で直したら、`--check` は差ありと出る。手で直したコマ（組み立て結果と違うコマ）があると、
+1枚も書かずに止まる。上書きしてよいときだけ `--force` を付ける。
 """
 from __future__ import annotations
 
@@ -160,6 +161,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--frames", nargs="+", help="組み立てるコマ（省略時はすべて）")
     parser.add_argument("--out", type=Path, help="書き出し先（省略時は assets/unit/<ユニット>/）")
     parser.add_argument("--check", action="store_true", help="書かずに、書いてあるコマと同じかだけ確かめる")
+    parser.add_argument("--force", action="store_true", help="手で直したコマ（組み立て結果と違うコマ）も上書きする")
     args = parser.parse_args(argv)
 
     try:
@@ -170,19 +172,30 @@ def main(argv: list[str] | None = None) -> int:
             raise ComposeError(f"{args.config.name} に無いコマ: {', '.join(unknown)}")
         out = args.out or REPO_ROOT / "assets" / "unit" / unit
         differ = 0
+        texts = {}
         for name in names:
             spec = frames[name]
             body = parse(spec.body)
             parts = [(parse(layer.part), layer) for layer in spec.layers]
             rows, groups = compose_frame(body, parts)
-            text = render_text(body, rows, groups, f"{args.config.name} の {name} から compose.py で組み立てた")
+            texts[name] = render_text(body, rows, groups, f"{args.config.name} の {name} から compose.py で組み立てた")
+        changed = []
+        for name, text in texts.items():
             target = out / f"{name}.txt"
+            current = target.read_text(encoding="utf-8") if target.exists() else None
             if args.check:
-                current = target.read_text(encoding="utf-8") if target.exists() else None
                 if current != text:
                     print(f"差あり {name}（{target}）")
                     differ += 1
-            else:
+            elif current is not None and current != text:
+                changed.append(name)
+        if changed and not args.force:
+            # 組み立てた後に手で直したコマを黙って上書きしない（1枚も書かずに止める）
+            raise ComposeError(f"{out} の {', '.join(changed)} は組み立て結果と違う（手で直したコマかもしれない）。"
+                               "上書きするなら --force、確かめるだけなら --check、案を作るなら --out で別の場所へ")
+        if not args.check:
+            for name, text in texts.items():
+                target = out / f"{name}.txt"
                 out.mkdir(parents=True, exist_ok=True)
                 target.write_text(text, encoding="utf-8")
                 print(f"書いた {target}")

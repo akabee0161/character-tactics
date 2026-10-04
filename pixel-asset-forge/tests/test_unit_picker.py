@@ -125,6 +125,16 @@ class LoadPickerTest(unittest.TestCase):
         with self.assertRaisesRegex(PickerError, "hair"):
             load_picker(cfg, root=self.ws.root)
 
+    def test_matrix_needs_both_rows_and_cols(self):
+        cfg = self.ws.config(matrix={"rows": "head"})
+        with self.assertRaisesRegex(PickerError, "cols"):
+            load_picker(cfg, root=self.ws.root)
+
+    def test_matrix_rows_and_cols_must_differ(self):
+        cfg = self.ws.config(matrix={"rows": "head", "cols": "head"})
+        with self.assertRaisesRegex(PickerError, "head"):
+            load_picker(cfg, root=self.ws.root)
+
     def test_variant_ids_must_be_unique_across_elements(self):
         cfg = self.ws.config(elements={
             "head": {"label": "頭", "variants": {"A": {"label": "x", "layers": []}}},
