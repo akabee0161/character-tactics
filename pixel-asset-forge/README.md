@@ -248,6 +248,17 @@ cat sheets/roran.txt
 - **脚の中心**: 向きごとに、全コマの脚（y=24 から下。輪郭と `--items` の持ち物の文字を除く）の中心がそろっているか。そろっていなければ終了コード 1
 - **増えた切れ目**: 同じ向きの `base` に無かった輪郭の切れ目を並べる。歩きの足先のようにわざと切れているものもあるので、報告だけ（終了コードは変わらない）
 
+髪・かぶり物・武器を素体抜きの部品として描いたユニットは、`tools/compose.py` で素体と重ねてコマにする。
+
+```sh
+.venv/bin/python tools/compose.py compose/gau.json --frames down_base --out /tmp/cand   # 案を作業フォルダへ
+.venv/bin/python tools/compose.py compose/gau.json                                      # assets/unit/gau/ へ
+```
+
+組み立て方は `compose/<ユニット>.json` に書く（`assets/` の下に置くと `validate.py` がグリッドとして読んで落ちる）。
+部品ごとに `front`（上に描く）か `back`（透明な画素にだけ描く。体に隠れる）を選び、`dx`・`dy` でずらす。
+手順は `types/unit/SPEC.md` の「描く手順」。
+
 ### 2.8 物のセット（16px の部品を組む）
 
 ```sh
