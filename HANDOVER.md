@@ -13,7 +13,7 @@
 
 ## What Remains
 
-1. このブランチの push と PR（依頼者の指示を待つ）。`atk_hit` の確認の返答
+1. このブランチの push と PR（依頼者の指示を待つ）。`atk_hit` の確認の返答。返答を受けて ISSUES の行を消すコミットと一緒に、この計画の台帳（`.superpowers/sdd/2026-10-05-unit-workflow-followups/progress.md`）を `docs/superpowers/ledgers/` に写す
 2. 次の一体（ミストは別の型なので別作業）。確認ポイントを減らす案は未合意: 結果の文書の「次の一体で減らせそうな確認ポイント」（CP0 を軽く、CP2 と CP3 をまとめる）と、2026-10-04 の振り返りで Claude が出した2案（CP0 に向きごとの構えの手本を添える、不可と気付いた案は見せない・指摘のコマが曖昧なら描く前に確かめる）
 3. 組み立て後の描き足しのスクリプト（`finish.py`・`anim.py` など、`.superpowers/sdd/2026-10-04-unit-workflow-gau/`）は、次の一体で同じものが要ったら forge に移す（依頼者の判断、2026-10-05）
 4. 大きな決定が要るもの（forge の ISSUES.md「決めてもらう必要があるもの」と「アセット・構成」）: `unit` の最小の線幅、`knight` の瞳孔の色、素体 `male_*` の見直し、パラメータ化、色の命名（`feat/roran-face` 待ち）
