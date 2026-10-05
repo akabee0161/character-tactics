@@ -2,6 +2,7 @@
 # 12行 = 3状態 x 4方向。空白区切り、`.` は透明のまま。
 # 行 0-3 idle / 4-7 walk / 8-11 attack、各ブロック内は down, up, left, right
 # コマ数は character-tactics 側の JSON（assets/units/gau.json）に合わせる。idle 2 / walk 4 / attack 3
+# frames: idle=2 walk=4 attack=3
 # 攻撃は短剣の突き。構える → 突く → base
 
 down_base   down_breathe   .  .

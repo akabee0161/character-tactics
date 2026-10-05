@@ -54,6 +54,43 @@ class ReadSheetTest(unittest.TestCase):
         self.assertEqual(len(rows), 12)
 
 
+GAU_LIKE = (["a b . ."] * 4) + (["a c a d"] * 4) + (["e f a ."] * 4)
+
+
+class FramesDeclarationTest(unittest.TestCase):
+    def test_declaration_is_read(self):
+        path = definition(["# frames: idle=2 walk=4 attack=3"] + GAU_LIKE)
+        self.assertEqual(sheet.read_frames_declaration(path), {"idle": 2, "walk": 4, "attack": 3})
+
+    def test_no_declaration_is_none(self):
+        self.assertIsNone(sheet.read_frames_declaration(definition(GAU_LIKE)))
+
+    def test_declaration_needs_every_state(self):
+        with self.assertRaises(SystemExit):
+            sheet.read_frames_declaration(definition(["# frames: idle=2 walk=4"] + GAU_LIKE))
+
+    def test_declaration_needs_positive_numbers(self):
+        with self.assertRaises(SystemExit):
+            sheet.read_frames_declaration(definition(["# frames: idle=2 walk=0 attack=3"] + GAU_LIKE))
+
+    def test_matching_definition_has_no_problems(self):
+        rows = sheet.read_sheet(definition(GAU_LIKE))
+        self.assertEqual(sheet.check_columns(rows, {"idle": 2, "walk": 4, "attack": 3}), [])
+
+    def test_a_state_using_fewer_columns_is_reported(self):
+        rows = sheet.read_sheet(definition(GAU_LIKE))
+        problems = sheet.check_columns(rows, {"idle": 2, "walk": 4, "attack": 4})
+        self.assertEqual(len(problems), 1)
+        self.assertIn("attack", problems[0])
+
+    def test_a_definition_narrower_than_the_most_frames_is_reported(self):
+        narrow = (["a b ."] * 4) + (["a c a"] * 4) + (["e f a"] * 4)
+        rows = sheet.read_sheet(definition(narrow))
+        problems = sheet.check_columns(rows, {"idle": 2, "walk": 4, "attack": 3})
+        self.assertTrue(any("walk" in p for p in problems))
+        self.assertTrue(any("4" in p and "3" in p for p in problems))
+
+
 class ComposeTest(unittest.TestCase):
     def setUp(self):
         self.palette = load_palette()

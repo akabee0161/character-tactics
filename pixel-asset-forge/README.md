@@ -217,6 +217,8 @@ cat sheets/roran.txt
 `sheets/roran.txt` は、`assets/unit/roran/` のどのコマをシートのどこに置くかの定義である
 （形式は `layouts/` と同じ）。12行 = 3状態（idle / walk / attack）× 4方向（down / up / left / right）で、
 同じコマを何度使ってもよい（歩行は `[base, walk_a, base, walk_b]`）。
+定義に `# frames: idle=2 walk=4 attack=3` の行を書くと、`sheet.py` が各状態の列数とシートの横幅を
+この宣言と照らし合わせ、食い違えば止まる。数はゲームの JSON の `sprites.map` と同じにする。
 
 - `build/sheets/roran.png`（128×384）：**ゲームに渡す成果物**
 - `build/sheets/roran_preview.png`：目視用。**赤い横線が足元 y=30**、青い縦線が左右中心。

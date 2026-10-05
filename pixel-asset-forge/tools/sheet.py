@@ -15,10 +15,16 @@ the same shape as a `layouts/*.txt` file on purpose, and lives outside
 Rows 0-3 are idle, 4-7 walk, 8-11 attack; within each block the order is
 down, up, left, right. The consumer (character-tactics) reads the sheet by
 `row = state_index * 4 + direction_index`, so the order is not ours to change.
+
+An optional `# frames: idle=2 walk=4 attack=3` line declares how many frames
+each state has (copy them from the game's JSON). When it is there, a state
+that uses a different number of columns, or a definition whose width is not
+the largest count, fails - the game sizes the sheet from those counts.
 """
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 from pathlib import Path
 
@@ -55,6 +61,45 @@ def read_sheet(path: Path) -> list[list[str | None]]:
             f"({len(STATES)} states x {len(DIRECTIONS)} directions)"
         )
     return rows
+
+
+FRAMES_HEADER = re.compile(r"^#\s*frames:\s*(.*)$")
+
+
+def read_frames_declaration(path: Path) -> dict[str, int] | None:
+    """`# frames: idle=2 walk=4 attack=3` を読む。無ければ None。
+
+    ゲームの JSON（sprites.map の各状態の frames）と同じ数を書く。sheet.py は JSON を読まないので、
+    定義の中に写しておき、定義の列と食い違えば止める。
+    """
+    for line in path.read_text(encoding="utf-8").splitlines():
+        match = FRAMES_HEADER.match(line.strip())
+        if not match:
+            continue
+        declared: dict[str, int] = {}
+        for token in match.group(1).split():
+            state, _, count = token.partition("=")
+            if state not in STATES or not count.isdigit() or int(count) < 1:
+                raise SystemExit(f"error: {path}: '# frames:' の {token!r} が読めない（例: idle=2 walk=4 attack=3）")
+            declared[state] = int(count)
+        missing = [s for s in STATES if s not in declared]
+        if missing:
+            raise SystemExit(f"error: {path}: '# frames:' に {', '.join(missing)} が無い")
+        return declared
+    return None
+
+
+def check_columns(rows: list[list[str | None]], declared: dict[str, int]) -> list[str]:
+    """定義の列が宣言どおりか。ゲームは横幅を frame × 最大コマ数と決めている。"""
+    problems = []
+    used = columns_per_state(rows)
+    for state in STATES:
+        if used[state] != declared[state]:
+            problems.append(f"{state}: 宣言は {declared[state]} コマ、定義は {used[state]} 列を使っている")
+    width, most = len(rows[0]), max(declared.values())
+    if width != most:
+        problems.append(f"定義の列数 {width} が、宣言の最大コマ数 {most} と違う（シートの横幅が合わなくなる）")
+    return problems
 
 
 def load_frame(path: Path, palette: dict[str, tuple[int, int, int]]) -> Image.Image:
@@ -202,6 +247,15 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     rows = read_sheet(args.definition)
+    declared = read_frames_declaration(args.definition)
+    if declared is None:
+        print(f"note {display(args.definition)}: '# frames:' が無いので列数は検査していない")
+    else:
+        problems = check_columns(rows, declared)
+        if problems:
+            for problem in problems:
+                print(f"FAIL {display(args.definition)}: {problem}", file=sys.stderr)
+            return 1
     name = args.definition.stem
     unit_dir = args.unitdir if args.unitdir is not None else UNIT_DIR / name
     try:
