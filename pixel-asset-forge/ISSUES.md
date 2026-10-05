@@ -27,10 +27,8 @@
 | **`probe_colors.py --pairs` の読み込みエラーがトレースバックになる** | `read_pairs()` の呼び出しが `main()` の `try` の外にあるので、1色だけの行の `GridError` や、ファイルが無いときの `OSError` が `FAIL`（終了コード 2）にならずに漏れる | 小 | 同上 |
 | **`RiverDerivationTest` が現役の川のタイルを読んでいる** | `tests/test_tools.py` の `RiverDerivationTest` が `assets/tile/river_*.txt` を直接読んでおり、「回帰テストに現役のアートを参照させない」（CLAUDE.md）に反する。出荷する川の派生宣言の検査は残したまま、比較する入力を `tests/fixtures/` に固定する | 小 | character-tactics#22 の CodeRabbit の指摘（2026-09-30） |
 | **`check_colors.py` が既定の実行で毎回失敗する** | 原因は上の `knight` 1件だけだが、そのせいで新しい hard failure が出ても終了コードで区別できない。`knight` の色が決まれば解消する | 小（色の決定待ち） | 2026-09-23 |
-| **`unit_picker.html` がラベルを HTML として埋め込む** | 要素・案のラベル、見本の名前、`unit` を `innerHTML`/`insertAdjacentHTML` にそのまま入れている。設定は Claude が書くので危険は小さいが、「刃<4px」のようなラベルで表示が崩れる。`textContent` で入れる。あわせて `unit_picker.py` の docstring の「8倍」を実際の「4倍」に直す | 小 | ガウのブランチの最終レビュー（2026-10-04） |
 | **`face_down.py` が正方形の画像を前提にしている** | 縦の位置にも `img.width / n` を使うので、高さが幅より小さい画像は `IndexError`、大きい画像は下を読まない。`cluster` の `ValueError`（色が多すぎる）も捕まえずトレースバックになる。幅と高さを別々に割るか、正方形でなければ止める | 小 | 同上 |
 | **`present.py` の `--scale` が0以下でも通る** | Pillow の resize でトレースバックになる。1以上かを確かめる | 小 | 同上 |
-| **`unit_picker.py` の「部品だけ」の絵と `refs` の検査が甘い** | 1つの案に部品が2つ以上あると、部品だけの絵では後の部品の文字の色で上書きする（組み合わせの方は `compose_frame` が色の衝突で止めるので、黙って違う絵にはならない）。`refs` はオブジェクトかどうかしか見ていない | 小 | ガウの作業（2026-10-04） |
 | **`sheet.py` が列数を検査しない** | 12行は強制するが列数は見ていない。3列の定義を書くと 96×384 が黙って出て、気付くのは character-tactics の `sheet-size.test.ts` まで遅れる。ただし列数はユニットごとに変わりうる（`garum` は `frame=48`）ので、4列固定の検査は誤り | 小 | README（旧） |
 
 ## ツールの改善（挙動は変えない）

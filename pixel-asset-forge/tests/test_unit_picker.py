@@ -4,6 +4,7 @@ from __future__ import annotations
 import contextlib
 import io
 import json
+import re
 import sys
 import tempfile
 import unittest
@@ -239,6 +240,72 @@ class MainTest(unittest.TestCase):
         code, _, err = self.run_main(["/nonexistent/picker.json", "--out", "/tmp/x.html"])
         self.assertEqual(code, 2)
         self.assertIn("error", err)
+
+
+class PartsAloneTest(unittest.TestCase):
+    def setUp(self):
+        self.ws = Workspace()
+
+    def tearDown(self):
+        self.ws.close()
+
+    def two_part_config(self, ear_map: str) -> Path:
+        for d in DIRS:
+            self.ws.write(f"hood_{d}.txt", grid_text({(11, 10): "h"}, "h=leaf_base"))
+            self.ws.write(f"ear_{d}.txt", grid_text({(12, 10): "h"}, ear_map))
+        return self.ws.config(elements={
+            "head": {"label": "頭", "variants": {"H1": {"label": "頭巾と耳", "layers": [
+                {"part": "hood_{dir}.txt"}, {"part": "ear_{dir}.txt", "z": "back"}]}}},
+            "weapon": {"label": "短剣", "variants": {"D2": {"label": "なし", "layers": []}}}})
+
+    def test_two_parts_in_one_variant_are_drawn_together(self):
+        data = build_data(load_picker(self.two_part_config("h=leaf_base"), root=self.ws.root))
+        alone = {"frames": data["parts"], "colours": data["colours"]}
+        self.assertEqual(pixel(alone, "H1|down", 11, 10), "#1f5c40")  # leaf_base
+        self.assertEqual(pixel(alone, "H1|down", 12, 10), "#1f5c40")
+
+    def test_two_parts_giving_one_letter_two_colours_stop_the_page(self):
+        # 部品だけの絵は文字で重ねるので、同じ文字に別の色があると後の部品の色になる。
+        # その前に組み合わせの組み立て（compose_frame）が止めることを固定しておく
+        with self.assertRaisesRegex(PickerError, r"H1-D2 の down.*'h'"):
+            build_data(load_picker(self.two_part_config("h=skin_base"), root=self.ws.root))
+
+
+class RefsTest(unittest.TestCase):
+    def setUp(self):
+        self.ws = Workspace()
+
+    def tearDown(self):
+        self.ws.close()
+
+    def test_ref_name_must_not_contain_the_key_separator(self):
+        cfg = self.ws.config(refs={"ロラン|旧": "body_{dir}.txt"})
+        with self.assertRaisesRegex(PickerError, r"\|"):
+            load_picker(cfg, root=self.ws.root)
+
+    def test_ref_name_must_not_be_empty(self):
+        cfg = self.ws.config(refs={"": "body_{dir}.txt"})
+        with self.assertRaisesRegex(PickerError, "refs"):
+            load_picker(cfg, root=self.ws.root)
+
+    def test_ref_path_must_be_a_string(self):
+        cfg = self.ws.config(refs={"ロラン": 3})
+        with self.assertRaisesRegex(PickerError, "ロラン"):
+            load_picker(cfg, root=self.ws.root)
+
+
+class TemplateTest(unittest.TestCase):
+    """ラベルは設定から来るので、HTML として埋め込まず textContent で入れる。"""
+
+    def setUp(self):
+        self.text = (REPO_ROOT / "tools" / "unit_picker.html").read_text(encoding="utf-8")
+
+    def test_no_insert_adjacent_html(self):
+        self.assertNotIn("insertAdjacentHTML", self.text)
+
+    def test_inner_html_is_only_cleared(self):
+        assigned = re.findall(r"innerHTML\s*=\s*([^;]+);", self.text)
+        self.assertEqual([a.strip() for a in assigned if a.strip() != '""'], [])
 
 
 if __name__ == "__main__":
