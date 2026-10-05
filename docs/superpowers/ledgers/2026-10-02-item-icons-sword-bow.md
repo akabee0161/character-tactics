@@ -2,7 +2,7 @@
 
 Executor: executing-plans (Native、依頼者が選択 2026-10-02)。絵の段階では依頼者の指示で止まる（Task 1・3 の見せる段階、直しの確認）。
 Pre-flight: Task 1 の item_check.py（--axis X0 X1）を Task 2・3・4 が使う → 引数は全タスクで同じ、矛盾なし。Task 2・4 の sword.txt・bow.txt を Task 5 が実測 → 名前は一致。
-Task 1: Ruling: 検査スクリプトの置き場所を /tmp/item_check.py から scratchpad（/tmp/claude-1000/-home-ubuntu-workspace/e564a734-e366-57e7-9f07-2cb9b825b76b/scratchpad/item_check.py）に変える — 環境の指定。依頼者が plan の確認時に了承 — 誤りなら置き場所を戻すだけ
+Task 1: Ruling: 検査スクリプトの置き場所を /tmp/item_check.py から scratchpad（<scratchpad>/item_check.py）に変える — 環境の指定。依頼者が plan の確認時に了承 — 誤りなら置き場所を戻すだけ
 Task 2: Ruling: 剣は計画の3案（a・b・c）のどれでもなく、依頼者の指示で作った e（b の刃の長さ・a の鍔・刃は3列で軸について形が対称）に確定 — 依頼者が選択（b の長さ→a の鍔→左右の非対称を指摘→e）— 誤りなら sword.txt を描き直すだけ
 Task 2: Ruling: sword.txt の map から未使用の l=stone_dark・d=wood_dark を消した — Task 5 の色の実測で紛れないため — 誤りでも絵は変わらない
 Task 2: complete (commits 37d11aa..4f1f285, tests: validate/check_colors/item_check sword.txt → ok/0 failed/ok)
