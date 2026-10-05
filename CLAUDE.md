@@ -29,4 +29,5 @@ npm run build   # 型チェック + 本番ビルド (out/play/character-tactics/
 ## ドキュメントの扱い
 
 - `docs/superpowers/`(specs / plans)は作成時点のログ。後から実装や運用が変わっても遡って更新しない
+- `docs/superpowers/ledgers/` は進捗台帳（`.superpowers/sdd/<計画>/progress.md`）の写し。これもログ。計画を終えたら、その計画の台帳をここに写してコミットする
 - 最新の状態を表す正典は README.md とこのファイル。実装・手順・制約が変わったら更新するのはこの2つ
