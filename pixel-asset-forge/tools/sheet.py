@@ -9,8 +9,8 @@ the same shape as a `layouts/*.txt` file on purpose, and lives outside
 `assets/` for the same reason: the frames it names are read from
 `assets/unit/<definition name>/`.
 
-    down_base  down_breathe  .  .
-    up_base    up_breathe    .  .
+    down_base  down_idle2  .  .
+    up_base    up_idle2    .  .
 
 Rows 0-3 are idle, 4-7 walk, 8-11 attack; within each block the order is
 down, up, left, right. The consumer (character-tactics) reads the sheet by

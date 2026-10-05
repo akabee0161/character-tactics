@@ -6,10 +6,10 @@
 # 攻撃は 構える → 引き始め → 引き絞る ×3 → 放った後。引き絞る（atk_hit）を3回並べて、他のコマの3倍止める。
 # ゲームは攻撃の最後のコマ（放った後）が出た瞬間に矢を出す（windupOf = (コマ数−1)/fps）。
 
-down_base   down_breathe   .  .  .  .
-up_base     up_breathe     .  .  .  .
-left_base   left_breathe   .  .  .  .
-right_base  right_breathe  .  .  .  .
+down_base   down_idle2   .  .  .  .
+up_base     up_idle2     .  .  .  .
+left_base   left_idle2   .  .  .  .
+right_base  right_idle2  .  .  .  .
 down_base   down_walk_a   down_base   down_walk_b   .  .
 up_base     up_walk_a     up_base     up_walk_b     .  .
 left_base   left_walk_a   left_base   left_walk_b   .  .
