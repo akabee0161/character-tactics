@@ -343,7 +343,7 @@ CLAUDE.md                  Claude が守る作業規約（AI 向け）
 ISSUES.md                  見つかっていて直していない課題
 palette/master.json        色名 -> RGB。色は必ずここ経由で参照する
 types/<type>/SPEC.md       型ごとの機械的な規約（寸法・構成・並び方）
-types/<type>/reference/    合格済みのお手本。絵柄はここで揃える（`unit` は `assets/unit/roran/` が手本）
+types/<type>/reference/    合格済みのお手本。絵柄はここで揃える（`unit` は `reference/` を持たない。手本は `assets/unit/roran/`（剣と盾）・`assets/unit/ines/`（弓）・`assets/unit/gau/`（短剣）、土台は `types/unit/base/` の素体）
 types/unit/base/           unit の素体（4方向）。新しい unit を複製して作る土台
 assets/<type>/<name>.txt   アセットの元テキスト（これが正）
 sheets/<unit>.txt          unit のシート定義
@@ -363,7 +363,7 @@ seed/face32.py             リポジトリ化前の原型。もう使ってい�
 | `face`（顔グラ） | reference 1点（`knight`） | 32x32 | [`types/face/SPEC.md`](types/face/SPEC.md) |
 | `item`（小物） | 3点（`chest`・`sword`・`bow`） | 16x16 | [`types/item/SPEC.md`](types/item/SPEC.md) |
 | `tile`（マップ） | 77点（草原57・城内20）。うち12点は物のセット3つ（村・岩・木）の部品 | 16x16（セットは 32x32） | [`types/tile/SPEC.md`](types/tile/SPEC.md) |
-| `unit`（マップ上のキャラ） | 1体24コマ（ロラン）＋素体4方向 | 32x32 | [`types/unit/SPEC.md`](types/unit/SPEC.md) |
+| `unit`（マップ上のキャラ） | 3体（ロラン・ガウ 24コマ、イネス 32コマ）＋素体 `male_*`・`female_*` 4方向ずつ | 32x32 | [`types/unit/SPEC.md`](types/unit/SPEC.md) |
 
 **「正」はテキストで、PNG は生成物。** 絵を変えるときに編集するのは `assets/**/*.txt` だけで、
 PNG を直接編集しない。
@@ -406,7 +406,7 @@ unit 型で、敵の兵士を1体。ロランと同じ規約・同じシート�
 
 依頼すると、Claude はおおむね次の順で進める（`CLAUDE.md` に書いてある手順）。
 
-1. `types/<type>/SPEC.md` と `reference/` を読む（`unit` は `assets/unit/roran/` と `types/unit/base/`）
+1. `types/<type>/SPEC.md` と `reference/` を読む（`unit` は手本の3体と `types/unit/base/`。描く順番は `types/unit/SPEC.md` の「描く手順」）
 2. 新しい色が要るなら、`probe_colors.py` で隣り合う色と測ってから `master.json` に足す
 3. `assets/<type>/<name>.txt` を書く
 4. `validate.py` → `render.py` → `_x8.png` を自分で目視して直す
