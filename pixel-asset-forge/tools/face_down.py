@@ -3,7 +3,7 @@
 
     tools/face_down.py ../assets/images/gau-face.png 32 /tmp/gau
 
-N 升に戻し、各成分の差 14 以下の色をまとめて、色の一覧と文字のグリッドを出す。
+横を N 升に戻し（升は正方形、縦の升の数は画像の高さから決まる）、各成分の差 14 以下の色をまとめて、色の一覧と文字のグリッドを出す。
 OUT_PREFIX_q.png（N px）と OUT_PREFIX_q_x8.png（灰色の上に8倍）を書く。
 N が合っているかは、出力の「変わり目の多い位置」が升の幅おきに並ぶかで確かめる
 （ロランの顔は 24px の約5.33倍、イネスは 32px の4倍だった）。
@@ -34,12 +34,15 @@ def transition_positions(img: Image.Image, axis: str, count: int) -> list[int]:
 
 
 def downsample(img: Image.Image, n: int) -> Image.Image:
+    """幅を n 升に割る。升は正方形とし、高さは升の大きさで割った数だけ読む。"""
     img = img.convert("RGBA")
     step = img.width / n
-    small = Image.new("RGBA", (n, n))
-    for y in range(n):
+    rows = max(1, round(img.height / step))
+    small = Image.new("RGBA", (n, rows))
+    for y in range(rows):
+        sy = min(int((y + 0.5) * step), img.height - 1)
         for x in range(n):
-            small.putpixel((x, y), img.getpixel((int((x + 0.5) * step), int((y + 0.5) * step))))
+            small.putpixel((x, y), img.getpixel((int((x + 0.5) * step), sy)))
     return small
 
 
@@ -85,7 +88,11 @@ def main(argv: list[str] | None = None) -> int:
     for axis in ("x", "y"):
         print(axis, "変わり目の多い位置:", transition_positions(img, axis, args.n + 4))
     small = downsample(img, args.n)
-    rows, colours = cluster(small)
+    try:
+        rows, colours = cluster(small)
+    except ValueError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
     print("色数:", len(colours))
     for ch, (hexcode, count) in zip(CHARS, colours):
         print(f"  {ch} {hexcode} n={count}")
@@ -96,7 +103,7 @@ def main(argv: list[str] | None = None) -> int:
     small.save(f"{args.out_prefix}_q.png")
     backdrop = Image.new("RGBA", small.size, (200, 200, 200, 255))
     backdrop.alpha_composite(small)
-    backdrop.resize((args.n * 8, args.n * 8), Image.NEAREST).save(f"{args.out_prefix}_q_x8.png")
+    backdrop.resize((small.width * 8, small.height * 8), Image.NEAREST).save(f"{args.out_prefix}_q_x8.png")
     return 0
 
 
