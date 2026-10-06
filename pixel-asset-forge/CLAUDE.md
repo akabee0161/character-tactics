@@ -51,6 +51,9 @@
 .venv/bin/python tools/tilemap.py             # tile を 3x3 で並べる（継ぎ目の確認）
 .venv/bin/python tools/sheet.py sheets/roran.txt  # unit のシートとプレビューを出す
 .venv/bin/python tools/sheet_gif.py sheets/roran.txt  # unit の動きを状態ごとの GIF にする（README 2.7）
+.venv/bin/python tools/enemy_build.py enemy/dagger-red-m.json  # 敵のレシピから、味方の完成コマを色替えして敵のシートを作る（build/sheets/<id>.png）
+.venv/bin/python tools/enemy_build.py --all                      # enemy/ の全レシピを作る
+.venv/bin/python tools/enemy_build.py --colours dagger           # 男女の元のコマが使う色の差
 .venv/bin/python tools/unit_check.py assets/unit/ines --items klmstuw  # unit の脚の中心と増えた切れ目（自己チェック①）
 .venv/bin/python tools/compose.py compose/gau.json --out /tmp/cand   # 素体と部品を重ねて unit のコマを組み立てる（手で直したコマは上書きせず止まる）
 .venv/bin/python tools/face_down.py IMG N OUT_PREFIX  # 拡大されたドット絵の顔を N 升に戻す

@@ -10,15 +10,18 @@ docs/superpowers/plans/2026-10-06-enemy-variants.md を参照。
 """
 from __future__ import annotations
 
+import argparse
 import json
 import re
+import shutil
 import sys
 from dataclasses import dataclass
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from gridfile import BACKGROUND, REPO_ROOT, GridError, parse  # noqa: E402
+import sheet  # noqa: E402
+from gridfile import BACKGROUND, REPO_ROOT, GridError, display, load_palette, parse  # noqa: E402
 
 Frame = list[list["str | None"]]
 
@@ -77,6 +80,8 @@ def serialize_frame(frame: Frame, note: str) -> str:
 
 
 ENEMY_DIR = REPO_ROOT / "enemy"
+BUILD_ROOT = REPO_ROOT / "build" / "enemy"
+SHEET_DIR = REPO_ROOT / "build" / "sheets"
 ARCHETYPES = {"dagger": "sheets/gau.txt"}
 BODIES = ("male", "female")
 SOURCES = {
@@ -133,3 +138,114 @@ def load_recipe(path: Path, palette: dict) -> Recipe:
 def source_paths(recipe: Recipe, root: Path = REPO_ROOT) -> tuple[Path, Path]:
     """(元のコマの置き場, シート定義)。"""
     return root / SOURCES[(recipe.archetype, recipe.body)], root / ARCHETYPES[recipe.archetype]
+
+
+def _sheet_rows(sheet_def: Path) -> list[list[str | None]]:
+    """シート定義を読み、`# frames:` の宣言と合うか確かめる（sheet.py の関数は SystemExit で止まるので、EnemyError にする）。"""
+    try:
+        rows = sheet.read_sheet(sheet_def)
+        declared = sheet.read_frames_declaration(sheet_def)
+    except SystemExit as exc:
+        raise EnemyError(str(exc)) from None
+    if declared is not None:
+        problems = sheet.check_columns(rows, declared)
+        if problems:
+            raise EnemyError(f"{display(sheet_def)}: " + " / ".join(problems))
+    return rows
+
+
+def _frame_names(rows: list[list[str | None]]) -> list[str]:
+    return sorted({name for row in rows for name in row if name})
+
+
+def _used(frames) -> set[str]:
+    return {c for frame in frames for row in frame for c in row if c is not None}
+
+
+def source_colours(source_dir: Path, sheet_def: Path) -> set[str]:
+    names = _frame_names(_sheet_rows(sheet_def))
+    return _used(read_frame(source_dir / f"{name}.txt") for name in names)
+
+
+def build(recipe: Recipe, source_dir: Path, sheet_def: Path, palette: dict,
+          build_root: Path = BUILD_ROOT, sheet_dir: Path = SHEET_DIR) -> Path:
+    rows = _sheet_rows(sheet_def)
+    names = _frame_names(rows)
+    frames = {name: read_frame(source_dir / f"{name}.txt") for name in names}
+
+    used = _used(frames.values())
+    unused = sorted(set(recipe.recolor) - used)
+    if unused:
+        raise EnemyError(
+            f"{recipe.id}: recolor の {', '.join(unused)} は、{display(source_dir)} のどのコマでも使われていない（綴りの間違い？）"
+        )
+    after = {recipe.recolor.get(c, c) for c in used}
+    if len(after) < len(used):
+        print(f"warning: {recipe.id}: 色替えで {len(used)} 色が {len(after)} 色に減った（別々の色が同じ色になっている）",
+              file=sys.stderr)
+
+    out = build_root / recipe.id
+    shutil.rmtree(out, ignore_errors=True)
+    out.mkdir(parents=True)
+    for name, frame in frames.items():
+        note = f"{name} は enemy_build.py が {recipe.id} のレシピで作った（手で編集しない）"
+        (out / f"{name}.txt").write_text(serialize_frame(recolor_frame(frame, recipe.recolor), note), encoding="utf-8")
+
+    loaded = sheet.load_frames(rows, palette, out)
+    canvas = sheet.compose_sheet(rows, loaded)
+    sheet_dir.mkdir(parents=True, exist_ok=True)
+    png = sheet_dir / f"{recipe.id}.png"
+    canvas.save(png)
+    sheet.preview(canvas, sheet.frame_size(loaded)).save(sheet_dir / f"{recipe.id}_preview.png")
+    return png
+
+
+def _print_colours(archetype: str) -> int:
+    if archetype not in ARCHETYPES:
+        raise EnemyError(f"archetype は {', '.join(ARCHETYPES)} のどれか（{archetype!r} だった）")
+    sheet_def = REPO_ROOT / ARCHETYPES[archetype]
+    sets = {body: source_colours(REPO_ROOT / SOURCES[(archetype, body)], sheet_def) for body in BODIES}
+    for body, colours in sets.items():
+        print(f"{body}: {len(colours)} 色")
+        print("  " + " ".join(sorted(colours)))
+    only_male = sorted(sets["male"] - sets["female"])
+    only_female = sorted(sets["female"] - sets["male"])
+    print(f"男性だけ: {' '.join(only_male) or 'なし'}")
+    print(f"女性だけ: {' '.join(only_female) or 'なし'}")
+    return 0
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("recipes", nargs="*", type=Path, help="enemy/<id>.json")
+    parser.add_argument("--all", action="store_true", help="enemy/ のレシピをすべて作る")
+    parser.add_argument("--colours", metavar="ARCHETYPE",
+                        help="男女の元のコマが使う色の一覧と差（女性の色が男性とそろっているか）")
+    args = parser.parse_args(argv)
+    try:
+        if args.colours:
+            return _print_colours(args.colours)
+        if args.all and args.recipes:
+            raise EnemyError("--all とレシピのパスは同時に指定できない")
+        paths = sorted(ENEMY_DIR.glob("*.json")) if args.all else args.recipes
+        if not paths:
+            raise EnemyError("作るレシピが無い（enemy/<id>.json を渡すか --all）")
+        palette = load_palette()
+        recipes = [load_recipe(path, palette) for path in paths]
+        seen: dict[str, Path] = {}
+        for recipe in recipes:
+            if recipe.id in seen:
+                raise EnemyError(f"id {recipe.id!r} が重複している（{seen[recipe.id]} と {recipe.path}）")
+            seen[recipe.id] = recipe.path
+        for recipe in recipes:
+            source_dir, sheet_def = source_paths(recipe)
+            png = build(recipe, source_dir, sheet_def, palette)
+            print(f"ok   {display(png)}  {recipe.name}")
+    except (EnemyError, GridError) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
