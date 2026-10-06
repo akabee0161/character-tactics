@@ -132,7 +132,7 @@
         <input type="radio" name="bg" id="bgCheck" value="check"><label for="bgCheck">市松</label>
       </div>
     </div>
-    <label class="check"><input type="checkbox" id="foot"> 足元の線（y=30）</label>
+    <label class="check"><input type="checkbox" id="foot"> <span id="foot-text">足元の線（y=30）</span></label>
   </div>
 
   <div class="grid" id="grid"></div>
@@ -143,6 +143,10 @@
 <script>
 const CONFIG = /*CONFIG*/null;
 const F = CONFIG.frame;
+// 足元の行は 32px のコマ（y=30）だけ決まっている。ほかの大きさでは線を出さない
+const FOOT_Y = CONFIG.footY;
+if (FOOT_Y === null) document.getElementById("foot").closest("label").hidden = true;
+else document.getElementById("foot-text").textContent = `足元の線（y=${FOOT_Y}）`;
 // 動きを減らす設定のときは、止めた状態で開く（「再生」で動かせる）
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const state = { playing: !reduceMotion, zoom: 6, speed: 1, bg: "grass", foot: false };
@@ -249,7 +253,7 @@ function draw() {
       ctx.drawImage(sheet, index * F, row * F, F, F, 0, 0, F * scale, F * scale);
       if (state.foot && scale === state.zoom) {
         ctx.fillStyle = "rgba(224, 82, 74, 0.55)";
-        ctx.fillRect(0, 31 * scale - 1, F * scale, 2);
+        ctx.fillRect(0, (FOOT_Y + 1) * scale - 1, F * scale, 2);
       }
     }
     cell.counter.textContent = `${index + 1} / ${st.frames}`;

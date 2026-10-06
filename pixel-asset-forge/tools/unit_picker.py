@@ -6,7 +6,7 @@
 髪・かぶり物・武器などの部品を一括で案を作ったとき、依頼者が組み合わせを頭の中で試さずに
 選べるようにするページ（必須。types/unit/SPEC.md の「描く手順」の CP1）。
 組み合わせは全部ここで tools/compose.py の compose_frame で組み立てておき、ページは並べて見せるだけ。
-ページでは4方向を同時に、8倍とゲームの大きさ（等倍・2倍）で見せ、部品だけの絵、
+ページでは4方向を同時に、4倍とゲームの大きさ（等倍・2倍）で見せ、部品だけの絵、
 見本のユニット（refs）との比較、全部の組み合わせの一覧を出す。選んだ組み合わせは記号（例 H1-R2-D3）で返してもらう。
 
 設定ファイルの形（パスは --root（既定は forge の直下）からの相対。`{dir}` は向きに置き換わる）:
@@ -188,7 +188,11 @@ def load_picker(path: Path, root: Path = REPO_ROOT) -> Picker:
         raise PickerError(f"matrix の rows と cols が同じ要素 {matrix['rows']!r}（別々の要素にする）")
 
     refs = data.get("refs", {})
-    _keys(refs, set(refs), "refs")
+    if not isinstance(refs, dict):
+        raise PickerError("refs: オブジェクトでない")
+    for name in refs:
+        if not name or "|" in name:
+            raise PickerError(f"refs の名前 {name!r}: 空にできず、| を含められない（ページで名前と向きを | でつなぐ）")
     return Picker(unit, str(data.get("title", f"{unit} の部品の組み合わせ")), root, body, list(directions),
                   elements, default, dict(matrix), {k: _string(v, f"refs の {k}") for k, v in refs.items()})
 

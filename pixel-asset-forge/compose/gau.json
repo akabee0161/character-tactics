@@ -69,8 +69,8 @@
         }
       ]
     },
-    "down_breathe": {
-      "body": "assets/unit/gau/parts/body_breathe_down.txt",
+    "down_idle2": {
+      "body": "assets/unit/gau/parts/body_idle2_down.txt",
       "layers": [
         {
           "part": "assets/unit/gau/parts/hood_down.txt",
@@ -87,8 +87,8 @@
         }
       ]
     },
-    "up_breathe": {
-      "body": "assets/unit/gau/parts/body_breathe_up.txt",
+    "up_idle2": {
+      "body": "assets/unit/gau/parts/body_idle2_up.txt",
       "layers": [
         {
           "part": "assets/unit/gau/parts/hood_up.txt",
@@ -105,8 +105,8 @@
         }
       ]
     },
-    "left_breathe": {
-      "body": "assets/unit/gau/parts/body_breathe_left.txt",
+    "left_idle2": {
+      "body": "assets/unit/gau/parts/body_idle2_left.txt",
       "layers": [
         {
           "part": "assets/unit/gau/parts/hood_left.txt",
@@ -123,8 +123,8 @@
         }
       ]
     },
-    "right_breathe": {
-      "body": "assets/unit/gau/parts/body_breathe_right.txt",
+    "right_idle2": {
+      "body": "assets/unit/gau/parts/body_idle2_right.txt",
       "layers": [
         {
           "part": "assets/unit/gau/parts/hood_right.txt",

@@ -4,6 +4,8 @@
 """
 from __future__ import annotations
 
+import contextlib
+import io
 import sys
 import tempfile
 import unittest
@@ -52,6 +54,64 @@ class ReadSheetTest(unittest.TestCase):
     def test_comments_and_blank_lines_do_not_count_as_rows(self):
         rows = sheet.read_sheet(definition(["# a sheet", ""] + TWELVE))
         self.assertEqual(len(rows), 12)
+
+
+GAU_LIKE = (["a b . ."] * 4) + (["a c a d"] * 4) + (["e f a ."] * 4)
+
+
+class FramesDeclarationTest(unittest.TestCase):
+    def test_declaration_is_read(self):
+        path = definition(["# frames: idle=2 walk=4 attack=3"] + GAU_LIKE)
+        self.assertEqual(sheet.read_frames_declaration(path), {"idle": 2, "walk": 4, "attack": 3})
+
+    def test_no_declaration_is_none(self):
+        self.assertIsNone(sheet.read_frames_declaration(definition(GAU_LIKE)))
+
+    def test_declaration_needs_every_state(self):
+        with self.assertRaises(SystemExit):
+            sheet.read_frames_declaration(definition(["# frames: idle=2 walk=4"] + GAU_LIKE))
+
+    def test_declaration_needs_positive_numbers(self):
+        with self.assertRaises(SystemExit):
+            sheet.read_frames_declaration(definition(["# frames: idle=2 walk=0 attack=3"] + GAU_LIKE))
+
+    def test_matching_definition_has_no_problems(self):
+        rows = sheet.read_sheet(definition(GAU_LIKE))
+        self.assertEqual(sheet.check_columns(rows, {"idle": 2, "walk": 4, "attack": 3}), [])
+
+    def test_a_state_using_fewer_columns_is_reported(self):
+        rows = sheet.read_sheet(definition(GAU_LIKE))
+        problems = sheet.check_columns(rows, {"idle": 2, "walk": 4, "attack": 4})
+        self.assertEqual(len(problems), 1)
+        self.assertIn("attack", problems[0])
+
+    def test_declaration_rejects_non_ascii_digits(self):
+        # '²'.isdigit() は True だが int('²') は ValueError になる
+        with self.assertRaises(SystemExit):
+            sheet.read_frames_declaration(definition(["# frames: idle=² walk=4 attack=3"] + GAU_LIKE))
+
+    def test_a_missing_cell_in_one_direction_is_reported(self):
+        # up の idle だけ2コマ目が抜けている。ほかの向きが2列目を使うので、列数だけでは見逃す
+        rows = sheet.read_sheet(definition(["a b . .", "a . . .", "a b . .", "a b . ."] + GAU_LIKE[4:]))
+        problems = sheet.check_columns(rows, {"idle": 2, "walk": 4, "attack": 3})
+        self.assertEqual(len(problems), 1)
+        self.assertIn("idle", problems[0])
+        self.assertIn("up", problems[0])
+
+    def test_main_stops_when_the_definition_disagrees_with_the_declaration(self):
+        path = definition(["# frames: idle=2 walk=4 attack=4"] + GAU_LIKE)
+        err = io.StringIO()
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(err):
+            code = sheet.main([str(path), "--unitdir", str(FIXTURES), "-o", tempfile.mkdtemp()])
+        self.assertEqual(code, 1)
+        self.assertIn("FAIL", err.getvalue())
+
+    def test_a_definition_narrower_than_the_most_frames_is_reported(self):
+        narrow = (["a b ."] * 4) + (["a c a"] * 4) + (["e f a"] * 4)
+        rows = sheet.read_sheet(definition(narrow))
+        problems = sheet.check_columns(rows, {"idle": 2, "walk": 4, "attack": 3})
+        self.assertTrue(any("walk" in p for p in problems))
+        self.assertTrue(any("4" in p and "3" in p for p in problems))
 
 
 class ComposeTest(unittest.TestCase):

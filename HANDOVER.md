@@ -1,24 +1,43 @@
 # Session Handover
-## Generated: 2026-10-04（ユニットのドット絵を描く標準のワークフローの計画を全10タスク終えた時点）
+## Generated: 2026-10-05（ユニット生成で出てきた課題の片付けを終えた時点）。2026-10-06 に `atk_hit` の確認と、PR #30 の CodeRabbit の指摘への対応を追記
 
 ## Current State
 
-- **Branch**: `feat/unit-workflow-gau`（main `fe7e79f` = PR #27 イネスのマージから分岐）。計画の Task 1〜10 と最終レビューの修正はすべて完了。push 済み、**PR #28**（https://github.com/akabee0161/character-tactics/pull/28）
-- 目的: ロラン・イネスと同じ品質のユニットを、依頼者の判断を減らして描くワークフローを作り、**ガウ**で試す
-- 結果 `docs/superpowers/specs/2026-10-04-unit-drawing-workflow-results.md`: 品質は依頼者の判断で「ロラン・イネスと同じくらい」。判断の回数は13回でイネス（約12回）から減らなかったが、部品の形への差し戻しは0回になり、差し戻しは組み合わせた後の顔（前髪と目）と動き（構え）に移った
-- forge に入れた道具（TDD）: `unit_check.py`（自己チェック①）・`compose.py`（素体と部品の重ね合わせ）・`present.py`・`face_down.py`・`unit_picker.py`（部品の案の組み合わせを選ぶページ。依頼者の判断で CP1 の必須の道具）。手順の正典は `pixel-asset-forge/types/unit/SPEC.md`「描く手順」、ガウの持ち方と攻撃は同じ SPEC の「短剣の持ち方（ガウ）」
-- ガウ: `pixel-asset-forge/assets/unit/gau/`（24コマと部品）、`assets/part/dagger/`、`compose/gau.json`、`sheets/gau.txt`、`assets/images/gau-map.png`。動きのページ https://claude.ai/artifact/G3Xer2uJFMmte2LoQ4ZMwy
-- 進捗台帳と作業スクリプトは `.superpowers/sdd/2026-10-04-unit-workflow-gau/`（git 管理外。`progress.md`・`finish.py`・`anim.py`・`bodies.py`・`cand_sheets.py` など）。レビューのページ https://claude.ai/artifact/RoTEX6g8bb7HDRE54g38cM
+- **Branch**: `chore/unit-workflow-followups`（main `4781cce` = PR #28 ガウのマージから分岐）。計画 `docs/superpowers/plans/2026-10-05-unit-workflow-followups.md` の Task 1〜10。**PR #30**（https://github.com/akabee0161/character-tactics/pull/30、`Closes #29`）。CodeRabbit の4件の指摘（2026-10-06）にも対応した: `# frames:` の数を ASCII の数字だけにする、向きごとに抜けたコマを検出する、`anim-page.py` の `sheet`・`frame` の型の検査、HANDOVER と台帳の README の日付
+- 目的: ガウまでのユニット生成で出てきた課題のうち、大きな方針の決定が要らないものを、ユニットを新しく描かずに片付ける。絵は変えていない（書き出したシートの PNG は1バイトも変わらない）
+- forge の道具: `unit_picker` のラベルを文字のまま入れる・`refs` の名前を検査、`face_down.py` が正方形でない画像と色数の超過に対応、`present.py --scale` の検査、シート定義の `# frames:` の宣言と `sheet.py` の列数の検査（3体の定義に宣言を足した）。ゲーム側の `tools/anim-page.py` は読み込みエラーをメッセージで返し、足元の線を 32px のコマだけに出す
+- 待機の2コマ目の名前を `*_breathe` から `*_idle2` に変えた（3体の24コマの4枚ずつとガウの部品 `body_idle2_*`）
+- 文書: unit の SPEC を実物に合わせた（`idle2` の胴のセル、イネスの `up_atk_release`、柄頭を描かないコマ、ガウの持ち物の文字）。forge の README・CLAUDE.md の手本を3体に。PR のテンプレートを作った。進捗台帳17本とガウの設定シートを `docs/superpowers/ledgers/` に写した（#29）
+- 足元アンカー（2026-09-28）と `?debug` のコマ送り（2026-09-26）は実装済みだった。足元アンカーの ISSUES の行は消した。`atk_hit` は `?debug` で3体とも左向きで捉え、依頼者が確かめた（2026-10-06）ので、ISSUES の行も消した。撮れたコマは画面の表示の文字でなく、シートのセルと画素で照らし合わせて特定した（表示の文字は近くのユニットのものと重なり、最初はガウの待機のコマを攻撃と読み違えた。背面のイネスは攻撃の3〜6コマ目が同じ絵で、動きの確認に向かない）
 - issue #23 は開いたまま。1番目（顔グラを forge で作る）は依頼者の判断でしばらく置いておく（`feat/roran-face` は触らない）。2〜5番目は PR #24〜#27 でマージ済み。5番目の「目を大きく」は PR #24 の縦2px で済んだかを依頼者に確認中のまま
 
 ## What Remains
 
-1. PR #28 のレビューとマージ（push と PR は 2026-10-04 に依頼者の指示で作った）
-2. PR のテンプレートを作る（CLAUDE.md「プルリクエスト」。項目は依頼者と決める）
-3. 次の一体（ミストは別の型なので別作業）。結果の文書の「次の一体で減らせそうな確認ポイント」は Claude の提案で、まだ依頼者と決めていない（CP0 を軽く、CP2 と CP3 をまとめる、CP1・CP4 は残す）
-4. forge の `ISSUES.md` に足したもの: ガウの部品は見える部分だけで完全な単品が無い、組み立て後の描き足し（`finish.py`・`anim.py` など）が forge の道具になっていない（次の一体で要ったら移す）
+1. PR #30 のレビューとマージ
+2. 次の一体（ミストは別の型なので別作業）。確認ポイントを減らす案は未合意: 結果の文書の「次の一体で減らせそうな確認ポイント」（CP0 を軽く、CP2 と CP3 をまとめる）と、2026-10-04 の振り返りで Claude が出した2案（CP0 に向きごとの構えの手本を添える、不可と気付いた案は見せない・指摘のコマが曖昧なら描く前に確かめる）
+3. 組み立て後の描き足しのスクリプト（`finish.py`・`anim.py` など、`.superpowers/sdd/2026-10-04-unit-workflow-gau/`）は、次の一体で同じものが要ったら forge に移す（依頼者の判断、2026-10-05）
+4. 大きな決定が要るもの（forge の ISSUES.md「決めてもらう必要があるもの」と「アセット・構成」）: `unit` の最小の線幅、`knight` の瞳孔の色、素体 `male_*` の見直し、パラメータ化、色の命名（`feat/roran-face` 待ち）
 
-## この作業の途中で決めたこと（2026-10-04、依頼者と合意）
+## 2026-10-05 に決めたこと（依頼者と合意。すべて Claude の推しのまま）
+
+- PR のテンプレートの項目は PR #28 で使った5つ（概要・変更点・結果・リスク・確かめたこと）
+- `.superpowers/sdd/` から残すのは台帳（`progress.md`）と振り返り用メモ。置き場は `docs/superpowers/ledgers/`（ログ）。候補の絵・作業の指示書・スクリプトは残さない。計画を終えたら台帳を写す（CLAUDE.md「ドキュメントの扱い」）
+- 組み立て後の描き足しを forge の道具に移すのは次の一体まで待つ
+- 待機の2コマ目の名前は `*_idle2`
+- ガウの部品に完全な単品は描き足さない（使い回すときに描く）
+
+## これより下は PR #28（ガウ）のときの記録（2026-10-04 時点。PR #28 は 4781cce でマージ済み）
+
+### 当時の Current State
+
+- **Branch**（当時）: `feat/unit-workflow-gau`（main `fe7e79f` = PR #27 イネスのマージから分岐）
+- 目的: ロラン・イネスと同じ品質のユニットを、依頼者の判断を減らして描くワークフローを作り、**ガウ**で試す
+- 結果 `docs/superpowers/specs/2026-10-04-unit-drawing-workflow-results.md`: 品質は依頼者の判断で「ロラン・イネスと同じくらい」。判断の回数は13回でイネス（約12回）から減らなかったが、部品の形への差し戻しは0回になり、差し戻しは組み合わせた後の顔（前髪と目）と動き（構え）に移った
+- forge に入れた道具（TDD）: `unit_check.py`（自己チェック①）・`compose.py`（素体と部品の重ね合わせ）・`present.py`・`face_down.py`・`unit_picker.py`（部品の案の組み合わせを選ぶページ。依頼者の判断で CP1 の必須の道具）。手順の正典は `pixel-asset-forge/types/unit/SPEC.md`「描く手順」、ガウの持ち方と攻撃は同じ SPEC の「短剣の持ち方（ガウ）」
+- ガウ: `pixel-asset-forge/assets/unit/gau/`（24コマと部品）、`assets/part/dagger/`、`compose/gau.json`、`sheets/gau.txt`、`assets/images/gau-map.png`。動きのページ https://claude.ai/artifact/G3Xer2uJFMmte2LoQ4ZMwy
+- 進捗台帳と作業スクリプトは `.superpowers/sdd/2026-10-04-unit-workflow-gau/`（git 管理外。台帳は 2026-10-05 に `docs/superpowers/ledgers/` へ写した。スクリプトは `finish.py`・`anim.py`・`bodies.py`・`cand_sheets.py` など）。レビューのページ https://claude.ai/artifact/RoTEX6g8bb7HDRE54g38cM
+
+### ガウの作業の途中で決めたこと（2026-10-04、依頼者と合意）
 
 - 部品を一括で作って組み合わせるときは、組み合わせを選ぶページ（`unit_picker.py`）を必ず添える。依頼者に組み合わせを頭の中で試させない
 - CP1 の単体スケッチは、形の確認には体に隠れる部分も含めた完全な単品を見せる。髪・耳・かぶり物は1つの「頭パーツ」として扱う（ガウでは見える部分だけを描いた。SPEC は次の一体から直した）
@@ -27,7 +46,7 @@
 - 奥行きの動きは高さでなく拳の大きさで表し、上端をそろえる。拳は体の横（肘が体の横に来る位置）に置く（ガウの正面・背面の構え）
 - アニメの案は、候補を入れたシートの動きのページで見せる（静止画の並びだけでは動きの違和感が分からなかった）
 
-## 設計の時点で決めたこと（2026-10-04、依頼者と合意）
+### ガウの設計の時点で決めたこと（2026-10-04、依頼者と合意）
 
 - issue #23 の総括: 絵はできたが「forge で作れる仕組み」はできていない。実態は Claude が描き案を並べ、依頼者が選び直させる共同制作。自動で高品質に描くのは今は無理で、目標は品質を保ったまま判断を減らすこと（まず案 1: 品質はロラン・イネス並み、判断はゼロにしない）
 - 差し戻しは **かぶり物・髪** と **武器（形でなく持ち方と動き）** に集中していた。依頼者の指摘は「部品の形」と「体に重ねたときの隠れ方」が混ざっていた
@@ -49,6 +68,8 @@
 - issue #23 の1番目（顔グラ）はブランチ `feat/roran-face` で依頼者が `assets/face/roran_32.txt` を手で直している途中。このブランチは触らない（最新の経緯は `git show origin/feat/roran-face:HANDOVER.md`）
 
 ### 当時の What Remains（5番目のマージ後も残っているもの）
+
+（2026-10-05 に、下の Minor のうち `anim-page.py` のエラー処理と足元の線、柄頭の `left_atk_hit` の例外、forge の README の古い記述、`up_atk_release` の明記は片付けた）
 
 - issue #23 の残り: 1番目（顔グラ、依頼者の判断で保留）
 - 4番目の最終レビューで後回しにした Minor: `anim-page.py` のエラー処理の一部、足元の線が 32px 前提、`unit/SPEC.md` の柄頭の記述に `left_atk_hit` の例外が無い

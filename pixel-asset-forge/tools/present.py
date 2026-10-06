@@ -50,6 +50,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--ref", type=Path, help="左端に置く参考の画像（顔を戻したものなど）")
     parser.add_argument("--scale", type=int, default=8)
     args = parser.parse_args(argv)
+    if args.scale < 1:
+        print("error: --scale は1以上", file=sys.stderr)
+        return 2
 
     palette = load_palette()
     items: list[tuple[str, Image.Image]] = []

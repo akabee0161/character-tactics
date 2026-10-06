@@ -175,6 +175,13 @@ function draw(canvas, img) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.drawImage(scratch, 0, 0, canvas.width, canvas.height);
 }
+// ラベルは設定ファイルから来るので、HTML として埋め込まず文字のまま入れる
+function span(cls, text) {
+  const s = document.createElement("span");
+  if (cls) s.className = cls;
+  s.textContent = text;
+  return s;
+}
 function canvas(scale, cls) {
   const c = document.createElement("canvas");
   c.width = W * scale; c.height = H * scale;
@@ -192,7 +199,7 @@ for (const d of DIRS) {
   box.className = "cell4";
   const c = canvas(4, "stage");
   box.append(c);
-  box.insertAdjacentHTML("beforeend", `<span class="cap">${DIR_LABEL[d]}</span>`);
+  box.append(span("cap", DIR_LABEL[d]));
   document.getElementById("big").append(box);
   bigs[d] = c;
 }
@@ -208,13 +215,13 @@ if (refNames.length) {
   for (const name of refNames) {
     const row = document.createElement("div");
     row.className = "row";
-    row.insertAdjacentHTML("beforeend", `<span class="label">${name}</span>`);
+    row.append(span("label", name));
     for (const d of DIRS) { const c = canvas(3, "stage"); row.append(c); draw(c, image(`${name}|${d}`, "refs")); }
     refs.append(row);
   }
   const row = document.createElement("div");
   row.className = "row";
-  row.insertAdjacentHTML("beforeend", `<span class="label">${DATA.unit}</span>`);
+  row.append(span("label", DATA.unit));
   for (const d of DIRS) { const c = canvas(3, "stage"); row.append(c); games[`ref|${d}`] = c; }
   refs.append(row);
 }
@@ -224,7 +231,11 @@ const groups = document.getElementById("groups");
 const buttons = {};
 for (const el of ELEMENTS) {
   const sec = document.createElement("div");
-  sec.innerHTML = `<h2><span>${DATA.elements[el].label}</span><span class="now" id="now-${el}"></span></h2>`;
+  const h2 = document.createElement("h2");
+  const now = span("now", "");
+  now.id = `now-${el}`;
+  h2.append(span("", DATA.elements[el].label), now);
+  sec.append(h2);
   const row = document.createElement("div");
   row.className = "opts";
   buttons[el] = {};
@@ -237,7 +248,7 @@ for (const el of ELEMENTS) {
     const withBody = canvas(2, "stage"), alone = canvas(2, "stage");
     pair.append(withBody, alone);
     b.append(pair);
-    b.insertAdjacentHTML("beforeend", `<span class="id">${id}</span><span class="lab">${label}</span>`);
+    b.append(span("id", id), span("lab", label));
     b.addEventListener("click", () => { state[el] = id; render(); });
     draw(alone, image(`${id}|${DIRS[0]}`, "parts"));
     row.append(b);
@@ -253,7 +264,9 @@ for (const el of ELEMENTS) {
   for (const [id, label] of Object.entries(DATA.elements[el].variants)) {
     const row = document.createElement("div");
     row.className = "row";
-    row.insertAdjacentHTML("beforeend", `<span class="label">${DATA.elements[el].label} ${id}<br>${label}</span>`);
+    const lab = span("label", `${DATA.elements[el].label} ${id}`);
+    lab.append(document.createElement("br"), label);
+    row.append(lab);
     for (const d of DIRS) { const c = canvas(4, "stage"); row.append(c); draw(c, image(`${id}|${d}`, "parts")); }
     aloneList.append(row);
   }
@@ -343,7 +356,9 @@ function render() {
   for (const el of ELEMENTS) {
     const label = DATA.elements[el].variants[state[el]];
     const li = document.createElement("li");
-    li.innerHTML = `<b>${DATA.elements[el].label}</b>${state[el]}　${label}`;
+    const name = document.createElement("b");
+    name.textContent = DATA.elements[el].label;
+    li.append(name, `${state[el]}　${label}`);
     chosen.append(li);
     document.getElementById(`now-${el}`).textContent = `${state[el]}　${label}`;
     for (const [id, { b, withBody }] of Object.entries(buttons[el])) {

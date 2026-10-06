@@ -1,4 +1,4 @@
-# right_breathe は compose.py で組み立て、finish.py で描き足した
+# right_idle2 は compose.py で組み立て、finish.py で描き足した
 # type: unit
 # size: 32x32
 # light: upper-left

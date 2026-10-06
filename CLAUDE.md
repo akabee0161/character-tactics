@@ -23,10 +23,11 @@ npm run build   # 型チェック + 本番ビルド (out/play/character-tactics/
 
 ## プルリクエスト
 
-- **PR のテンプレートがまだ無い。作る必要がある**（`.github/pull_request_template.md`。依頼者の指示、2026-10-04）。PR #28 の説明は、テンプレートが無いので Claude が項目（概要・変更点・結果・リスク・確かめたこと）を立てて書いた。テンプレートを作るときに何を項目にするかは依頼者と決める
+- PR の説明は `.github/pull_request_template.md` の5項目（概要・変更点・結果・リスク・確かめたこと）で書く（2026-10-05 依頼者と決めた。PR #28 で使った項目）
 - PR は依頼者の指示があったときだけ作る
 
 ## ドキュメントの扱い
 
 - `docs/superpowers/`(specs / plans)は作成時点のログ。後から実装や運用が変わっても遡って更新しない
+- `docs/superpowers/ledgers/` は進捗台帳（`.superpowers/sdd/<計画>/progress.md`）の写し。これもログ。計画を終えたら、その計画の台帳をここに写してコミットする
 - 最新の状態を表す正典は README.md とこのファイル。実装・手順・制約が変わったら更新するのはこの2つ
