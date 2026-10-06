@@ -1,9 +1,9 @@
 # Session Handover
-## Generated: 2026-10-05（ユニット生成で出てきた課題の片付けを終えた時点）
+## Generated: 2026-10-05（ユニット生成で出てきた課題の片付けを終えた時点）。2026-10-06 に `atk_hit` の確認と、PR #30 の CodeRabbit の指摘への対応を追記
 
 ## Current State
 
-- **Branch**: `chore/unit-workflow-followups`（main `4781cce` = PR #28 ガウのマージから分岐）。計画 `docs/superpowers/plans/2026-10-05-unit-workflow-followups.md` の Task 1〜10。push と PR はまだ（依頼者の指示待ち。PR の説明は `.github/pull_request_template.md` の5項目で、`Closes #29` を書く）
+- **Branch**: `chore/unit-workflow-followups`（main `4781cce` = PR #28 ガウのマージから分岐）。計画 `docs/superpowers/plans/2026-10-05-unit-workflow-followups.md` の Task 1〜10。**PR #30**（https://github.com/akabee0161/character-tactics/pull/30、`Closes #29`）。CodeRabbit の4件の指摘（2026-10-06）にも対応した: `# frames:` の数を ASCII の数字だけにする、向きごとに抜けたコマを検出する、`anim-page.py` の `sheet`・`frame` の型の検査、HANDOVER と台帳の README の日付
 - 目的: ガウまでのユニット生成で出てきた課題のうち、大きな方針の決定が要らないものを、ユニットを新しく描かずに片付ける。絵は変えていない（書き出したシートの PNG は1バイトも変わらない）
 - forge の道具: `unit_picker` のラベルを文字のまま入れる・`refs` の名前を検査、`face_down.py` が正方形でない画像と色数の超過に対応、`present.py --scale` の検査、シート定義の `# frames:` の宣言と `sheet.py` の列数の検査（3体の定義に宣言を足した）。ゲーム側の `tools/anim-page.py` は読み込みエラーをメッセージで返し、足元の線を 32px のコマだけに出す
 - 待機の2コマ目の名前を `*_breathe` から `*_idle2` に変えた（3体の24コマの4枚ずつとガウの部品 `body_idle2_*`）
@@ -13,7 +13,7 @@
 
 ## What Remains
 
-1. このブランチの push と PR（依頼者の指示を待つ）
+1. PR #30 のレビューとマージ
 2. 次の一体（ミストは別の型なので別作業）。確認ポイントを減らす案は未合意: 結果の文書の「次の一体で減らせそうな確認ポイント」（CP0 を軽く、CP2 と CP3 をまとめる）と、2026-10-04 の振り返りで Claude が出した2案（CP0 に向きごとの構えの手本を添える、不可と気付いた案は見せない・指摘のコマが曖昧なら描く前に確かめる）
 3. 組み立て後の描き足しのスクリプト（`finish.py`・`anim.py` など、`.superpowers/sdd/2026-10-04-unit-workflow-gau/`）は、次の一体で同じものが要ったら forge に移す（依頼者の判断、2026-10-05）
 4. 大きな決定が要るもの（forge の ISSUES.md「決めてもらう必要があるもの」と「アセット・構成」）: `unit` の最小の線幅、`knight` の瞳孔の色、素体 `male_*` の見直し、パラメータ化、色の命名（`feat/roran-face` 待ち）

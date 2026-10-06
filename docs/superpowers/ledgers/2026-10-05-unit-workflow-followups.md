@@ -33,3 +33,4 @@ Final: Ruling: レビュアーが見送った項目（HANDOVER の当時の節�
 Task 9（2026-10-06 依頼者の指摘で撮り直し）: 最初に見せた画像は、ガウが idle2（idle up col=1）で、体に重なった「attack 1」は上の敵の表示だった。イネスの背面は attack col2〜5 が同じ絵で動きの確認に向かなかった。画面のコマ番号は 0 始まり（frame.col）
 Task 9: 撮り直し: 表示の文字でなく、シートのセルと画素で照らし合わせて特定した（match_frame.py・batch_match.py）。ロラン左 atk_wind r_032（0.97、輪が重なる）・atk_hit r_034（1.00）、イネス左 atk_wind s_010・atk_draw s_013・atk_hit s_016・atk_release s_024（すべて 1.00）、ガウ左 atk_wind t_044・atk_hit t_047（1.00）。atk_in_game_v2.png
 Task 9: 依頼者が撮り直した画像で atk_hit を確認（2026-10-06「okです」）。ISSUES の「atk_hit がゲーム内で未確認」の行を消し、この台帳を docs/superpowers/ledgers/ に写した
+CodeRabbit（PR #30、2026-10-06）: 4件とも当てはまった。①HANDOVER・台帳 README の日付 → 追記日を明記 ②# frames: の数に isdigit を使い ² でトレースバック → [0-9]+、test_declaration_rejects_non_ascii_digits RED→GREEN ③向きごとのコマの抜け → check_columns で検出（列数が食い違う状態では重ねて出さない）、test_a_missing_cell_in_one_direction_is_reported RED→GREEN、main が止まる経路のテストも追加 ④anim-page.py の sheet・frame の型 → 検査してメッセージで exit 1（手で確かめた）。②③④に対応する ISSUES の2行を消した

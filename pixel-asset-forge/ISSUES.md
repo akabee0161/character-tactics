@@ -27,8 +27,6 @@
 | **`probe_colors.py --pairs` の読み込みエラーがトレースバックになる** | `read_pairs()` の呼び出しが `main()` の `try` の外にあるので、1色だけの行の `GridError` や、ファイルが無いときの `OSError` が `FAIL`（終了コード 2）にならずに漏れる | 小 | 同上 |
 | **`RiverDerivationTest` が現役の川のタイルを読んでいる** | `tests/test_tools.py` の `RiverDerivationTest` が `assets/tile/river_*.txt` を直接読んでおり、「回帰テストに現役のアートを参照させない」（CLAUDE.md）に反する。出荷する川の派生宣言の検査は残したまま、比較する入力を `tests/fixtures/` に固定する | 小 | character-tactics#22 の CodeRabbit の指摘（2026-09-30） |
 | **`check_colors.py` が既定の実行で毎回失敗する** | 原因は上の `knight` 1件だけだが、そのせいで新しい hard failure が出ても終了コードで区別できない。`knight` の色が決まれば解消する | 小（色の決定待ち） | 2026-09-23 |
-| **`sheet.py` の列数の検査が、ある向きだけ抜けたコマを見逃す** | `# frames:` の検査（`check_columns`）は状態ごとに4方向のどれかが使う一番右の列を数えるので、`up_base . . .` のように1方向だけ2コマ目が抜けても通り、ゲームではそのコマが透明になる。宣言があるときは、各行の `0..frames-1` のセルが `.` でないことも確かめる。あわせて、`main` が食い違いで `FAIL`・終了コード1を返す経路のテストを足す（今は手で1回確かめただけ） | 小 | 課題の片付けの最終レビュー（2026-10-05） |
-| **character-tactics の `tools/anim-page.py` に、まだトレースバックになる入力がある** | `sprites.map.sheet` が文字列でないと `try` の外の `IMAGES / sheet_name` で `TypeError` になる。`frame` が数値でなくても検査せずに HTML に入る。`try` の中で型を確かめる。ゲームの JSON はゲーム側の検査を通っているので、実際に起きる見込みは小さい | 小 | 同上 |
 
 ## ツールの改善（挙動は変えない）
 
