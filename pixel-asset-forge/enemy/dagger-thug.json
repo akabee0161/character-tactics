@@ -1,1 +1,11 @@
-{"id": "dagger-thug", "name": "素の髪のごろつき", "archetype": "dagger", "body": "male", "recolor": {}}
+{
+  "id": "dagger-thug",
+  "name": "素の髪のごろつき",
+  "archetype": "dagger",
+  "body": "male",
+  "recolor": {
+    "cloak_dark_hi": "orchid_base",
+    "cloak_dark_base": "orchid_shadow",
+    "cloak_dark_shadow": "orchid_dark"
+  }
+}

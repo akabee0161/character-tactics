@@ -1,1 +1,11 @@
-{"id": "dagger-horn", "name": "角付きの兜", "archetype": "dagger", "body": "male", "recolor": {}}
+{
+  "id": "dagger-horn",
+  "name": "角付きの兜",
+  "archetype": "dagger",
+  "body": "male",
+  "recolor": {
+    "cloak_dark_hi": "leaf_hi",
+    "cloak_dark_base": "leaf_base",
+    "cloak_dark_shadow": "leaf_shadow"
+  }
+}

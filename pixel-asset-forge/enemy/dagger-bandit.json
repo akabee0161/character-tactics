@@ -1,1 +1,11 @@
-{"id": "dagger-bandit", "name": "眼帯のバンダナ", "archetype": "dagger", "body": "male", "recolor": {}}
+{
+  "id": "dagger-bandit",
+  "name": "眼帯のバンダナ",
+  "archetype": "dagger",
+  "body": "male",
+  "recolor": {
+    "cloak_dark_hi": "dirt_hi",
+    "cloak_dark_base": "dirt_base",
+    "cloak_dark_shadow": "dirt_shadow"
+  }
+}
