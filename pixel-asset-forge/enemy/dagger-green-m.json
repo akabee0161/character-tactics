@@ -1,0 +1,14 @@
+{
+  "id": "dagger-green-m",
+  "name": "緑の盗賊",
+  "archetype": "dagger",
+  "body": "male",
+  "recolor": {
+    "cloak_dark_hi": "leaf_hi",
+    "cloak_dark_base": "leaf_base",
+    "cloak_dark_shadow": "leaf_shadow",
+    "roof_hi": "metal_hi",
+    "roof_base": "metal_base",
+    "roof_shadow": "metal_shadow"
+  }
+}

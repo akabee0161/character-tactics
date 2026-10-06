@@ -1,0 +1,15 @@
+{
+  "id": "dagger-red-m",
+  "name": "赤の盗賊",
+  "archetype": "dagger",
+  "body": "male",
+  "recolor": {
+    "cloak_dark_hi": "carpet_hi",
+    "cloak_dark_base": "carpet_base",
+    "cloak_dark_shadow": "carpet_shadow",
+    "cloak_teal_hi": "flame_base",
+    "roof_hi": "hair_slate_hi",
+    "roof_base": "hair_slate_base",
+    "roof_shadow": "hair_slate_shadow"
+  }
+}
