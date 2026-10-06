@@ -47,6 +47,13 @@ def main() -> int:
     except (KeyError, TypeError) as e:
         print(f"{unit_path}: name・sprites.map の frame・sheet・各状態の frames と fps のどれかが無い（{e}）", file=sys.stderr)
         return 1
+    # JSON の値の型は信用できないので、パスの結合や HTML に入れる前に確かめる（bool は int の仲間なので除く）
+    if not isinstance(sheet_name, str) or not sheet_name:
+        print(f"{unit_path}: sprites.map.sheet は空でない文字列にする（{sheet_name!r} だった）", file=sys.stderr)
+        return 1
+    if isinstance(frame, bool) or not isinstance(frame, int) or frame < 1:
+        print(f"{unit_path}: sprites.map.frame は1以上の整数にする（{frame!r} だった）", file=sys.stderr)
+        return 1
     sheet = (IMAGES / sheet_name).resolve()
     if not sheet.is_relative_to(IMAGES.resolve()):
         print(f"{unit_path}: sprites.map.sheet {sheet_name!r} は {IMAGES}/ の中のファイルにする", file=sys.stderr)
