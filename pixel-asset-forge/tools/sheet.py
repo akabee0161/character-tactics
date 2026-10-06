@@ -79,7 +79,8 @@ def read_frames_declaration(path: Path) -> dict[str, int] | None:
         declared: dict[str, int] = {}
         for token in match.group(1).split():
             state, _, count = token.partition("=")
-            if state not in STATES or not count.isdigit() or int(count) < 1:
+            # isdigit() は '²' のような int() で読めない数字も通すので、ASCII の数字だけを許す
+            if state not in STATES or not re.fullmatch(r"[0-9]+", count) or int(count) < 1:
                 raise SystemExit(f"error: {path}: '# frames:' の {token!r} が読めない（例: idle=2 walk=4 attack=3）")
             declared[state] = int(count)
         missing = [s for s in STATES if s not in declared]
@@ -93,9 +94,16 @@ def check_columns(rows: list[list[str | None]], declared: dict[str, int]) -> lis
     """定義の列が宣言どおりか。ゲームは横幅を frame × 最大コマ数と決めている。"""
     problems = []
     used = columns_per_state(rows)
-    for state in STATES:
+    for index, state in enumerate(STATES):
         if used[state] != declared[state]:
             problems.append(f"{state}: 宣言は {declared[state]} コマ、定義は {used[state]} 列を使っている")
+            continue
+        # 一番右の列は4方向のどれかが使えば数えるので、向きごとの抜けも見る（抜けたコマはゲームで透明になる）
+        for d, direction in enumerate(DIRECTIONS):
+            row = rows[index * len(DIRECTIONS) + d]
+            missing = [x for x in range(min(declared[state], len(row))) if row[x] is None]
+            if missing:
+                problems.append(f"{state} の {direction}: {', '.join(str(x) for x in missing)} 列目のコマが空いている")
     width, most = len(rows[0]), max(declared.values())
     if width != most:
         problems.append(f"定義の列数 {width} が、宣言の最大コマ数 {most} と違う（シートの横幅が合わなくなる）")

@@ -4,6 +4,8 @@
 """
 from __future__ import annotations
 
+import contextlib
+import io
 import sys
 import tempfile
 import unittest
@@ -82,6 +84,27 @@ class FramesDeclarationTest(unittest.TestCase):
         problems = sheet.check_columns(rows, {"idle": 2, "walk": 4, "attack": 4})
         self.assertEqual(len(problems), 1)
         self.assertIn("attack", problems[0])
+
+    def test_declaration_rejects_non_ascii_digits(self):
+        # '²'.isdigit() は True だが int('²') は ValueError になる
+        with self.assertRaises(SystemExit):
+            sheet.read_frames_declaration(definition(["# frames: idle=² walk=4 attack=3"] + GAU_LIKE))
+
+    def test_a_missing_cell_in_one_direction_is_reported(self):
+        # up の idle だけ2コマ目が抜けている。ほかの向きが2列目を使うので、列数だけでは見逃す
+        rows = sheet.read_sheet(definition(["a b . .", "a . . .", "a b . .", "a b . ."] + GAU_LIKE[4:]))
+        problems = sheet.check_columns(rows, {"idle": 2, "walk": 4, "attack": 3})
+        self.assertEqual(len(problems), 1)
+        self.assertIn("idle", problems[0])
+        self.assertIn("up", problems[0])
+
+    def test_main_stops_when_the_definition_disagrees_with_the_declaration(self):
+        path = definition(["# frames: idle=2 walk=4 attack=4"] + GAU_LIKE)
+        err = io.StringIO()
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(err):
+            code = sheet.main([str(path), "--unitdir", str(FIXTURES), "-o", tempfile.mkdtemp()])
+        self.assertEqual(code, 1)
+        self.assertIn("FAIL", err.getvalue())
 
     def test_a_definition_narrower_than_the_most_frames_is_reported(self):
         narrow = (["a b ."] * 4) + (["a c a"] * 4) + (["e f a"] * 4)
