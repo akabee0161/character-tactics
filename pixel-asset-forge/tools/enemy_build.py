@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""味方の完成したコマを色替えして、敵のシートを作る。
+"""元のコマ（味方の完成コマか、レシピの frames が指すコマ）を色替えして、敵のシートを作る。
 
     tools/enemy_build.py enemy/dagger-bandit.json
     tools/enemy_build.py --all
@@ -82,13 +82,14 @@ def serialize_frame(frame: Frame, note: str) -> str:
 ENEMY_DIR = REPO_ROOT / "enemy"
 BUILD_ROOT = REPO_ROOT / "build" / "enemy"
 SHEET_DIR = REPO_ROOT / "build" / "sheets"
-ARCHETYPES = {"dagger": "sheets/gau.txt"}
+# 斧・槍はガウと同じコマ割り（idle 2 / walk 4 / attack 3）。元のコマはレシピの frames で指す
+ARCHETYPES = {"dagger": "sheets/gau.txt", "axe": "sheets/gau.txt", "spear": "sheets/gau.txt"}
 BODIES = ("male", "female")
 SOURCES = {
     ("dagger", "male"): "assets/unit/gau",
     ("dagger", "female"): "assets/unit/enemy-src/dagger-female",
 }
-RECIPE_KEYS = {"id", "name", "archetype", "body", "recolor"}
+RECIPE_KEYS = {"id", "name", "archetype", "body", "recolor", "frames"}
 ID_RE = re.compile(r"[a-z0-9]+(-[a-z0-9]+)*")
 
 
@@ -100,6 +101,8 @@ class Recipe:
     body: str
     recolor: dict[str, str]
     path: Path | None = None
+    # 元のコマの置き場（リポジトリからの相対）。無ければ SOURCES の味方の完成コマ
+    frames: str | None = None
 
 
 def load_recipe(path: Path, palette: dict) -> Recipe:
@@ -132,12 +135,29 @@ def load_recipe(path: Path, palette: dict) -> Recipe:
     bad = sorted({name for pair in recolor.items() for name in pair if name not in palette})
     if bad:
         raise EnemyError(f"{where}: recolor にパレットに無い色名 {', '.join(bad)}")
-    return Recipe(data["id"], data["name"], data["archetype"], data["body"], dict(recolor), path)
+    frames = data.get("frames")
+    if frames is not None:
+        if not isinstance(frames, str) or not frames:
+            raise EnemyError(f"{where}: frames は元のコマの置き場（リポジトリからの相対パス）の文字列にする")
+        rel = Path(frames)
+        if rel.is_absolute() or ".." in rel.parts:
+            raise EnemyError(f"{where}: frames はリポジトリの中の相対パスにする（{frames!r} だった）")
+    elif (data["archetype"], data["body"]) not in SOURCES:
+        raise EnemyError(
+            f"{where}: {data['archetype']}・{data['body']} には決まった元のコマが無いので、frames で置き場を指す"
+        )
+    return Recipe(data["id"], data["name"], data["archetype"], data["body"], dict(recolor), path, frames)
 
 
 def source_paths(recipe: Recipe, root: Path = REPO_ROOT) -> tuple[Path, Path]:
     """(元のコマの置き場, シート定義)。"""
-    return root / SOURCES[(recipe.archetype, recipe.body)], root / ARCHETYPES[recipe.archetype]
+    if recipe.frames is None:
+        source = root / SOURCES[(recipe.archetype, recipe.body)]
+    else:
+        source = root / recipe.frames
+        if not source.is_dir():
+            raise EnemyError(f"{recipe.id}: frames の {recipe.frames} が無い（ディレクトリでない）")
+    return source, root / ARCHETYPES[recipe.archetype]
 
 
 def _sheet_rows(sheet_def: Path) -> list[list[str | None]]:
@@ -201,8 +221,10 @@ def build(recipe: Recipe, source_dir: Path, sheet_def: Path, palette: dict,
 
 
 def _print_colours(archetype: str) -> int:
-    if archetype not in ARCHETYPES:
-        raise EnemyError(f"archetype は {', '.join(ARCHETYPES)} のどれか（{archetype!r} だった）")
+    with_sources = sorted({a for a, _ in SOURCES})
+    if archetype not in with_sources:
+        raise EnemyError(f"--colours は {', '.join(with_sources)} のどれか"
+                         f"（{archetype!r} だった。元のコマを frames で指す原型は比べられない）")
     sheet_def = REPO_ROOT / ARCHETYPES[archetype]
     sets = {body: source_colours(REPO_ROOT / SOURCES[(archetype, body)], sheet_def) for body in BODIES}
     for body, colours in sets.items():

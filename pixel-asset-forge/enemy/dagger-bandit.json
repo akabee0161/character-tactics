@@ -1,8 +1,9 @@
 {
   "id": "dagger-bandit",
-  "name": "眼帯のバンダナ",
+  "name": "眼帯のバンダナ（短剣）",
   "archetype": "dagger",
   "body": "male",
+  "frames": "cand/enemy-frames/dagger-bandit",
   "recolor": {
     "cloak_dark_hi": "dirt_hi",
     "cloak_dark_base": "dirt_base",

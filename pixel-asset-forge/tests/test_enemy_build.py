@@ -148,6 +148,36 @@ class RecipeTest(unittest.TestCase):
         self.assertEqual(source, Path("/forge/assets/unit/enemy-src/dagger-female"))
         self.assertEqual(sheet_def, Path("/forge/sheets/gau.txt"))
 
+    def test_frames_names_the_source_directory(self):
+        (self.dir / "frames" / "axe-x").mkdir(parents=True)
+        recipe = load_recipe(self.write(self.good(archetype="axe", frames="frames/axe-x")), PALETTE)
+        self.assertEqual(recipe.frames, "frames/axe-x")
+        source, sheet_def = source_paths(recipe, self.dir)
+        self.assertEqual(source, self.dir / "frames" / "axe-x")
+        self.assertEqual(sheet_def, self.dir / "sheets" / "gau.txt")
+
+    def test_frames_overrides_the_default_source_of_dagger(self):
+        (self.dir / "frames").mkdir()
+        recipe = load_recipe(self.write(self.good(frames="frames")), PALETTE)
+        self.assertEqual(source_paths(recipe, self.dir)[0], self.dir / "frames")
+
+    def test_axe_and_spear_need_frames(self):
+        for archetype in ("axe", "spear"):
+            with self.assertRaisesRegex(EnemyError, "frames で置き場を指す"):
+                load_recipe(self.write(self.good(archetype=archetype)), PALETTE)
+
+    def test_frames_must_stay_inside_the_repository(self):
+        for bad in ("/tmp/x", "../x", "cand/../../x", ""):
+            with self.assertRaisesRegex(EnemyError, "frames.*相対パス"):
+                load_recipe(self.write(self.good(frames=bad)), PALETTE)
+        with self.assertRaisesRegex(EnemyError, "frames.*相対パス"):
+            load_recipe(self.write(self.good(frames=3)), PALETTE)
+
+    def test_missing_frames_directory_is_named(self):
+        recipe = load_recipe(self.write(self.good(frames="no/such/dir")), PALETTE)
+        with self.assertRaisesRegex(EnemyError, "no/such/dir"):
+            source_paths(recipe, self.dir)
+
 
 STATES = ("base", "walk", "atk")
 DIRS = ("down", "up", "left", "right")

@@ -1,0 +1,12 @@
+{
+  "id": "spear-knight",
+  "name": "フルフェイス（槍）",
+  "archetype": "spear",
+  "body": "male",
+  "frames": "cand/enemy-frames/spear-knight",
+  "recolor": {
+    "cloak_dark_hi": "floor_base",
+    "cloak_dark_base": "floor_shadow",
+    "cloak_dark_shadow": "floor_dark"
+  }
+}

@@ -323,9 +323,9 @@ forge をゲームリポジトリへコピーして使うときは、ゲーム�
 対応表が誤っていれば（生成物が無い、名前が重なる など）何もコピーせずに止まる。
 **このコマンドはリポジトリの外（書き出し先）を書き換える。** ツアーの他のコマンドと違うので注意。
 
-### 2.11 敵のバリエーション（味方の完成コマを色替えする）
+### 2.11 敵のバリエーション（元のコマを色替えしてシートにする）
 
-味方の完成したコマの色名を置き換えて、敵のシートを機械的に作る。画素は変えない。
+元のコマ（味方の完成コマ、または部品で組んだ敵のコマ）の色名を置き換えて、敵のシートを機械的に作る。画素は変えない。
 経緯は `docs/superpowers/specs/2026-10-06-enemy-variants-design.md`（character-tactics）。
 
 ```sh
@@ -334,9 +334,12 @@ forge をゲームリポジトリへコピーして使うときは、ゲーム�
 .venv/bin/python tools/enemy_build.py --colours dagger          # 男女の元のコマが使う色の差
 ```
 
-- レシピは `enemy/<id>.json`（キー: `id` `name` `archetype` `body` `recolor`）。`id` はファイル名と同じ
-- `archetype` は今は `dagger` だけ。`body` は `male`（元は `assets/unit/gau/`）か
-  `female`（元は `assets/unit/enemy-src/dagger-female/`）
+- レシピは `enemy/<id>.json`（キー: `id` `name` `archetype` `body` `recolor` `frames`）。`id` はファイル名と同じ
+- `archetype` は `dagger` `axe` `spear`（シート定義はどれも `sheets/gau.txt`）。`body` は `male` か `female`
+- `frames` は元のコマの置き場（リポジトリからの相対パス）。今の8体は `cand/enemy-frames/<id>`
+  （部品で組んだコマ。生成は `cand/gen/mkweapons.py` など）を指す。`axe` `spear` では必須。
+  書かなければ `dagger` の `male` は `assets/unit/gau/`、`female` は `assets/unit/enemy-src/dagger-female/`
+  （`--colours` が比べるのもこの2つ）
 - `recolor` は「元のコマが使うパレット名 → 置き換え後のパレット名」。元のコマが使わない名前は止める
 - 元のコマの絵を直したら `enemy_build.py --all` で作り直す。`build/` は生成物
 

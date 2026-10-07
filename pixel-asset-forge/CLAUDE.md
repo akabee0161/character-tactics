@@ -51,7 +51,7 @@
 .venv/bin/python tools/tilemap.py             # tile を 3x3 で並べる（継ぎ目の確認）
 .venv/bin/python tools/sheet.py sheets/roran.txt  # unit のシートとプレビューを出す
 .venv/bin/python tools/sheet_gif.py sheets/roran.txt  # unit の動きを状態ごとの GIF にする（README 2.7）
-.venv/bin/python tools/enemy_build.py enemy/dagger-bandit.json  # 敵のレシピから、味方の完成コマを色替えして敵のシートを作る（build/sheets/<id>.png）
+.venv/bin/python tools/enemy_build.py enemy/dagger-bandit.json  # 敵のレシピから、元のコマ（frames）を色替えして敵のシートを作る（build/sheets/<id>.png）
 .venv/bin/python tools/enemy_build.py --all                      # enemy/ の全レシピを作る
 .venv/bin/python tools/enemy_build.py --colours dagger           # 男女の元のコマが使う色の差
 .venv/bin/python tools/enemy_gallery.py build/enemy_gallery.html --ref build/sheets/gau.png:ガウ（味方）  # 敵を並べて動きを再生する確認ページ（依頼者へ渡す）
