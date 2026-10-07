@@ -250,6 +250,17 @@ cat sheets/roran.txt
 - **脚の中心**: 向きごとに、全コマの脚（y=24 から下。輪郭と `--items` の持ち物の文字を除く）の中心がそろっているか。そろっていなければ終了コード 1
 - **増えた切れ目**: 同じ向きの `base` に無かった輪郭の切れ目を並べる。歩きの足先のようにわざと切れているものもあるので、報告だけ（終了コードは変わらない）
 
+片手で握る武器を持つユニットは、`tools/weapon_check.py` で武器と手も確かめる（色は色名で指定。ユニットごとの指定は `types/unit/SPEC.md` の自己チェック①）。
+
+```sh
+.venv/bin/python tools/weapon_check.py assets/unit/gau --blade stone_hi,stone_base --weapon wood_hi,wood_base,wood_shadow \
+    --hand skin_rose_hi,skin_rose_base,skin_rose_shadow --hidden left_atk_wind,up_atk_wind,up_atk_hit --depth down
+```
+
+- 手と武器が消えていないか、手の輪郭が背景に接していないか、握る手が 2px 幅以上あるか、手が腕とつながっているか（`--arm`）
+- 攻撃の当たりのコマで穂先が向いている側にあるか、武器がコマの端で切れていないか
+- 攻撃 → 構えで、武器の中の握る位置と武器の長さが変わらないか（`--depth` の向きは奥行きの表現として除く）
+
 髪・かぶり物・武器を素体抜きの部品として描いたユニットは、`tools/compose.py` で素体と重ねてコマにする。
 
 ```sh

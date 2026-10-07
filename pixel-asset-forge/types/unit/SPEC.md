@@ -190,6 +190,26 @@ compose/<unit>.json                       部品の組み立て方（tools/compo
 脚の中心がそろわなければ失敗。増えた輪郭の切れ目は報告だけで、1件ずつ目で確かめる。色を足すときは `tools/probe_colors.py`。
 持ち物の文字はユニットごとに測って決める: ロラン `GHJRkmns`、イネス `klmstuw`、ガウ `stlmn`（2026-10-04 実測。ロランに刃の `i`・`j` を足すと `down` の脚の中心が分かれる）。
 
+片手で握る武器（短剣・剣・斧・槍）を持つユニットは、`tools/weapon_check.py` も通す。手が消える・手の輪郭の切れ目・1px 幅の手・
+攻撃で穂先が向きと逆・枠の端で切れる・握る位置のずれ・武器の長さのずれ・腕が無く手が体から浮く、を落とす
+（どれも依頼者に指摘された欠陥、2026-10-07）。色は色名で、隠れるコマと奥行きの向きは依頼者の判断で指定する:
+
+```sh
+tools/weapon_check.py assets/unit/gau --blade stone_hi,stone_base --weapon wood_hi,wood_base,wood_shadow \
+    --hand skin_rose_hi,skin_rose_base,skin_rose_shadow --arm cloak_dark_hi,cloak_dark_base,cloak_dark_shadow \
+    --hidden left_atk_wind,up_atk_wind,up_atk_hit --depth down
+tools/weapon_check.py assets/unit/roran --blade stone_hi,stone_base --weapon wood_hi,wood_base,wood_shadow,roof_base \
+    --hand skin_rose_hi,skin_rose_base,skin_rose_shadow,skin_rose_deep --arm cloak_dark_hi,cloak_dark_base,cloak_dark_shadow \
+    --hidden left_atk_hit,up_atk_hit --depth down
+```
+
+弓（イネス）は対象外。ガウ・ロランは left の立ち・歩きの 1px 幅の手で落ちる（ISSUES.md、直す予定）。
+ガウは right_atk_wind も「手が体から浮いている」で落ちる（ISSUES.md、依頼者の判断待ち）。
+
+武器の一部が体や頭に隠れるコマは `--partial` に挙げる（握る位置と長さの検査から外す）。**例外に挙げるのは、本当に隠れるコマだけ。**
+left を左右反転して right を作ると、left で「体の後ろ」だった重なり順まで引き継ぐが、right は握る手が体の手前側なので
+武器も手前に描く。right を left と同じく例外に入れて、武器が体に隠れた欠陥を見逃した（2026-10-07）。
+
 **② Claude が見て確かめる**
 
 - 部品の画素が部品の文字で塗られているか（イネスで弓の1画素が脚の色だった）
