@@ -203,6 +203,20 @@ tools/weapon_check.py assets/unit/roran --blade stone_hi,stone_base --weapon woo
     --hidden left_atk_hit,up_atk_hit --depth down
 ```
 
+部品で組んだ斧・槍の敵（`cand/enemy-frames/`、色替え前のコマ）は次の指定で検査する（2026-10-07 の時点で4体とも通る）:
+
+```sh
+C="--blade stone_hi,stone_base --weapon wood_base,wood_shadow --hand skin_rose_hi,skin_rose_base,skin_rose_shadow --arm cloak_dark_hi,cloak_dark_base,cloak_dark_shadow"
+# 斧（axe-bandit・axe-horn）
+tools/weapon_check.py cand/enemy-frames/axe-bandit $C --hidden up_atk_wind,up_atk_hit --depth down,up \
+    --partial left_base,left_idle2,left_walk_a,left_walk_b,left_atk_wind
+# 槍（spear-knight・spear-thug）
+tools/weapon_check.py cand/enemy-frames/spear-knight $C --hidden left_atk_hit
+```
+
+斧の `up` の攻撃は `--hidden`（振りかぶりは axe head が木の棒に隠れ、当たりは体の向こうに隠れる）。
+`down`・`up` は奥行きの表現なので `--depth`。`right` は例外に入れない（下の段落）。
+
 弓（イネス）は対象外。ガウ・ロランは left の立ち・歩きの 1px 幅の手で落ちる（ISSUES.md、直す予定）。
 ガウは right_atk_wind も「手が体から浮いている」で落ちる（ISSUES.md、依頼者の判断待ち）。
 
