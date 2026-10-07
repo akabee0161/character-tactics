@@ -56,14 +56,14 @@ def extras(d, st):
     return add, rem
 
 
-def frame(eid, d, st):
-    _, eye, head, cloth = ENEMIES[eid]
+def frame(eid, d, st, weapon="dagger"):
+    _, eye, head, cloth = ENEMIES[eid][:4]
     kind = {"base": "base", "walk_a": "base", "walk_b": "base", "idle2": "idle2",
             "atk_wind": "noarm", "atk_hit": "noarm"}[st]
     b = body(kind, d)
     mp.bodies[d] = b
     canvas = [row[:] for row in b]
-    if st.startswith("atk"):
+    if st.startswith("atk") and weapon == "dagger":
         add, rem = extras(d, st)
         for y, x in rem:
             canvas[y][x] = None
@@ -76,7 +76,7 @@ def frame(eid, d, st):
         layers.append(g)
     for g in layers:
         overlay(canvas, g)
-    if st in ("base", "walk_a", "walk_b", "idle2"):
+    if weapon == "dagger" and st in ("base", "walk_a", "walk_b", "idle2"):
         dag = eb.read_frame(Path(f"assets/part/dagger/dagger_{d}.txt"))
         overlay(canvas, dag, "back" if d in ("up", "left") else "front", -2 if st == "idle2" else 0)
     if st.startswith("walk"):
@@ -100,4 +100,5 @@ def main():
     print("frames ok")
 
 
-main()
+if __name__ == "__main__":
+    main()
