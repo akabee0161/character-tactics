@@ -27,6 +27,9 @@
 | **`probe_colors.py --pairs` の読み込みエラーがトレースバックになる** | `read_pairs()` の呼び出しが `main()` の `try` の外にあるので、1色だけの行の `GridError` や、ファイルが無いときの `OSError` が `FAIL`（終了コード 2）にならずに漏れる | 小 | 同上 |
 | **`RiverDerivationTest` が現役の川のタイルを読んでいる** | `tests/test_tools.py` の `RiverDerivationTest` が `assets/tile/river_*.txt` を直接読んでおり、「回帰テストに現役のアートを参照させない」（CLAUDE.md）に反する。出荷する川の派生宣言の検査は残したまま、比較する入力を `tests/fixtures/` に固定する | 小 | character-tactics#22 の CodeRabbit の指摘（2026-09-30） |
 | **`check_colors.py` が既定の実行で毎回失敗する** | 原因は上の `knight` 1件だけだが、そのせいで新しい hard failure が出ても終了コードで区別できない。`knight` の色が決まれば解消する | 小（色の決定待ち） | 2026-09-23 |
+| **`weapon_check.py` が色名とコマ名を検査しない** | `--weapon` の色名を打ち間違えると柄の色が空になり、黙って「柄の色が無い武器」の扱いになる（刃と同じ色の兜を取り違えない仕組みが効かない）。`--hidden` `--partial` の無いコマ名も黙る。`load_palette()` で色名を確かめ、無いコマ名は止める | 小 | 最終レビュー 2026-10-07 |
+| **`cand/gen/build_sheets.py` が色替え済みのシートを上書きする** | レシピと同じ id・`recolor={}` で `build/sheets/<id>.png` に書く。レシピの `frames` ができて役目を終えたので、消すか出力先を分ける | 小 | 最終レビュー 2026-10-07 |
+| **`cand/gen/mkparts.py` が import するだけでファイルを書く** | 最上位で `cand/enemy/*.txt` を書き出す。`mkframes.py`・`mkweapons.py` が import するたびに部品を作り直し、手で直した部品が消える。`if __name__ == "__main__":` の下に移す | 小 | 最終レビュー 2026-10-07 |
 
 ## ツールの改善（挙動は変えない）
 
@@ -37,6 +40,10 @@
 | **共有関数が `SystemExit` を投げる** | `tilemap.read_layout` は `sheet.py` と `sets.py` からも呼ばれるのに、エラー時に `SystemExit` で終了する。`sets.py` は `SystemExit` を定義ごとに受け止めて失敗として数えている（2026-09-29、PR #7 の CodeRabbit の指摘）。`load_tile` は型注釈が `str` なのに `Path` も受け付けている | 小 | 2026-09-23 |
 | **テストが一時ファイルを /tmp に残す** | `test_check_colors` / `test_probe_colors` / `test_sheet` / `test_tilemap` / `test_tools` の一時ファイルを作る関数が `NamedTemporaryFile(delete=False)` で作ったまま消さない。2026-10-02 時点でこの端末の /tmp に `tmp*.txt` が約3900個あった。`test_sheet_gif` は `addCleanup` で消すように直した（character-tactics の PR #24 の CodeRabbit の指摘）。同じ形に揃えれば直る | 小 | 2026-10-02 |
 | **パレットを差し替えられない** | `palette/master.json` のパスが `tools/gridfile.py` で固定で、別のパレットを渡すオプションがどのツールにも無い。2Pカラーのような色違いを作るなら `--palette` が要る。必要になるまで作らない | 小 | 2026-09-23 |
+| **CLAUDE.md・README のガウの `weapon_check` の例に `--arm` が無い** | SPEC の指定には `--arm` があり、手が体から浮くのを落とすのはこの指定だけ。例をそのまま使うとこの検査が抜ける。例を SPEC と同じにする | 小 | 最終レビュー 2026-10-07 |
+| **`weapon_check.py` の docstring の例が無いディレクトリを指す** | `cand/enemy-frames/spear-soldier` は削除済み。`spear-knight` にする | 小 | 最終レビュー 2026-10-07 |
+| **レシピが読む元のコマが `validate.py` の既定の範囲に無い** | 8体の元のコマは `cand/enemy-frames/`。README の「`--all` で作り直す」の前に `validate.py cand/enemy-frames` を通す手順を書く | 小 | 最終レビュー 2026-10-07 |
+| **再生ページが古いシートに気付かない** | `enemy_gallery.py` は `build/sheets/<id>.png` があるかだけを見る。元のコマを直して `enemy_build.py --all` を忘れると古い絵を見せる。レシピ・元のコマより古ければ警告する | 小 | 最終レビュー 2026-10-07 |
 
 ## アセット・構成
 
