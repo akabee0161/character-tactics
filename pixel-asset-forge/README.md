@@ -331,7 +331,7 @@ forge をゲームリポジトリへコピーして使うときは、ゲーム�
 ```sh
 .venv/bin/python tools/enemy_build.py enemy/dagger-bandit.json   # build/sheets/<id>.png（と _preview.png）
 .venv/bin/python tools/enemy_build.py --all                     # enemy/ の全レシピ
-.venv/bin/python tools/enemy_build.py --colours dagger          # 男女の元のコマが使う色の差
+.venv/bin/python tools/enemy_build.py --colours dagger          # 男女の元のコマが使う色の差（女性の元のコマができるまで使えない）
 ```
 
 - レシピは `enemy/<id>.json`（キー: `id` `name` `archetype` `body` `recolor` `frames`）。`id` はファイル名と同じ
@@ -339,7 +339,7 @@ forge をゲームリポジトリへコピーして使うときは、ゲーム�
 - `frames` は元のコマの置き場（リポジトリからの相対パス）。今の8体は `cand/enemy-frames/<id>`
   （部品で組んだコマ。生成は `cand/gen/mkweapons.py` など）を指す。`axe` `spear` では必須。
   書かなければ `dagger` の `male` は `assets/unit/gau/`、`female` は `assets/unit/enemy-src/dagger-female/`
-  （`--colours` が比べるのもこの2つ）
+  （`--colours` が比べるのもこの2つ。女性の元のコマはまだ無いので、今は置き場が無いと言って止まる）
 - `recolor` は「元のコマが使うパレット名 → 置き換え後のパレット名」。元のコマが使わない名前は止める
 - 元のコマの絵を直したら `enemy_build.py --all` で作り直す。`build/` は生成物
 

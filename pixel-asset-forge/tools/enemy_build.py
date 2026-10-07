@@ -183,6 +183,8 @@ def _used(frames) -> set[str]:
 
 
 def source_colours(source_dir: Path, sheet_def: Path) -> set[str]:
+    if not source_dir.is_dir():
+        raise EnemyError(f"{display(source_dir)}: 元のコマの置き場が無い（まだ作っていない？）")
     names = _frame_names(_sheet_rows(sheet_def))
     return _used(read_frame(source_dir / f"{name}.txt") for name in names)
 

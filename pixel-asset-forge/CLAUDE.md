@@ -53,7 +53,7 @@
 .venv/bin/python tools/sheet_gif.py sheets/roran.txt  # unit の動きを状態ごとの GIF にする（README 2.7）
 .venv/bin/python tools/enemy_build.py enemy/dagger-bandit.json  # 敵のレシピから、元のコマ（frames）を色替えして敵のシートを作る（build/sheets/<id>.png）
 .venv/bin/python tools/enemy_build.py --all                      # enemy/ の全レシピを作る
-.venv/bin/python tools/enemy_build.py --colours dagger           # 男女の元のコマが使う色の差
+.venv/bin/python tools/enemy_build.py --colours dagger           # 男女の元のコマが使う色の差（女性の元のコマができるまで使えない）
 .venv/bin/python tools/enemy_gallery.py build/enemy_gallery.html --ref build/sheets/gau.png:ガウ（味方）  # 敵を並べて動きを再生する確認ページ（依頼者へ渡す）
 .venv/bin/python tools/unit_check.py assets/unit/ines --items klmstuw  # unit の脚の中心と増えた切れ目（自己チェック①）
 .venv/bin/python tools/weapon_check.py assets/unit/gau --blade stone_hi,stone_base --weapon wood_hi,wood_base,wood_shadow --hand skin_rose_hi,skin_rose_base,skin_rose_shadow --hidden left_atk_wind,up_atk_wind,up_atk_hit --depth down  # 武器と握る手（自己チェック①。ユニットごとの指定は types/unit/SPEC.md）

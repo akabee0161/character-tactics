@@ -268,6 +268,10 @@ class BuildTest(unittest.TestCase):
     def test_source_colours_lists_every_colour_the_sheet_uses(self):
         self.assertEqual(source_colours(self.fx.src, self.fx.sheet_def), {"outline", "cloth_base", "skin_base"})
 
+    def test_source_colours_names_a_missing_source_directory(self):
+        with self.assertRaisesRegex(EnemyError, "no-such-src.*元のコマの置き場が無い"):
+            source_colours(self.fx.root / "no-such-src", self.fx.sheet_def)
+
     def test_a_sheet_definition_that_disagrees_with_its_declaration_is_refused(self):
         self.fx.sheet_def.write_text(SHEET_DEF.replace("idle=1", "idle=2"), encoding="utf-8")
         with self.assertRaisesRegex(EnemyError, "idle"):

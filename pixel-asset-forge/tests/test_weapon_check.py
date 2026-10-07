@@ -202,6 +202,40 @@ class WeaponDetectionTest(unittest.TestCase):
         self.assertIn((20, 17), a.weapon)
         self.assertIn((2, 17), a.weapon)
 
+    def test_diagonal_handle_is_part_of_the_weapon(self):
+        f = blank()
+        for x, y in ((6, 6), (7, 6), (6, 7), (7, 7)):
+            put(f, x, y, "stone_hi")
+        for i in range(5):  # 階段状の斜めの柄（画素どうしは斜めにだけ接する）
+            put(f, 8 + i, 8 + i, "wood_base")
+        fist(f, 13, 13, ring=False)
+        a = analyse(f)
+        self.assertIn((12, 12), a.weapon)
+        self.assertTrue(a.hand)
+
+    def test_head_and_handle_on_both_sides_of_the_fist_are_one_weapon(self):
+        f = blank()
+        for x in range(5, 8):  # 刃を手前に向けた axe head（拳の左）
+            for y in range(14, 18):
+                put(f, x, y, "stone_hi")
+        fist(f, 8, 15, ring=False)
+        for x in range(10, 19):  # 柄（拳の右）。刃とは接しない
+            put(f, x, 16, "wood_base")
+        a = analyse(f)
+        self.assertIn((5, 14), a.weapon)
+        self.assertIn((18, 16), a.weapon)
+
+    def test_one_pixel_pommel_beyond_the_fist_is_tiny(self):
+        f = blank()
+        spear_v(f, 9, 6, 15)
+        fist(f, 9, 18)  # 輪郭が y17〜20 の柄を覆う
+        put(f, 9, 21, "wood_base")  # 拳の先にのぞく柄頭
+        put(f, 9, 26, "wood_base")  # 拳から離れた同じ色の1画素（柄頭ではない）
+        a = analyse(f)
+        self.assertIn((9, 21), a.tiny)
+        self.assertIn((9, 21), a.weapon)
+        self.assertNotIn((9, 26), a.weapon)
+
 
 def frames_of(**named):
     return {name: analyse(f) for name, f in named.items()}
@@ -287,6 +321,15 @@ class MainTest(unittest.TestCase):
         code, _, err = self.run_main(["/nonexistent/unit", *self.ARGS])
         self.assertEqual(code, 2)
         self.assertIn("error", err)
+
+    def test_letter_without_colour_exits_two_with_its_name(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            text = serialize_frame(standing(), "test").splitlines()
+            text[-2] = "x" + text[-2][1:]  # map に無い文字
+            (Path(tmp) / "down_base.txt").write_text("\n".join(text) + "\n", encoding="utf-8")
+            code, _, err = self.run_main([tmp, *self.ARGS])
+            self.assertEqual(code, 2)
+            self.assertIn("'x'", err)
 
 
 if __name__ == "__main__":

@@ -41,7 +41,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from enemy_build import read_frame  # noqa: E402
+from enemy_build import EnemyError, read_frame  # noqa: E402
 from gridfile import GridError  # noqa: E402
 
 DIRECTIONS = ("down", "up", "left", "right")
@@ -350,7 +350,7 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     try:
         frames = load(args.directory, _names(args.blade), _names(args.weapon), _names(args.hand))
-    except (GridError, WeaponCheckError) as exc:
+    except (GridError, WeaponCheckError, EnemyError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
     fails, notes = check_unit(frames, _names(args.hidden), _names(args.hit),
