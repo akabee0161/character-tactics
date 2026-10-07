@@ -234,8 +234,8 @@ tools/weapon_check.py cand/enemy-frames/spear-knight $C --hidden left_atk_hit
 斧の `up` の攻撃は `--hidden`（振りかぶりは axe head が木の棒に隠れ、当たりは体の向こうに隠れる）。
 `down`・`up` は奥行きの表現なので `--depth`。`right` は例外に入れない（下の段落）。
 
-弓（イネス）は対象外。ガウ・ロランは left の立ち・歩きの 1px 幅の手で落ちる（ISSUES.md、直す予定）。
-ガウは right_atk_wind も「手が体から浮いている」で落ちる（ISSUES.md、依頼者の判断待ち）。
+弓（イネス）は対象外。ロランは全項目を通る。ガウは right_atk_wind が「手が体から浮いている」で落ちる（ISSUES.md、直す予定）。
+left の奥の手は、素体 `male_left` のままだと 1px 幅で落ちる。拳の中身の2行を2px 幅にする（ガウ・ロランの `left_base` の x21〜22、2026-10-07）。
 
 武器の一部が体や頭に隠れるコマは `--partial` に挙げる（握る位置と長さの検査から外す）。**例外に挙げるのは、本当に隠れるコマだけ。**
 left を左右反転して right を作ると、left で「体の後ろ」だった重なり順まで引き継ぐが、right は握る手が体の手前側なので
