@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """味方の完成したコマを色替えして、敵のシートを作る。
 
-    tools/enemy_build.py enemy/dagger-red-m.json
+    tools/enemy_build.py enemy/dagger-bandit.json
     tools/enemy_build.py --all
 
 レシピ（enemy/<id>.json）の形と、設計の経緯は

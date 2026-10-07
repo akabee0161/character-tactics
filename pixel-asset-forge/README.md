@@ -329,7 +329,7 @@ forge をゲームリポジトリへコピーして使うときは、ゲーム�
 経緯は `docs/superpowers/specs/2026-10-06-enemy-variants-design.md`（character-tactics）。
 
 ```sh
-.venv/bin/python tools/enemy_build.py enemy/dagger-red-m.json   # build/sheets/<id>.png（と _preview.png）
+.venv/bin/python tools/enemy_build.py enemy/dagger-bandit.json   # build/sheets/<id>.png（と _preview.png）
 .venv/bin/python tools/enemy_build.py --all                     # enemy/ の全レシピ
 .venv/bin/python tools/enemy_build.py --colours dagger          # 男女の元のコマが使う色の差
 ```
