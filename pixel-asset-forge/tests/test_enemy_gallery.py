@@ -42,5 +42,14 @@ class GalleryTest(unittest.TestCase):
             self.assertIn(token, html)
 
 
+    def test_the_page_offers_slow_playback_and_frame_steps(self):
+        html = render_gallery([("x", "名前", self.png)])
+        for speed in ("1", "0.5", "0.25"):
+            self.assertIn(f'data-speed="{speed}"', html)
+        self.assertIn('id="pause"', html)
+        self.assertIn('id="step"', html)
+        self.assertIn('class="frame"', html)
+
+
 if __name__ == "__main__":
     unittest.main()

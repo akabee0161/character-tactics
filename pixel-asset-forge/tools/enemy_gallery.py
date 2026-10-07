@@ -23,7 +23,7 @@ from gridfile import GridError, load_palette  # noqa: E402
 
 CARD = Template(
     '<section class="card" data-sheet="data:image/png;base64,$data">'
-    '<canvas width="128" height="128"></canvas>'
+    '<canvas width="128" height="128"></canvas><p class="frame"></p>'
     '<h2>$name</h2><p class="id">$id</p>'
     '<div class="row">$states</div><div class="row">$dirs</div></section>'
 )
@@ -45,24 +45,55 @@ canvas { width: 100%; height: auto; aspect-ratio: 1; image-rendering: pixelated;
 h2 { font-size: 14px; margin: 6px 0 0; } .id { margin: 0 0 6px; font-size: 11px; color: var(--mute); }
 .row { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
 button { font: inherit; font-size: 12px; background: var(--btn); color: var(--fg); border: 1px solid var(--line); border-radius: 4px; padding: 2px 6px; }
+button[aria-pressed="true"] { border-color: var(--fg); font-weight: 600; }
+.controls { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin-bottom: 12px; font-size: 13px; }
+.frame { font-size: 11px; color: var(--mute); }
 </style></head><body>
+<div class="controls">速さ:
+<button data-speed="1" aria-pressed="true">ゲームと同じ</button><button data-speed="0.5">1/2</button><button data-speed="0.25">1/4</button>
+<button id="pause">止める</button><button id="step">1コマ送り</button></div>
 <div class="grid">$cards</div>
 <script>
 const STATES = { idle: { frames: 2, fps: 4, row: 0 }, walk: { frames: 4, fps: 8, row: 4 }, attack: { frames: 3, fps: 6, row: 8 } };
+let speed = 1, paused = false;
+const cards = [];
+document.querySelectorAll("button[data-speed]").forEach(function (b) {
+  b.onclick = function () {
+    speed = Number(b.dataset.speed);
+    document.querySelectorAll("button[data-speed]").forEach(function (o) { o.setAttribute("aria-pressed", String(o === b)); });
+  };
+});
+const pauseButton = document.getElementById("pause");
+function setPaused(p) { paused = p; pauseButton.textContent = p ? "再生" : "止める"; }
+pauseButton.onclick = function () { setPaused(!paused); };
+document.getElementById("step").onclick = function () {
+  setPaused(true);
+  cards.forEach(function (c) { c.frame += 1; c.acc = 0; });
+};
 document.querySelectorAll(".card").forEach(function (card) {
   const img = new Image();
   img.src = card.dataset.sheet;
   const canvas = card.querySelector("canvas");
+  const label = card.querySelector(".frame");
   const ctx = canvas.getContext("2d");
-  let state = "idle", dir = 0;
-  card.querySelectorAll("button[data-state]").forEach(function (b) { b.onclick = function () { state = b.dataset.state; }; });
-  card.querySelectorAll("button[data-dir]").forEach(function (b) { b.onclick = function () { dir = Number(b.dataset.dir); }; });
+  const c = { state: "idle", dir: 0, frame: 0, acc: 0 };
+  cards.push(c);
+  card.querySelectorAll("button[data-state]").forEach(function (b) { b.onclick = function () { c.state = b.dataset.state; c.frame = 0; c.acc = 0; }; });
+  card.querySelectorAll("button[data-dir]").forEach(function (b) { b.onclick = function () { c.dir = Number(b.dataset.dir); }; });
+  let last = null;
   function draw(t) {
-    const s = STATES[state];
-    const col = Math.floor(t / 1000 * s.fps) % s.frames;
+    const s = STATES[c.state];
+    if (last !== null && !paused) {
+      c.acc += (t - last) * speed;
+      const per = 1000 / s.fps;
+      while (c.acc >= per) { c.acc -= per; c.frame += 1; }
+    }
+    last = t;
+    const col = c.frame % s.frames;
     ctx.imageSmoothingEnabled = false;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(img, col * 32, (s.row + dir) * 32, 32, 32, 0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, col * 32, (s.row + c.dir) * 32, 32, 32, 0, 0, canvas.width, canvas.height);
+    label.textContent = "コマ " + (col + 1) + " / " + s.frames;
     requestAnimationFrame(draw);
   }
   img.onload = function () { requestAnimationFrame(draw); };
