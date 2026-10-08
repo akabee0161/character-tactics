@@ -48,6 +48,8 @@
 
 | 課題 | 詳細・直し方の見当 | 大きさ | 出どころ |
 |---|---|---|---|
+| **短剣の敵4体のコマを、生成スクリプトから作り直せない** | `cand/gen/mkframes.py` を走らせると、`cand/enemy-frames/dagger-*/right_atk_wind.txt` の y=21〜22 が変わる（コミット済みのコマは生成後に手で直したとみられる）。直しを `mkframes.py` の `extras` に入れるか、短剣の4体は作り直さないと決める。`/tmp/cand2`（ガウの組み直しコマ）にも頼っている | 小 | 最終レビュー 2026-10-08 |
+| **`mkframes.py` 単体では、後ろの髪を短剣より先に描く** | `frame()` の `hair_back=True`（既定）は短剣を描く前に後ろの髪を描く。`mkweapons.py` は武器の後に描く（先に描くと、体の後ろの武器が消えた）。短剣の女性を `ENEMIES` に足すと、left・up の立ちで短剣が消える。既定を外し、短剣の後に描くようにそろえる | 小 | 最終レビュー 2026-10-08 |
 | **レイアウトに置かれていないタイルが11点** | `bridge_v` `dirt` `fence_v` `mountain_{ne,nw,se,sw}` `path_sw` `path_t_{n,s,w}`。CLAUDE.md の「全点を置いたレイアウトを `layouts/` に足す」を満たしていない。特に `mountain_*` の4点は、どう組む想定かがマップで確認されていない | 小 | 2026-09-23 |
 | **`tile` / `item` の `reference/` が無い** | `tile` は `reference/` が無く、当面 `layouts/` のマップをお手本にしている。`item` は `SPEC.md` を 2026-10-02 に作った（issue #23 の3番目）が、`reference/` に何を置くかは未定で、当面 `assets/item/` の3点（`chest`・`sword`・`bow`）を手本にしている | 小 | GitHub #1 |
 | **`seed/face32.py` が実行経路に無い** | リポジトリ化前の原型で、分解済み。git の履歴に残るので削除できる | 小 | 2026-09-23 |

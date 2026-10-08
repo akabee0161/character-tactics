@@ -251,6 +251,9 @@ tools/weapon_check.py cand/enemy-frames/spear-thug-c-f $C --hidden left_atk_hit,
 `spear-thug-a-f`・`b-f` の `up_atk_hit` は「手が体から浮いている」で落ちる（上げた腕が長い髪の陰に入り、拳だけが見える。
 `--arm` はコマごとに外せない）。依頼者が絵を見て了承した（2026-10-08）。ほかの女性6体は全項目を通る。
 
+`cand/enemy-frames/` の生成したコマには `unit_check.py` を使えない。`--items` はファイルの中の文字で持ち物を指定するが、
+生成したコマは文字の割り当てがコマごとに違う。脚と足元は、再生ページ（`tools/enemy_gallery.py`）とシートのプレビューの足元ライン（y=30）で確かめる。
+
 弓（イネス）は対象外。ガウ・ロランは全項目を通る（2026-10-07）。
 left の奥の手は、素体 `male_left` のままだと 1px 幅で落ちる。拳の中身の2行を2px 幅にする（ガウ・ロランの `left_base` の x21〜22、2026-10-07）。
 
