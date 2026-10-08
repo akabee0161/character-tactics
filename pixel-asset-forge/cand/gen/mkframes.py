@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, "tools")
-sys.path.insert(0, "/tmp")
+sys.path.insert(0, str(Path(__file__).resolve().parent))  # 同じ cand/gen の mkparts を読む（/tmp の古い写しを読まない）
 import enemy_build as eb
 import mkparts as mp
 
@@ -22,7 +22,7 @@ RAW = {
 # 歩きの脚（y=28〜30 だけを使う）。男性はガウの完成コマ、女性は女性の細い脚
 WALK = {"male": "assets/unit/gau/{d}_{st}.txt", "female": "cand/enemy/female_{st}_{d}.txt"}
 
-ENEMIES = {  # id: (名前, 目, 頭, 服, 武器, 素体)
+ENEMIES = {  # id: (名前, 目, 頭, 服, 武器, 素体[, 長い髪])。長い髪は cand/enemy/hair_<名前>_<dir>.txt（頭の部品の下に重ねる）
     "dagger-bandit": ("眼帯のバンダナ", "E5", "bandana", ["belt", "tatter"], "dagger", "male"),
     "dagger-knight": ("フルフェイス", "E0", "full", ["belt"], "dagger", "male"),
     "dagger-horn": ("角付きの兜", "E2", "horn", ["tatter"], "dagger", "male"),
@@ -64,7 +64,8 @@ def extras(d, st):
 
 
 def frame(eid, d, st, weapon="dagger"):
-    _, eye, head, cloth, _w, sex = ENEMIES[eid]
+    _, eye, head, cloth, _w, sex = ENEMIES[eid][:6]
+    hair = ENEMIES[eid][6] if len(ENEMIES[eid]) > 6 else None
     kind = {"base": "base", "walk_a": "base", "walk_b": "base", "idle2": "idle2",
             "atk_wind": "noarm", "atk_hit": "noarm"}[st]
     b = body(kind, d, sex)
@@ -76,13 +77,18 @@ def frame(eid, d, st, weapon="dagger"):
             canvas[y][x] = None
         for y, x, n in add:
             canvas[y][x] = n
-    layers = [mp.eb.read_frame(Path(f"cand/enemy/eye_{eye}_{d}.txt")),
-              mp.eb.read_frame(Path(f"cand/enemy/head_{head}_{d}.txt"))]
+    # 重ねる順: 目 → 服 → 長い髪（背中や肩の服に掛かる）→ 頭（髪の上にかぶる）
+    layers = [mp.eb.read_frame(Path(f"cand/enemy/eye_{eye}_{d}.txt"))]
     for c in cloth:
-        g = {"belt": mp.belt, "tatter": mp.tatter}[c](d)
-        layers.append(g)
+        layers.append({"belt": mp.belt, "tatter": mp.tatter}[c](d))
+    if hair:
+        layers.append(mp.eb.read_frame(Path(f"cand/enemy/hair_{hair}_{d}.txt")))
+    if head:  # None は被り物なし（長い髪だけ）
+        layers.append(mp.eb.read_frame(Path(f"cand/enemy/head_{head}_{d}.txt")))
     for g in layers:
         overlay(canvas, g)
+    if hair:  # 肩より下の髪は体の後ろ（空いている画素だけ）
+        overlay(canvas, mp.eb.read_frame(Path(f"cand/enemy/hair_{hair}_back_{d}.txt")), "back")
     if weapon == "dagger" and st in ("base", "walk_a", "walk_b", "idle2"):
         dag = eb.read_frame(Path(f"assets/part/dagger/dagger_{d}.txt"))
         overlay(canvas, dag, "back" if d in ("up", "left") else "front", -2 if st == "idle2" else 0)
