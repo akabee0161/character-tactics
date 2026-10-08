@@ -22,7 +22,7 @@ OUT = Path("cand/enemy-frames")
 # 見た目（目・頭・服）は承認済みの4体のまま、武器を短剣から替える（2026-10-07 依頼者決定）
 for _new, _old, _weapon in (("axe-bandit", "dagger-bandit", "axe"), ("axe-horn", "dagger-horn", "axe"),
                             ("spear-knight", "dagger-knight", "spear"), ("spear-thug", "dagger-thug", "spear")):
-    mf.ENEMIES[_new] = (*mf.ENEMIES[_old][:4], _weapon)
+    mf.ENEMIES[_new] = (*mf.ENEMIES[_old][:4], _weapon, "male")
 
 
 def P(x0, y0, rows, layer="front"):

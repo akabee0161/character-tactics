@@ -11,20 +11,27 @@ DIRS = ["down", "up", "left", "right"]
 OUT = Path("cand/enemy-frames")
 MAPC = {"cloth_hi": "cloak_dark_hi", "cloth_base": "cloak_dark_base", "cloth_shadow": "cloak_dark_shadow",
         "skin_hi": "skin_rose_hi", "skin_base": "skin_rose_base", "skin_shadow": "skin_rose_shadow"}
-RAW = {"base": "types/unit/base/male_{d}.txt",
-       "idle2": "assets/unit/gau/parts/body_idle2_{d}.txt",
-       "noarm": "assets/unit/gau/parts/body_noarm_{d}.txt"}
+RAW = {
+    "male": {"base": "types/unit/base/male_{d}.txt",
+             "idle2": "assets/unit/gau/parts/body_idle2_{d}.txt",
+             "noarm": "assets/unit/gau/parts/body_noarm_{d}.txt"},
+    "female": {"base": "types/unit/base/female_{d}.txt",
+               "idle2": "cand/enemy/female_body_idle2_{d}.txt",
+               "noarm": "cand/enemy/female_body_noarm_{d}.txt"},
+}
+# 歩きの脚（y=28〜30 だけを使う）。男性はガウの完成コマ、女性は女性の細い脚
+WALK = {"male": "assets/unit/gau/{d}_{st}.txt", "female": "cand/enemy/female_{st}_{d}.txt"}
 
-ENEMIES = {  # id: (名前, 目, 頭, 服)
-    "dagger-bandit": ("眼帯のバンダナ", "E5", "bandana", ["belt", "tatter"]),
-    "dagger-knight": ("フルフェイス", "E0", "full", ["belt"]),
-    "dagger-horn": ("角付きの兜", "E2", "horn", ["tatter"]),
-    "dagger-thug": ("素の髪のごろつき", "E2", "bare", ["tatter"]),
+ENEMIES = {  # id: (名前, 目, 頭, 服, 武器, 素体)
+    "dagger-bandit": ("眼帯のバンダナ", "E5", "bandana", ["belt", "tatter"], "dagger", "male"),
+    "dagger-knight": ("フルフェイス", "E0", "full", ["belt"], "dagger", "male"),
+    "dagger-horn": ("角付きの兜", "E2", "horn", ["tatter"], "dagger", "male"),
+    "dagger-thug": ("素の髪のごろつき", "E2", "bare", ["tatter"], "dagger", "male"),
 }
 
 
-def body(kind, d):
-    f = eb.read_frame(Path(RAW[kind].format(d=d)))
+def body(kind, d, sex="male"):
+    f = eb.read_frame(Path(RAW[sex][kind].format(d=d)))
     for y in range(25, 31):
         f[y] = ["wood_shadow" if n == "cloth_shadow" else n for n in f[y]]
     return eb.recolor_frame(f, MAPC)
@@ -57,10 +64,10 @@ def extras(d, st):
 
 
 def frame(eid, d, st, weapon="dagger"):
-    _, eye, head, cloth = ENEMIES[eid][:4]
+    _, eye, head, cloth, _w, sex = ENEMIES[eid]
     kind = {"base": "base", "walk_a": "base", "walk_b": "base", "idle2": "idle2",
             "atk_wind": "noarm", "atk_hit": "noarm"}[st]
-    b = body(kind, d)
+    b = body(kind, d, sex)
     mp.bodies[d] = b
     canvas = [row[:] for row in b]
     if st.startswith("atk") and weapon == "dagger":
@@ -80,7 +87,7 @@ def frame(eid, d, st, weapon="dagger"):
         dag = eb.read_frame(Path(f"assets/part/dagger/dagger_{d}.txt"))
         overlay(canvas, dag, "back" if d in ("up", "left") else "front", -2 if st == "idle2" else 0)
     if st.startswith("walk"):
-        w = eb.read_frame(Path(f"assets/unit/gau/{d}_{st}.txt"))
+        w = eb.read_frame(Path(WALK[sex].format(d=d, st=st)))
         for y in range(28, 31):
             canvas[y] = w[y][:]
     return canvas

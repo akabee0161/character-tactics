@@ -6,7 +6,6 @@ sys.path.insert(0, "tools")
 import enemy_build as eb
 
 OUT = Path("cand/enemy")
-OUT.mkdir(parents=True, exist_ok=True)
 DIRS = ["down", "up", "left", "right"]
 
 
@@ -102,7 +101,7 @@ bare = {
              (9, 10, "obbbbbbbco"), (10, 10, "ob"), (10, 15, "bbbcco"), (11, 15, "bbbcco"),
              (12, 15, "bbcco"), (13, 15, "bcco")],
 }
-emit("head_bare", bare, HAIR, HAIR_S, "素の髪（短い荒れ髪）")
+
 
 cap_d = [(5, 12, "oaaabbbo"), (6, 11, "oaaabbbbco"), (7, 10, "oaaabbbbbcco"), (8, 10, "oaabbbbbbcco")]
 cap_l = [(5, 12, "oaabbbo"), (6, 11, "oaaabbbco"), (7, 10, "oaaabbbbcco"), (8, 10, "oaabbbbbcco")]
@@ -111,7 +110,7 @@ band = {
     "up": cap_d + [(9, 10, "o" + "c" * 10 + "o"), (9, 14, "obbo"), (10, 13, "obcbo"), (11, 13, "oo.oo")],
     "left": cap_l + [(9, 10, "o" + "c" * 8 + "o"), (9, 20, "obbo"), (10, 21, "obo"), (11, 21, "oco"), (12, 22, "oo")],
 }
-emit("head_bandana", band, BAND, BAND_S, "バンダナ（赤）")
+
 
 dome_d = [(4, 13, "oooooo"), (5, 12, "oaabbbco"), (6, 11, "oaaabbbbco"), (7, 10, "oaaabbbbbcco"),
           (8, 10, "oaabbbbbbcco")]
@@ -124,7 +123,7 @@ horn = {
              (8, 10, "oaabbbbbcco"), (9, 10, "o" + "c" * 8 + "o"),
              (2, 21, "o"), (3, 20, "oho"), (4, 19, "oho"), (5, 18, "oho"), (6, 19, "oio")],
 }
-emit("head_horn", horn, STONE, STONE_S, "角付きの兜")
+
 
 full_core_d = [(4, 13, "oooooo"), (5, 12, "oaaabbbo"), (6, 11, "oaaabbbbco"), (7, 10, "oaaabbbbbcco"),
                (8, 10, "oaabbbbbbcco"), (9, 10, "oabbbbbbbcco")]
@@ -139,7 +138,7 @@ full = {
              (8, 10, "oaabbbbbcco"), (9, 10, "obbbbbbbco"), (10, 10, "oooooobbcco"),
              (11, 10, "obbbbbbbcco"), (12, 10, "obbdbbbcco"), (13, 11, "obbbccco"), (14, 12, "obbcco")],
 }
-emit("head_full", full, STONE, STONE_S, "フルフェイスの兜")
+
 
 # ---- 目 ----
 EYE = {"o": O}
@@ -155,8 +154,6 @@ eyes = {
     "E5": ("眼帯", {"down": [(11, 13, "oo"), (12, 13, "oo"), (11, 17, "o"), (12, 17, "o")],
                     "left": [(11, 11, "oo"), (12, 11, "oo")], "up": []}),
 }
-for key, (label, sets) in eyes.items():
-    emit(f"eye_{key}", sets, EYE, [], f"目 {label}")
 
 # ---- 服（ガウの素体に合わせた色の素体を作る）----
 MAPC = {"cloth_hi": "cloak_dark_hi", "cloth_base": "cloak_dark_base", "cloth_shadow": "cloak_dark_shadow",
@@ -166,9 +163,7 @@ for d in DIRS:
     f = eb.read_frame(Path(f"types/unit/base/male_{d}.txt"))
     for y in range(25, 31):
         f[y] = ["wood_shadow" if n == "cloth_shadow" else n for n in f[y]]
-    f = eb.recolor_frame(f, MAPC)
-    bodies[d] = f
-    write("gau_body", d, f, "ガウ色の素体（男性）")
+    bodies[d] = eb.recolor_frame(f, MAPC)  # mkframes が重ねる素体に差し替える（belt・tatter はこの胴の幅で描く）
 
 CLOAK = {"cloak_dark_hi", "cloak_dark_base", "cloak_dark_shadow"}
 
@@ -203,12 +198,6 @@ def tatter(d):
     return clip(body, px)
 
 
-for d in DIRS:
-    write("cloth_belt", d, belt(d), "服 ベルト")
-    write("cloth_tatter", d, tatter(d), "服 ボロ")
-    write("cloth_none", d, blank(), "服 なし")
-    write("eye_none", d, blank(), "目 なし") if False else None
-
 # ---- 選ぶページの設定 ----
 def lay(name, zs=None):
     return [{"part": f"cand/enemy/{name}_{{dir}}.txt", "z": "front"}]
@@ -240,5 +229,25 @@ cfg = {
     "matrix": {"rows": "head", "cols": "eyes"},
     "refs": {"ガウ（完成）": "assets/unit/gau/{dir}_base.txt"},
 }
-Path("cand/enemy/PICKER.json").write_text(json.dumps(cfg, ensure_ascii=False, indent=2), encoding="utf-8")
-print("ok")
+
+
+def main():
+    """部品と選ぶページの設定を cand/enemy/ に書き出す。import しただけでは書かない（mkframes・mkweapons が import する）。"""
+    OUT.mkdir(parents=True, exist_ok=True)
+    emit("head_bare", bare, HAIR, HAIR_S, "素の髪（短い荒れ髪）")
+    emit("head_bandana", band, BAND, BAND_S, "バンダナ（赤）")
+    emit("head_horn", horn, STONE, STONE_S, "角付きの兜")
+    emit("head_full", full, STONE, STONE_S, "フルフェイスの兜")
+    for key, (label, sets) in eyes.items():
+        emit(f"eye_{key}", sets, EYE, [], f"目 {label}")
+    for d in DIRS:
+        write("gau_body", d, bodies[d], "ガウ色の素体（男性）")
+        write("cloth_belt", d, belt(d), "服 ベルト")
+        write("cloth_tatter", d, tatter(d), "服 ボロ")
+        write("cloth_none", d, blank(), "服 なし")
+    Path("cand/enemy/PICKER.json").write_text(json.dumps(cfg, ensure_ascii=False, indent=2), encoding="utf-8")
+    print("ok")
+
+
+if __name__ == "__main__":
+    main()
