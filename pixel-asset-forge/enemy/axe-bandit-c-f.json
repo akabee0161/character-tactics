@@ -1,0 +1,12 @@
+{
+  "id": "axe-bandit-c-f",
+  "name": "眼帯のバンダナ（斧・女・ポニーテール）",
+  "archetype": "axe",
+  "body": "female",
+  "frames": "cand/enemy-frames/axe-bandit-c-f",
+  "recolor": {
+    "cloak_dark_hi": "dirt_hi",
+    "cloak_dark_base": "dirt_base",
+    "cloak_dark_shadow": "dirt_shadow"
+  }
+}

@@ -336,10 +336,13 @@ forge をゲームリポジトリへコピーして使うときは、ゲーム�
 
 - レシピは `enemy/<id>.json`（キー: `id` `name` `archetype` `body` `recolor` `frames`）。`id` はファイル名と同じ
 - `archetype` は `dagger` `axe` `spear`（シート定義はどれも `sheets/gau.txt`）。`body` は `male` か `female`
-- `frames` は元のコマの置き場（リポジトリからの相対パス）。今の8体は `cand/enemy-frames/<id>`
-  （部品で組んだコマ。生成は `cand/gen/mkweapons.py` など）を指す。`axe` `spear` では必須。
+- `frames` は元のコマの置き場（リポジトリからの相対パス）。今の16体（男性8・女性8）は `cand/enemy-frames/<id>`
+  （部品で組んだコマ）を指す。`axe` `spear` では必須。
   書かなければ `dagger` の `male` は `assets/unit/gau/`、`female` は `assets/unit/enemy-src/dagger-female/`
-  （`--colours` が比べるのもこの2つ。女性の元のコマはまだ無いので、今は置き場が無いと言って止まる）
+  （`--colours` が比べるのもこの2つ。短剣の女性の元のコマはまだ無いので、今は置き場が無いと言って止まる）
+- 部品で組んだコマの生成（cwd は forge の直下）: `cand/gen/mkparts.py`（頭・目・服・長い髪の部品と選ぶページの設定）→
+  `cand/gen/mkweapons.py`（斧・槍の男女の敵。敵の一覧は `cand/gen/mkframes.py` の `ENEMIES`、女性の8体は
+  `mkweapons.py` で足す）。女性の id は `<男性の id>-<髪 a・b・c>-f`（a 前髪ありのロング・b 前髪なしのロング・c ポニーテール）
 - `recolor` は「元のコマが使うパレット名 → 置き換え後のパレット名」。元のコマが使わない名前は止める
 - 元のコマの絵を直したら `enemy_build.py --all` で作り直す。`build/` は生成物
 

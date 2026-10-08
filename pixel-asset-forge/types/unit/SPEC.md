@@ -234,6 +234,23 @@ tools/weapon_check.py cand/enemy-frames/spear-knight $C --hidden left_atk_hit
 斧の `up` の攻撃は `--hidden`（振りかぶりは axe head が木の棒に隠れ、当たりは体の向こうに隠れる）。
 `down`・`up` は奥行きの表現なので `--depth`。`right` は例外に入れない（下の段落）。
 
+女性の8体（`<男性の id>-<髪 a・b・c>-f`、長い髪あり）は、長い髪に隠れるコマを髪の型ごとに足す（2026-10-08 依頼者承認の絵）:
+
+```sh
+# 斧: left の待機2は、上げた斧の刃が頭と長い髪の陰に入る
+tools/weapon_check.py cand/enemy-frames/axe-bandit-a-f $C --hidden up_atk_wind,up_atk_hit,left_idle2 --depth down,up \
+    --partial left_base,left_idle2,left_walk_a,left_walk_b,left_atk_wind      # axe-bandit-b-f も同じ
+# 斧: left の振りかぶりは、柄の一部がポニーテール（バンダナ c）や兜と髪（角付きの兜 b・c）の陰に入る
+tools/weapon_check.py cand/enemy-frames/axe-horn-b-f $C --hidden up_atk_wind,up_atk_hit,left_idle2,left_atk_wind \
+    --depth down,up --partial left_base,left_idle2,left_walk_a,left_walk_b,left_atk_wind   # axe-horn-c-f・axe-bandit-c-f も同じ
+# 槍: up の当たりは上げた腕が長い髪の陰（a・b）。left の立ち・歩きは穂先がポニーテールの陰（c）
+tools/weapon_check.py cand/enemy-frames/spear-thug-a-f $C --hidden left_atk_hit,up_atk_hit   # spear-thug-b-f も同じ
+tools/weapon_check.py cand/enemy-frames/spear-thug-c-f $C --hidden left_atk_hit,left_base,left_walk_a,left_walk_b
+```
+
+`spear-thug-a-f`・`b-f` の `up_atk_hit` は「手が体から浮いている」で落ちる（上げた腕が長い髪の陰に入り、拳だけが見える。
+`--arm` はコマごとに外せない）。依頼者が絵を見て了承した（2026-10-08）。ほかの女性6体は全項目を通る。
+
 弓（イネス）は対象外。ガウ・ロランは全項目を通る（2026-10-07）。
 left の奥の手は、素体 `male_left` のままだと 1px 幅で落ちる。拳の中身の2行を2px 幅にする（ガウ・ロランの `left_base` の x21〜22、2026-10-07）。
 
