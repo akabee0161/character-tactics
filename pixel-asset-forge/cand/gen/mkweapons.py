@@ -11,6 +11,7 @@ sys.path.insert(0, "tools")
 sys.path.insert(0, "cand/gen")
 import enemy_build as eb
 import mkframes as mf
+from hand_outline import close_hands
 
 COL = {"o": "outline", "S": "stone_hi", "T": "stone_base", "L": "wood_hi", "M": "wood_base",
        "N": "wood_shadow", "a": "skin_rose_hi", "b": "skin_rose_base", "c": "skin_rose_shadow",
@@ -186,6 +187,10 @@ SHAFT_L = P(21, 9, ["oMo", "oMo", "oMo"])  # 頭の後ろから拳までの柄�
 HAND_CAPS = P(9, 17, ["o", ".", ".", "o"])
 # 武器ごとの例外: 槍の down の当たりは拳が体の脇（斧は体の前）なので、手の位置の差だけずらす
 FEMALE_SHIFT_WEAPON = {("spear", "atk_hit", "down"): 2}
+FAR = {"left"}  # 武器を持つ手が体の奥にある向き（weapon_check --far）
+HAND = {"skin_rose_hi", "skin_rose_base", "skin_rose_shadow"}  # 手の肌（hand_outline・weapon_check --hand）
+ARM = {"cloak_dark_hi", "cloak_dark_base", "cloak_dark_shadow"}  # 服・袖（hand_outline・weapon_check --arm）
+HAIR_COLOURS = {"hair_slate_hi", "hair_slate_base", "hair_slate_shadow"}  # 長い髪（weapon_check --cover）
 FEMALE_FIX = {
     ("base", "down"): P(12, 18, ["o", "o"]),  # 拳の右（体の手の端 x=12）を輪郭にして3px幅にそろえる
     ("base", "up"): P(20, 17, ["oo", "..", "..", "oo"]),  # 後ろ姿の手（x=20〜21）の上下を閉じる（素体は開いている）
@@ -310,6 +315,14 @@ def build_frame(eid, d, st):
     hair = mf.ENEMIES[eid][6] if len(mf.ENEMIES[eid]) > 6 else None
     if hair:  # 肩より下の髪は、体の後ろに置いた武器のさらに後ろ（空いている画素だけ）
         mf.overlay(canvas, eb.read_frame(Path(f"cand/enemy/hair_{hair}_back_{d}.txt")), "back")
+    if hair and d in FAR:  # 奥の手・腕・武器は髪の後ろ。武器を持たせる前に髪（輪郭を含む）だった画素を戻す（2026-10-08 依頼者の指摘）
+        plain = mf.frame(eid, d, st, weapon="none")
+        parts = [eb.read_frame(Path(f"cand/enemy/hair_{hair}{s}_{d}.txt")) for s in ("", "_back")]
+        for y in range(32):
+            for x in range(32):
+                drawn = [p[y][x] for p in parts if p[y][x] is not None]
+                if plain[y][x] in HAIR_COLOURS or (drawn and plain[y][x] in drawn):  # 頭の部品に隠れた所は戻さない
+                    canvas[y][x] = plain[y][x]
     return canvas
 
 
@@ -318,12 +331,17 @@ def main(ids=None):
         if len(spec) < 5 or spec[4] == "dagger" or (ids and eid not in ids):
             continue
         out = OUT / eid
-        out.mkdir(parents=True, exist_ok=True)
+        ref = out / "noweapon"  # 武器を持たせる前のコマ（weapon_check --ref。奥の手が体や髪の手前に出ていないかを比べる）
+        ref.mkdir(parents=True, exist_ok=True)
         for d in DIRS:
             for st in ("base", "idle2", "walk_a", "walk_b", "atk_wind", "atk_hit"):
-                f = build_frame(eid, d, st)
+                f = close_hands(build_frame(eid, d, st), HAND, ARM)[0]  # 手の輪郭を閉じる（2026-10-08）
                 (out / f"{d}_{st}.txt").write_text(
                     eb.serialize_frame(f, f"{eid} {d}_{st}（部品で組んだ）"), encoding="utf-8")
+                (ref / f"{d}_{st}.txt").write_text(
+                    eb.serialize_frame(close_hands(mf.frame(eid, d, st, weapon="none"), HAND, ARM)[0],
+                                      f"{eid} {d}_{st} の武器を持たせる前"),
+                    encoding="utf-8")
         print("ok", eid)
 
 

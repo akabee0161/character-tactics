@@ -42,6 +42,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from enemy_build import EnemyError, read_frame  # noqa: E402
+from hand_outline import close_hands  # noqa: E402
 from gridfile import GridError  # noqa: E402
 
 DIRECTIONS = ("down", "up", "left", "right")
@@ -168,6 +169,7 @@ class Analysis:
 
     def __init__(self, frame, blade: set[str], weapon: set[str], hand: set[str]):
         pts = {(x, y): n for y, row in enumerate(frame) for x, n in enumerate(row) if n is not None}
+        self.hand_colours = set(hand)
         self.pixels = pts
         blade_px = {p for p, n in pts.items() if n in blade}
         other_px = {p for p, n in pts.items() if n in weapon}
@@ -282,6 +284,14 @@ def check_frame(name: str, a: Analysis, hidden: set[str], hit_states: set[str],
         if arm and floating(a, arm):
             x, y = min(a.hand, key=lambda p: (p[1], p[0]))
             fails.append(f"{name}: 手が体から浮いている（({x},{y}) の手が腕の色とつながっていない）")
+    if arm:
+        # すべての手（武器を持たない手も）で、tools/hand_outline.py が直す所が残っていないか。左右で服に直に接する、
+        # または透明に接する手（拳と体の間の輪郭が無い。男性の down の斧、ガウの down の左手、2026-10-08 依頼者の指摘）
+        frame = [[a.pixels.get((x, y)) for x in range(SIZE)] for y in range(SIZE)]
+        _, gaps = close_hands(frame, a.hand_colours, arm)
+        if gaps:
+            fails.append(f"{name}: 手の輪郭が閉じていない（tools/hand_outline.py で直す: "
+                         + " ".join(f"({x},{y})" for x, y in gaps) + "）")
     state = name.split("_", 1)[1] if "_" in name else ""
     if state in hit_states and a.tip is not None:
         fx, fy = FACING[_direction(name)]
@@ -324,6 +334,27 @@ def check_unit(frames: dict[str, Analysis], hidden: set[str], hit_states: set[st
     return fails, notes
 
 
+def covered(name: str, final, ref, cover: set[str], hand: set[str], arm: set[str], standing: bool) -> list[str]:
+    """武器を持つ手が体の奥にある向きのコマで、奥の手・腕・武器が、武器を持たせる前のコマ（ref）の手前に出ていないか。
+    長い髪の女性で、奥の手と袖が背中の髪の手前に描かれた（2026-10-08 依頼者の指摘）。
+    - cover（髪など）の画素は、どのコマでも書き換えてはいけない
+    - standing（立ち・待機2・歩き）では、体や頭の画素も書き換えてはいけない。ただし、肌と輪郭どうし（素体の手を
+      拳に描き直す）と、arm の色どうし（袖を同じ色の服につなぐ）の書き換えは許す。攻撃のコマは、承認済みの絵に
+      奥の手を体の前へ出す描き方（当たり・振りかぶりの柄や拳）があるので、cover だけを見る"""
+    hand_like = hand | {"outline"}
+
+    def allowed(before, after):
+        return (before in hand_like and after in hand_like) or (before in arm and after in arm)
+
+    bad = [(x, y) for y in range(len(ref)) for x in range(len(ref[y]))
+           if ref[y][x] is not None and final[y][x] != ref[y][x]
+           and (ref[y][x] in cover or (standing and not allowed(ref[y][x], final[y][x])))]
+    if not bad:
+        return []
+    where = " ".join(f"({x},{y})" for x, y in bad[:6]) + (" …" if len(bad) > 6 else "")
+    return [f"{name}: 奥の手・腕・武器が体や髪の手前にある（武器を持たせる前の画素を {len(bad)} か所書き換えた: {where}）"]
+
+
 def load(directory: Path, blade, weapon, hand) -> dict[str, Analysis]:
     frames = {}
     for path in sorted(directory.glob("*.txt")):
@@ -351,19 +382,39 @@ def main(argv: list[str] | None = None) -> int:
                         "その向きの --seq のコマは、握る位置と長さの検査から外す")
     parser.add_argument("--hit", default="atk_hit", help="穂先の向きを確かめる状態")
     parser.add_argument("--seq", default="atk_wind,atk_hit,base", help="握る位置をそろえる状態の並び")
+    parser.add_argument("--far", default="", help="武器を持つ手が体の奥にある向き（例: left）。--ref と比べ、"
+                        "奥の手・腕・武器が体や髪の手前に出ていないかを確かめる")
+    parser.add_argument("--ref", type=Path, help="武器を持たせる前のコマの置き場（同じ名前の .txt）。--far と使う")
+    parser.add_argument("--cover", default="", help="--far の向きで、どのコマでも手・腕・武器に上書きされてはいけない色（長い髪など）")
     args = parser.parse_args(argv)
 
     if not args.directory.is_dir():
         print(f"error: ディレクトリが無い: {args.directory}", file=sys.stderr)
         return 2
+    far = _names(args.far)
+    if far and args.ref is None:
+        print("error: --far には --ref（武器を持たせる前のコマの置き場）が要る", file=sys.stderr)
+        return 2
     try:
         frames = load(args.directory, _names(args.blade), _names(args.weapon), _names(args.hand))
+        refs = {}
+        for name in sorted(frames):
+            if _direction(name) in far:
+                path = args.ref / f"{name}.txt"
+                if not path.is_file():
+                    raise WeaponCheckError(f"{args.ref}: 武器を持たせる前のコマ {name}.txt が無い")
+                refs[name] = read_frame(path)
     except (GridError, WeaponCheckError, EnemyError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
     fails, notes = check_unit(frames, _names(args.hidden), _names(args.hit),
                               [s for s in args.seq.split(",") if s], _names(args.depth), _names(args.arm),
                               _names(args.partial))
+    attack = (set(s for s in args.seq.split(",") if s) - {"base"}) | _names(args.hit)
+    for name, ref in refs.items():
+        final = read_frame(args.directory / f"{name}.txt")
+        fails += covered(name, final, ref, _names(args.cover), _names(args.hand), _names(args.arm),
+                         standing=name.split("_", 1)[1] not in attack)
     for n in notes:
         print(n)
     for f in fails:

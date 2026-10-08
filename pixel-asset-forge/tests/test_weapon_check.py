@@ -12,7 +12,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "tools"))
 
 from enemy_build import serialize_frame  # noqa: E402
-from weapon_check import Analysis, check_frame, check_unit, main  # noqa: E402
+from weapon_check import Analysis, check_frame, check_unit, covered, main  # noqa: E402
 
 BLADE = {"stone_hi", "stone_base"}
 HANDLE = {"wood_base"}
@@ -162,6 +162,20 @@ class FloatingHandTest(unittest.TestCase):
         put(f, 21, 13, "cloak_dark_base")  # 拳の左下に、斜めに袖が接する
         self.assertEqual(check_frame("left_atk_wind", analyse(f), set(), set(), self.ARM), [])
 
+    def test_fist_touching_the_body_sideways_without_outline_fails(self):
+        f = standing()  # 体 x14〜22、縦の槍 x9、拳の肌 x9〜10・y18〜19
+        for x in (11, 12):  # 拳の右の輪郭が無く、体の服に直に接する（男性の down の斧）
+            put(f, x, 18, "cloak_dark_base")
+            put(f, x, 19, "cloak_dark_base")
+        fails = check_frame("down_base", analyse(f), set(), set(), self.ARM)
+        self.assertTrue(any("手の輪郭が閉じていない" in s for s in fails), fails)
+
+    def test_sleeve_right_above_the_fist_passes(self):
+        f = standing()  # 体 x14〜22、縦の槍 x9、拳の肌 x9〜10・y18〜19
+        put(f, 9, 17, "cloak_dark_base")  # 袖口から手が出る（上下で接するのはよい）
+        fails = check_frame("down_base", analyse(f), set(), set(), self.ARM)
+        self.assertFalse(any("手の輪郭が閉じていない" in s for s in fails), fails)
+
     def test_check_is_skipped_without_arm_colours(self):
         self.assertEqual(check_frame("left_atk_wind", analyse(self.raised(False)), set(), set()), [])
 
@@ -300,6 +314,52 @@ class PartialTest(unittest.TestCase):
         self.assertEqual(check_unit(frames, set(), set(), seq, partial={"left_atk_wind"})[0], [])
 
 
+class CoveredTest(unittest.TestCase):
+    """奥の手・腕・武器が、武器を持たせる前のコマ（体・髪・頭）の手前に出ていないか。"""
+
+    def ref(self):
+        f = blank()
+        body(f, 12, 8, 19, 30)
+        for y in range(10, 18):  # 背中に垂れた髪
+            for x in range(18, 22):
+                put(f, x, y, "hair_slate_base")
+        return f
+
+    HAIR = {"hair_slate_base"}
+    HAND = {"skin_base"}
+    ARM = {"cloak_dark_base", "cloak_dark_hi"}
+
+    def check(self, name, final, standing=True):
+        return covered(name, final, self.ref(), self.HAIR, self.HAND, self.ARM, standing)
+
+    def test_fist_drawn_over_the_hair_fails_in_every_state(self):
+        final = self.ref()
+        fist(final, 19, 15)
+        for standing in (True, False):
+            fails = self.check("left_base", final, standing)
+            self.assertEqual(len(fails), 1)
+            self.assertIn("left_base", fails[0])
+
+    def test_fist_only_where_nothing_was_drawn_passes(self):
+        final = self.ref()
+        fist(final, 23, 20)
+        self.assertEqual(self.check("left_base", final), [])
+
+    def test_fist_over_the_body_fails_only_when_standing(self):
+        final = self.ref()
+        fist(final, 14, 22)  # 体の真ん中（髪は無い）
+        self.assertEqual(len(self.check("left_base", final)), 1)
+        self.assertEqual(self.check("left_atk_wind", final, standing=False), [])  # 攻撃は承認済みの例外が多い
+
+    def test_redrawing_the_hand_and_joining_the_sleeve_pass(self):
+        ref = self.ref()
+        ref[20][20], ref[20][19], ref[20][21] = "skin_base", "outline", "outline"  # 素体の 1px の手
+        final = [row[:] for row in ref]
+        final[20][21], final[20][22] = "skin_base", "outline"  # 輪郭だった画素を肌に変えて 2px の拳に描き直す
+        final[22][15] = "cloak_dark_hi"  # 体の服（cloak_dark_base）の上に同じ服の色の袖
+        self.assertEqual(covered("left_base", final, ref, self.HAIR, self.HAND, self.ARM, True), [])
+
+
 class MainTest(unittest.TestCase):
     def run_main(self, argv):
         out, err = io.StringIO(), io.StringIO()
@@ -328,6 +388,32 @@ class MainTest(unittest.TestCase):
             code, _, err = self.run_main([tmp, *self.ARGS])
             self.assertEqual(code, 1)
             self.assertIn("FAIL", err)
+
+    def test_far_hand_over_the_reference_exits_one(self):
+        with tempfile.TemporaryDirectory() as tmp, tempfile.TemporaryDirectory() as ref:
+            plain = blank()
+            body(plain)
+            self.write(Path(ref), "left_base", plain)
+            self.write(Path(ref), "down_base", plain)
+            armed = standing()  # 槍と拳が体（x14〜22）に重ならない
+            over = [row[:] for row in armed]
+            fist(over, 15, 18)  # 拳が体の手前
+            self.write(Path(tmp), "left_base", over)
+            self.write(Path(tmp), "down_base", over)
+            code, _, err = self.run_main([tmp, *self.ARGS, "--ref", ref, "--far", "left"])
+            self.assertEqual(code, 1)
+            self.assertIn("left_base: 奥の手", err)
+            self.assertNotIn("down_base: 奥の手", err)  # down は奥の向きに挙げていない
+
+    def test_far_without_ref_and_missing_ref_frame_exit_two(self):
+        with tempfile.TemporaryDirectory() as tmp, tempfile.TemporaryDirectory() as ref:
+            self.write(Path(tmp), "left_base", standing())
+            code, _, err = self.run_main([tmp, *self.ARGS, "--far", "left"])
+            self.assertEqual(code, 2)
+            self.assertIn("--ref", err)
+            code, _, err = self.run_main([tmp, *self.ARGS, "--ref", ref, "--far", "left"])
+            self.assertEqual(code, 2)
+            self.assertIn("left_base", err)
 
     def test_missing_directory_exits_two(self):
         code, _, err = self.run_main(["/nonexistent/unit", *self.ARGS])
