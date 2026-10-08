@@ -210,15 +210,23 @@ class Analysis:
         """柄（刃以外の武器。無ければ武器全体）に一番近い肌の塊。もう片方の手や、穂先の横の顔は拾わない。"""
         if not grip:
             return set()
+        orient = _orientation(grip)
+        line = {x for x, _ in grip} if orient == "v" else {y for _, y in grip} if orient == "h" else set()
+
+        def on_line(c):
+            """柄をまたいで握る拳は、柄の線（縦の柄なら列、横の柄なら行）と重なる。柄の横の顔は重ならない。"""
+            return any((p[0] if orient == "v" else p[1]) in line for p in c) if line else False
+
         best, found = None, []
         for c in _components(skin):
             reach = min(max(abs(p[0] - w[0]), abs(p[1] - w[1])) for p in c for w in grip)
             if reach > HAND_REACH:
                 continue
-            d = min(_dist(p, w) for p in c for w in grip)  # 斜めは遠いとみなす（顔より拳を選ぶ）
-            if best is None or d < best - 1e-9:
+            # 近いもの（斜めは遠いとみなす。顔より拳を選ぶ）。同じ近さなら柄の線上にある塊
+            d = (round(min(_dist(p, w) for p in c for w in grip), 6), not on_line(c))
+            if best is None or d < best:
                 best, found = d, [c]
-            elif abs(d - best) < 1e-9:
+            elif d == best:
                 found.append(c)
         return set().union(*found)
 

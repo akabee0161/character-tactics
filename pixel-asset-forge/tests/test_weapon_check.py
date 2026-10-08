@@ -115,6 +115,18 @@ class HandTest(unittest.TestCase):
         fist(f, 9, 18, w=1)
         self.assertIn("手が細い（1x2px", " ".join(check_frame("down_base", analyse(f), set(), set())))
 
+    def test_fist_on_the_shaft_beats_a_face_as_near_beside_it(self):
+        # 肩幅の狭い体では、柄から顔までと、柄から拳までが同じ 2px になる（女性の敵の down）
+        f = blank()
+        spear_v(f, 10, 2, 17)  # y2〜18、穂先が上
+        fist(f, 9, 18, w=3)  # 輪郭が y17 で柄を切る
+        for x in range(12, 20):
+            for y in (11, 12):
+                put(f, x, y, "skin_base")
+        a = analyse(f)
+        self.assertIn((10, 18), a.hand)
+        self.assertNotIn((12, 11), a.hand)
+
     def test_face_beside_the_tip_is_not_the_hand(self):
         f = standing()
         fist(f, 12, 7)  # 穂先の横の顔（刃から 2px 以内、柄からは遠い）

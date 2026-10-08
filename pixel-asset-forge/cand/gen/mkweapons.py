@@ -24,6 +24,24 @@ for _new, _old, _weapon in (("axe-bandit", "dagger-bandit", "axe"), ("axe-horn",
                             ("spear-knight", "dagger-knight", "spear"), ("spear-thug", "dagger-thug", "spear")):
     mf.ENEMIES[_new] = (*mf.ENEMIES[_old][:4], _weapon, "male")
 
+# 女性の8体（2026-10-08 依頼者決定）: 見た目と武器は男性と同じ、長い髪 A・B・C を足す。フルフェイスの女性は作らない
+for _male, _hairs in (("axe-bandit", "ABC"), ("axe-horn", "BC"), ("spear-thug", "ABC")):
+    for _h in _hairs:
+        _name, _eye, _head, _cloth, _weapon, _ = mf.ENEMIES[_male]
+        mf.ENEMIES[f"{_male}-{_h.lower()}-f"] = (_name, _eye, None if _head == "bare" else _head, _cloth,
+                                                  _weapon, "female", _h)
+
+# 女性のコマで、男性の武器と拳のパッチを x にずらす量（状態, 向き）。女性は肩幅が狭く、武器を持つ手は
+# 男性から down +2・up -2・left -1・right +1 にある（素体の base で測った）が、次の理由でそのままずらさない:
+# - down: +2 だと柄が顔の縁の輪郭に乗り、柄と顔の肌が直に接する。+1 にして、体の手の右端を輪郭にする（FEMALE_FIX）
+# - up: 立ちでは握る手は体の陰。長い髪が背中を x=22 まで覆うので、武器を髪の外へ出す（+1）。攻撃の拳は体の縁に付ける（-2）
+# - 体の前へ出す手（down・left・right の当たり）は、手の位置でなく体の前の縁に合わせる
+FEMALE_SHIFT = {
+    "base": {"down": 1, "up": 1, "left": -1, "right": 1},
+    "atk_wind": {"down": 1, "up": -2, "left": -1, "right": 1},
+    "atk_hit": {"down": 0, "up": -2, "left": 1, "right": -1},
+}
+
 
 def P(x0, y0, rows, layer="front"):
     """文字のパッチ。パッチは (セル辞書, layer) のリスト（重なり順）。"""
@@ -166,6 +184,12 @@ ARM_L = P(19, 14, [".oKKo", "oKKHo", "oKHo."])  # left の振りかぶりで体�
 ARM_U = P(20, 13, [".oKKo", "oKKHo", "oKHo."])
 SHAFT_L = P(21, 9, ["oMo", "oMo", "oMo"])  # 頭の後ろから拳までの柄をバンダナの上に見せる
 HAND_CAPS = P(9, 17, ["o", ".", ".", "o"])
+# 武器ごとの例外: 槍の down の当たりは拳が体の脇（斧は体の前）なので、手の位置の差だけずらす
+FEMALE_SHIFT_WEAPON = {("spear", "atk_hit", "down"): 2}
+FEMALE_FIX = {
+    ("base", "down"): P(12, 18, ["o", "o"]),  # 拳の右（体の手の端 x=12）を輪郭にして3px幅にそろえる
+    ("base", "up"): P(20, 17, ["oo", "..", "..", "oo"]),  # 後ろ姿の手（x=20〜21）の上下を閉じる（素体は開いている）
+}
 
 # 立ち姿: 横から見た形。left は体の後ろ（刃は前で体に隠れる）、right は体の手前（刃は前）
 axe_stance = {
@@ -276,9 +300,16 @@ WEAPONS = {
 }
 def build_frame(eid, d, st):
     weapon = mf.ENEMIES[eid][4]
-    canvas = mf.frame(eid, d, st, weapon="none")
+    canvas = mf.frame(eid, d, st, weapon="none", hair_back=False)
     key = "base" if st in ("base", "idle2", "walk_a", "walk_b") else st
-    apply(canvas, WEAPONS[weapon][key][d], dy=-2 if st == "idle2" else 0)
+    patch = WEAPONS[weapon][key][d]
+    if mf.ENEMIES[eid][5] == "female":
+        dx = FEMALE_SHIFT_WEAPON.get((weapon, key, d), FEMALE_SHIFT[key][d])
+        patch = merge(shift(patch, dx), FEMALE_FIX.get((key, d), []))
+    apply(canvas, patch, dy=-2 if st == "idle2" else 0)
+    hair = mf.ENEMIES[eid][6] if len(mf.ENEMIES[eid]) > 6 else None
+    if hair:  # 肩より下の髪は、体の後ろに置いた武器のさらに後ろ（空いている画素だけ）
+        mf.overlay(canvas, eb.read_frame(Path(f"cand/enemy/hair_{hair}_back_{d}.txt")), "back")
     return canvas
 
 

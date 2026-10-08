@@ -63,7 +63,7 @@ def extras(d, st):
     return add, rem
 
 
-def frame(eid, d, st, weapon="dagger"):
+def frame(eid, d, st, weapon="dagger", hair_back=True):
     _, eye, head, cloth, _w, sex = ENEMIES[eid][:6]
     hair = ENEMIES[eid][6] if len(ENEMIES[eid]) > 6 else None
     kind = {"base": "base", "walk_a": "base", "walk_b": "base", "idle2": "idle2",
@@ -87,7 +87,7 @@ def frame(eid, d, st, weapon="dagger"):
         layers.append(mp.eb.read_frame(Path(f"cand/enemy/head_{head}_{d}.txt")))
     for g in layers:
         overlay(canvas, g)
-    if hair:  # 肩より下の髪は体の後ろ（空いている画素だけ）
+    if hair and hair_back:  # 肩より下の髪は体の後ろ（空いている画素だけ）。武器を重ねるときは武器の後で（mkweapons）
         overlay(canvas, mp.eb.read_frame(Path(f"cand/enemy/hair_{hair}_back_{d}.txt")), "back")
     if weapon == "dagger" and st in ("base", "walk_a", "walk_b", "idle2"):
         dag = eb.read_frame(Path(f"assets/part/dagger/dagger_{d}.txt"))
