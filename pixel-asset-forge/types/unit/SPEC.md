@@ -208,7 +208,10 @@ compose/<unit>.json                       部品の組み立て方（tools/compo
 持ち物の文字はユニットごとに測って決める: ロラン `GHJRkmns`、イネス `klmstuw`、ガウ `stlmn`（2026-10-04 実測。ロランに刃の `i`・`j` を足すと `down` の脚の中心が分かれる）。
 
 片手で握る武器（短剣・剣・斧・槍）を持つユニットは、`tools/weapon_check.py` も通す。手が消える・手の輪郭の切れ目・1px 幅の手・
-攻撃で穂先が向きと逆・枠の端で切れる・握る位置のずれ・武器の長さのずれ・腕が無く手が体から浮く、を落とす
+攻撃で穂先が向きと逆・枠の端で切れる・握る位置のずれ・武器の長さのずれ・腕が無く手が体から浮く・
+拳が柄の真ん中に無い（柄から離れている）・手の輪郭が閉じていない（武器を持たない手も。直すのは `tools/hand_outline.py`）、を落とす。
+`--far`・`--ref`（武器を持たせる前のコマ）を付けると、奥の手・腕・武器が体や髪の手前に出ていないか（`--cover` の色は全コマ、
+体と頭は立ち・待機2・歩き）と、奥の拳が影の色か（`--far-shade`）も確かめる（2026-10-08〜09）
 （どれも依頼者に指摘された欠陥、2026-10-07）。色は色名で、隠れるコマと奥行きの向きは依頼者の判断で指定する:
 
 ```sh
@@ -225,31 +228,42 @@ tools/weapon_check.py assets/unit/roran --blade stone_hi,stone_base --weapon woo
 ```sh
 C="--blade stone_hi,stone_base --weapon wood_base,wood_shadow --hand skin_rose_hi,skin_rose_base,skin_rose_shadow --arm cloak_dark_hi,cloak_dark_base,cloak_dark_shadow"
 # 斧（axe-bandit・axe-horn）
-tools/weapon_check.py cand/enemy-frames/axe-bandit $C --hidden up_atk_wind,up_atk_hit --depth down,up \
+tools/weapon_check.py cand/enemy-frames/axe-bandit $C --ref cand/enemy-frames/axe-bandit/noweapon --far left --far-shade skin_rose_shadow \
+    --hidden up_atk_wind,up_atk_hit --depth down,up \
     --partial left_base,left_idle2,left_walk_a,left_walk_b,left_atk_wind
 # 槍（spear-knight・spear-thug）
-tools/weapon_check.py cand/enemy-frames/spear-knight $C --hidden left_atk_hit
+tools/weapon_check.py cand/enemy-frames/spear-knight $C --ref cand/enemy-frames/spear-knight/noweapon --far left --far-shade skin_rose_shadow \
+    --hidden left_atk_hit
 ```
 
 斧の `up` の攻撃は `--hidden`（振りかぶりは axe head が木の棒に隠れ、当たりは体の向こうに隠れる）。
 `down`・`up` は奥行きの表現なので `--depth`。`right` は例外に入れない（下の段落）。
 
-女性の8体（`<男性の id>-<髪 a・b・c>-f`、長い髪あり）は、長い髪に隠れるコマを髪の型ごとに足す（2026-10-08 依頼者承認の絵）:
+女性の8体（`<男性の id>-<髪 a・b・c>-f`、長い髪あり）は、奥の手の検査（`--far`・`--ref`・`--cover`・`--far-shade`）を足し、
+長い髪に隠れるコマを髪の型ごとに例外にする（2026-10-09 依頼者承認の重なり順: left の奥の手と武器、up の武器は髪の後ろ）:
 
 ```sh
-# 斧: left の待機2は、上げた斧の刃が頭と長い髪の陰に入る
-tools/weapon_check.py cand/enemy-frames/axe-bandit-a-f $C --hidden up_atk_wind,up_atk_hit,left_idle2 --depth down,up \
-    --partial left_base,left_idle2,left_walk_a,left_walk_b,left_atk_wind      # axe-bandit-b-f も同じ
-# 斧: left の振りかぶりは、柄の一部がポニーテール（バンダナ c）や兜と髪（角付きの兜 b・c）の陰に入る
-tools/weapon_check.py cand/enemy-frames/axe-horn-b-f $C --hidden up_atk_wind,up_atk_hit,left_idle2,left_atk_wind \
-    --depth down,up --partial left_base,left_idle2,left_walk_a,left_walk_b,left_atk_wind   # axe-horn-c-f・axe-bandit-c-f も同じ
-# 槍: up の当たりは上げた腕が長い髪の陰（a・b）。left の立ち・歩きは穂先がポニーテールの陰（c）
-tools/weapon_check.py cand/enemy-frames/spear-thug-a-f $C --hidden left_atk_hit,up_atk_hit   # spear-thug-b-f も同じ
-tools/weapon_check.py cand/enemy-frames/spear-thug-c-f $C --hidden left_atk_hit,left_base,left_walk_a,left_walk_b
+F="--far left --cover hair_slate_hi,hair_slate_base,hair_slate_shadow --far-shade skin_rose_shadow"
+UP=up_base,up_idle2,up_walk_a,up_walk_b
+LEFT=left_base,left_idle2,left_walk_a,left_walk_b
+P="--partial left_base,left_idle2,left_walk_a,left_walk_b,left_atk_wind"
+# 斧 a・b（axe-bandit-a-f・b-f・axe-horn-b-f）: left の奥の手と斧、up の斧が長い髪の陰
+tools/weapon_check.py cand/enemy-frames/axe-bandit-a-f $C --ref cand/enemy-frames/axe-bandit-a-f/noweapon $F \
+    --hidden up_atk_wind,up_atk_hit,$LEFT,left_atk_wind,$UP --depth down,up $P
+# 斧 c（axe-bandit-c-f・axe-horn-c-f）: up は待機2だけ斧が隠れる
+tools/weapon_check.py cand/enemy-frames/axe-bandit-c-f $C --ref cand/enemy-frames/axe-bandit-c-f/noweapon $F \
+    --hidden up_atk_wind,up_atk_hit,$LEFT,left_atk_wind,up_idle2 --depth down,up $P
+# 槍 a・b: left の振りかぶりの拳、up の立ち・歩きの槍、up の当たりの腕が長い髪の陰
+tools/weapon_check.py cand/enemy-frames/spear-thug-a-f $C --ref cand/enemy-frames/spear-thug-a-f/noweapon $F \
+    --hidden left_atk_hit,left_atk_wind,up_atk_hit,$UP
+# 槍 c: left の立ち・歩きの穂先がポニーテールの陰、up の立ち・歩きの槍が髪の陰
+tools/weapon_check.py cand/enemy-frames/spear-thug-c-f $C --ref cand/enemy-frames/spear-thug-c-f/noweapon $F \
+    --hidden left_atk_hit,left_base,left_walk_a,left_walk_b,$UP
 ```
 
-`spear-thug-a-f`・`b-f` の `up_atk_hit` は「手が体から浮いている」で落ちる（上げた腕が長い髪の陰に入り、拳だけが見える。
-`--arm` はコマごとに外せない）。依頼者が絵を見て了承した（2026-10-08）。ほかの女性6体は全項目を通る。
+`spear-thug-a-f`・`b-f` は2コマが落ちる。`up_atk_hit` は「手が体から浮いている」（上げた腕が長い髪の陰に入り、拳だけが見える。
+`--arm` はコマごとに外せない。依頼者了承 2026-10-08）。`left_idle2` は「手が細い」（奥の拳が長い髪に半分隠れ、1px 幅だけのぞく）。
+ほかの女性6体は全項目を通る。
 
 `cand/enemy-frames/` の生成したコマには `unit_check.py` を使えない。`--items` はファイルの中の文字で持ち物を指定するが、
 生成したコマは文字の割り当てがコマごとに違う。脚と足元は、再生ページ（`tools/enemy_gallery.py`）とシートのプレビューの足元ライン（y=30）で確かめる。

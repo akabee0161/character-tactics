@@ -35,10 +35,10 @@ for _male, _hairs in (("axe-bandit", "ABC"), ("axe-horn", "BC"), ("spear-thug", 
 # 女性のコマで、男性の武器と拳のパッチを x にずらす量（状態, 向き）。女性は肩幅が狭く、武器を持つ手は
 # 男性から down +2・up -2・left -1・right +1 にある（素体の base で測った）が、次の理由でそのままずらさない:
 # - down: +2 だと柄が顔の縁の輪郭に乗り、柄と顔の肌が直に接する。+1 にして、体の手の右端を輪郭にする（FEMALE_FIX）
-# - up: 立ちでは握る手は体の陰。長い髪が背中を x=22 まで覆うので、武器を髪の外へ出す（+1）。攻撃の拳は体の縁に付ける（-2）
+# - up: 手の位置の差（-2）。武器の上の部分は長い髪の陰に入る（+1 で髪の外へ出したら手と武器が離れた。2026-10-08 依頼者の指摘）
 # - 体の前へ出す手（down・left・right の当たり）は、手の位置でなく体の前の縁に合わせる
 FEMALE_SHIFT = {
-    "base": {"down": 1, "up": 1, "left": -1, "right": 1},
+    "base": {"down": 1, "up": -2, "left": -1, "right": 1},
     "atk_wind": {"down": 1, "up": -2, "left": -1, "right": 1},
     "atk_hit": {"down": 0, "up": -2, "left": 1, "right": -1},
 }
@@ -185,8 +185,13 @@ ARM_L = P(19, 14, [".oKKo", "oKKHo", "oKHo."])  # left の振りかぶりで体�
 ARM_U = P(20, 13, [".oKKo", "oKKHo", "oKHo."])
 SHAFT_L = P(21, 9, ["oMo", "oMo", "oMo"])  # 頭の後ろから拳までの柄をバンダナの上に見せる
 HAND_CAPS = P(9, 17, ["o", ".", ".", "o"])
-# 武器ごとの例外: 槍の down の当たりは拳が体の脇（斧は体の前）なので、手の位置の差だけずらす
-FEMALE_SHIFT_WEAPON = {("spear", "atk_hit", "down"): 2}
+# 左向きの立ち・待機2・歩きの奥の拳。影の色だけで描く（明るいと体の手前に浮いて見えた。2026-10-08 依頼者の指摘）
+FIST_FAR_L = P(20, 17, ["ooo.", "occo", "occo", "ooo."])
+# 武器ごとの例外: 槍の down の当たりは拳が体の脇（斧は体の前）なので、手の位置の差だけずらす。斧の left の当たりは下
+FEMALE_SHIFT_WEAPON = {
+    ("spear", "atk_hit", "down"): 2,
+    ("axe", "atk_hit", "left"): -1,  # 拳を胸の前の縁より外へ（+1 だと胸の中に入り、体の手前に見えた。2026-10-08 依頼者の指摘）
+}
 FAR = {"left"}  # 武器を持つ手が体の奥にある向き（weapon_check --far）
 HAND = {"skin_rose_hi", "skin_rose_base", "skin_rose_shadow"}  # 手の肌（hand_outline・weapon_check --hand）
 ARM = {"cloak_dark_hi", "cloak_dark_base", "cloak_dark_shadow"}  # 服・袖（hand_outline・weapon_check --arm）
@@ -200,7 +205,7 @@ FEMALE_FIX = {
 axe_stance = {
     "down": merge(place(AXE, 9, 18), fist_v(9, 18)),
     "up": merge(relayer(mirror(place(AXE, 9, 18), 31), "back"), mirror(HAND_CAPS, 31)),
-    "left": merge(place(AXE, 21, 18, "back"), P(20, 17, ["ooo.", "obbo", "obco", "ooo."])),
+    "left": merge(place(AXE, 21, 18, "back"), FIST_FAR_L),
     "right": merge(place(ringed(flip(AXE)), 11, 18), fist_v(11, 18)),
 }
 # 振りかぶり: down＝刃が木の前で上8行が鋼、up＝木の棒だけ、left＝体の後ろで縦（刃は前）に袖を足す
@@ -216,7 +221,7 @@ axe_wind = {
 # up＝剣と同じく体の向こうに隠れる。left＝斜め45度で刃が前下
 axe_left_hit = merge(raster_axe(12.0, 17.0, -1, -1), fist_sq(11, 16))
 axe_hit = {
-    "down": merge(stick(11, [("N", 1), ("M", 1), ("M", 2), ("M", 6), ("S", 1)], 15), fist_v(12, 18)),
+    "down": merge(stick(12, [("N", 1), ("M", 1), ("M", 2), ("M", 6), ("S", 1)], 15), fist_v(12, 18)),  # 柄は拳の真ん中（2026-10-08 依頼者の指摘で 11→12）
     "up": [],
     "left": axe_left_hit,
     "right": mirror(axe_left_hit, 30),
@@ -249,7 +254,7 @@ def fist_at(grip_y):
 
 spear_base_down = spear_grip(18)  # 拳は体の手（y18〜19）
 HAND_CAPS_D = P(9, 17, ["o", ".", ".", "o"])  # 体の後ろに槍があるとき、手の上下の輪郭
-FIST_BACK_L = P(20, 17, ["ooo.", "obbo", "obco", "ooo."])  # 左向き: 体の奥の手を2px幅で槍の上に
+FIST_BACK_L = FIST_FAR_L  # 左向き: 体の奥の手を2px幅で槍の上に
 
 
 def spear_base():

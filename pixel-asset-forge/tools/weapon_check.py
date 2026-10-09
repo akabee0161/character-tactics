@@ -42,7 +42,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from enemy_build import EnemyError, read_frame  # noqa: E402
-from hand_outline import close_hands  # noqa: E402
+from hand_outline import HAND_MAX, close_hands  # noqa: E402
 from gridfile import GridError  # noqa: E402
 
 DIRECTIONS = ("down", "up", "left", "right")
@@ -202,6 +202,7 @@ class Analysis:
                     self.tiny |= c
         self.hand = (self._hand(skin, core & self.weapon) if core & self.weapon else set()) \
             or self._hand(skin, (self.weapon - blade_px) or self.weapon)
+        self.handle = {p for p in self.weapon if pts[p] in weapon}  # 刃以外の武器（柄など）
         self.tip = None
         if blade_px:
             ref = _center(self.hand) if self.hand else self.body_center()
@@ -281,6 +282,21 @@ def check_frame(name: str, a: Analysis, hidden: set[str], hit_states: set[str],
             w, h = max(xs) - min(xs) + 1, max(ys) - min(ys) + 1
             if min(w, h) < 2:
                 fails.append(f"{name}: 手が細い（{w}x{h}px、(%d,%d) から）" % (min(xs), min(ys)))
+        # 拳が柄の真ん中に無い、または柄から離れている（斧の down の当たり・女性の up の立ち、2026-10-08 依頼者の
+        # 指摘）。拳から 3px 以内の柄の向きが武器全体の向きと同じとき（柄に直角な短剣・剣の鍔は測らない）、縦の柄
+        # なら左右、横の柄なら上下の真ん中を比べる。2px 幅の拳があるので 0.5px までのずれはよい
+        near = {p for p in a.handle - a.hand
+                if any(max(abs(p[0] - h[0]), abs(p[1] - h[1])) <= 3 for h in a.hand)}
+        orient = _orientation(near) if len(near) >= 2 else "any"
+        k = 0 if orient == "v" else 1
+        beyond = [p for p in near if not min(h[1 - k] for h in a.hand) <= p[1 - k] <= max(h[1 - k] for h in a.hand)]
+        # 拳の大きさの手（顔を手と取り違えたときは測らない）で、柄が拳の外へ柄の向きに 2px 以上伸びているとき
+        if orient in ("v", "h") and orient == _orientation(a.weapon) and len(a.hand) <= HAND_MAX \
+                and len(beyond) >= 2:
+            off = sum(p[k] for p in near) / len(near) - _center(a.hand)[k]
+            if abs(off) > 0.5:
+                fails.append(f"{name}: 拳が柄の真ん中に無い（{'左右' if k == 0 else '上下'}に {abs(off):.1f}px "
+                             "ずれる。柄から離れている）")
         if arm and floating(a, arm):
             x, y = min(a.hand, key=lambda p: (p[1], p[0]))
             fails.append(f"{name}: 手が体から浮いている（({x},{y}) の手が腕の色とつながっていない）")
@@ -386,6 +402,7 @@ def main(argv: list[str] | None = None) -> int:
                         "奥の手・腕・武器が体や髪の手前に出ていないかを確かめる")
     parser.add_argument("--ref", type=Path, help="武器を持たせる前のコマの置き場（同じ名前の .txt）。--far と使う")
     parser.add_argument("--cover", default="", help="--far の向きで、どのコマでも手・腕・武器に上書きされてはいけない色（長い髪など）")
+    parser.add_argument("--far-shade", default="", help="--far の向きの立ち・待機2・歩きで、奥の手に使ってよい肌の色（影の色）")
     args = parser.parse_args(argv)
 
     if not args.directory.is_dir():
@@ -413,8 +430,13 @@ def main(argv: list[str] | None = None) -> int:
     attack = (set(s for s in args.seq.split(",") if s) - {"base"}) | _names(args.hit)
     for name, ref in refs.items():
         final = read_frame(args.directory / f"{name}.txt")
-        fails += covered(name, final, ref, _names(args.cover), _names(args.hand), _names(args.arm),
-                         standing=name.split("_", 1)[1] not in attack)
+        standing = name.split("_", 1)[1] not in attack
+        fails += covered(name, final, ref, _names(args.cover), _names(args.hand), _names(args.arm), standing)
+        # 奥の手は影の色で描く（明るい肌だと体の手前に浮いて見えた。left の立ち、2026-10-08 依頼者の指摘）
+        shade = _names(args.far_shade)
+        bright = sorted(p for p in frames[name].hand if frames[name].pixels[p] not in shade) if shade and standing else []
+        if bright:
+            fails.append(f"{name}: 奥の手が影の色でない（{' '.join(f'({x},{y})' for x, y in bright)}）")
     for n in notes:
         print(n)
     for f in fails:

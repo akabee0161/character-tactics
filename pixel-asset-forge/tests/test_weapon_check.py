@@ -127,6 +127,26 @@ class HandTest(unittest.TestCase):
         self.assertIn((10, 18), a.hand)
         self.assertNotIn((12, 11), a.hand)
 
+    def test_two_pixel_fist_on_the_shaft_is_centred_enough(self):
+        fails = check_frame("down_base", analyse(standing()), set(), set())  # 肌 x9〜10、柄 x9
+        self.assertFalse(any("真ん中" in s for s in fails), fails)
+
+    def test_fist_off_the_middle_of_the_shaft_fails(self):
+        f = blank()
+        body(f)
+        spear_v(f, 9, 6, 25)
+        fist(f, 10, 18, w=3)  # 肌 x10〜12、真ん中 x11、柄 x9（斧の down の当たり）
+        fails = check_frame("down_atk_hit", analyse(f), set(), set())
+        self.assertTrue(any("拳が柄の真ん中に無い" in s for s in fails), fails)
+
+    def test_fist_apart_from_the_weapon_fails(self):
+        f = blank()
+        body(f)
+        spear_v(f, 9, 6, 25)
+        fist(f, 11, 18)  # 肌 x11〜12、柄 x9 から離れている（女性の up の立ち）
+        fails = check_frame("up_base", analyse(f), set(), set())
+        self.assertTrue(any("拳が柄の真ん中に無い" in s for s in fails), fails)
+
     def test_face_beside_the_tip_is_not_the_hand(self):
         f = standing()
         fist(f, 12, 7)  # 穂先の横の顔（刃から 2px 以内、柄からは遠い）
@@ -404,6 +424,19 @@ class MainTest(unittest.TestCase):
             self.assertEqual(code, 1)
             self.assertIn("left_base: 奥の手", err)
             self.assertNotIn("down_base: 奥の手", err)  # down は奥の向きに挙げていない
+
+    def test_far_hand_as_bright_as_the_near_hand_fails(self):
+        with tempfile.TemporaryDirectory() as tmp, tempfile.TemporaryDirectory() as ref:
+            plain = blank()
+            body(plain)
+            self.write(Path(ref), "left_base", plain)
+            self.write(Path(ref), "left_atk_wind", plain)
+            self.write(Path(tmp), "left_base", standing())  # 拳の肌は skin_base（明るい）
+            self.write(Path(tmp), "left_atk_wind", standing())  # 攻撃のコマは見ない
+            code, _, err = self.run_main([tmp, *self.ARGS, "--ref", ref, "--far", "left", "--far-shade", "skin_shadow"])
+            self.assertEqual(code, 1)
+            self.assertIn("left_base: 奥の手が影の色でない", err)
+            self.assertNotIn("left_atk_wind: 奥の手が影の色でない", err)
 
     def test_far_without_ref_and_missing_ref_frame_exit_two(self):
         with tempfile.TemporaryDirectory() as tmp, tempfile.TemporaryDirectory() as ref:
