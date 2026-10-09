@@ -1,7 +1,7 @@
 """ロラン（assets/unit/roran、部品を持たない完成した絵）を層に切り出し、重なり順の表で確かめる（試作、2026-10-09）。
 
-今は4方向の立ちだけ。隠れて絵に無い所（盾の陰の腕、拳の中の柄など）はまだ描いていない（芯や部品の穴になる）。
-重なり順に依頼者と合意してから描く（順が変わると描き直しになるため）。
+4方向×6コマ。隠れて絵に無い所（盾の陰の腕、拳の中の柄など）はまだ描いていない（芯や部品の穴になる）。
+部品を動かして新しいコマを作るときに、要る所だけ描く（2026-10-09 依頼者と決めた）。
 
     .venv/bin/python cand/gen/roran_layers.py build/table_roran.html
 """
@@ -20,18 +20,47 @@ DIRS = ["down", "up", "left", "right"]
 SWORD = {"stone_hi", "stone_base", "stone_shadow", "wood_hi", "wood_base", "wood_shadow", "roof_base"}  # 刃・鍔・柄頭
 SHIELD = {"metal_hi", "metal_base", "metal_shadow"}
 SKIN = {"skin_rose_hi", "skin_rose_base", "skin_rose_shadow"}
-# 部品の箱（x0, y0, x1, y1、両端を含む）。鍔とベルトが同じ wood_base なので、剣は箱で分ける
-PARTS = {
-    "down": [Part("剣", (6, 5, 10, 21), SWORD), Part("剣を持つ腕・拳", (7, 18, 11, 19), SKIN),
-             Part("盾", (20, 16, 24, 25), SHIELD)],
-    "up": [Part("剣", (20, 5, 25, 21), SWORD), Part("剣を持つ腕・拳", (20, 18, 24, 19), SKIN),
-           Part("盾", (7, 16, 11, 25), SHIELD), Part("盾を持つ腕・拳", (8, 20, 10, 21), SKIN)],
-    "left": [Part("剣", (19, 5, 23, 21), SWORD), Part("奥の腕・拳", (20, 18, 23, 19), SKIN),
-             Part("盾", (9, 16, 11, 25), SHIELD), Part("手前の腕・拳", (10, 20, 12, 21), SKIN)],
-    "right": [Part("剣", (8, 5, 13, 21), SWORD), Part("剣を持つ腕・拳", (9, 18, 13, 19), SKIN),
-              Part("盾", (20, 16, 23, 24), SHIELD)],
+CLOAK = {"cloak_dark_hi", "cloak_dark_base", "cloak_dark_shadow"}
+STATES = ["base", "idle2", "walk_a", "walk_b", "atk_wind", "atk_hit"]
+NONE = (0, 0, 0, 0)  # 部品が見えないコマの箱（左上の1画素。どのコマでも空いている）
+# 部品の箱（x0, y0, x1, y1、両端を含む）。鍔とベルトが同じ wood_base なので、剣は箱で分ける。歩きは立ちと同じ
+SWORD_BOX = {
+    ("down", "base"): (6, 5, 10, 21), ("down", "idle2"): (6, 3, 10, 19),
+    ("down", "atk_wind"): (6, 0, 10, 16), ("down", "atk_hit"): (9, 17, 13, 27),
+    ("up", "base"): (20, 5, 25, 21), ("up", "idle2"): (20, 3, 25, 19),
+    ("up", "atk_wind"): (21, 0, 26, 16), ("up", "atk_hit"): NONE,  # 剣は体に隠れる
+    ("left", "base"): (19, 5, 23, 21), ("left", "idle2"): (19, 3, 23, 19),
+    ("left", "atk_wind"): (21, 0, 26, 16), ("left", "atk_hit"): (0, 9, 10, 18),
+    ("right", "base"): (8, 5, 13, 21), ("right", "idle2"): (8, 3, 13, 19),
+    ("right", "atk_wind"): (6, 0, 11, 16), ("right", "atk_hit"): (18, 9, 31, 20),
 }
-# 重なり順の案（奥→手前）。依頼者の確認待ち
+HAND_BOX = {  # 剣を持つ拳（up の当たりは、前へ下ろした腕の肘が脇からのぞく所。服の色）
+    ("down", "base"): (7, 18, 11, 19), ("down", "idle2"): (7, 16, 11, 17),
+    ("down", "atk_wind"): (7, 13, 11, 14), ("down", "atk_hit"): (10, 18, 14, 19),
+    ("up", "base"): (20, 18, 24, 19), ("up", "idle2"): (20, 16, 24, 17),
+    ("up", "atk_wind"): (21, 13, 25, 14), ("up", "atk_hit"): (20, 17, 21, 19),
+    ("left", "base"): (20, 18, 23, 19), ("left", "idle2"): (20, 16, 23, 17),
+    ("left", "atk_wind"): (21, 13, 25, 14), ("left", "atk_hit"): NONE,  # 拳は体に隠れる
+    ("right", "base"): (9, 18, 13, 19), ("right", "idle2"): (9, 16, 13, 17),
+    ("right", "atk_wind"): (7, 13, 11, 14), ("right", "atk_hit"): (19, 18, 22, 19),
+}
+SHIELD_BOX = {"down": (20, 16, 24, 25), "up": (7, 16, 11, 25), "left": (9, 16, 11, 25), "right": (20, 16, 23, 24)}
+SHIELD_HAND_BOX = {"up": (8, 20, 10, 21), "left": (10, 20, 12, 21)}  # down・right は盾や体の陰で見えない
+SWORD_HAND = {"down": "剣を持つ腕・拳", "up": "剣を持つ腕・拳", "left": "奥の腕・拳", "right": "剣を持つ腕・拳"}
+SHIELD_HAND = {"up": "盾を持つ腕・拳", "left": "手前の腕・拳"}
+
+
+def parts(d, st):
+    key = (d, "base" if st.startswith("walk") else st)
+    hand_colors = CLOAK if key == ("up", "atk_hit") else SKIN
+    out = [Part("剣", SWORD_BOX[key], SWORD), Part(SWORD_HAND[d], HAND_BOX[key], hand_colors),
+           Part("盾", SHIELD_BOX[d], SHIELD)]
+    if d in SHIELD_HAND:
+        out.append(Part(SHIELD_HAND[d], SHIELD_HAND_BOX[d], SKIN))
+    return out
+
+
+# 重なり順（奥→手前）。向きごとに6コマとも同じ（立ちの表は 2026-10-09 依頼者承認）
 ORDERS = {
     "down": [CORE, "盾", "剣", "剣を持つ腕・拳"],
     "up": ["剣", "盾", CORE, "剣を持つ腕・拳", "盾を持つ腕・拳"],
@@ -42,7 +71,7 @@ HOLE = (230, 60, 200, 255)
 
 
 def layers_of(d, st="base"):
-    return cut(eb.read_frame(SRC / f"{d}_{st}.txt"), PARTS[d])
+    return cut(eb.read_frame(SRC / f"{d}_{st}.txt"), parts(d, st))
 
 
 def holes(layers):
@@ -68,23 +97,32 @@ def main(out):
             "figcaption{font-size:12px;max-width:128px;white-space:normal}img{image-rendering:pixelated}"
             ".row{margin:6px 0 14px}.op{display:inline-block;font-size:22px;"
             "vertical-align:middle;margin:0 4px}.res{outline:3px solid #446}</style>",
-            "<h1>重なり順の表: ロラン（立ち・4方向）</h1>",
+            "<h1>重なり順の表: ロラン（4方向）</h1>",
             "<p>4倍。各行は左から、層を<b>奥→手前</b>の順に並べた絵、合成した絵、今の絵。"
             "最後の「芯（穴を桃色）」は、芯の絵のうち部品に隠れて絵に無い所を桃色で塗ったもの（印なしの芯は行の中にある）。"
-            "穴はまだ描いていない。重なり順に合意してから描く。</p>"]
+            "穴はまだ描いていない（部品を動かして新しいコマを作るときに、要る所だけ描く）。"
+            "歩きは脚だけが立ちと違い、立ちと同じ切り方なので並べていない（合成が今の絵と同じことは確かめてある）。</p>"]
     for d in DIRS:
-        art = eb.read_frame(SRC / f"{d}_base.txt")
-        layers = layers_of(d)
-        frame, _labels = compose(layers, ORDERS[d])
-        cells = [f"<figure><img src='{small(layers[n].frame)}'><figcaption>{n}</figcaption></figure>"
-                 for n in ORDERS[d] if any(v is not None for row in layers[n].frame for v in row)]
-        row = "<span class=op>→</span>".join(cells)
-        row += (f"<span class=op>＝</span><figure class=res><img src='{small(frame)}'>"
-                f"<figcaption>合成（今の絵と違う画素 {len(differences(art, frame))}）</figcaption></figure>"
-                f"<figure><img src='{small(art)}'><figcaption>今の絵</figcaption></figure>"
-                f"<figure><img src='{small(layers[CORE].frame, fill=holes(layers))}'>"
-                f"<figcaption>芯（穴を桃色）</figcaption></figure>")
-        html.append(f"<h2>{d}</h2><p>重なり順（奥→手前）: {' → '.join(ORDERS[d])}</p><div class=row>{row}</div>")
+        html.append(f"<h2>{d}</h2><p>重なり順（奥→手前、6コマ共通）: {' → '.join(ORDERS[d])}</p>")
+        walk = []
+        for st in STATES:
+            art = eb.read_frame(SRC / f"{d}_{st}.txt")
+            layers = layers_of(d, st)
+            frame, _labels = compose(layers, ORDERS[d])
+            diff = len(differences(art, frame))
+            if st.startswith("walk"):
+                walk.append(f"{d}_{st}（今の絵と違う画素 {diff}）")
+                continue
+            cells = [f"<figure><img src='{small(layers[n].frame)}'><figcaption>{n}</figcaption></figure>"
+                     for n in ORDERS[d] if any(v is not None for row in layers[n].frame for v in row)]
+            row = "<span class=op>→</span>".join(cells)
+            row += (f"<span class=op>＝</span><figure class=res><img src='{small(frame)}'>"
+                    f"<figcaption>合成（今の絵と違う画素 {diff}）</figcaption></figure>"
+                    f"<figure><img src='{small(art)}'><figcaption>今の絵</figcaption></figure>"
+                    f"<figure><img src='{small(layers[CORE].frame, fill=holes(layers))}'>"
+                    f"<figcaption>芯（穴を桃色）</figcaption></figure>")
+            html.append(f"<h3>{d}_{st}</h3><div class=row>{row}</div>")
+        html.append(f"<p>並べていない: {'・'.join(walk)}</p>")
     Path(out).write_text("\n".join(html), encoding="utf-8")
     print("ok", out)
 
