@@ -127,6 +127,11 @@ def near_hand(core):
     return Layer(f)
 
 
+def far_shade(layer):
+    """奥の手は影の色で描く（明るいと体の手前に浮いて見えた。2026-10-08 依頼者の指摘、振りかぶりも 2026-10-09）。"""
+    return Layer([["skin_rose_shadow" if n in mw.HAND else n for n in row] for row in layer.frame], dict(layer.anchors))
+
+
 def core_frame(eid, d, st):
     """頭・胴・脚・目・服の飾り。left は奥の腕を外した素体（6コマ共通）、他の向きは今の絵と同じ素体。"""
     u = unit(eid)
@@ -154,6 +159,8 @@ def build_layers(eid, d, st):
             for x, n in enumerate(row):
                 if n is not None:
                     hand.frame[y][x] = n
+    if d == "left":  # left の武器を持つ手は奥の手
+        hand = far_shade(hand)
     core = core_frame(eid, d, st)
     hair = u["hair"]
     layers = {

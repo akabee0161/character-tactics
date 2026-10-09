@@ -81,6 +81,17 @@ class GripOutlineTest(unittest.TestCase):
         self.assertEqual((frame[6][6], labels[6][6]), ("outline", "武器を持つ腕・拳"))
 
 
+class FarShadeTest(unittest.TestCase):
+    def test_far_hand_skin_becomes_shadow_and_the_rest_stays(self):
+        """奥の手は影の色で描く（振りかぶりで頭の横に出た拳も。2026-10-09 依頼者の指摘）。輪郭と袖は変えない。"""
+        layer = Layer(blank())
+        layer.frame[1][1], layer.frame[1][2], layer.frame[1][3] = "skin_rose_hi", "skin_rose_base", "skin_rose_shadow"
+        layer.frame[2][1], layer.frame[2][2] = "outline", "cloak_dark_base"
+        out = ml.far_shade(layer)
+        self.assertEqual(out.frame[1][1:4], ["skin_rose_shadow"] * 3)
+        self.assertEqual(out.frame[2][1:3], ["outline", "cloak_dark_base"])
+
+
 class HandShiftTest(unittest.TestCase):
     def test_female_hand_follows_the_female_body(self):
         self.assertEqual(ml.hand_shift(EID, "left", "base"), (-1, 0))
