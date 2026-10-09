@@ -65,6 +65,22 @@ class ComposeFrameTest(unittest.TestCase):
             self.assertEqual(front_of(d, "武器", "かぶり物"), front)
 
 
+class GripOutlineTest(unittest.TestCase):
+    def test_fist_outline_does_not_cut_the_held_weapon(self):
+        """拳のまわりの「空いている所にだけ描く」輪郭は、握る武器の上には描かない（柄を途切れさせない）。
+        体など、ほかの層の上には描く（2026-10-09 依頼者が案1を選んだ）。"""
+        layers = fake_layers("right")
+        layers["武器"].frame[5][5] = "wood_base"
+        layers["武器を持つ腕・拳"].frame[5][5] = "outline"   # 柄の上の拳の輪郭（空いている所にだけ描く印）
+        layers["芯"].frame[6][6] = "cloak_dark_base"
+        layers["武器を持つ腕・拳"].frame[6][6] = "outline"   # 体の上の拳の輪郭
+        with mock.patch.object(ml, "build_layers", return_value=layers), \
+                mock.patch.object(ml, "grip_outline", return_value={(5, 5), (6, 6)}):
+            frame, labels = ml.compose_frame(EID, "right", "base")
+        self.assertEqual((frame[5][5], labels[5][5]), ("wood_base", "武器"))
+        self.assertEqual((frame[6][6], labels[6][6]), ("outline", "武器を持つ腕・拳"))
+
+
 class HandShiftTest(unittest.TestCase):
     def test_female_hand_follows_the_female_body(self):
         self.assertEqual(ml.hand_shift(EID, "left", "base"), (-1, 0))

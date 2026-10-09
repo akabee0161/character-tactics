@@ -169,11 +169,36 @@ def build_layers(eid, d, st):
     return layers
 
 
+def grip_outline(eid, d, st):
+    """拳のパッチで「空いている所にだけ描く」輪郭（x）だった画素（手の位置へずらした後）。
+    女性の手の輪郭の直し（FEMALE_FIX）が必ず描く画素は除く。"""
+    u, key = unit(eid), key_of(st)
+    _weapon, fist, _grip = WEAPON_PARTS[u["weapon"]][(d, key)]
+    dx, dy = hand_shift(eid, d, st)
+    writer = {}  # mw.apply を空のコマに掛けたとき、最後にその画素を決めた文字
+    for cells, _layer in fist:
+        for p, ch in cells.items():
+            if ch == "x":
+                writer.setdefault(p, "x")
+            elif ch == "_":
+                writer.pop(p, None)
+            else:
+                writer[p] = ch
+    fix = mw.FEMALE_FIX.get((key, d)) if u["sex"] == "female" else None
+    fixed = {(x, y + dy) for cells, _ in (fix or []) for (x, y) in cells}
+    return {(x + dx, y + dy) for (x, y), w in writer.items() if w == "x"} - fixed
+
+
 def compose_frame(eid, d, st, weapon=True):
     layers = build_layers(eid, d, st)
     order = ORDERS[d] if weapon else [n for n in ORDERS[d] if n not in ("武器", HELD[d])]
     # 武器を持たせる前は、武器と握る手だけを名前で外す（表で絞ると、表に書き忘れた層が黙って消える）
     frame, labels = compose({k: v for k, v in layers.items() if weapon or k not in ("武器", HELD[d])}, order)
+    if weapon:  # 拳の「空いている所にだけ描く」輪郭は、握る武器の上には描かない（柄を途切れさせない。依頼者が案1を選んだ）
+        for x, y in grip_outline(eid, d, st):
+            w = layers["武器"].frame[y][x] if 0 <= x < 32 and 0 <= y < 32 else None
+            if w is not None and labels[y][x] == HELD[d]:
+                frame[y][x], labels[y][x] = w, "武器"
     return finish(frame, labels, mw.HAND, mw.ARM)
 
 
