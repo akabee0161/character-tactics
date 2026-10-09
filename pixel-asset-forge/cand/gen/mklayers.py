@@ -102,7 +102,8 @@ def build_layers(st):
 def compose_frame(st, weapon=True):
     layers = build_layers(st)
     order = ORDER_LEFT if weapon else WEAPONLESS
-    frame, labels = compose({k: v for k, v in layers.items() if k in order}, order)
+    # 武器を持たせる前は、武器と奥の腕・拳だけを名前で外す（表で絞ると、表に書き忘れた層が黙って消える）
+    frame, labels = compose({k: v for k, v in layers.items() if weapon or k not in ("武器", "奥の腕・拳")}, order)
     return finish(frame, labels, mw.HAND, mw.ARM)
 
 
