@@ -43,7 +43,7 @@ def main(eid, out):
             ".row{margin:6px 0 14px;white-space:nowrap;overflow-x:auto}.op{display:inline-block;font-size:22px;"
             "vertical-align:middle;margin:0 4px}.res{outline:3px solid #446}</style>",
             f"<h1>重なり順の表: {eid}（{u['name']}）</h1>",
-            "<p>4倍。各行は左から、層を<b>奥→手前</b>の順に並べた絵、合成した試作（赤い枠＝今の絵と変わった画素）、今の絵。"
+            "<p>4倍。各行は左から、層を<b>奥→手前</b>の順に並べた絵、合成した試作、同じ試作に今の絵と変わった画素を赤い枠で示したもの、今の絵。"
             "層は単体の絵で、隠れる部分も含む。画素の無い層は並べない。"
             "各向きで立ちは必ず並べ、ほかの状態は今の絵から変わるものだけ並べる。</p>"]
     for d in ml.DIRS:
@@ -67,8 +67,10 @@ def main(eid, out):
             added = sum(1 for row in labels for n in row if n == ADDED)
             note = f"（後から足した手の輪郭 {added}）" if added else ""
             row = "<span class=op>→</span>".join(cells)
-            row += (f"<span class=op>＝</span><figure class=res><img src='{small(frame, differences(cur, frame))}'>"
-                    f"<figcaption>試作（変わった画素 {diffs[st]}）{note}</figcaption></figure>"
+            row += (f"<span class=op>＝</span><figure class=res><img src='{small(frame)}'>"
+                    f"<figcaption>試作{note}</figcaption></figure>"
+                    f"<figure><img src='{small(frame, differences(cur, frame))}'>"
+                    f"<figcaption>試作・赤枠つき（変わった画素 {diffs[st]}）</figcaption></figure>"
                     f"<figure><img src='{small(cur)}'><figcaption>今の絵</figcaption></figure>")
             html.append(f"<h3>{d}_{st}</h3><div class=row>{row}</div>")
         if same:

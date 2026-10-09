@@ -56,8 +56,8 @@ def main(eid, out):
             ".stack img{position:absolute;left:0;top:0}label{margin-right:12px}"
             ".bar{position:sticky;top:0;background:#bbb;padding:4px 0;z-index:1}</style>",
             f"<h1>{eid}（{ml.unit(eid)['name']}）: 今の絵と、層で組んだ試作（4方向）</h1>",
-            "<p>8倍。各状態は 左＝今の絵（cand/enemy-frames）・中＝試作（赤い枠＝今の絵と変わった画素）・右＝試作を層で重ねたもの。"
-            "右は上のチェックで層を消せる（手前の層を消すと、奥の層の隠れた部分が見える）。"
+            "<p>8倍。各状態は 左から 今の絵（cand/enemy-frames）・試作・試作に今の絵と変わった画素を赤い枠で示したもの・試作を層で重ねたもの。"
+            "層で重ねたものは上のチェックで層を消せる（手前の層を消すと、奥の層の隠れた部分が見える）。"
             "最後に手の輪郭を閉じた画素は「後から足した輪郭」。</p>",
             "<p class=bar>" + "".join(f"<label><input type=checkbox checked data-layer='{i}'>{n}</label>"
                                       for i, n in enumerate(names)) + "</p>"]
@@ -84,8 +84,9 @@ def main(eid, out):
             diff = differences(cur[st], frame)
             html.append(f"<h3>{d}_{st}</h3>")
             html.append(f"<figure><img src='{uri(png(cur[st]))}'><figcaption>今の絵</figcaption></figure>")
+            html.append(f"<figure><img src='{uri(png(frame))}'><figcaption>試作</figcaption></figure>")
             html.append(f"<figure><img src='{uri(png(frame, marks=diff))}'>"
-                        f"<figcaption>試作（変わった画素 {len(diff)}）</figcaption></figure>")
+                        f"<figcaption>試作・赤枠つき（変わった画素 {len(diff)}）</figcaption></figure>")
             html.append(f"<figure><div class=stack>{''.join(stack)}</div><figcaption>層で重ねたもの</figcaption></figure>")
     html.append("<script>document.querySelectorAll('input[data-layer]').forEach(c=>c.onchange=()=>"
                 "document.querySelectorAll(`.stack img[data-layer='${c.dataset.layer}']`).forEach(i=>i.style.display=c.checked?'':'none'));"
