@@ -42,6 +42,11 @@ def uri(im):
     return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode()
 
 
+def stack_order(d):
+    """「層で重ねたもの」を重ねる順（奥→手前）。その向きの表の順で、最後に後から足した輪郭。"""
+    return ml.ORDERS[d] + [ADDED]
+
+
 def main(out):
     names = list(dict.fromkeys(n for d in ml.DIRS for n in ml.ORDERS[d])) + [ADDED]  # 全向きの層（チェックの並び）
     html = ["<!doctype html><meta charset=utf-8><title>層で組んだ試作</title>",
@@ -70,14 +75,12 @@ def main(out):
             frame, labels = trial[st]
             layers = ml.build_layers(d, st)
             stack = []
-            for i, n in enumerate(names):
+            for n in stack_order(d):  # 後の img ほど手前に描かれる
                 if n == ADDED:
                     f = [[frame[y][x] if labels[y][x] == ADDED else None for x in range(32)] for y in range(32)]
-                elif n in layers:
-                    f = layers[n].frame
                 else:
-                    continue
-                stack.append(f"<img data-layer='{i}' src='{uri(png(f, bg=(0, 0, 0, 0)))}'>")
+                    f = layers[n].frame
+                stack.append(f"<img data-layer='{names.index(n)}' src='{uri(png(f, bg=(0, 0, 0, 0)))}'>")
             diff = differences(cur[st], frame)
             html.append(f"<h3>{d}_{st}</h3>")
             html.append(f"<figure><img src='{uri(png(cur[st]))}'><figcaption>今の絵</figcaption></figure>")
