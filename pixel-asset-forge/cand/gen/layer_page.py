@@ -1,6 +1,6 @@
-"""層で組んだ試作（槍の女性 a の4方向）を今の絵と並べ、層ごとに表示を切り替えるページ（2026-10-09）。
+"""層で組んだ試作（敵の4方向）を今の絵と並べ、層ごとに表示を切り替えるページ（2026-10-09）。
 
-    .venv/bin/python cand/gen/layer_page.py build/layer_trial.html
+    .venv/bin/python cand/gen/layer_page.py spear-thug-a-f build/layer_trial.html
 """
 import base64
 import io
@@ -19,7 +19,6 @@ from layers import ADDED, differences  # noqa: E402
 pal = load_palette()
 S = 8
 BG = (225, 225, 225, 255)
-CURRENT = Path("cand/enemy-frames") / ml.EID  # 今の絵（4aad550 で承認済み）
 LOOP = ["base", "idle2", "base", "idle2", "walk_a", "base", "walk_b", "base", "atk_wind", "atk_hit"]
 
 
@@ -47,7 +46,8 @@ def stack_order(d):
     return ml.ORDERS[d] + [ADDED]
 
 
-def main(out):
+def main(eid, out):
+    current = Path("cand/enemy-frames") / eid  # 今の絵
     names = list(dict.fromkeys(n for d in ml.DIRS for n in ml.ORDERS[d])) + [ADDED]  # 全向きの層（チェックの並び）
     html = ["<!doctype html><meta charset=utf-8><title>層で組んだ試作</title>",
             "<style>body{background:#bbb;font-family:sans-serif;max-width:1400px}"
@@ -55,17 +55,17 @@ def main(out):
             "img{image-rendering:pixelated}.stack{position:relative;width:256px;height:256px;background:#e1e1e1}"
             ".stack img{position:absolute;left:0;top:0}label{margin-right:12px}"
             ".bar{position:sticky;top:0;background:#bbb;padding:4px 0;z-index:1}</style>",
-            "<h1>槍の女性 a: 今の絵と、層で組んだ試作（4方向）</h1>",
-            "<p>8倍。各状態は 左＝今の絵（4aad550）・中＝試作（赤い枠＝今の絵と変わった画素）・右＝試作を層で重ねたもの。"
+            f"<h1>{eid}（{ml.unit(eid)['name']}）: 今の絵と、層で組んだ試作（4方向）</h1>",
+            "<p>8倍。各状態は 左＝今の絵（cand/enemy-frames）・中＝試作（赤い枠＝今の絵と変わった画素）・右＝試作を層で重ねたもの。"
             "右は上のチェックで層を消せる（手前の層を消すと、奥の層の隠れた部分が見える）。"
-            "最後に手の輪郭を閉じた画素は「後から足した輪郭」。left は承認済みの試作と同じ。</p>",
+            "最後に手の輪郭を閉じた画素は「後から足した輪郭」。</p>",
             "<p class=bar>" + "".join(f"<label><input type=checkbox checked data-layer='{i}'>{n}</label>"
                                       for i, n in enumerate(names)) + "</p>"]
     for d in ml.DIRS:
         cur, trial = {}, {}
         for st in ml.STATES:
-            cur[st] = eb.read_frame(CURRENT / f"{d}_{st}.txt")
-            trial[st] = ml.compose_frame(d, st)
+            cur[st] = eb.read_frame(current / f"{d}_{st}.txt")
+            trial[st] = ml.compose_frame(eid, d, st)
         html.append(f"<h2>{d}</h2><p>重なり順（奥→手前）: " + " → ".join(ml.ORDERS[d]) + "</p>")
         for label, frames in (("今の絵", {st: uri(png(cur[st])) for st in ml.STATES}),
                               ("試作", {st: uri(png(trial[st][0])) for st in ml.STATES})):
@@ -73,7 +73,7 @@ def main(out):
                         f"src='{frames['base']}'><figcaption>{label}（再生）</figcaption></figure>")
         for st in ml.STATES:
             frame, labels = trial[st]
-            layers = ml.build_layers(d, st)
+            layers = ml.build_layers(eid, d, st)
             stack = []
             for n in stack_order(d):  # 後の img ほど手前に描かれる
                 if n == ADDED:
@@ -95,4 +95,4 @@ def main(out):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    main(sys.argv[1], sys.argv[2])
