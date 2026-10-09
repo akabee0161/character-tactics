@@ -1,4 +1,4 @@
-"""層で組んだ試作（槍の女性 a の left）を今の絵と並べ、層ごとに表示を切り替えるページ（2026-10-09）。
+"""層で組んだ試作（槍の女性 a の4方向）を今の絵と並べ、層ごとに表示を切り替えるページ（2026-10-09）。
 
     .venv/bin/python cand/gen/layer_page.py build/layer_trial.html
 """
@@ -43,41 +43,47 @@ def uri(im):
 
 
 def main(out):
-    names = ml.ORDER_LEFT + [ADDED]
+    names = list(dict.fromkeys(n for d in ml.DIRS for n in ml.ORDERS[d])) + [ADDED]  # 全向きの層（チェックの並び）
     html = ["<!doctype html><meta charset=utf-8><title>層で組んだ試作</title>",
             "<style>body{background:#bbb;font-family:sans-serif;max-width:1400px}"
             "figure{display:inline-block;margin:4px 10px 4px 4px;text-align:center;vertical-align:top}"
             "img{image-rendering:pixelated}.stack{position:relative;width:256px;height:256px;background:#e1e1e1}"
-            ".stack img{position:absolute;left:0;top:0}label{margin-right:12px}</style>",
-            "<h1>槍の女性 a の left: 今の絵と、層で組んだ試作</h1>",
+            ".stack img{position:absolute;left:0;top:0}label{margin-right:12px}"
+            ".bar{position:sticky;top:0;background:#bbb;padding:4px 0;z-index:1}</style>",
+            "<h1>槍の女性 a: 今の絵と、層で組んだ試作（4方向）</h1>",
             "<p>8倍。各状態は 左＝今の絵（4aad550）・中＝試作（赤い枠＝今の絵と変わった画素）・右＝試作を層で重ねたもの。"
-            "右は下のチェックで層を消せる（手前の層を消すと、奥の層の隠れた部分が見える）。"
-            "重なり順（奥→手前）: " + " → ".join(ml.ORDER_LEFT) + "。最後に手の輪郭を閉じた画素は「後から足した輪郭」。</p>",
-            "<p>" + "".join(f"<label><input type=checkbox checked data-layer='{i}'>{n}</label>" for i, n in enumerate(names)) + "</p>",
-            "<h2>再生（立ち・待機2・歩き・振りかぶり・当たり）</h2>"]
-    cur, trial = {}, {}
-    for st in ml.STATES:
-        cur[st] = eb.read_frame(CURRENT / f"left_{st}.txt")
-        trial[st] = ml.compose_frame(st)
-    for label, frames in (("今の絵", {st: uri(png(cur[st])) for st in ml.STATES}),
-                          ("試作", {st: uri(png(trial[st][0])) for st in ml.STATES})):
-        html.append(f"<figure><img class=anim data-frames='{'|'.join(frames[s] for s in LOOP)}' src='{frames['base']}'>"
-                    f"<figcaption>{label}</figcaption></figure>")
-    for st in ml.STATES:
-        frame, labels = trial[st]
-        layers = ml.build_layers(st)
-        stack = []
-        for i, n in enumerate(names):
-            if n == ADDED:
-                f = [[frame[y][x] if labels[y][x] == ADDED else None for x in range(32)] for y in range(32)]
-            else:
-                f = layers[n].frame
-            stack.append(f"<img data-layer='{i}' src='{uri(png(f, bg=(0, 0, 0, 0)))}'>")
-        html.append(f"<h2>left_{st}</h2>")
-        html.append(f"<figure><img src='{uri(png(cur[st]))}'><figcaption>今の絵</figcaption></figure>")
-        html.append(f"<figure><img src='{uri(png(frame, marks=differences(cur[st], frame)))}'>"
-                    f"<figcaption>試作（変わった画素 {len(differences(cur[st], frame))}）</figcaption></figure>")
-        html.append(f"<figure><div class=stack>{''.join(stack)}</div><figcaption>層で重ねたもの</figcaption></figure>")
+            "右は上のチェックで層を消せる（手前の層を消すと、奥の層の隠れた部分が見える）。"
+            "最後に手の輪郭を閉じた画素は「後から足した輪郭」。left は承認済みの試作と同じ。</p>",
+            "<p class=bar>" + "".join(f"<label><input type=checkbox checked data-layer='{i}'>{n}</label>"
+                                      for i, n in enumerate(names)) + "</p>"]
+    for d in ml.DIRS:
+        cur, trial = {}, {}
+        for st in ml.STATES:
+            cur[st] = eb.read_frame(CURRENT / f"{d}_{st}.txt")
+            trial[st] = ml.compose_frame(d, st)
+        html.append(f"<h2>{d}</h2><p>重なり順（奥→手前）: " + " → ".join(ml.ORDERS[d]) + "</p>")
+        for label, frames in (("今の絵", {st: uri(png(cur[st])) for st in ml.STATES}),
+                              ("試作", {st: uri(png(trial[st][0])) for st in ml.STATES})):
+            html.append(f"<figure><img class=anim data-frames='{'|'.join(frames[s] for s in LOOP)}' "
+                        f"src='{frames['base']}'><figcaption>{label}（再生）</figcaption></figure>")
+        for st in ml.STATES:
+            frame, labels = trial[st]
+            layers = ml.build_layers(d, st)
+            stack = []
+            for i, n in enumerate(names):
+                if n == ADDED:
+                    f = [[frame[y][x] if labels[y][x] == ADDED else None for x in range(32)] for y in range(32)]
+                elif n in layers:
+                    f = layers[n].frame
+                else:
+                    continue
+                stack.append(f"<img data-layer='{i}' src='{uri(png(f, bg=(0, 0, 0, 0)))}'>")
+            diff = differences(cur[st], frame)
+            html.append(f"<h3>{d}_{st}</h3>")
+            html.append(f"<figure><img src='{uri(png(cur[st]))}'><figcaption>今の絵</figcaption></figure>")
+            html.append(f"<figure><img src='{uri(png(frame, marks=diff))}'>"
+                        f"<figcaption>試作（変わった画素 {len(diff)}）</figcaption></figure>")
+            html.append(f"<figure><div class=stack>{''.join(stack)}</div><figcaption>層で重ねたもの</figcaption></figure>")
     html.append("<script>document.querySelectorAll('input[data-layer]').forEach(c=>c.onchange=()=>"
                 "document.querySelectorAll(`.stack img[data-layer='${c.dataset.layer}']`).forEach(i=>i.style.display=c.checked?'':'none'));"
                 "let t=0;setInterval(()=>{t++;document.querySelectorAll('img.anim').forEach(i=>{const f=i.dataset.frames.split('|');i.src=f[t%f.length]})},500)</script>")
