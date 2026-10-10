@@ -9,7 +9,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "tools"))
 sys.path.insert(0, str(REPO_ROOT / "cand" / "gen"))
 
-from cut_layers import Part, cut  # noqa: E402
+from cut_layers import Part, cut, torn  # noqa: E402
 from layers import LayerError, blank, compose  # noqa: E402
 
 
@@ -66,6 +66,58 @@ class CutTest(unittest.TestCase):
     def test_box_outside_the_frame_raises(self):
         with self.assertRaises(LayerError):
             cut(ART, [Part("武器", box=(0, 0, 32, 4), colors={"stone_hi"})])
+
+
+SHIELD_KEY = {"o": "outline", "m": "metal_hi", "b": "skin_rose_base", "q": "cloak_dark_base"}
+# 縦の盾（m、左右に輪郭）の右の輪郭の上に拳（b）が描かれている（ロランの left、2026-10-10 依頼者の指摘）
+SHIELD_ART = [
+    "omo..",
+    "omo..",
+    "omo..",
+    "ombbo",
+    "ombbo",
+    "omo..",
+    "omo..",
+    "ooo..",
+]
+SHIELD_PARTS = [
+    Part("盾", box=(0, 0, 2, 7), colors={"metal_hi"}),
+    Part("手前の腕・拳", box=(2, 3, 3, 4), colors={"skin_rose_base"}),
+]
+
+
+class TornTest(unittest.TestCase):
+    def torn_of(self, rows, order):
+        layers = cut(grid(rows, SHIELD_KEY), SHIELD_PARTS)
+        _frame, labels = compose(layers, order)
+        return torn(layers, labels, SHIELD_PARTS, order)
+
+    def test_back_layer_cutting_through_a_front_part_is_found(self):
+        found = self.torn_of(SHIELD_ART, ["芯", "手前の腕・拳", "盾"])
+        self.assertEqual(found, [((2, 3), "手前の腕・拳", "盾"), ((2, 4), "手前の腕・拳", "盾")])
+
+    def test_front_layer_over_a_back_part_is_fine(self):
+        self.assertEqual(self.torn_of(SHIELD_ART, ["芯", "盾", "手前の腕・拳"]), [])
+
+    def test_gap_made_of_two_back_layers_is_not_counted(self):
+        # 剣の柄が拳を通る所（ロランの right の当たり）。柄に挟まれた所に体と拳が混ざって見えるのは破れではない
+        key = dict(SHIELD_KEY, i="stone_hi")
+        rows = ["oio..", "oio..", "oio..", "oobbo", "ooqqo", "oio..", "oio..", "ooo.."]
+        parts = [Part("剣", box=(0, 0, 2, 7), colors={"stone_hi"}),
+                 Part("拳", box=(2, 3, 3, 3), colors={"skin_rose_base"})]
+        layers = cut(grid(rows, key), parts)
+        order = ["芯", "拳", "剣"]
+        self.assertEqual(torn(layers, compose(layers, order)[1], parts, order), [])
+
+    def test_back_layer_touching_the_face_of_a_front_part_is_found(self):
+        # 一番奥の盾の金属が、手前の拳の面に輪郭を挟まず接している（ロランの up、2026-10-10 依頼者の指摘）
+        parts = [Part("盾", box=(0, 0, 1, 7), colors={"metal_hi"}),
+                 Part("盾を持つ腕・拳", box=(1, 3, 3, 4), colors={"skin_rose_base"})]
+        rows = ["omo..", "omo..", "omo..", "ombbo", "ombbo", "omo..", "omo..", "ooo.."]
+        layers = cut(grid(rows, SHIELD_KEY), parts)
+        order = ["盾", "芯", "盾を持つ腕・拳"]
+        found = torn(layers, compose(layers, order)[1], parts, order)
+        self.assertEqual(found, [((1, 3), "盾", "盾を持つ腕・拳"), ((1, 4), "盾", "盾を持つ腕・拳")])
 
 
 if __name__ == "__main__":

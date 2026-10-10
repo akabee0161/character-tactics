@@ -14,6 +14,7 @@ from layers import SIZE, Frame, Layer, LayerError, blank
 
 CORE = "芯"
 N8 = [(dx, dy) for dy in (-1, 0, 1) for dx in (-1, 0, 1) if (dx, dy) != (0, 0)]
+N4 = ((1, 0), (-1, 0), (0, 1), (0, -1))
 
 
 @dataclass
@@ -49,3 +50,43 @@ def cut(frame: Frame, parts: list[Part]) -> dict[str, Layer]:
             for name in touching or {CORE}:
                 layers[name].frame[y][x] = "outline"
     return layers
+
+
+def torn(layers: dict[str, Layer], labels: Frame, parts: list[Part], order: list[str]) -> list[tuple[tuple[int, int], str, str]]:
+    """((x, y), 奥の層, 部品) のならび。部品の箱の中で、部品より奥の層が見えていて、次のどちらかに当たる所
+    （奥の層が部品の輪郭や面を破っている。2026-10-10 依頼者の指摘）。
+    - 部品の画素に上下か左右から挟まれ、挟まれた所が奥の1つの層だけでできている（ロランの left の拳が盾の
+      輪郭の上に描かれていた）。複数の層が混ざって見えるのは、柄が拳を通る所などなので数えない
+    - 奥の層の色（輪郭以外）が、部品の面（輪郭以外）に上下左右で直に接している（ロランの up の盾の金属が拳に接していた）"""
+    rank = {n: i for i, n in enumerate(order)}
+    found = []
+    for part in parts:
+        own = layers[part.name].frame
+        x0, y0, x1, y1 = part.box
+        for y in range(y0, y1 + 1):
+            for x in range(x0, x1 + 1):
+                back = labels[y][x]
+                if own[y][x] is not None or back not in rank or rank[back] >= rank[part.name]:
+                    continue
+                if layers[back].frame[y][x] != "outline" and any(
+                        0 <= x + dx < SIZE and 0 <= y + dy < SIZE and own[y + dy][x + dx] not in (None, "outline")
+                        for dx, dy in N4):
+                    found.append(((x, y), back, part.name))
+                    continue
+                for dx, dy in ((1, 0), (0, 1)):
+                    if all(_reaches_part(own, labels, part.box, back, x, y, dx * s, dy * s) for s in (1, -1)):
+                        found.append(((x, y), back, part.name))
+                        break
+    return found
+
+
+def _reaches_part(own: Frame, labels: Frame, box, back: str, x: int, y: int, dx: int, dy: int) -> bool:
+    x0, y0, x1, y1 = box
+    while True:
+        x, y = x + dx, y + dy
+        if not (x0 <= x <= x1 and y0 <= y <= y1):
+            return False
+        if own[y][x] is not None:
+            return True
+        if labels[y][x] != back:
+            return False

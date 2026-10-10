@@ -11,7 +11,7 @@ from pathlib import Path
 sys.path.insert(0, "tools")
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import enemy_build as eb  # noqa: E402
-from cut_layers import CORE, Part, cut  # noqa: E402
+from cut_layers import CORE, Part, cut, torn  # noqa: E402
 from layer_page import png, uri  # noqa: E402
 from layers import blank, compose, differences  # noqa: E402
 
@@ -60,10 +60,10 @@ def parts(d, st):
     return out
 
 
-# 重なり順（奥→手前）。向きごとに6コマとも同じ（立ちの表は 2026-10-09 依頼者承認）
+# 重なり順（奥→手前）。向きごとに6コマとも同じ（立ちの表は 2026-10-09 依頼者承認。up は盾が一番奥、2026-10-10 依頼者の指摘）
 ORDERS = {
     "down": [CORE, "盾", "剣", "剣を持つ腕・拳"],
-    "up": ["剣", "盾", CORE, "剣を持つ腕・拳", "盾を持つ腕・拳"],
+    "up": ["盾", "剣", CORE, "剣を持つ腕・拳", "盾を持つ腕・拳"],
     "left": ["剣", "奥の腕・拳", CORE, "手前の腕・拳", "盾"],
     "right": ["盾", CORE, "剣", "剣を持つ腕・拳"],
 }
@@ -108,8 +108,11 @@ def main(out):
         for st in STATES:
             art = eb.read_frame(SRC / f"{d}_{st}.txt")
             layers = layers_of(d, st)
-            frame, _labels = compose(layers, ORDERS[d])
+            frame, labels = compose(layers, ORDERS[d])
             diff = len(differences(art, frame))
+            broken = torn(layers, labels, parts(d, st), ORDERS[d])
+            for (x, y), back, front in broken:
+                print(f"破れ {d}_{st} ({x},{y}): 奥の「{back}」が手前の「{front}」の上に出ている")
             if st.startswith("walk"):
                 walk.append(f"{d}_{st}（今の絵と違う画素 {diff}）")
                 continue
@@ -121,6 +124,10 @@ def main(out):
                     f"<figure><img src='{small(art)}'><figcaption>今の絵</figcaption></figure>"
                     f"<figure><img src='{small(layers[CORE].frame, fill=holes(layers))}'>"
                     f"<figcaption>芯（穴を桃色）</figcaption></figure>")
+            if broken:
+                where = "・".join(f"({x},{y}) 奥の{b}が{f}の上" for (x, y), b, f in broken)
+                row += (f"<figure><img src='{small(frame, marks=[p for p, _, _ in broken])}'>"
+                        f"<figcaption>破れ（赤枠）: {where}</figcaption></figure>")
             html.append(f"<h3>{d}_{st}</h3><div class=row>{row}</div>")
         html.append(f"<p>並べていない: {'・'.join(walk)}</p>")
     Path(out).write_text("\n".join(html), encoding="utf-8")
