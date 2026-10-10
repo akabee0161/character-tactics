@@ -206,7 +206,7 @@ def compose_frame(eid, d, st, weapon=True):
             w = layers["武器"].frame[y][x] if 0 <= x < 32 and 0 <= y < 32 else None
             if w is not None and labels[y][x] == HELD[d]:
                 frame[y][x], labels[y][x] = w, "武器"
-    return finish(frame, labels, mw.HAND, mw.ARM)
+    return finish(frame, labels, mw.HAND, mw.KEEP)
 
 
 def write(eid):

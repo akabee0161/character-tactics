@@ -194,7 +194,7 @@ FEMALE_SHIFT_WEAPON = {
 }
 FAR = {"left"}  # 武器を持つ手が体の奥にある向き（weapon_check --far）
 HAND = {"skin_rose_hi", "skin_rose_base", "skin_rose_shadow"}  # 手の肌（hand_outline・weapon_check --hand）
-ARM = {"cloak_dark_hi", "cloak_dark_base", "cloak_dark_shadow"}  # 服・袖（hand_outline・weapon_check --arm）
+KEEP = {"wood_hi", "wood_base", "wood_shadow", "roof_base", "stone_hi", "stone_base"}  # 握る武器の色（hand_outline --keep。この上には拳の輪郭を描かない）
 HAIR_COLOURS = {"hair_slate_hi", "hair_slate_base", "hair_slate_shadow"}  # 長い髪（weapon_check --cover）
 FEMALE_FIX = {
     ("base", "down"): P(12, 18, ["o", "o"]),  # 拳の右（体の手の端 x=12）を輪郭にして3px幅にそろえる
@@ -340,11 +340,11 @@ def main(ids=None):
         ref.mkdir(parents=True, exist_ok=True)
         for d in DIRS:
             for st in ("base", "idle2", "walk_a", "walk_b", "atk_wind", "atk_hit"):
-                f = close_hands(build_frame(eid, d, st), HAND, ARM)[0]  # 手の輪郭を閉じる（2026-10-08）
+                f = close_hands(build_frame(eid, d, st), HAND, KEEP)[0]  # 手の輪郭を閉じる（2026-10-08）
                 (out / f"{d}_{st}.txt").write_text(
                     eb.serialize_frame(f, f"{eid} {d}_{st}（部品で組んだ）"), encoding="utf-8")
                 (ref / f"{d}_{st}.txt").write_text(
-                    eb.serialize_frame(close_hands(mf.frame(eid, d, st, weapon="none"), HAND, ARM)[0],
+                    eb.serialize_frame(close_hands(mf.frame(eid, d, st, weapon="none"), HAND, KEEP)[0],
                                       f"{eid} {d}_{st} の武器を持たせる前"),
                     encoding="utf-8")
         print("ok", eid)

@@ -77,9 +77,12 @@ def compose(layers: dict[str, Layer], order: list[str]) -> tuple[Frame, Frame]:
     return frame, labels
 
 
-def finish(frame: Frame, labels: Frame, hand: set[str], arm: set[str]) -> tuple[Frame, Frame]:
-    """合成の後に手の輪郭を閉じる（tools/hand_outline.py）。足した画素の labels は ADDED。"""
-    out, changed = close_hands(frame, hand, arm)
+def finish(frame: Frame, labels: Frame, hand: set[str], keep: set[str] = frozenset()) -> tuple[Frame, Frame]:
+    """合成の後に手の輪郭を閉じる（tools/hand_outline.py）。足した画素の labels は ADDED。
+
+    敵の試作（mklayers）だけが使う。部品を完全に描いたユニットには使わない（2026-10-10）。
+    """
+    out, changed = close_hands(frame, hand, keep)
     lab = [row[:] for row in labels]
     for x, y in changed:
         lab[y][x] = ADDED

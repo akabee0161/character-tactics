@@ -14,7 +14,6 @@ sys.path.insert(0, str(REPO_ROOT / "tools"))
 from hand_outline import HandOutlineError, close_hands, fix_file, main  # noqa: E402
 
 HAND = {"skin_base", "skin_shadow"}
-ARM = {"cloth_base"}
 
 
 def blank():
@@ -40,43 +39,67 @@ def scene():
 
 class CloseHandsTest(unittest.TestCase):
     def test_side_touching_clothes_becomes_outline(self):
-        fixed, changed = close_hands(scene(), HAND, ARM)
+        fixed, changed = close_hands(scene(), HAND)
         self.assertEqual(fixed[20][19], "outline")
         self.assertEqual(fixed[21][19], "outline")
         self.assertIn((19, 20), changed)
 
     def test_gap_to_transparent_gets_outline(self):
-        fixed, changed = close_hands(scene(), HAND, ARM)
+        fixed, changed = close_hands(scene(), HAND)
         self.assertEqual(fixed[19][20], "outline")  # 手の上が透明だった（ガウの down の左手）
         self.assertIn((20, 19), changed)
 
-    def test_face_and_sleeve_above_are_left_alone(self):
+    def test_sleeve_cuff_above_is_outlined_too(self):
+        # 袖口（手の真上の服）も輪郭にする（依頼者 2026-10-09）
         f = scene()
-        f[19][20] = "cloth_base"  # 袖口が手の真上にある（上下で接するのはよい）
-        fixed, _ = close_hands(f, HAND, ARM)
-        self.assertEqual(fixed[19][20], "cloth_base")
+        f[19][20] = "cloth_base"
+        fixed, changed = close_hands(f, HAND)
+        self.assertEqual(fixed[19][20], "outline")
+        self.assertIn((20, 19), changed)
+
+    def test_face_is_left_alone(self):
+        fixed, _ = close_hands(scene(), HAND)
         self.assertEqual(fixed[15][12], "cloth_base")  # 顔（大きな肌の塊）の周りは触らない
         self.assertIsNone(fixed[8][12])
 
-    def test_one_pixel_cuff_beside_the_fist_is_kept(self):
-        # 横に伸ばした腕の袖口が 1px だけのとき、輪郭にすると腕が消えて拳が浮く（ガウの left_atk_hit）
+    def test_one_pixel_sleeve_becomes_outline(self):
         f = blank()
-        f[17][9] = f[17][10] = f[18][9] = f[18][10] = "skin_base"
-        f[17][11] = f[18][11] = "cloth_base"  # 袖口
-        f[17][12] = f[18][12] = "outline"
-        for y in (16, 19):
-            for x in range(8, 13):
-                f[y][x] = "outline"
-        f[17][8] = f[18][8] = "outline"
-        fixed, changed = close_hands(f, HAND, ARM)
+        f[17][11] = f[18][11] = "cloth_base"  # 横に伸びる 1px の袖
+        f[17][12] = f[18][12] = "skin_base"  # 拳
+        fixed, _ = close_hands(f, HAND)
+        self.assertEqual(fixed[17][11], "outline")
+        self.assertEqual(fixed[18][11], "outline")
+
+    def test_keep_colours_are_not_overwritten(self):
+        f = blank()
+        for y in range(10, 20):
+            f[y][15] = "wood_base"  # 縦の柄
+        f[14][15] = f[15][15] = "skin_base"  # 柄の真ん中を握る拳
+        fixed, _ = close_hands(f, HAND, keep={"wood_base"})
+        self.assertEqual(fixed[13][15], "wood_base")
+        self.assertEqual(fixed[16][15], "wood_base")
+
+    def test_hand_at_frame_edge_does_not_crash(self):
+        f = blank()
+        f[0][0] = f[0][1] = "skin_base"
+        f[31][31] = "skin_base"
+        fixed, changed = close_hands(f, HAND)
+        self.assertEqual(fixed[1][0], "outline")
+        self.assertIn((2, 0), changed)
+
+    def test_already_outlined_hand_is_left_alone(self):
+        f = blank()
+        f[10][10] = "skin_base"
+        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            f[10 + dy][10 + dx] = "outline"
+        _, changed = close_hands(f, HAND)
         self.assertEqual(changed, [])
-        self.assertEqual(fixed[17][11], "cloth_base")
 
     def test_input_is_not_modified_and_closed_hands_are_unchanged(self):
         f = scene()
-        once, _ = close_hands(f, HAND, ARM)
+        once, _ = close_hands(f, HAND)
         self.assertIsNone(f[19][20])
-        twice, changed = close_hands(once, HAND, ARM)
+        twice, changed = close_hands(once, HAND)
         self.assertEqual(changed, [])
         self.assertEqual(twice, once)
 
@@ -97,7 +120,7 @@ class FixFileTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "down_base.txt"
             path.write_text(grid_text(scene()), encoding="utf-8")
-            changed = fix_file(path, HAND, ARM, write=True)
+            changed = fix_file(path, HAND, frozenset(), write=True)
             text = path.read_text(encoding="utf-8")
             self.assertTrue(text.startswith(GRID_HEAD))
             rows = text.splitlines()[6:]
@@ -110,7 +133,7 @@ class FixFileTest(unittest.TestCase):
             path = Path(tmp) / "down_base.txt"
             path.write_text(grid_text(scene()), encoding="utf-8")
             before = path.read_text(encoding="utf-8")
-            self.assertEqual(len(fix_file(path, HAND, ARM, write=False)), 3)
+            self.assertEqual(len(fix_file(path, HAND, frozenset(), write=False)), 3)
             self.assertEqual(path.read_text(encoding="utf-8"), before)
 
     def test_file_without_an_outline_letter_is_refused(self):
@@ -122,7 +145,7 @@ class FixFileTest(unittest.TestCase):
                 f[y] = [None if n == "outline" else n for n in f[y]]
             path.write_text(grid_text(f, head), encoding="utf-8")
             with self.assertRaisesRegex(HandOutlineError, "outline"):
-                fix_file(path, HAND, ARM, write=True)
+                fix_file(path, HAND, frozenset(), write=True)
 
 
 class MainTest(unittest.TestCase):
@@ -132,12 +155,12 @@ class MainTest(unittest.TestCase):
             path.write_text(grid_text(scene()), encoding="utf-8")
             out = io.StringIO()
             with contextlib.redirect_stdout(out):
-                code = main([tmp, "--hand", "skin_base,skin_shadow", "--arm", "cloth_base"])
+                code = main([tmp, "--hand", "skin_base,skin_shadow"])
             self.assertEqual(code, 0)
             self.assertIn("down_base", out.getvalue())
             self.assertEqual(path.read_text(encoding="utf-8")[len(GRID_HEAD):].splitlines()[20][19], "q")
             with contextlib.redirect_stdout(io.StringIO()):
-                main([tmp, "--hand", "skin_base,skin_shadow", "--arm", "cloth_base", "--write"])
+                main([tmp, "--hand", "skin_base,skin_shadow", "--write"])
             self.assertEqual(path.read_text(encoding="utf-8")[len(GRID_HEAD):].splitlines()[20][19], "o")
 
 

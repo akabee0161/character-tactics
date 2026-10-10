@@ -182,22 +182,18 @@ class FloatingHandTest(unittest.TestCase):
         put(f, 21, 13, "cloak_dark_base")  # 拳の左下に、斜めに袖が接する
         self.assertEqual(check_frame("left_atk_wind", analyse(f), set(), set(), self.ARM), [])
 
-    def test_fist_touching_the_body_sideways_without_outline_fails(self):
-        f = standing()  # 体 x14〜22、縦の槍 x9、拳の肌 x9〜10・y18〜19
-        for x in (11, 12):  # 拳の右の輪郭が無く、体の服に直に接する（男性の down の斧）
-            put(f, x, 18, "cloak_dark_base")
-            put(f, x, 19, "cloak_dark_base")
-        fails = check_frame("down_base", analyse(f), set(), set(), self.ARM)
-        self.assertTrue(any("手の輪郭が閉じていない" in s for s in fails), fails)
-
-    def test_sleeve_right_above_the_fist_passes(self):
-        f = standing()  # 体 x14〜22、縦の槍 x9、拳の肌 x9〜10・y18〜19
-        put(f, 9, 17, "cloak_dark_base")  # 袖口から手が出る（上下で接するのはよい）
-        fails = check_frame("down_base", analyse(f), set(), set(), self.ARM)
-        self.assertFalse(any("手の輪郭が閉じていない" in s for s in fails), fails)
-
-    def test_check_is_skipped_without_arm_colours(self):
-        self.assertEqual(check_frame("left_atk_wind", analyse(self.raised(False)), set(), set()), [])
+    def test_one_pixel_sleeve_turned_outline_does_not_float_the_hand(self):
+        f = blank()
+        body(f, 10, 14, 19, 30)
+        spear_v(f, 23, 2, 14)
+        fist(f, 23, 10)
+        for x in range(20, 23):  # 拳の左から体まで 1px の袖。拳に接する画素は輪郭になっている
+            put(f, x, 10, "cloak_dark_base")
+            put(f, x, 11, "cloak_dark_base")
+        put(f, 22, 10, "outline")
+        put(f, 22, 11, "outline")
+        fails = check_frame("left_atk_wind", analyse(f), set(), set(), self.ARM)
+        self.assertFalse(any("浮いている" in s for s in fails), fails)
 
 
 class TipDirectionTest(unittest.TestCase):

@@ -1,17 +1,14 @@
 #!/usr/bin/env python3
-"""unit のコマで、手の輪郭が切れている所を閉じる。
+"""拳の部品のファイル（assets/unit/<ユニット>/parts/ の拳）で、手の輪郭が切れている所を閉じる。
 
-    tools/hand_outline.py assets/unit/gau --hand skin_rose_hi,skin_rose_base,skin_rose_shadow \\
-        --arm cloak_dark_hi,cloak_dark_base,cloak_dark_shadow            # 直す所を出すだけ
-    tools/hand_outline.py assets/unit/gau ... --write                    # 書き換える
+    tools/hand_outline.py assets/unit/roran/parts/sword_hand_down_base.txt \\
+        --hand skin_rose_hi,skin_rose_base,skin_rose_shadow           # 直す所を出すだけ
+    tools/hand_outline.py ... --write                                # 書き換える
 
-手（--hand の色の塊のうち、HAND_MAX 画素以下の小さいもの。顔は大きいので触らない）について:
-- 左右で服（--arm）に直に接していて、その先も服（体）なら、服の側を輪郭にする（拳と体の間の輪郭。
-  上下で接するのは袖口なのでよい。先が服でない 1px の袖口は腕そのものなので残す）
-- 上下左右で透明に接していたら、そこに輪郭を足す
-素体の手が体の服に直に接して描かれていて、全ユニットで拳の横の輪郭が無かった（2026-10-08 依頼者の指摘と承認）。
-検査は tools/weapon_check.py の「手の輪郭」。ファイルは文字だけを置き換える（注記や map の行はそのまま）。
-DIR の直下の `<向き>_<名前>.txt` を読む（ファイルを直接渡してもよい）。
+拳は部品として完全な形で描き、四方とも輪郭（黒）で囲う（2026-10-10 依頼者と決めた）。手（--hand の色の塊のうち、
+HAND_MAX 画素以下の小さいもの）の上下左右の隣が、透明でも袖でも輪郭にする。--keep の色の上には描かない
+（部品のファイルには普通いらない）。部品が閉じているかの検査は tools/compose.py（部品の "hand"）。
+ファイルは文字だけを置き換える（注記や map の行はそのまま）。ディレクトリを渡すと直下の `<名前>_<名前>.txt` を読む。
 """
 from __future__ import annotations
 
@@ -51,8 +48,8 @@ def _components(points: set[Point]) -> list[set[Point]]:
     return found
 
 
-def close_hands(frame, hand: set[str], arm: set[str]) -> tuple[list[list[str | None]], list[Point]]:
-    """(直したコマ, 輪郭にした画素)。入力は変えない。"""
+def close_hands(frame, hand: set[str], keep=frozenset()) -> tuple[list[list[str | None]], list[Point]]:
+    """(直したコマ, 輪郭にした画素)。入力は変えない。keep の色（握る武器、拳の手前の盾など）の上には描かない。"""
     h, w = len(frame), len(frame[0])
     skin = {(x, y) for y in range(h) for x in range(w) if frame[y][x] in hand}
     out = [row[:] for row in frame]
@@ -63,26 +60,24 @@ def close_hands(frame, hand: set[str], arm: set[str]) -> tuple[list[list[str | N
         for x, y in sorted(comp, key=lambda p: (p[1], p[0])):
             for dx, dy in N4:
                 qx, qy = x + dx, y + dy
-                if not (0 <= qx < w and 0 <= qy < h) or (qx, qy) in changed:
+                if not (0 <= qx < w and 0 <= qy < h):
                     continue
                 name = out[qy][qx]
-                # 服の側を輪郭にするのは、その先も服（体に接している）ときだけ。先が服でない 1px の袖口は
-                # 腕そのものなので残す（輪郭にすると腕が消えて拳が浮く。ガウの left_atk_hit）
-                beyond = frame[qy][qx + dx] if dx and 0 <= qx + dx < w else None
-                if name is None or (dx and name in arm and beyond in arm):
-                    out[qy][qx] = "outline"
-                    changed.append((qx, qy))
+                if name in hand or name == "outline" or name in keep:
+                    continue
+                out[qy][qx] = "outline"
+                changed.append((qx, qy))
     return out, changed
 
 
-def fix_file(path: Path, hand: set[str], arm: set[str], write: bool) -> list[Point]:
+def fix_file(path: Path, hand: set[str], keep: set[str], write: bool) -> list[Point]:
     grid = parse(path)
     if not grid.rows or "# from:" in path.read_text(encoding="utf-8"):
         raise HandOutlineError(f"{path}: 派生ファイル（# from:）は直せない。由来元を直す")
     letters = [ch for ch, name in grid.charmap.items() if name == "outline"]
     if not letters:
         raise HandOutlineError(f"{path}: map に outline の文字が無い")
-    fixed, changed = close_hands(read_frame(path), hand, arm)
+    fixed, changed = close_hands(read_frame(path), hand, keep)
     if write and changed:
         lines = path.read_text(encoding="utf-8").splitlines()
         rows = [i for i, line in enumerate(lines) if line and not line.startswith("#")]
@@ -101,9 +96,9 @@ def _names(text: str) -> set[str]:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("paths", nargs="+", type=Path, help="unit のコマのディレクトリかファイル")
+    parser.add_argument("paths", nargs="+", type=Path, help="拳の部品のファイル（かディレクトリ）")
     parser.add_argument("--hand", required=True, help="手の肌の色名（カンマ区切り）")
-    parser.add_argument("--arm", required=True, help="服・袖の色名（カンマ区切り）")
+    parser.add_argument("--keep", default="", help="この色の上には輪郭を描かない色名（カンマ区切り）")
     parser.add_argument("--write", action="store_true", help="ファイルを書き換える（無ければ直す所を出すだけ）")
     args = parser.parse_args(argv)
     files: list[Path] = []
@@ -118,7 +113,7 @@ def main(argv: list[str] | None = None) -> int:
     total = 0
     try:
         for path in files:
-            changed = fix_file(path, _names(args.hand), _names(args.arm), args.write)
+            changed = fix_file(path, _names(args.hand), _names(args.keep), args.write)
             if changed:
                 total += len(changed)
                 where = " ".join(f"({x},{y})" for x, y in changed)

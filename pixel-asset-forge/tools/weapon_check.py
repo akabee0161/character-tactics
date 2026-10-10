@@ -42,7 +42,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from enemy_build import EnemyError, read_frame  # noqa: E402
-from hand_outline import HAND_MAX, close_hands  # noqa: E402
+from hand_outline import HAND_MAX  # noqa: E402
 from gridfile import GridError  # noqa: E402
 
 DIRECTIONS = ("down", "up", "left", "right")
@@ -300,14 +300,6 @@ def check_frame(name: str, a: Analysis, hidden: set[str], hit_states: set[str],
         if arm and floating(a, arm):
             x, y = min(a.hand, key=lambda p: (p[1], p[0]))
             fails.append(f"{name}: 手が体から浮いている（({x},{y}) の手が腕の色とつながっていない）")
-    if arm:
-        # すべての手（武器を持たない手も）で、tools/hand_outline.py が直す所が残っていないか。左右で服に直に接する、
-        # または透明に接する手（拳と体の間の輪郭が無い。男性の down の斧、ガウの down の左手、2026-10-08 依頼者の指摘）
-        frame = [[a.pixels.get((x, y)) for x in range(SIZE)] for y in range(SIZE)]
-        _, gaps = close_hands(frame, a.hand_colours, arm)
-        if gaps:
-            fails.append(f"{name}: 手の輪郭が閉じていない（tools/hand_outline.py で直す: "
-                         + " ".join(f"({x},{y})" for x, y in gaps) + "）")
     state = name.split("_", 1)[1] if "_" in name else ""
     if state in hit_states and a.tip is not None:
         fx, fy = FACING[_direction(name)]

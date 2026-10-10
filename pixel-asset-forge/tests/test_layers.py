@@ -12,7 +12,7 @@ sys.path.insert(0, str(REPO_ROOT / "cand" / "gen"))
 from layers import ADDED, Layer, LayerError, attach, blank, compose, differences, finish, shifted  # noqa: E402
 
 HAND = {"skin_base", "skin_shadow"}
-ARM = {"cloth_base"}
+KEEP = {"wood_base"}
 
 
 def box(x0, y0, x1, y1, name):
@@ -82,8 +82,8 @@ class PlaceTest(unittest.TestCase):
 class FinishTest(unittest.TestCase):
     def test_added_outline_is_labelled_and_reproducible(self):
         frame, labels = compose({"拳": box(20, 20, 21, 21, "skin_base")}, ["拳"])
-        out1, lab1 = finish(frame, labels, HAND, ARM)
-        out2, _ = finish(frame, labels, HAND, ARM)
+        out1, lab1 = finish(frame, labels, HAND, KEEP)
+        out2, _ = finish(frame, labels, HAND, KEEP)
         self.assertEqual(out1[19][20], "outline")
         self.assertEqual(lab1[19][20], ADDED)
         self.assertEqual(lab1[20][20], "拳")
