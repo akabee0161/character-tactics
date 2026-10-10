@@ -1,0 +1,718 @@
+{
+  "unit": "roran",
+  "hand_colours": [
+    "skin_rose_hi",
+    "skin_rose_base",
+    "skin_rose_shadow"
+  ],
+  "frames": {
+    "down_base": {
+      "body": "assets/unit/roran/parts/core_down_base.txt",
+      "layers": [
+        {
+          "part": "assets/unit/roran/parts/shield_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_hand_down_base.txt",
+          "z": "front",
+          "keep": [
+            "roof_base",
+            "stone_base",
+            "stone_hi",
+            "stone_shadow",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ],
+          "hand": true
+        }
+      ]
+    },
+    "down_idle2": {
+      "body": "assets/unit/roran/parts/core_down_idle2.txt",
+      "layers": [
+        {
+          "part": "assets/unit/roran/parts/shield_down_idle2.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_down_idle2.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_hand_down_idle2.txt",
+          "z": "front",
+          "keep": [
+            "roof_base",
+            "stone_base",
+            "stone_hi",
+            "stone_shadow",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ],
+          "hand": true
+        }
+      ]
+    },
+    "down_walk_a": {
+      "body": "assets/unit/roran/parts/core_down_walk_a.txt",
+      "layers": [
+        {
+          "part": "assets/unit/roran/parts/shield_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_hand_down_base.txt",
+          "z": "front",
+          "keep": [
+            "roof_base",
+            "stone_base",
+            "stone_hi",
+            "stone_shadow",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ],
+          "hand": true
+        }
+      ]
+    },
+    "down_walk_b": {
+      "body": "assets/unit/roran/parts/core_down_walk_b.txt",
+      "layers": [
+        {
+          "part": "assets/unit/roran/parts/shield_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_hand_down_base.txt",
+          "z": "front",
+          "keep": [
+            "roof_base",
+            "stone_base",
+            "stone_hi",
+            "stone_shadow",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ],
+          "hand": true
+        }
+      ]
+    },
+    "down_atk_wind": {
+      "body": "assets/unit/roran/parts/core_down_atk_wind.txt",
+      "layers": [
+        {
+          "part": "assets/unit/roran/parts/shield_down_atk_wind.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_down_atk_wind.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_hand_down_atk_wind.txt",
+          "z": "front",
+          "keep": [
+            "roof_base",
+            "stone_base",
+            "stone_hi",
+            "stone_shadow",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ],
+          "hand": true
+        }
+      ]
+    },
+    "down_atk_hit": {
+      "body": "assets/unit/roran/parts/core_down_atk_hit.txt",
+      "layers": [
+        {
+          "part": "assets/unit/roran/parts/shield_down_atk_hit.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_down_atk_hit.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_hand_down_atk_hit.txt",
+          "z": "front",
+          "keep": [
+            "roof_base",
+            "stone_base",
+            "stone_hi",
+            "stone_shadow",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ],
+          "hand": true
+        }
+      ]
+    },
+    "up_base": {
+      "body": "assets/unit/roran/parts/core_up_base.txt",
+      "layers": [
+        {
+          "part": "assets/unit/roran/parts/sword_up_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/roran/parts/shield_up_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_hand_up_base.txt",
+          "z": "front",
+          "keep": [
+            "roof_base",
+            "stone_base",
+            "stone_hi",
+            "stone_shadow",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ],
+          "hand": true
+        },
+        {
+          "part": "assets/unit/roran/parts/shield_hand_up_base.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "up_idle2": {
+      "body": "assets/unit/roran/parts/core_up_idle2.txt",
+      "layers": [
+        {
+          "part": "assets/unit/roran/parts/sword_up_idle2.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/roran/parts/shield_up_idle2.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_hand_up_idle2.txt",
+          "z": "front",
+          "keep": [
+            "roof_base",
+            "stone_base",
+            "stone_hi",
+            "stone_shadow",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ],
+          "hand": true
+        },
+        {
+          "part": "assets/unit/roran/parts/shield_hand_up_idle2.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "up_walk_a": {
+      "body": "assets/unit/roran/parts/core_up_walk_a.txt",
+      "layers": [
+        {
+          "part": "assets/unit/roran/parts/sword_up_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/roran/parts/shield_up_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_hand_up_base.txt",
+          "z": "front",
+          "keep": [
+            "roof_base",
+            "stone_base",
+            "stone_hi",
+            "stone_shadow",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ],
+          "hand": true
+        },
+        {
+          "part": "assets/unit/roran/parts/shield_hand_up_base.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "up_walk_b": {
+      "body": "assets/unit/roran/parts/core_up_walk_b.txt",
+      "layers": [
+        {
+          "part": "assets/unit/roran/parts/sword_up_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/roran/parts/shield_up_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_hand_up_base.txt",
+          "z": "front",
+          "keep": [
+            "roof_base",
+            "stone_base",
+            "stone_hi",
+            "stone_shadow",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ],
+          "hand": true
+        },
+        {
+          "part": "assets/unit/roran/parts/shield_hand_up_base.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "up_atk_wind": {
+      "body": "assets/unit/roran/parts/core_up_atk_wind.txt",
+      "layers": [
+        {
+          "part": "assets/unit/roran/parts/sword_up_atk_wind.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/roran/parts/shield_up_atk_wind.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_hand_up_atk_wind.txt",
+          "z": "front",
+          "keep": [
+            "roof_base",
+            "stone_base",
+            "stone_hi",
+            "stone_shadow",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ],
+          "hand": true
+        },
+        {
+          "part": "assets/unit/roran/parts/shield_hand_up_atk_wind.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "up_atk_hit": {
+      "body": "assets/unit/roran/parts/core_up_atk_hit.txt",
+      "layers": [
+        {
+          "part": "assets/unit/roran/parts/sword_up_atk_hit.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/roran/parts/shield_up_atk_hit.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_hand_up_atk_hit.txt",
+          "z": "front",
+          "keep": [
+            "roof_base",
+            "stone_base",
+            "stone_hi",
+            "stone_shadow",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ],
+          "hand": true
+        },
+        {
+          "part": "assets/unit/roran/parts/shield_hand_up_atk_hit.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "left_base": {
+      "body": "assets/unit/roran/parts/core_left_base.txt",
+      "layers": [
+        {
+          "part": "assets/unit/roran/parts/sword_hand_left_base.txt",
+          "z": "back",
+          "keep": [
+            "roof_base",
+            "stone_base",
+            "stone_hi",
+            "stone_shadow",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ],
+          "hand": true
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_left_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/roran/parts/shield_hand_left_base.txt",
+          "z": "front",
+          "hand": true
+        },
+        {
+          "part": "assets/unit/roran/parts/shield_left_base.txt",
+          "z": "front"
+        }
+      ]
+    },
+    "left_idle2": {
+      "body": "assets/unit/roran/parts/core_left_idle2.txt",
+      "layers": [
+        {
+          "part": "assets/unit/roran/parts/sword_hand_left_idle2.txt",
+          "z": "back",
+          "keep": [
+            "roof_base",
+            "stone_base",
+            "stone_hi",
+            "stone_shadow",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ],
+          "hand": true
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_left_idle2.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/roran/parts/shield_hand_left_idle2.txt",
+          "z": "front",
+          "hand": true
+        },
+        {
+          "part": "assets/unit/roran/parts/shield_left_idle2.txt",
+          "z": "front"
+        }
+      ]
+    },
+    "left_walk_a": {
+      "body": "assets/unit/roran/parts/core_left_walk_a.txt",
+      "layers": [
+        {
+          "part": "assets/unit/roran/parts/sword_hand_left_base.txt",
+          "z": "back",
+          "keep": [
+            "roof_base",
+            "stone_base",
+            "stone_hi",
+            "stone_shadow",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ],
+          "hand": true
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_left_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/roran/parts/shield_hand_left_base.txt",
+          "z": "front",
+          "hand": true
+        },
+        {
+          "part": "assets/unit/roran/parts/shield_left_base.txt",
+          "z": "front"
+        }
+      ]
+    },
+    "left_walk_b": {
+      "body": "assets/unit/roran/parts/core_left_walk_b.txt",
+      "layers": [
+        {
+          "part": "assets/unit/roran/parts/sword_hand_left_base.txt",
+          "z": "back",
+          "keep": [
+            "roof_base",
+            "stone_base",
+            "stone_hi",
+            "stone_shadow",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ],
+          "hand": true
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_left_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/roran/parts/shield_hand_left_base.txt",
+          "z": "front",
+          "hand": true
+        },
+        {
+          "part": "assets/unit/roran/parts/shield_left_base.txt",
+          "z": "front"
+        }
+      ]
+    },
+    "left_atk_wind": {
+      "body": "assets/unit/roran/parts/core_left_atk_wind.txt",
+      "layers": [
+        {
+          "part": "assets/unit/roran/parts/sword_hand_left_atk_wind.txt",
+          "z": "back",
+          "keep": [
+            "roof_base",
+            "stone_base",
+            "stone_hi",
+            "stone_shadow",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ],
+          "hand": true
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_left_atk_wind.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/roran/parts/shield_hand_left_atk_wind.txt",
+          "z": "front",
+          "hand": true
+        },
+        {
+          "part": "assets/unit/roran/parts/shield_left_atk_wind.txt",
+          "z": "front"
+        }
+      ]
+    },
+    "left_atk_hit": {
+      "body": "assets/unit/roran/parts/core_left_atk_hit.txt",
+      "layers": [
+        {
+          "part": "assets/unit/roran/parts/sword_hand_left_atk_hit.txt",
+          "z": "back",
+          "keep": [
+            "roof_base",
+            "stone_base",
+            "stone_hi",
+            "stone_shadow",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ],
+          "hand": true
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_left_atk_hit.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/roran/parts/shield_hand_left_atk_hit.txt",
+          "z": "front",
+          "hand": true
+        },
+        {
+          "part": "assets/unit/roran/parts/shield_left_atk_hit.txt",
+          "z": "front"
+        }
+      ]
+    },
+    "right_base": {
+      "body": "assets/unit/roran/parts/core_right_base.txt",
+      "layers": [
+        {
+          "part": "assets/unit/roran/parts/shield_right_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_hand_right_base.txt",
+          "z": "front",
+          "keep": [
+            "roof_base",
+            "stone_base",
+            "stone_hi",
+            "stone_shadow",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ],
+          "hand": true
+        }
+      ]
+    },
+    "right_idle2": {
+      "body": "assets/unit/roran/parts/core_right_idle2.txt",
+      "layers": [
+        {
+          "part": "assets/unit/roran/parts/shield_right_idle2.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_right_idle2.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_hand_right_idle2.txt",
+          "z": "front",
+          "keep": [
+            "roof_base",
+            "stone_base",
+            "stone_hi",
+            "stone_shadow",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ],
+          "hand": true
+        }
+      ]
+    },
+    "right_walk_a": {
+      "body": "assets/unit/roran/parts/core_right_walk_a.txt",
+      "layers": [
+        {
+          "part": "assets/unit/roran/parts/shield_right_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_hand_right_base.txt",
+          "z": "front",
+          "keep": [
+            "roof_base",
+            "stone_base",
+            "stone_hi",
+            "stone_shadow",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ],
+          "hand": true
+        }
+      ]
+    },
+    "right_walk_b": {
+      "body": "assets/unit/roran/parts/core_right_walk_b.txt",
+      "layers": [
+        {
+          "part": "assets/unit/roran/parts/shield_right_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_hand_right_base.txt",
+          "z": "front",
+          "keep": [
+            "roof_base",
+            "stone_base",
+            "stone_hi",
+            "stone_shadow",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ],
+          "hand": true
+        }
+      ]
+    },
+    "right_atk_wind": {
+      "body": "assets/unit/roran/parts/core_right_atk_wind.txt",
+      "layers": [
+        {
+          "part": "assets/unit/roran/parts/shield_right_atk_wind.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_right_atk_wind.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_hand_right_atk_wind.txt",
+          "z": "front",
+          "keep": [
+            "roof_base",
+            "stone_base",
+            "stone_hi",
+            "stone_shadow",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ],
+          "hand": true
+        }
+      ]
+    },
+    "right_atk_hit": {
+      "body": "assets/unit/roran/parts/core_right_atk_hit.txt",
+      "layers": [
+        {
+          "part": "assets/unit/roran/parts/shield_right_atk_hit.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_right_atk_hit.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_hand_right_atk_hit.txt",
+          "z": "front",
+          "keep": [
+            "roof_base",
+            "stone_base",
+            "stone_hi",
+            "stone_shadow",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ],
+          "hand": true
+        }
+      ]
+    }
+  }
+}

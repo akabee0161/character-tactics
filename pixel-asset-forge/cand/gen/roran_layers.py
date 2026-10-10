@@ -5,12 +5,14 @@
 
     .venv/bin/python cand/gen/roran_layers.py build/table_roran.html
 """
+import json
 import sys
 from pathlib import Path
 
 sys.path.insert(0, "tools")
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import enemy_build as eb  # noqa: E402
+from gridfile import parse  # noqa: E402
 from cut_layers import CORE, Part, cut, torn  # noqa: E402
 from layer_page import png, uri  # noqa: E402
 from layers import blank, compose, differences  # noqa: E402
@@ -90,6 +92,70 @@ def small(frame, marks=(), fill=()):
     return uri(im.resize((128, 128)))
 
 
+PARTS_DIR = Path("assets/unit/roran/parts")
+CONFIG = Path("compose/roran.json")
+HAND_COLOURS = ["skin_rose_hi", "skin_rose_base", "skin_rose_shadow"]
+# 部品の名前 → ファイル名の前半（剣を持つ腕・拳、left は奥の腕・拳、は "hand": true の拳の部品）
+PART_FILE = {"剣": "sword", "盾": "shield", "剣を持つ腕・拳": "sword_hand", "奥の腕・拳": "sword_hand",
+             "盾を持つ腕・拳": "shield_hand", "手前の腕・拳": "shield_hand"}
+SWORD_HANDS = ("剣を持つ腕・拳", "奥の腕・拳")
+SHIELD_HANDS = ("盾を持つ腕・拳", "手前の腕・拳")
+MAP_PER_LINE = 6
+
+
+def charmap():
+    """24コマで共通の 文字→色名。同じ文字に違う色が割り当てられていたら止める。"""
+    out = {}
+    for path in sorted(SRC.glob("*.txt")):
+        for ch, colour in parse(path).charmap.items():
+            if out.setdefault(ch, colour) != colour:
+                raise SystemExit(f"{path.name}: 文字 {ch!r} が {colour} だが、ほかのコマでは {out[ch]}")
+    return out
+
+
+def grid_text(frame, chars, note):
+    back = {v: k for k, v in chars.items()}
+    names = sorted({c for row in frame for c in row if c is not None}, key=lambda n: (n != "outline", n))
+    entries = [f"{back[n]}={n}" for n in names] or ["o=outline"]
+    lines = [f"# {note}", "# type: unit", "# size: 32x32", "# light: upper-left", "# bg: transparent"]
+    lines += ["# map: " + " ".join(entries[i:i + MAP_PER_LINE]) for i in range(0, len(entries), MAP_PER_LINE)]
+    lines += ["".join(back[c] if c is not None else "." for c in row) for row in frame]
+    return "\n".join(lines) + "\n"
+
+
+def export(parts_dir: Path, config_path: Path):
+    """ロランの今のコマを部品に切り、部品のファイルと compose の設定を書く（コマは書かない）。
+    歩きの剣・盾・腕は立ち（base）のファイルを使い回す。"""
+    chars = charmap()
+    parts_dir.mkdir(parents=True, exist_ok=True)
+    frames = {}
+    for d in DIRS:
+        order = ORDERS[d]
+        core = order.index(CORE)
+        back, front = order[:core], order[core + 1:]
+        for st in STATES:
+            layers = layers_of(d, st)
+            key = "base" if st.startswith("walk") else st
+            core_path = parts_dir / f"core_{d}_{st}.txt"
+            core_path.write_text(grid_text(layers[CORE].frame, chars, f"ロラン {d}_{st} の芯"), encoding="utf-8")
+            entries = []
+            for name in [*reversed(back), *front]:  # 芯に近い奥から back、奥から手前へ front
+                path = parts_dir / f"{PART_FILE[name]}_{d}_{key}.txt"
+                if st == key:
+                    path.write_text(grid_text(layers[name].frame, chars, f"ロラン {d}_{key} の{name}"),
+                                    encoding="utf-8")
+                entry = {"part": path.as_posix(), "z": "back" if name in back else "front"}
+                if name in SWORD_HANDS:
+                    entry.update(keep=sorted(SWORD), hand=True)
+                elif name in SHIELD_HANDS:
+                    entry["hand"] = True
+                entries.append(entry)
+            frames[f"{d}_{st}"] = {"body": core_path.as_posix(), "layers": entries}
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text(json.dumps({"unit": "roran", "hand_colours": HAND_COLOURS, "frames": frames},
+                                      ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
 def main(out):
     html = ["<!doctype html><meta charset=utf-8><title>重なり順の表 ロラン</title>",
             "<style>body{background:#bbb;font-family:sans-serif;max-width:1500px}"
@@ -135,4 +201,8 @@ def main(out):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    if sys.argv[1:] == ["--export"]:
+        export(PARTS_DIR, CONFIG)
+        print("書いた", PARTS_DIR, CONFIG)
+    else:
+        main(sys.argv[1])
