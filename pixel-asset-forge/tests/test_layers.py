@@ -1,4 +1,4 @@
-"""Checks for cand/gen/layers.py (層を重なり順の表で合成する。試作)."""
+"""Checks for tools/layers.py (層を重なり順の表で合成する)."""
 from __future__ import annotations
 
 import sys

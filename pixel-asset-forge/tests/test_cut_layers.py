@@ -1,4 +1,4 @@
-"""Checks for cand/gen/cut_layers.py (完成した絵から層を切り出す。試作)."""
+"""Checks for tools/cut_layers.py (完成した絵から層を切り出す)."""
 from __future__ import annotations
 
 import sys
