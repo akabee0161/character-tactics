@@ -12,7 +12,8 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "tools"))
 
-from compose import ComposeError, Layer, compose_frame, load_config, main, render_text  # noqa: E402
+from compose import (  # noqa: E402
+    ComposeError, Layer, compose_frame, compose_labels, load_config, main, render_text, stack_order)
 from gridfile import parse  # noqa: E402
 
 
@@ -98,6 +99,33 @@ class ComposeFrameTest(unittest.TestCase):
         part = self.ws.grid("part.txt", {(20, 20): "h"}, "o=outline h=leaf_base u=water_base")
         _, groups = compose_frame(self.body, [(part, Layer(part.path, "front"))])
         self.assertEqual(groups, [[("o", "outline"), ("b", "skin_base")], [("h", "leaf_base")]])
+
+
+class StackTest(unittest.TestCase):
+    def setUp(self):
+        self.ws = Workspace()
+        self.body = self.ws.grid("body.txt", {(10, 10): "b"}, BODY_MAP)
+
+    def tearDown(self):
+        self.ws.close()
+
+    def test_back_layers_go_behind_everything_drawn_so_far(self):
+        layers = [Layer(Path("a"), "front"), Layer(Path("b"), "back"), Layer(Path("c"), "back"), Layer(Path("d"), "front")]
+        self.assertEqual(stack_order(layers), [2, 1, -1, 0, 3])
+
+    def test_labels_name_the_visible_part(self):
+        front = self.ws.grid("front.txt", {(10, 10): "h", (12, 10): "h"}, PART_MAP)
+        back = self.ws.grid("back.txt", {(10, 10): "h", (13, 10): "h"}, PART_MAP)
+        labels = compose_labels(self.body, [(front, Layer(front.path, "front")), (back, Layer(back.path, "back"))])
+        self.assertEqual(labels[10][10], "front.txt")
+        self.assertEqual(labels[10][12], "front.txt")
+        self.assertEqual(labels[10][13], "back.txt")
+        self.assertIsNone(labels[0][0])
+
+    def test_labels_name_the_body_where_no_part_covers_it(self):
+        part = self.ws.grid("part.txt", {(12, 10): "h"}, PART_MAP)
+        labels = compose_labels(self.body, [(part, Layer(part.path, "front"))])
+        self.assertEqual(labels[10][10], "body.txt")
 
 
 class RenderTextTest(unittest.TestCase):

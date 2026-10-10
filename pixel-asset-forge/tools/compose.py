@@ -109,12 +109,27 @@ def load_config(path: Path, root: Path = REPO_ROOT) -> tuple[str, dict[str, Fram
     return unit, frames
 
 
-def compose_frame(body: Grid, layers: list[tuple[Grid, Layer]]) -> tuple[list[str], list[list[tuple[str, str]]]]:
-    canvas = [list(row) for row in body.rows]
+def stack_order(layers: list[Layer]) -> list[int]:
+    """奥→手前の並び（素体は -1）。front はその時点の一番手前に、back はその時点の一番奥に置く
+    （back は「その時点で透明な画素にだけ描く」なので、先に描いたすべての後ろに入る）。"""
+    order = [-1]
+    for i, layer in enumerate(layers):
+        if layer.z == "front":
+            order.append(i)
+        else:
+            order.insert(0, i)
+    return order
+
+
+def _compose(body: Grid, layers: list[tuple[Grid, Layer]]):
+    """(rows, groups, labels)。部品ごとにずらした面を作り、手前から見て最初の透明でない文字を取る。"""
     charmap = dict(body.charmap)
     groups: list[list[tuple[str, str]]] = [list(body.charmap.items())]
+    planes: dict[int, tuple[str, dict[tuple[int, int], str]]] = {
+        -1: (body.path.name, {(x, y): ch for y, row in enumerate(body.rows) for x, ch in enumerate(row)
+                              if ch != BACKGROUND})}
 
-    for part, layer in layers:
+    for i, (part, layer) in enumerate(layers):
         name = part.path.name
         if (part.width, part.height) != (body.width, body.height):
             raise ComposeError(
@@ -129,6 +144,7 @@ def compose_frame(body: Grid, layers: list[tuple[Grid, Layer]]) -> tuple[list[st
                 raise ComposeError(f"{name}: 文字 {ch!r} が先に {charmap[ch]}、この部品では {colour} に割り当てられている")
         groups.append(added)
 
+        plane = {}
         for y, row in enumerate(part.rows):
             for x, ch in enumerate(row):
                 if ch == BACKGROUND:
@@ -136,13 +152,32 @@ def compose_frame(body: Grid, layers: list[tuple[Grid, Layer]]) -> tuple[list[st
                 nx, ny = x + layer.dx, y + layer.dy
                 if not (0 <= nx < body.width and 0 <= ny < body.height):
                     raise ComposeError(f"{name}: ({x},{y}) をずらすと ({nx},{ny}) でコマの外に出る")
-                if layer.z == "front" or canvas[ny][nx] == BACKGROUND:
-                    canvas[ny][nx] = ch
+                plane[(nx, ny)] = ch
+        planes[i] = (name, plane)
+
+    canvas = [[BACKGROUND] * body.width for _ in range(body.height)]
+    labels: list[list[str | None]] = [[None] * body.width for _ in range(body.height)]
+    for index in reversed(stack_order([layer for _, layer in layers])):
+        name, plane = planes[index]
+        for (x, y), ch in plane.items():
+            if canvas[y][x] == BACKGROUND:
+                canvas[y][x] = ch
+                labels[y][x] = name
 
     rows = ["".join(row) for row in canvas]
     used = {ch for row in rows for ch in row} - {BACKGROUND}
     kept = [[(ch, colour) for ch, colour in group if ch in used] for group in groups]
-    return rows, [group for group in kept if group]
+    return rows, [group for group in kept if group], labels
+
+
+def compose_frame(body: Grid, layers: list[tuple[Grid, Layer]]) -> tuple[list[str], list[list[tuple[str, str]]]]:
+    rows, groups, _ = _compose(body, layers)
+    return rows, groups
+
+
+def compose_labels(body: Grid, layers: list[tuple[Grid, Layer]]) -> list[list[str | None]]:
+    """画素ごとに、見えている部品のファイル名（素体は素体のファイル名、透明は None）。"""
+    return _compose(body, layers)[2]
 
 
 def render_text(body: Grid, rows: list[str], groups: list[list[tuple[str, str]]], note: str) -> str:
