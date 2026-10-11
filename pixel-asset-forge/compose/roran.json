@@ -172,16 +172,13 @@
       "body": "assets/unit/roran/parts/core_up_base.txt",
       "layers": [
         {
-          "part": "assets/unit/roran/parts/sword_up_base.txt",
-          "z": "back"
-        },
-        {
-          "part": "assets/unit/roran/parts/shield_up_base.txt",
-          "z": "back"
+          "part": "assets/unit/roran/parts/shield_hand_up_base.txt",
+          "z": "back",
+          "hand": true
         },
         {
           "part": "assets/unit/roran/parts/sword_hand_up_base.txt",
-          "z": "front",
+          "z": "back",
           "keep": [
             "roof_base",
             "stone_base",
@@ -194,9 +191,12 @@
           "hand": true
         },
         {
-          "part": "assets/unit/roran/parts/shield_hand_up_base.txt",
-          "z": "front",
-          "hand": true
+          "part": "assets/unit/roran/parts/shield_up_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_up_base.txt",
+          "z": "back"
         }
       ]
     },
@@ -204,16 +204,13 @@
       "body": "assets/unit/roran/parts/core_up_idle2.txt",
       "layers": [
         {
-          "part": "assets/unit/roran/parts/sword_up_idle2.txt",
-          "z": "back"
-        },
-        {
-          "part": "assets/unit/roran/parts/shield_up_idle2.txt",
-          "z": "back"
+          "part": "assets/unit/roran/parts/shield_hand_up_idle2.txt",
+          "z": "back",
+          "hand": true
         },
         {
           "part": "assets/unit/roran/parts/sword_hand_up_idle2.txt",
-          "z": "front",
+          "z": "back",
           "keep": [
             "roof_base",
             "stone_base",
@@ -226,9 +223,12 @@
           "hand": true
         },
         {
-          "part": "assets/unit/roran/parts/shield_hand_up_idle2.txt",
-          "z": "front",
-          "hand": true
+          "part": "assets/unit/roran/parts/shield_up_idle2.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_up_idle2.txt",
+          "z": "back"
         }
       ]
     },
@@ -236,16 +236,13 @@
       "body": "assets/unit/roran/parts/core_up_walk_a.txt",
       "layers": [
         {
-          "part": "assets/unit/roran/parts/sword_up_base.txt",
-          "z": "back"
-        },
-        {
-          "part": "assets/unit/roran/parts/shield_up_base.txt",
-          "z": "back"
+          "part": "assets/unit/roran/parts/shield_hand_up_base.txt",
+          "z": "back",
+          "hand": true
         },
         {
           "part": "assets/unit/roran/parts/sword_hand_up_base.txt",
-          "z": "front",
+          "z": "back",
           "keep": [
             "roof_base",
             "stone_base",
@@ -258,9 +255,12 @@
           "hand": true
         },
         {
-          "part": "assets/unit/roran/parts/shield_hand_up_base.txt",
-          "z": "front",
-          "hand": true
+          "part": "assets/unit/roran/parts/shield_up_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_up_base.txt",
+          "z": "back"
         }
       ]
     },
@@ -268,16 +268,13 @@
       "body": "assets/unit/roran/parts/core_up_walk_b.txt",
       "layers": [
         {
-          "part": "assets/unit/roran/parts/sword_up_base.txt",
-          "z": "back"
-        },
-        {
-          "part": "assets/unit/roran/parts/shield_up_base.txt",
-          "z": "back"
+          "part": "assets/unit/roran/parts/shield_hand_up_base.txt",
+          "z": "back",
+          "hand": true
         },
         {
           "part": "assets/unit/roran/parts/sword_hand_up_base.txt",
-          "z": "front",
+          "z": "back",
           "keep": [
             "roof_base",
             "stone_base",
@@ -290,9 +287,12 @@
           "hand": true
         },
         {
-          "part": "assets/unit/roran/parts/shield_hand_up_base.txt",
-          "z": "front",
-          "hand": true
+          "part": "assets/unit/roran/parts/shield_up_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_up_base.txt",
+          "z": "back"
         }
       ]
     },
@@ -300,16 +300,13 @@
       "body": "assets/unit/roran/parts/core_up_atk_wind.txt",
       "layers": [
         {
-          "part": "assets/unit/roran/parts/sword_up_atk_wind.txt",
-          "z": "back"
-        },
-        {
-          "part": "assets/unit/roran/parts/shield_up_atk_wind.txt",
-          "z": "back"
+          "part": "assets/unit/roran/parts/shield_hand_up_atk_wind.txt",
+          "z": "back",
+          "hand": true
         },
         {
           "part": "assets/unit/roran/parts/sword_hand_up_atk_wind.txt",
-          "z": "front",
+          "z": "back",
           "keep": [
             "roof_base",
             "stone_base",
@@ -322,9 +319,12 @@
           "hand": true
         },
         {
-          "part": "assets/unit/roran/parts/shield_hand_up_atk_wind.txt",
-          "z": "front",
-          "hand": true
+          "part": "assets/unit/roran/parts/shield_up_atk_wind.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_up_atk_wind.txt",
+          "z": "back"
         }
       ]
     },
@@ -332,31 +332,13 @@
       "body": "assets/unit/roran/parts/core_up_atk_hit.txt",
       "layers": [
         {
-          "part": "assets/unit/roran/parts/sword_up_atk_hit.txt",
-          "z": "back"
+          "part": "assets/unit/roran/parts/shield_hand_up_atk_hit.txt",
+          "z": "back",
+          "hand": true
         },
         {
           "part": "assets/unit/roran/parts/shield_up_atk_hit.txt",
           "z": "back"
-        },
-        {
-          "part": "assets/unit/roran/parts/sword_hand_up_atk_hit.txt",
-          "z": "front",
-          "keep": [
-            "roof_base",
-            "stone_base",
-            "stone_hi",
-            "stone_shadow",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
-          ],
-          "hand": true
-        },
-        {
-          "part": "assets/unit/roran/parts/shield_hand_up_atk_hit.txt",
-          "z": "front",
-          "hand": true
         }
       ]
     },
