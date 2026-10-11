@@ -18,3 +18,4 @@ reviews:
     - "!pixel-asset-forge/cand/layer-trial/**"
     # 作成時点の作業ログ（後から更新しない）
     - "!pixel-asset-forge/docs/**"
+    - "!docs/superpowers/**"
