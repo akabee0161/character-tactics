@@ -367,7 +367,25 @@
           "hand": true
         },
         {
+          "part": "assets/unit/roran/parts/sword_hand_up_atk_hit.txt",
+          "z": "back",
+          "keep": [
+            "roof_base",
+            "stone_base",
+            "stone_hi",
+            "stone_shadow",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ],
+          "hand": true
+        },
+        {
           "part": "assets/unit/roran/parts/shield_up_atk_hit.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_up_atk_hit.txt",
           "z": "back"
         }
       ]
@@ -535,6 +553,24 @@
     "left_atk_hit": {
       "body": "assets/unit/roran/parts/core_left_atk_hit.txt",
       "layers": [
+        {
+          "part": "assets/unit/roran/parts/sword_hand_left_atk_hit.txt",
+          "z": "back",
+          "keep": [
+            "roof_base",
+            "stone_base",
+            "stone_hi",
+            "stone_shadow",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ],
+          "hand": true
+        },
+        {
+          "part": "assets/unit/roran/parts/sword_left_atk_hit.txt",
+          "z": "back"
+        },
         {
           "part": "assets/unit/roran/parts/shield_hand_left_atk_hit.txt",
           "z": "front",
