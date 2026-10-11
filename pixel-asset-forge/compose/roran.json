@@ -10,6 +10,11 @@
       "body": "assets/unit/roran/parts/core_down_base.txt",
       "layers": [
         {
+          "part": "assets/unit/roran/parts/shield_hand_down_base.txt",
+          "z": "front",
+          "hand": true
+        },
+        {
           "part": "assets/unit/roran/parts/shield_down_base.txt",
           "z": "front"
         },
@@ -36,6 +41,11 @@
     "down_idle2": {
       "body": "assets/unit/roran/parts/core_down_idle2.txt",
       "layers": [
+        {
+          "part": "assets/unit/roran/parts/shield_hand_down_idle2.txt",
+          "z": "front",
+          "hand": true
+        },
         {
           "part": "assets/unit/roran/parts/shield_down_idle2.txt",
           "z": "front"
@@ -64,6 +74,11 @@
       "body": "assets/unit/roran/parts/core_down_walk_a.txt",
       "layers": [
         {
+          "part": "assets/unit/roran/parts/shield_hand_down_base.txt",
+          "z": "front",
+          "hand": true
+        },
+        {
           "part": "assets/unit/roran/parts/shield_down_base.txt",
           "z": "front"
         },
@@ -90,6 +105,11 @@
     "down_walk_b": {
       "body": "assets/unit/roran/parts/core_down_walk_b.txt",
       "layers": [
+        {
+          "part": "assets/unit/roran/parts/shield_hand_down_base.txt",
+          "z": "front",
+          "hand": true
+        },
         {
           "part": "assets/unit/roran/parts/shield_down_base.txt",
           "z": "front"
@@ -118,6 +138,11 @@
       "body": "assets/unit/roran/parts/core_down_atk_wind.txt",
       "layers": [
         {
+          "part": "assets/unit/roran/parts/shield_hand_down_atk_wind.txt",
+          "z": "front",
+          "hand": true
+        },
+        {
           "part": "assets/unit/roran/parts/shield_down_atk_wind.txt",
           "z": "front"
         },
@@ -144,6 +169,11 @@
     "down_atk_hit": {
       "body": "assets/unit/roran/parts/core_down_atk_hit.txt",
       "layers": [
+        {
+          "part": "assets/unit/roran/parts/shield_hand_down_atk_hit.txt",
+          "z": "front",
+          "hand": true
+        },
         {
           "part": "assets/unit/roran/parts/shield_down_atk_hit.txt",
           "z": "front"
@@ -524,6 +554,11 @@
           "z": "back"
         },
         {
+          "part": "assets/unit/roran/parts/shield_hand_right_base.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
           "part": "assets/unit/roran/parts/sword_right_base.txt",
           "z": "front"
         },
@@ -549,6 +584,11 @@
         {
           "part": "assets/unit/roran/parts/shield_right_idle2.txt",
           "z": "back"
+        },
+        {
+          "part": "assets/unit/roran/parts/shield_hand_right_idle2.txt",
+          "z": "back",
+          "hand": true
         },
         {
           "part": "assets/unit/roran/parts/sword_right_idle2.txt",
@@ -578,6 +618,11 @@
           "z": "back"
         },
         {
+          "part": "assets/unit/roran/parts/shield_hand_right_base.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
           "part": "assets/unit/roran/parts/sword_right_base.txt",
           "z": "front"
         },
@@ -603,6 +648,11 @@
         {
           "part": "assets/unit/roran/parts/shield_right_base.txt",
           "z": "back"
+        },
+        {
+          "part": "assets/unit/roran/parts/shield_hand_right_base.txt",
+          "z": "back",
+          "hand": true
         },
         {
           "part": "assets/unit/roran/parts/sword_right_base.txt",
@@ -632,6 +682,11 @@
           "z": "back"
         },
         {
+          "part": "assets/unit/roran/parts/shield_hand_right_atk_wind.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
           "part": "assets/unit/roran/parts/sword_right_atk_wind.txt",
           "z": "front"
         },
@@ -657,6 +712,11 @@
         {
           "part": "assets/unit/roran/parts/shield_right_atk_hit.txt",
           "z": "back"
+        },
+        {
+          "part": "assets/unit/roran/parts/shield_hand_right_atk_hit.txt",
+          "z": "back",
+          "hand": true
         },
         {
           "part": "assets/unit/roran/parts/sword_right_atk_hit.txt",
