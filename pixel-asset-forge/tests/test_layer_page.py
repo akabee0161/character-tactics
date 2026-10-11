@@ -1,7 +1,7 @@
 """Checks for cand/gen/layer_page.py (層で組んだ試作の比較ページ)."""
 from __future__ import annotations
 
-import os
+import contextlib
 import sys
 import unittest
 from pathlib import Path
@@ -9,11 +9,12 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "tools"))
 sys.path.insert(0, str(REPO_ROOT / "cand" / "gen"))
-os.chdir(REPO_ROOT)  # layer_page・mklayers は pixel-asset-forge からの相対パスで import する
 
-import layer_page as lp  # noqa: E402
-import mklayers as ml  # noqa: E402
-from layers import ADDED  # noqa: E402
+# layer_page・mklayers は import 時に pixel-asset-forge からの相対パスを読む。import の間だけ移り、他のテストへ持ち越さない
+with contextlib.chdir(REPO_ROOT):
+    import layer_page as lp  # noqa: E402
+    import mklayers as ml  # noqa: E402
+    from layers import ADDED  # noqa: E402
 
 
 class StackOrderTest(unittest.TestCase):
