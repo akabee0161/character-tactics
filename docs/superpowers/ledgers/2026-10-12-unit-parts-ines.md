@@ -56,3 +56,12 @@ Task 5: complete (commits 5f1e6ce..9ae5155, tests: unittest discover → Ran 419
 Task 6: complete (commits 9ae5155..2c4a80d, tests: unittest discover → Ran 419, OK)
 - Task 7: SPEC（体＋拳の対応状況、弓の持ち方を腕なし・新しい拳と矢の位置・重なり順・弓と矢の全周の輪郭に、idle2・攻撃の動き、部品で組む規約に「文字で切る」「重なり順は完全に描いた後に確かめる」）、README（イネスの部品と parts_export）、CLAUDE.md（ines の --check、書き出しは実行しない注意）、ISSUES（体＋拳の行を更新、拳以外の部品の輪郭の検査が無い・unit_check の脚の中心・body_check の髪・作業スクリプトの置き場の4行）を更新
 - Task 7: Ruling: ines_layers.py の docstring と CLAUDE.md に「今は --export を走らせない（描き直した部品を上書きする）」と書いた — 計画では「描き直す前に一度だけ使う」コマンドとして CLAUDE.md に載せる予定だったが、今走らせると作業が消える — 誤りなら注意書きを外すだけ
+Task 7: complete (commits 2c4a80d..c5e2b1b, tests: unittest discover → Ran 419, OK)
+- Final review（別のエージェント、opus）: Ready to merge: Yes。Critical・Important なし。419 件 OK、compose --check・hand_mirror・validate を通ることを確かめた。SPEC の座標の抜き取りはすべて絵と一致
+- Final: Ruling: Minor 4（SPEC 225 行の「ines_layers.py --export」が実行してよい手順に読める）を、読んだ人が走らせると描き直した部品が上書きされる影響から Important と扱って直した（文書なのでテストは無い） — 誤りなら一文を戻すだけ
+- Final: minor (deferred): test_compose_page.py の GroundTest が if __name__ ブロックより後ろにあり、ファイル単体で走らせると実行されない（discover では走る）
+- Final: minor (deferred): parts_export.export が前提を確かめる前に書き始める（ISSUES.md に1行、ガウの前に直す）
+- Final: minor (deferred): ines_layers.py が相対パス前提で、pixel-asset-forge 以外から走らせると落ちる（絵は壊れない）
+- Final: minor (deferred): テストの抜け（芯だけが違う歩きの再現、hand_mirror で陰の色が違う拳の組・終了 2 の経路）
+- Final: minor (deferred): hand_mirror の反転が 31 - x 固定（unit は 32x32 固定なので今は実害なし）
+- Final: minor (deferred): 拳の keep の wood_shadow がズボンと同じ色（ISSUES.md に1行）
