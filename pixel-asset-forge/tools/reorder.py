@@ -41,7 +41,14 @@ def reorder(config: dict, direction: str, order: list[str]) -> dict:
     names = [n for n in out.get("frames", {}) if n.startswith(direction + "_")]
     if not names:
         raise ReorderError(f"{direction} のコマが設定に無い")
-    keys = {name: {_key(layer["part"], direction): layer for layer in out["frames"][name]["layers"]} for name in names}
+    keys = {}
+    for name in names:
+        by_key = keys[name] = {}
+        for layer in out["frames"][name]["layers"]:
+            key = _key(layer["part"], direction)
+            if key in by_key:  # 片方を黙って落とさない
+                raise ReorderError(f"{name}: 名前が同じ {key} の部品が2つある（{by_key[key]['part']}・{layer['part']}）")
+            by_key[key] = layer
     unknown = [k for k in order if k != CORE and not any(k in by_key for by_key in keys.values())]
     if unknown:
         raise ReorderError(f"{direction} のどのコマにも無い部品の名前: {', '.join(unknown)}")

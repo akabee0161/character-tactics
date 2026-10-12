@@ -65,6 +65,13 @@ class ReorderTest(unittest.TestCase):
         with self.assertRaisesRegex(ReorderError, "shield"):  # どのコマにも無い名前は書き間違いとして止める
             reorder(gau, "left", ["dagger", "CORE", "hood", "shield"])
 
+    def test_two_layers_with_the_same_name_in_a_frame_stop(self):
+        # bow_left_base と bow_left_wind はどちらも bow。片方を黙って落とさない
+        twice = {"unit": "t", "frames": {"left_base": {"body": "core.txt", "layers": [
+            {"part": "p/bow_left_base.txt", "z": "front"}, {"part": "p/bow_left_wind.txt", "z": "front"}]}}}
+        with self.assertRaisesRegex(ReorderError, "left_base.*bow"):
+            reorder(twice, "left", ["CORE", "bow"])
+
     def test_direction_without_frames_stops(self):
         with self.assertRaisesRegex(ReorderError, "up"):
             reorder(CONFIG, "up", ["CORE"])

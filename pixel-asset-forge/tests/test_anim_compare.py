@@ -75,6 +75,14 @@ class AnimCompareTest(unittest.TestCase):
                 build_page(self.dir / "now.png", self.dir / name, load_states(self.game(GAME)),
                            ["down"], "題", "", ["今", "案"])
 
+    def test_sheet_with_broken_pixel_data_stops(self):
+        # 寸法（ヘッダー）は読めても画素が壊れた PNG は、ページの片側が読み込めず、両方とも再生されない
+        good = (self.dir / "cand.png").read_bytes()
+        (self.dir / "broken.png").write_bytes(good[:60])
+        with self.assertRaisesRegex(AnimError, "broken.png.*読めない"):
+            build_page(self.dir / "now.png", self.dir / "broken.png", load_states(self.game(GAME)),
+                       ["down"], "題", "", ["今", "案"])
+
     def test_unknown_direction_stops(self):
         with self.assertRaisesRegex(AnimError, "north"):
             build_page(self.dir / "now.png", self.dir / "cand.png", load_states(self.game(GAME)),

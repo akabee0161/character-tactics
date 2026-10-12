@@ -179,6 +179,15 @@ class PartsExportTest(unittest.TestCase):
         (self.root / "compose/other.json").write_text(json.dumps(other), encoding="utf-8")
         self.stops_without_writing(self.unit, "other")
 
+    def test_part_used_by_another_unit_through_an_unnormalized_path_is_not_overwritten(self):
+        # compose.py は ./ の付いたパスでも同じファイルを読むので、上書きの確かめでも同じファイルとして扱う
+        other = {"unit": "other", "frames": {"down_base": {"body": "assets/part/body/other/core_down_base.txt",
+                                                           "layers": [{"part": "assets/part/equip/bow/./bow_down_base.txt",
+                                                                       "z": "front"}]}}}
+        (self.root / "compose").mkdir(parents=True, exist_ok=True)
+        (self.root / "compose/other.json").write_text(json.dumps(other), encoding="utf-8")
+        self.stops_without_writing(self.unit, "other")
+
     def test_part_directory_must_stay_under_the_part_root(self):
         for bad in ("../equip/bow", "/tmp/bow", ".", "./"):
             with self.subTest(dir=bad):

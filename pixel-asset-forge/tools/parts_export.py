@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 import json
+import posixpath
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -128,7 +129,9 @@ def _check_not_used_elsewhere(targets: set[str], config_path: Path, root: Path) 
             raise ExportError(f"{other}: ほかのユニットの設定を読めない（上書きの確かめができない）: {exc}") from None
         used = {spec.get("body") for spec in frames.values()}
         used |= {layer.get("part") for spec in frames.values() for layer in spec.get("layers", [])}
-        clash = sorted(targets & used)
+        # compose.py は ./ や a/../ の付いたパスでも同じファイルを読むので、そろえてから比べる
+        used = {posixpath.normpath(p) for p in used if isinstance(p, str)}
+        clash = sorted({posixpath.normpath(t) for t in targets} & used)
         if clash:
             raise ExportError(f"{other.name} が使っている部品を上書きする: {', '.join(clash[:3])}"
                               f"{' ほか' if len(clash) > 3 else ''}（ファイル名の前半か dir を変える）")

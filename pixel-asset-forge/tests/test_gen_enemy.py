@@ -35,15 +35,14 @@ class PartPathTest(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "置き場が決まらない"):
                 part_path(name, "down")
 
-    def test_every_enemy_part_on_disk_is_where_part_path_says(self):
-        root = REPO_ROOT / "assets" / "part"
-        found = [p for kind in ("head", "hair", "eye", "cloth") for p in (root / kind).rglob("*.txt")
-                 if p.parent.name not in ("hood", "gau")]  # ガウの頭巾（head/hood）・髪（hair/gau）は mkparts の部品でない
-        found += list((root / "body" / "female").glob("*.txt")) + list((root / "body" / "gau").glob("gau_body_*.txt"))
-        self.assertTrue(found, "敵の部品が1つも見つからない")  # 件数は固定しない（D で部品が増減する）
-        for p in found:
-            stem, d = p.stem.rsplit("_", 1)
-            self.assertEqual(REPO_ROOT / part_path(stem, d), p)
+    def test_every_enemy_part_of_the_2026_10_12_layout_is_where_part_path_says(self):
+        # 現役のアートは読まない（CLAUDE.md「回帰テストに現役のアートを参照させない」）。
+        # 置き場を整理したとき（2026-10-12）の敵の部品108件のパスを、tests/fixtures/ に固定して比べる
+        paths = (REPO_ROOT / "tests" / "fixtures" / "enemy_part_paths.txt").read_text(encoding="utf-8").split()
+        self.assertEqual(len(paths), 108)
+        for rel in paths:
+            stem, d = Path(rel).stem.rsplit("_", 1)
+            self.assertEqual(part_path(stem, d).as_posix(), rel)
 
 
 if __name__ == "__main__":

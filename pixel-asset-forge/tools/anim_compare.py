@@ -141,6 +141,7 @@ def _check_sheet(path: Path, states) -> None:
     try:
         with Image.open(path) as im:
             width, height = im.size
+            im.load()  # 画素まで読む（寸法だけ読めて画素が壊れた PNG を通さない）
     except OSError as exc:
         raise AnimError(f"{path}: 読めない: {exc}") from None
     need_w, need_h = max(frames for _k, _ja, frames, _fps in states) * 32, len(states) * len(DIRS) * 32
