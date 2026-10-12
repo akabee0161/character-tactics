@@ -233,6 +233,8 @@ cat sheets/roran.txt
 .venv/bin/python tools/sheet_gif.py sheets/roran.txt                 # idle / walk / attack の3本
 .venv/bin/python tools/sheet_gif.py sheets/roran.txt --state attack  # 1本だけ
 .venv/bin/python tools/sheet_gif.py sheets/roran.txt --fps attack=12 --scale 6
+.venv/bin/python tools/anim_compare.py NOW.png CAND.png OUT.html --anim ../assets/units/ines.json --dirs down   # 今と案のシートを並べて再生する確認ページ
+.venv/bin/python tools/reorder.py compose/ines.json OUT.json left bow,arrow,arrow_hand,CORE,bow_hand          # ある向きの重なり順だけを変えた設定の写し
 ```
 
 - `build/sheets/roran_<状態>.gif`：4方向（down / up / left / right）を横に並べ、上の段は拡大、下の段は草の上に等倍（ゲームで描かれる大きさ）
@@ -272,7 +274,7 @@ cat sheets/roran.txt
 部品ごとに `front`（上に描く）か `back`（透明な画素にだけ描く。体に隠れる）を選び、`dx`・`dy` でずらす。
 `front` は積んだ時点の一番手前へ、`back` は一番奥へ入る（`back` は体に近いものから先に書く）。拳の部品には `hand: true` を付けると、四方を輪郭で閉じているかを `--check` が確かめる。
 ロランは全向きを、完全な単品の部品（体・剣・剣の拳・盾・盾の拳）で組んでいる（`compose/roran.json`。決まりは `types/unit/SPEC.md`「部品で組む規約」）。
-イネスも全32コマを、芯・弓（弦を含む）・矢・弓の拳・矢の拳で組んでいる（`compose/ines.json`、部品は `assets/unit/ines/parts/`）。
+イネスも全32コマを、芯・弓（弦を含む）・矢・弓の拳・矢の拳で組んでいる（`compose/ines.json`、部品は `assets/part/` の `body/ines/`・`equip/bow/`・`equip/arrow/`・`fist/ines/`）。
 
 ```sh
 .venv/bin/python tools/compose.py compose/ines.json --check     # 全32コマが部品から再現できる
@@ -281,7 +283,7 @@ cat sheets/roran.txt
 ```
 
 部品を持たない完成した絵を部品に分けるときは、`tools/parts_export.py` を使う（文字で切るので、同じ色の別の物も分けられる）。
-ユニットごとの切り方（部品の文字・拳の箱・重なり順）は `cand/gen/<ユニット>_layers.py` に書く（イネスは `cand/gen/ines_layers.py`。書き出すのは部品と設定だけで、コマは書かない）。
+ユニットごとの切り方（部品の文字・拳の箱・重なり順）は `gen/<ユニット>/<ユニット>_layers.py` に書く（イネスは `gen/ines/ines_layers.py`。書き出すのは部品と設定だけで、コマは書かない）。
 書き出しは描き直す前に一度だけ使う。部品を描き直した後に走らせると上書きするので、イネスでは実行しない。
 手順は `types/unit/SPEC.md` の「描く手順」。
 組み立てた後に手で直したコマ（ガウは16コマ。色・目・襟・腕を描き足した）は組み立て結果と違うので、`compose.py` は上書きせずに止まる（`--force` を付けたときだけ上書きする）。
@@ -349,13 +351,14 @@ forge をゲームリポジトリへコピーして使うときは、ゲーム�
 
 - レシピは `enemy/<id>.json`（キー: `id` `name` `archetype` `body` `recolor` `frames`）。`id` はファイル名と同じ
 - `archetype` は `dagger` `axe` `spear`（シート定義はどれも `sheets/gau.txt`）。`body` は `male` か `female`
-- `frames` は元のコマの置き場（リポジトリからの相対パス）。今の16体（男性8・女性8）は `cand/enemy-frames/<id>`
+- `frames` は元のコマの置き場（リポジトリからの相対パス）。今の16体（男性8・女性8）は `assets/unit/<id>`
   （部品で組んだコマ）を指す。`axe` `spear` では必須。
-  書かなければ `dagger` の `male` は `assets/unit/gau/`、`female` は `assets/unit/enemy-src/dagger-female/`
+  書かなければ `dagger` の `male` は `assets/unit/gau/`、`female` は `assets/unit/dagger-female/`
   （`--colours` が比べるのもこの2つ。短剣の女性の元のコマはまだ無いので、今は置き場が無いと言って止まる）
-- 部品で組んだコマの生成（cwd は forge の直下）: `cand/gen/mkparts.py`（頭・目・服・長い髪の部品と選ぶページの設定）→
-  `cand/gen/mkweapons.py`（斧・槍の男女の敵。敵の一覧は `cand/gen/mkframes.py` の `ENEMIES`、女性の8体は
-  `mkweapons.py` で足す）。女性の id は `<男性の id>-<髪 a・b・c>-f`（a 前髪ありのロング・b 前髪なしのロング・c ポニーテール）
+- 部品で組んだコマの生成（cwd は forge の直下）: `gen/enemy/mkparts.py`（頭・目・服・長い髪の部品を `assets/part/` に、選ぶページの設定を `gen/enemy/PICKER*.json` に）→
+  `gen/enemy/mkweapons.py`（斧・槍の男女の敵。敵の一覧は `gen/enemy/mkframes.py` の `ENEMIES`、女性の8体は
+  `mkweapons.py` で足す）。女性の id は `<男性の id>-<髪 a・b・c>-f`（a 前髪ありのロング・b 前髪なしのロング・c ポニーテール）。
+  今走らせると、コマはコミット済みのものと違う（`ISSUES.md`「敵の生成スクリプトの出力が、コミット済みのコマと違う」）
 - `recolor` は「元のコマが使うパレット名 → 置き換え後のパレット名」。元のコマが使わない名前は止める
 - 元のコマの絵を直したら `enemy_build.py --all` で作り直す。`build/` は生成物
 

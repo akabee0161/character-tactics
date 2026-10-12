@@ -30,10 +30,14 @@ sheets/<unit>.txt                 シート定義（どのコマをどこに置�
 build/sheets/<unit>.png           ゲームに渡すシート
 build/sheets/<unit>_preview.png   目視用のプレビュー
 types/unit/base/<body>_<dir>.txt  素体（装備・髪・顔の造作なし）。`male_*`・`female_*`。新しい unit を複製して作る土台
-assets/unit/<unit>/parts/<部品>_<dir>.txt  ユニットだけの部品（髪・かぶり物）。素体抜き、32x32 のコマの上の位置に描く
-assets/part/<武器>/<武器>_<dir>.txt        ユニットをまたいで使い回す武器の部品
+assets/part/<種類>/<名前>/<部品>_<dir>[_<状態>].txt  部品。素体抜き、32x32 のコマの上の位置に描く。種類は equip（武器・盾）・fist（拳）・
+                                                     body（芯・体）・head・hair・eye・cloth。1体だけの部品は名前をユニット名にする
+                                                     （body/roran・fist/ines・hair/gau）。ファイル名は変えない
 compose/<unit>.json                       部品の組み立て方（tools/compose.py が読む。assets/ の下に置かない）
+gen/<unit>/                               1体（または敵だけ）のためのスクリプト（敵は gen/enemy）。汎用の道具は tools/
 ```
+
+部品は「何の部品か」で分ける。何体が使うかでは分けない（2026-10-12 依頼者と決めた）。
 
 **シート定義を `assets/` の下に置いてはいけない。** `validate.py` と `render.py` は
 `assets/` 以下の `*.txt` を全部 `rglob` するので、定義をグリッドとして解釈して落ちる。
@@ -135,7 +139,7 @@ compose/<unit>.json                       部品の組み立て方（tools/compo
 `docs/superpowers/specs/2026-10-04-unit-drawing-workflow-results.md`。
 
 - **右手に短剣を順手で持ち、刃を上に立てて構える。左手は空ける**（剣と同じ規約。盾は持たない）。刃は 4px（`stone_hi`/`stone_base` の2px 幅、平らな蓋）、鍔は `wood_*`（横に4px、左向きは端から見た2px）、柄頭は `wood_shadow`
-- 短剣は部品 `assets/part/dagger/dagger_<dir>.txt`（敵の物見でも使える）。位置はロランの剣と同じ右手の拳。`up`・`left` は奥の手なので `compose.py` で `back`
+- 短剣は部品 `assets/part/equip/dagger/dagger_<dir>.txt`（敵の物見でも使える）。位置はロランの剣と同じ右手の拳。`up`・`left` は奥の手なので `compose.py` で `back`
 - 専用の文字: 刃 `s` `t`、鍔と柄頭 `l` `m` `n`。`unit_check.py` の `--items stlmn`
 - **横顔で前髪が目の列にかかるときは、目を描かずに前髪だけを描く**（ガウの右向き。「横顔は目を1つ描く」の例外。依頼者の判断、2026-10-04）
 - **攻撃は 構える → 突く → `base` の3コマ（6fps）。** 構えは「拳と肘を体の後ろへ引き、刃先は相手へ向けたまま止める（突き出す前のタメ）」
@@ -144,11 +148,11 @@ compose/<unit>.json                       部品の組み立て方（tools/compo
   - `down`: **奥行きの動きは高さでなく拳の大きさで表す。** 構えは奥の小さな拳（2×2）と小さな鍔・刃、突きは手前の大きな拳（3×2）と刃（刃先が見る人の方を向くので短く見える）。
     拳の上端（y=17 の輪郭）と左端はそろえ、拳は体の横（x=7〜10。肘が体の横に来る位置）に置く。高さを変えると「腕を回している」ように見えた
   - `up`: 構えは見る人の側へ引いた大きな拳（3×2）を脇に出す。突きは短剣が体の向こうで見えず、右の肘が脇からのぞく（ロランと同じ）。どちらも上端は y=17
-- 待機の2コマ目は、短剣を持つ拳を短剣ごと2px 上げる（ロランと同じ）。拳を上げた素体 `parts/body_idle2_<dir>.txt` に短剣を `dy=-2` で重ねる
+- 待機の2コマ目は、短剣を持つ拳を短剣ごと2px 上げる（ロランと同じ）。拳を上げた素体 `assets/part/body/gau/body_idle2_<dir>.txt` に短剣を `dy=-2` で重ねる
 
 ### 武器を描くときの決まり（斧・槍の敵で合意、2026-10-07）
 
-部品で組んだ敵（`cand/enemy-frames/axe-*`・`spear-*`、生成は `cand/gen/mkweapons.py`）で依頼者と合意した見え方。
+部品で組んだ敵（`assets/unit/axe-*`・`spear-*`、生成は `gen/enemy/mkweapons.py`）で依頼者と合意した見え方。
 斧は物だけを向きごとに描いた見本（`build/axe_views.html`）で決めた。
 
 - **武器の形は、物だけを向きごとに描いた見本で先に合わせてから、攻撃のコマに当てはめる**
@@ -222,7 +226,7 @@ compose/<unit>.json                       部品の組み立て方（tools/compo
 - **拳の位置は上下左右で合わせる（2026-10-12 依頼者の判断）。** down と up、left と right の組で、同じ手の拳の位置を左右反転で一致させる（体に隠れて見えない拳も）。
   攻撃のコマ（`atk_*`）は、動きの表現で位置がずれることが多いので例外（イネスの up の攻撃は弓を上へ構え、down は構えない）。
   検査は `tools/hand_mirror.py compose/<unit>.json`（拳の部品の手の肌の画素の位置を比べる。色は比べない）
-- **完成した絵から部品を書き出すときは、文字で切る。** `tools/parts_export.py`（ユニットごとの定義は `cand/gen/<unit>_layers.py`。イネスは `cand/gen/ines_layers.py`。描き直す前に一度だけ使った。今走らせると描き直した部品を上書きするので実行しない）。
+- **完成した絵から部品を書き出すときは、文字で切る。** `tools/parts_export.py`（ユニットごとの定義は `gen/<unit>/<unit>_layers.py`。イネスは `gen/ines/ines_layers.py`。描き直す前に一度だけ使った。今走らせると描き直した部品を上書きするので実行しない）。
   同じ色の別の物（イネスの弓の暗い面・矢の軸・ズボンは `wood_shadow`）を色では分けられない
 - **重なり順は、部品を完全に描いた後にもう一度確かめる。** 書き出した直後の部品は、隠れていた所が穴になっているので、どの順でも元の絵と同じに組めてしまう。
   イネスの `left`・`right` は、書き出した直後に承認した順で部品を完全に描くと、弦が胴の上に出る・手前の手が引く弦が胴に隠れるなどが起きて、順を決め直した（2026-10-12）
@@ -259,16 +263,16 @@ tools/weapon_check.py assets/unit/roran --blade stone_hi,stone_base --weapon woo
     --hidden left_atk_hit,up_atk_hit --depth down
 ```
 
-部品で組んだ斧・槍の敵（`cand/enemy-frames/`、色替え前のコマ）は次の指定で検査する（2026-10-07 の時点で4体とも通る）:
+部品で組んだ斧・槍の敵（`assets/unit/`、色替え前のコマ）は次の指定で検査する（2026-10-07 の時点で4体とも通る）:
 
 ```sh
 C="--blade stone_hi,stone_base --weapon wood_base,wood_shadow --hand skin_rose_hi,skin_rose_base,skin_rose_shadow --arm cloak_dark_hi,cloak_dark_base,cloak_dark_shadow"
 # 斧（axe-bandit・axe-horn）
-tools/weapon_check.py cand/enemy-frames/axe-bandit $C --ref cand/enemy-frames/axe-bandit/noweapon --far left --far-shade skin_rose_shadow \
+tools/weapon_check.py assets/unit/axe-bandit $C --ref assets/unit/axe-bandit/noweapon --far left --far-shade skin_rose_shadow \
     --hidden up_atk_wind,up_atk_hit --depth down,up \
     --partial left_base,left_idle2,left_walk_a,left_walk_b,left_atk_wind
 # 槍（spear-knight・spear-thug）
-tools/weapon_check.py cand/enemy-frames/spear-knight $C --ref cand/enemy-frames/spear-knight/noweapon --far left --far-shade skin_rose_shadow \
+tools/weapon_check.py assets/unit/spear-knight $C --ref assets/unit/spear-knight/noweapon --far left --far-shade skin_rose_shadow \
     --hidden left_atk_hit
 ```
 
@@ -284,16 +288,16 @@ UP=up_base,up_idle2,up_walk_a,up_walk_b
 LEFT=left_base,left_idle2,left_walk_a,left_walk_b
 P="--partial left_base,left_idle2,left_walk_a,left_walk_b,left_atk_wind"
 # 斧 a・b（axe-bandit-a-f・b-f・axe-horn-b-f）: left の奥の手と斧、up の斧が長い髪の陰
-tools/weapon_check.py cand/enemy-frames/axe-bandit-a-f $C --ref cand/enemy-frames/axe-bandit-a-f/noweapon $F \
+tools/weapon_check.py assets/unit/axe-bandit-a-f $C --ref assets/unit/axe-bandit-a-f/noweapon $F \
     --hidden up_atk_wind,up_atk_hit,$LEFT,left_atk_wind,$UP --depth down,up $P
 # 斧 c（axe-bandit-c-f・axe-horn-c-f）: up は待機2だけ斧が隠れる
-tools/weapon_check.py cand/enemy-frames/axe-bandit-c-f $C --ref cand/enemy-frames/axe-bandit-c-f/noweapon $F \
+tools/weapon_check.py assets/unit/axe-bandit-c-f $C --ref assets/unit/axe-bandit-c-f/noweapon $F \
     --hidden up_atk_wind,up_atk_hit,$LEFT,left_atk_wind,up_idle2 --depth down,up $P
 # 槍 a・b: left の振りかぶりの拳、up の立ち・歩きの槍、up の当たりの腕が長い髪の陰
-tools/weapon_check.py cand/enemy-frames/spear-thug-a-f $C --ref cand/enemy-frames/spear-thug-a-f/noweapon $F \
+tools/weapon_check.py assets/unit/spear-thug-a-f $C --ref assets/unit/spear-thug-a-f/noweapon $F \
     --hidden left_atk_hit,left_atk_wind,up_atk_hit,$UP
 # 槍 c: left の立ち・歩きの穂先がポニーテールの陰、up の立ち・歩きの槍が髪の陰
-tools/weapon_check.py cand/enemy-frames/spear-thug-c-f $C --ref cand/enemy-frames/spear-thug-c-f/noweapon $F \
+tools/weapon_check.py assets/unit/spear-thug-c-f $C --ref assets/unit/spear-thug-c-f/noweapon $F \
     --hidden left_atk_hit,left_base,left_walk_a,left_walk_b,$UP
 ```
 
@@ -301,7 +305,7 @@ tools/weapon_check.py cand/enemy-frames/spear-thug-c-f $C --ref cand/enemy-frame
 `--arm` はコマごとに外せない。依頼者了承 2026-10-08）。`left_idle2` は「手が細い」（奥の拳が長い髪に半分隠れ、1px 幅だけのぞく）。
 ほかの女性6体は全項目を通る。
 
-`cand/enemy-frames/` の生成したコマには `unit_check.py` を使えない。`--items` はファイルの中の文字で持ち物を指定するが、
+`assets/unit/` の生成したコマには `unit_check.py` を使えない。`--items` はファイルの中の文字で持ち物を指定するが、
 生成したコマは文字の割り当てがコマごとに違う。脚と足元は、再生ページ（`tools/enemy_gallery.py`）とシートのプレビューの足元ライン（y=30）で確かめる。
 
 弓（イネス）は対象外。ガウ・ロランは全項目を通る（2026-10-07）。

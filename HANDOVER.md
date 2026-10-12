@@ -34,7 +34,7 @@
 - 目的: ロラン・イネスと同じ品質のユニットを、依頼者の判断を減らして描くワークフローを作り、**ガウ**で試す
 - 結果 `docs/superpowers/specs/2026-10-04-unit-drawing-workflow-results.md`: 品質は依頼者の判断で「ロラン・イネスと同じくらい」。判断の回数は13回でイネス（約12回）から減らなかったが、部品の形への差し戻しは0回になり、差し戻しは組み合わせた後の顔（前髪と目）と動き（構え）に移った
 - forge に入れた道具（TDD）: `unit_check.py`（自己チェック①）・`compose.py`（素体と部品の重ね合わせ）・`present.py`・`face_down.py`・`unit_picker.py`（部品の案の組み合わせを選ぶページ。依頼者の判断で CP1 の必須の道具）。手順の正典は `pixel-asset-forge/types/unit/SPEC.md`「描く手順」、ガウの持ち方と攻撃は同じ SPEC の「短剣の持ち方（ガウ）」
-- ガウ: `pixel-asset-forge/assets/unit/gau/`（24コマと部品）、`assets/part/dagger/`、`compose/gau.json`、`sheets/gau.txt`、`assets/images/gau-map.png`。動きのページ https://claude.ai/artifact/G3Xer2uJFMmte2LoQ4ZMwy
+- ガウ: `pixel-asset-forge/assets/unit/gau/`（24コマ）、部品は `assets/part/` の `body/gau/`・`head/hood/`・`hair/gau/`・`equip/dagger/`、`compose/gau.json`、`sheets/gau.txt`、`assets/images/gau-map.png`。動きのページ https://claude.ai/artifact/G3Xer2uJFMmte2LoQ4ZMwy
 - 進捗台帳と作業スクリプトは `.superpowers/sdd/2026-10-04-unit-workflow-gau/`（git 管理外。台帳は 2026-10-05 に `docs/superpowers/ledgers/` へ写した。スクリプトは `finish.py`・`anim.py`・`bodies.py`・`cand_sheets.py` など）。レビューのページ https://claude.ai/artifact/RoTEX6g8bb7HDRE54g38cM
 
 ### ガウの作業の途中で決めたこと（2026-10-04、依頼者と合意）

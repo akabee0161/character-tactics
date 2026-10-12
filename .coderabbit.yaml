@@ -12,10 +12,6 @@ reviews:
     - "!pixel-asset-forge/sheets/**"
     - "!pixel-asset-forge/palette/**"
     - "!pixel-asset-forge/tests/fixtures/**"
-    # cand/ は絵のテキストと試作。生成スクリプトの cand/gen だけレビューする
-    - "!pixel-asset-forge/cand/enemy-frames/**"
-    - "!pixel-asset-forge/cand/enemy/**"
-    - "!pixel-asset-forge/cand/layer-trial/**"
     # 作成時点の作業ログ（後から更新しない）
     - "!pixel-asset-forge/docs/**"
     - "!docs/superpowers/**"

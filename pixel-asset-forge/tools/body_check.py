@@ -2,7 +2,7 @@
 """体（core）の部品を、単品として見たときの「当たり前」を機械で確かめる。
 
     tools/body_check.py assets/unit/roran/parts                     # core_*.txt を全部
-    tools/body_check.py assets/unit/roran/parts/core_down_base.txt --head 3-14 --trunk 15-24 --legs 25-31
+    tools/body_check.py assets/part/body/roran/core_down_base.txt --head 3-14 --trunk 15-24 --legs 25-31
 
 見るもの（どれも1つでもあれば終了コード 1）:
 1. 中心（down・up だけ）: 頭・胴・脚それぞれの左右の中心（その行の範囲の最小と最大の真ん中）が同じか。
