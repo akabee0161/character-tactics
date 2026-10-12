@@ -16,6 +16,7 @@ DIRS = ("down", "up", "left", "right")
 STATES = ("base", "idle2", "walk_a", "walk_b", "atk_wind", "atk_draw", "atk_hit", "atk_release")
 DRAWN = ("base", "idle2", "atk_wind", "atk_draw", "atk_hit", "atk_release")  # 部品を持つ状態（歩きは base）
 SKIN = frozenset("abc")
+GRIPPED = ("wood_hi", "wood_base", "wood_shadow", "stone_hi", "stone_base", "water_base")  # 弓・弦・矢（拳の輪郭はこの上に描かない）
 ATK = ("atk_wind", "atk_draw", "atk_hit", "atk_release")
 
 BOW_HAND = {
@@ -52,9 +53,9 @@ INES = UnitDef(
     parts=(PartDef("弓", "bow", frozenset("klms")),
            PartDef("矢", "arrow", frozenset("wtu")),
            PartDef("弓の拳", "bow_hand", SKIN, BOW_HAND, hand=True,
-                   keep=("wood_hi", "wood_base", "wood_shadow", "stone_hi")),
+                   keep=GRIPPED),
            PartDef("矢の拳", "arrow_hand", SKIN, ARROW_HAND, hand=True,
-                   keep=("wood_shadow", "stone_base", "water_base", "stone_hi"))),
+                   keep=GRIPPED)),
     orders=ORDERS,
     hand_colours=("skin_hi", "skin_base", "skin_shadow"),
 )

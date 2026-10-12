@@ -22,7 +22,9 @@
           "z": "front",
           "hand": true,
           "keep": [
+            "stone_base",
             "stone_hi",
+            "water_base",
             "wood_base",
             "wood_hi",
             "wood_shadow"
@@ -36,6 +38,8 @@
             "stone_base",
             "stone_hi",
             "water_base",
+            "wood_base",
+            "wood_hi",
             "wood_shadow"
           ]
         }
@@ -57,7 +61,9 @@
           "z": "front",
           "hand": true,
           "keep": [
+            "stone_base",
             "stone_hi",
+            "water_base",
             "wood_base",
             "wood_hi",
             "wood_shadow"
@@ -71,6 +77,8 @@
             "stone_base",
             "stone_hi",
             "water_base",
+            "wood_base",
+            "wood_hi",
             "wood_shadow"
           ]
         }
@@ -92,7 +100,9 @@
           "z": "front",
           "hand": true,
           "keep": [
+            "stone_base",
             "stone_hi",
+            "water_base",
             "wood_base",
             "wood_hi",
             "wood_shadow"
@@ -106,6 +116,8 @@
             "stone_base",
             "stone_hi",
             "water_base",
+            "wood_base",
+            "wood_hi",
             "wood_shadow"
           ]
         }
@@ -127,7 +139,9 @@
           "z": "front",
           "hand": true,
           "keep": [
+            "stone_base",
             "stone_hi",
+            "water_base",
             "wood_base",
             "wood_hi",
             "wood_shadow"
@@ -141,6 +155,8 @@
             "stone_base",
             "stone_hi",
             "water_base",
+            "wood_base",
+            "wood_hi",
             "wood_shadow"
           ]
         }
@@ -162,7 +178,9 @@
           "z": "front",
           "hand": true,
           "keep": [
+            "stone_base",
             "stone_hi",
+            "water_base",
             "wood_base",
             "wood_hi",
             "wood_shadow"
@@ -176,6 +194,8 @@
             "stone_base",
             "stone_hi",
             "water_base",
+            "wood_base",
+            "wood_hi",
             "wood_shadow"
           ]
         }
@@ -197,7 +217,9 @@
           "z": "front",
           "hand": true,
           "keep": [
+            "stone_base",
             "stone_hi",
+            "water_base",
             "wood_base",
             "wood_hi",
             "wood_shadow"
@@ -211,6 +233,8 @@
             "stone_base",
             "stone_hi",
             "water_base",
+            "wood_base",
+            "wood_hi",
             "wood_shadow"
           ]
         }
@@ -232,7 +256,9 @@
           "z": "front",
           "hand": true,
           "keep": [
+            "stone_base",
             "stone_hi",
+            "water_base",
             "wood_base",
             "wood_hi",
             "wood_shadow"
@@ -246,6 +272,8 @@
             "stone_base",
             "stone_hi",
             "water_base",
+            "wood_base",
+            "wood_hi",
             "wood_shadow"
           ]
         }
@@ -267,7 +295,9 @@
           "z": "front",
           "hand": true,
           "keep": [
+            "stone_base",
             "stone_hi",
+            "water_base",
             "wood_base",
             "wood_hi",
             "wood_shadow"
@@ -281,6 +311,8 @@
             "stone_base",
             "stone_hi",
             "water_base",
+            "wood_base",
+            "wood_hi",
             "wood_shadow"
           ]
         }
@@ -294,7 +326,9 @@
           "z": "back",
           "hand": true,
           "keep": [
+            "stone_base",
             "stone_hi",
+            "water_base",
             "wood_base",
             "wood_hi",
             "wood_shadow"
@@ -312,6 +346,8 @@
             "stone_base",
             "stone_hi",
             "water_base",
+            "wood_base",
+            "wood_hi",
             "wood_shadow"
           ]
         },
@@ -329,7 +365,9 @@
           "z": "back",
           "hand": true,
           "keep": [
+            "stone_base",
             "stone_hi",
+            "water_base",
             "wood_base",
             "wood_hi",
             "wood_shadow"
@@ -347,6 +385,8 @@
             "stone_base",
             "stone_hi",
             "water_base",
+            "wood_base",
+            "wood_hi",
             "wood_shadow"
           ]
         },
@@ -364,7 +404,9 @@
           "z": "back",
           "hand": true,
           "keep": [
+            "stone_base",
             "stone_hi",
+            "water_base",
             "wood_base",
             "wood_hi",
             "wood_shadow"
@@ -382,6 +424,8 @@
             "stone_base",
             "stone_hi",
             "water_base",
+            "wood_base",
+            "wood_hi",
             "wood_shadow"
           ]
         },
@@ -399,7 +443,9 @@
           "z": "back",
           "hand": true,
           "keep": [
+            "stone_base",
             "stone_hi",
+            "water_base",
             "wood_base",
             "wood_hi",
             "wood_shadow"
@@ -417,6 +463,8 @@
             "stone_base",
             "stone_hi",
             "water_base",
+            "wood_base",
+            "wood_hi",
             "wood_shadow"
           ]
         },
@@ -434,7 +482,9 @@
           "z": "back",
           "hand": true,
           "keep": [
+            "stone_base",
             "stone_hi",
+            "water_base",
             "wood_base",
             "wood_hi",
             "wood_shadow"
@@ -452,6 +502,8 @@
             "stone_base",
             "stone_hi",
             "water_base",
+            "wood_base",
+            "wood_hi",
             "wood_shadow"
           ]
         },
@@ -469,7 +521,9 @@
           "z": "back",
           "hand": true,
           "keep": [
+            "stone_base",
             "stone_hi",
+            "water_base",
             "wood_base",
             "wood_hi",
             "wood_shadow"
@@ -487,6 +541,8 @@
             "stone_base",
             "stone_hi",
             "water_base",
+            "wood_base",
+            "wood_hi",
             "wood_shadow"
           ]
         },
@@ -504,7 +560,9 @@
           "z": "back",
           "hand": true,
           "keep": [
+            "stone_base",
             "stone_hi",
+            "water_base",
             "wood_base",
             "wood_hi",
             "wood_shadow"
@@ -522,6 +580,8 @@
             "stone_base",
             "stone_hi",
             "water_base",
+            "wood_base",
+            "wood_hi",
             "wood_shadow"
           ]
         },
@@ -539,7 +599,9 @@
           "z": "back",
           "hand": true,
           "keep": [
+            "stone_base",
             "stone_hi",
+            "water_base",
             "wood_base",
             "wood_hi",
             "wood_shadow"
@@ -557,6 +619,8 @@
             "stone_base",
             "stone_hi",
             "water_base",
+            "wood_base",
+            "wood_hi",
             "wood_shadow"
           ]
         },
@@ -581,6 +645,8 @@
             "stone_base",
             "stone_hi",
             "water_base",
+            "wood_base",
+            "wood_hi",
             "wood_shadow"
           ]
         },
@@ -593,7 +659,9 @@
           "z": "front",
           "hand": true,
           "keep": [
+            "stone_base",
             "stone_hi",
+            "water_base",
             "wood_base",
             "wood_hi",
             "wood_shadow"
@@ -616,6 +684,8 @@
             "stone_base",
             "stone_hi",
             "water_base",
+            "wood_base",
+            "wood_hi",
             "wood_shadow"
           ]
         },
@@ -628,7 +698,9 @@
           "z": "front",
           "hand": true,
           "keep": [
+            "stone_base",
             "stone_hi",
+            "water_base",
             "wood_base",
             "wood_hi",
             "wood_shadow"
@@ -651,6 +723,8 @@
             "stone_base",
             "stone_hi",
             "water_base",
+            "wood_base",
+            "wood_hi",
             "wood_shadow"
           ]
         },
@@ -663,7 +737,9 @@
           "z": "front",
           "hand": true,
           "keep": [
+            "stone_base",
             "stone_hi",
+            "water_base",
             "wood_base",
             "wood_hi",
             "wood_shadow"
@@ -686,6 +762,8 @@
             "stone_base",
             "stone_hi",
             "water_base",
+            "wood_base",
+            "wood_hi",
             "wood_shadow"
           ]
         },
@@ -698,7 +776,9 @@
           "z": "front",
           "hand": true,
           "keep": [
+            "stone_base",
             "stone_hi",
+            "water_base",
             "wood_base",
             "wood_hi",
             "wood_shadow"
@@ -721,6 +801,8 @@
             "stone_base",
             "stone_hi",
             "water_base",
+            "wood_base",
+            "wood_hi",
             "wood_shadow"
           ]
         },
@@ -733,7 +815,9 @@
           "z": "front",
           "hand": true,
           "keep": [
+            "stone_base",
             "stone_hi",
+            "water_base",
             "wood_base",
             "wood_hi",
             "wood_shadow"
@@ -756,6 +840,8 @@
             "stone_base",
             "stone_hi",
             "water_base",
+            "wood_base",
+            "wood_hi",
             "wood_shadow"
           ]
         },
@@ -768,7 +854,9 @@
           "z": "front",
           "hand": true,
           "keep": [
+            "stone_base",
             "stone_hi",
+            "water_base",
             "wood_base",
             "wood_hi",
             "wood_shadow"
@@ -791,6 +879,8 @@
             "stone_base",
             "stone_hi",
             "water_base",
+            "wood_base",
+            "wood_hi",
             "wood_shadow"
           ]
         },
@@ -803,7 +893,9 @@
           "z": "front",
           "hand": true,
           "keep": [
+            "stone_base",
             "stone_hi",
+            "water_base",
             "wood_base",
             "wood_hi",
             "wood_shadow"
@@ -826,6 +918,8 @@
             "stone_base",
             "stone_hi",
             "water_base",
+            "wood_base",
+            "wood_hi",
             "wood_shadow"
           ]
         },
@@ -838,7 +932,9 @@
           "z": "front",
           "hand": true,
           "keep": [
+            "stone_base",
             "stone_hi",
+            "water_base",
             "wood_base",
             "wood_hi",
             "wood_shadow"
@@ -854,7 +950,9 @@
           "z": "back",
           "hand": true,
           "keep": [
+            "stone_base",
             "stone_hi",
+            "water_base",
             "wood_base",
             "wood_hi",
             "wood_shadow"
@@ -876,6 +974,8 @@
             "stone_base",
             "stone_hi",
             "water_base",
+            "wood_base",
+            "wood_hi",
             "wood_shadow"
           ]
         }
@@ -889,7 +989,9 @@
           "z": "back",
           "hand": true,
           "keep": [
+            "stone_base",
             "stone_hi",
+            "water_base",
             "wood_base",
             "wood_hi",
             "wood_shadow"
@@ -911,6 +1013,8 @@
             "stone_base",
             "stone_hi",
             "water_base",
+            "wood_base",
+            "wood_hi",
             "wood_shadow"
           ]
         }
@@ -924,7 +1028,9 @@
           "z": "back",
           "hand": true,
           "keep": [
+            "stone_base",
             "stone_hi",
+            "water_base",
             "wood_base",
             "wood_hi",
             "wood_shadow"
@@ -946,6 +1052,8 @@
             "stone_base",
             "stone_hi",
             "water_base",
+            "wood_base",
+            "wood_hi",
             "wood_shadow"
           ]
         }
@@ -959,7 +1067,9 @@
           "z": "back",
           "hand": true,
           "keep": [
+            "stone_base",
             "stone_hi",
+            "water_base",
             "wood_base",
             "wood_hi",
             "wood_shadow"
@@ -981,6 +1091,8 @@
             "stone_base",
             "stone_hi",
             "water_base",
+            "wood_base",
+            "wood_hi",
             "wood_shadow"
           ]
         }
@@ -994,7 +1106,9 @@
           "z": "back",
           "hand": true,
           "keep": [
+            "stone_base",
             "stone_hi",
+            "water_base",
             "wood_base",
             "wood_hi",
             "wood_shadow"
@@ -1016,6 +1130,8 @@
             "stone_base",
             "stone_hi",
             "water_base",
+            "wood_base",
+            "wood_hi",
             "wood_shadow"
           ]
         }
@@ -1029,7 +1145,9 @@
           "z": "back",
           "hand": true,
           "keep": [
+            "stone_base",
             "stone_hi",
+            "water_base",
             "wood_base",
             "wood_hi",
             "wood_shadow"
@@ -1051,6 +1169,8 @@
             "stone_base",
             "stone_hi",
             "water_base",
+            "wood_base",
+            "wood_hi",
             "wood_shadow"
           ]
         }
@@ -1064,7 +1184,9 @@
           "z": "back",
           "hand": true,
           "keep": [
+            "stone_base",
             "stone_hi",
+            "water_base",
             "wood_base",
             "wood_hi",
             "wood_shadow"
@@ -1086,6 +1208,8 @@
             "stone_base",
             "stone_hi",
             "water_base",
+            "wood_base",
+            "wood_hi",
             "wood_shadow"
           ]
         }
@@ -1099,7 +1223,9 @@
           "z": "back",
           "hand": true,
           "keep": [
+            "stone_base",
             "stone_hi",
+            "water_base",
             "wood_base",
             "wood_hi",
             "wood_shadow"
@@ -1121,6 +1247,8 @@
             "stone_base",
             "stone_hi",
             "water_base",
+            "wood_base",
+            "wood_hi",
             "wood_shadow"
           ]
         }
