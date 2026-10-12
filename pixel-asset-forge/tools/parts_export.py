@@ -116,6 +116,24 @@ def _validate(unit: UnitDef) -> None:
                 _box(part, d, unit.shares.get(st, st))
 
 
+def _check_not_used_elsewhere(targets: set[str], config_path: Path, root: Path) -> None:
+    """書き出し先の部品を、ほかのユニットの設定（root/compose/*.json）が使っていたら止める。
+    部品の置き場は種類ごとで、ユニットをまたいで共有する（equip/sword など）ので、黙って上書きしないため（2026-10-12 最終レビュー）。"""
+    for other in sorted((root / "compose").glob("*.json")):
+        if other.resolve() == config_path.resolve():
+            continue
+        try:
+            frames = json.loads(other.read_text(encoding="utf-8")).get("frames", {})
+        except (OSError, json.JSONDecodeError, AttributeError) as exc:
+            raise ExportError(f"{other}: ほかのユニットの設定を読めない（上書きの確かめができない）: {exc}") from None
+        used = {spec.get("body") for spec in frames.values()}
+        used |= {layer.get("part") for spec in frames.values() for layer in spec.get("layers", [])}
+        clash = sorted(targets & used)
+        if clash:
+            raise ExportError(f"{other.name} が使っている部品を上書きする: {', '.join(clash[:3])}"
+                              f"{' ほか' if len(clash) > 3 else ''}（ファイル名の前半か dir を変える）")
+
+
 def export(unit: UnitDef, part_root: Path, config_path: Path, root: Path) -> None:
     """部品のファイルと compose の設定を書く（コマは書かない）。芯は part_root/body/<ユニット>/、部品は part_root/<dir>/。
     設定のパスは root からの相対。定義に誤りがあれば、何も書かずに ExportError で止める。"""
@@ -123,11 +141,16 @@ def export(unit: UnitDef, part_root: Path, config_path: Path, root: Path) -> Non
     charmap = unit_charmap(sorted(unit.src.glob("*.txt")))
     by_name = {p.name: p for p in unit.parts}
     core_dir = part_root / "body" / unit.unit
-    for folder in {core_dir, *(part_root / p.dir for p in unit.parts)}:
-        folder.mkdir(parents=True, exist_ok=True)
 
     def rel(path: Path) -> str:
         return path.relative_to(root).as_posix()
+
+    targets = {rel(core_dir / f"core_{d}_{st}.txt") for d in unit.dirs for st in unit.states}
+    targets |= {rel(part_root / p.dir / f"{p.file}_{d}_{unit.shares.get(st, st)}.txt")
+                for p in unit.parts for d in unit.dirs for st in unit.states}
+    _check_not_used_elsewhere(targets, config_path, root)
+    for folder in {core_dir, *(part_root / p.dir for p in unit.parts)}:
+        folder.mkdir(parents=True, exist_ok=True)
 
     frames = {}
     for d in unit.dirs:

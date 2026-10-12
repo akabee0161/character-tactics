@@ -170,6 +170,15 @@ class PartsExportTest(unittest.TestCase):
         parts = tuple(PartDef(p.name, p.file, p.chars, p.boxes, p.hand, p.keep) for p in self.unit.parts)
         self.stops_without_writing(UnitDef(**{**self.unit.__dict__, "parts": parts}), "置き場")
 
+    def test_part_used_by_another_unit_is_not_overwritten(self):
+        # 部品の置き場は種類ごとで、ほかのユニットと共有する（equip/bow など）。ほかのユニットの設定が使っている部品は上書きしない
+        other = {"unit": "other", "frames": {"down_base": {"body": "assets/part/body/other/core_down_base.txt",
+                                                           "layers": [{"part": "assets/part/equip/bow/bow_down_base.txt",
+                                                                       "z": "front"}]}}}
+        (self.root / "compose").mkdir(parents=True, exist_ok=True)
+        (self.root / "compose/other.json").write_text(json.dumps(other), encoding="utf-8")
+        self.stops_without_writing(self.unit, "other")
+
     def test_part_directory_must_stay_under_the_part_root(self):
         for bad in ("../equip/bow", "/tmp/bow"):
             parts = (PartDef("弓", "bow", frozenset("m"), dir=bad), *self.unit.parts[1:])
