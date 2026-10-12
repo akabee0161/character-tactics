@@ -8,7 +8,7 @@ import enemy_build as eb
 import mkparts as mp
 
 DIRS = ["down", "up", "left", "right"]
-OUT = Path("cand/enemy-frames")
+OUT = Path("assets/unit")
 MAPC = {"cloth_hi": "cloak_dark_hi", "cloth_base": "cloak_dark_base", "cloth_shadow": "cloak_dark_shadow",
         "skin_hi": "skin_rose_hi", "skin_base": "skin_rose_base", "skin_shadow": "skin_rose_shadow"}
 RAW = {

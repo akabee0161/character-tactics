@@ -3,7 +3,7 @@
   "name": "フルフェイス（槍）",
   "archetype": "spear",
   "body": "male",
-  "frames": "cand/enemy-frames/spear-knight",
+  "frames": "assets/unit/spear-knight",
   "recolor": {
     "cloak_dark_hi": "floor_base",
     "cloak_dark_base": "floor_shadow",

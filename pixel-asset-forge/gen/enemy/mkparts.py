@@ -304,10 +304,10 @@ cfg_female = {
     "default": {"eyes": "E0", "hair": "A", "head": "H0", "clothes": "C0"},
     "matrix": {"rows": "head", "cols": "hair"},
     "refs": {
-        "眼帯のバンダナ（斧・男）": "cand/enemy-frames/axe-bandit/{dir}_base.txt",
-        "角付きの兜（斧・男）": "cand/enemy-frames/axe-horn/{dir}_base.txt",
-        "フルフェイス（槍・男）": "cand/enemy-frames/spear-knight/{dir}_base.txt",
-        "素の髪のごろつき（槍・男）": "cand/enemy-frames/spear-thug/{dir}_base.txt",
+        "眼帯のバンダナ（斧・男）": "assets/unit/axe-bandit/{dir}_base.txt",
+        "角付きの兜（斧・男）": "assets/unit/axe-horn/{dir}_base.txt",
+        "フルフェイス（槍・男）": "assets/unit/spear-knight/{dir}_base.txt",
+        "素の髪のごろつき（槍・男）": "assets/unit/spear-thug/{dir}_base.txt",
     },
 }
 

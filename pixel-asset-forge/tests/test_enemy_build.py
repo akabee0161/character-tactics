@@ -145,7 +145,7 @@ class RecipeTest(unittest.TestCase):
     def test_source_paths_follow_archetype_and_body(self):
         recipe = Recipe("a", "A", "dagger", "female", {})
         source, sheet_def = source_paths(recipe, Path("/forge"))
-        self.assertEqual(source, Path("/forge/assets/unit/enemy-src/dagger-female"))
+        self.assertEqual(source, Path("/forge/assets/unit/dagger-female"))
         self.assertEqual(sheet_def, Path("/forge/sheets/gau.txt"))
 
     def test_frames_names_the_source_directory(self):

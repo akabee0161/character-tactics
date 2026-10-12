@@ -18,7 +18,7 @@ COL = {"o": "outline", "S": "stone_hi", "T": "stone_base", "L": "wood_hi", "M": 
        "J": "cloak_dark_hi", "K": "cloak_dark_base", "H": "cloak_dark_shadow"}
 SWAP = {"a": "c", "c": "a"}
 DIRS = ["down", "up", "left", "right"]
-OUT = Path("cand/enemy-frames")
+OUT = Path("assets/unit")
 
 # 見た目（目・頭・服）は承認済みの4体のまま、武器を短剣から替える（2026-10-07 依頼者決定）
 for _new, _old, _weapon in (("axe-bandit", "dagger-bandit", "axe"), ("axe-horn", "dagger-horn", "axe"),
