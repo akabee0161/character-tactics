@@ -1,0 +1,1130 @@
+{
+  "unit": "ines",
+  "hand_colours": [
+    "skin_hi",
+    "skin_base",
+    "skin_shadow"
+  ],
+  "frames": {
+    "down_base": {
+      "body": "assets/unit/ines/parts/core_down_base.txt",
+      "layers": [
+        {
+          "part": "assets/unit/ines/parts/bow_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_hand_down_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_hand_down_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "water_base",
+            "wood_shadow"
+          ]
+        }
+      ]
+    },
+    "down_idle2": {
+      "body": "assets/unit/ines/parts/core_down_idle2.txt",
+      "layers": [
+        {
+          "part": "assets/unit/ines/parts/bow_down_idle2.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_down_idle2.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_hand_down_idle2.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_hand_down_idle2.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "water_base",
+            "wood_shadow"
+          ]
+        }
+      ]
+    },
+    "down_walk_a": {
+      "body": "assets/unit/ines/parts/core_down_walk_a.txt",
+      "layers": [
+        {
+          "part": "assets/unit/ines/parts/bow_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_hand_down_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_hand_down_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "water_base",
+            "wood_shadow"
+          ]
+        }
+      ]
+    },
+    "down_walk_b": {
+      "body": "assets/unit/ines/parts/core_down_walk_b.txt",
+      "layers": [
+        {
+          "part": "assets/unit/ines/parts/bow_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_hand_down_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_hand_down_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "water_base",
+            "wood_shadow"
+          ]
+        }
+      ]
+    },
+    "down_atk_wind": {
+      "body": "assets/unit/ines/parts/core_down_atk_wind.txt",
+      "layers": [
+        {
+          "part": "assets/unit/ines/parts/bow_down_atk_wind.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_down_atk_wind.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_hand_down_atk_wind.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_hand_down_atk_wind.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "water_base",
+            "wood_shadow"
+          ]
+        }
+      ]
+    },
+    "down_atk_draw": {
+      "body": "assets/unit/ines/parts/core_down_atk_draw.txt",
+      "layers": [
+        {
+          "part": "assets/unit/ines/parts/bow_down_atk_draw.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_down_atk_draw.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_hand_down_atk_draw.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_hand_down_atk_draw.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "water_base",
+            "wood_shadow"
+          ]
+        }
+      ]
+    },
+    "down_atk_hit": {
+      "body": "assets/unit/ines/parts/core_down_atk_hit.txt",
+      "layers": [
+        {
+          "part": "assets/unit/ines/parts/bow_down_atk_hit.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_down_atk_hit.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_hand_down_atk_hit.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_hand_down_atk_hit.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "water_base",
+            "wood_shadow"
+          ]
+        }
+      ]
+    },
+    "down_atk_release": {
+      "body": "assets/unit/ines/parts/core_down_atk_release.txt",
+      "layers": [
+        {
+          "part": "assets/unit/ines/parts/bow_down_atk_release.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_down_atk_release.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_hand_down_atk_release.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_hand_down_atk_release.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "water_base",
+            "wood_shadow"
+          ]
+        }
+      ]
+    },
+    "up_base": {
+      "body": "assets/unit/ines/parts/core_up_base.txt",
+      "layers": [
+        {
+          "part": "assets/unit/ines/parts/bow_hand_up_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_up_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_hand_up_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "water_base",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_up_base.txt",
+          "z": "back"
+        }
+      ]
+    },
+    "up_idle2": {
+      "body": "assets/unit/ines/parts/core_up_idle2.txt",
+      "layers": [
+        {
+          "part": "assets/unit/ines/parts/bow_hand_up_idle2.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_up_idle2.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_hand_up_idle2.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "water_base",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_up_idle2.txt",
+          "z": "back"
+        }
+      ]
+    },
+    "up_walk_a": {
+      "body": "assets/unit/ines/parts/core_up_walk_a.txt",
+      "layers": [
+        {
+          "part": "assets/unit/ines/parts/bow_hand_up_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_up_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_hand_up_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "water_base",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_up_base.txt",
+          "z": "back"
+        }
+      ]
+    },
+    "up_walk_b": {
+      "body": "assets/unit/ines/parts/core_up_walk_b.txt",
+      "layers": [
+        {
+          "part": "assets/unit/ines/parts/bow_hand_up_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_up_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_hand_up_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "water_base",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_up_base.txt",
+          "z": "back"
+        }
+      ]
+    },
+    "up_atk_wind": {
+      "body": "assets/unit/ines/parts/core_up_atk_wind.txt",
+      "layers": [
+        {
+          "part": "assets/unit/ines/parts/bow_hand_up_atk_wind.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_up_atk_wind.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_hand_up_atk_wind.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "water_base",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_up_atk_wind.txt",
+          "z": "back"
+        }
+      ]
+    },
+    "up_atk_draw": {
+      "body": "assets/unit/ines/parts/core_up_atk_draw.txt",
+      "layers": [
+        {
+          "part": "assets/unit/ines/parts/bow_hand_up_atk_draw.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_up_atk_draw.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_hand_up_atk_draw.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "water_base",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_up_atk_draw.txt",
+          "z": "back"
+        }
+      ]
+    },
+    "up_atk_hit": {
+      "body": "assets/unit/ines/parts/core_up_atk_hit.txt",
+      "layers": [
+        {
+          "part": "assets/unit/ines/parts/bow_hand_up_atk_hit.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_up_atk_hit.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_hand_up_atk_hit.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "water_base",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_up_atk_hit.txt",
+          "z": "back"
+        }
+      ]
+    },
+    "up_atk_release": {
+      "body": "assets/unit/ines/parts/core_up_atk_release.txt",
+      "layers": [
+        {
+          "part": "assets/unit/ines/parts/bow_hand_up_atk_release.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_up_atk_release.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_hand_up_atk_release.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "water_base",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_up_atk_release.txt",
+          "z": "back"
+        }
+      ]
+    },
+    "left_base": {
+      "body": "assets/unit/ines/parts/core_left_base.txt",
+      "layers": [
+        {
+          "part": "assets/unit/ines/parts/arrow_left_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_hand_left_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "water_base",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_hand_left_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        }
+      ]
+    },
+    "left_idle2": {
+      "body": "assets/unit/ines/parts/core_left_idle2.txt",
+      "layers": [
+        {
+          "part": "assets/unit/ines/parts/arrow_left_idle2.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_hand_left_idle2.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "water_base",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_left_idle2.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_hand_left_idle2.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        }
+      ]
+    },
+    "left_walk_a": {
+      "body": "assets/unit/ines/parts/core_left_walk_a.txt",
+      "layers": [
+        {
+          "part": "assets/unit/ines/parts/arrow_left_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_hand_left_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "water_base",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_hand_left_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        }
+      ]
+    },
+    "left_walk_b": {
+      "body": "assets/unit/ines/parts/core_left_walk_b.txt",
+      "layers": [
+        {
+          "part": "assets/unit/ines/parts/arrow_left_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_hand_left_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "water_base",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_hand_left_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        }
+      ]
+    },
+    "left_atk_wind": {
+      "body": "assets/unit/ines/parts/core_left_atk_wind.txt",
+      "layers": [
+        {
+          "part": "assets/unit/ines/parts/arrow_left_atk_wind.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_hand_left_atk_wind.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "water_base",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_left_atk_wind.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_hand_left_atk_wind.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        }
+      ]
+    },
+    "left_atk_draw": {
+      "body": "assets/unit/ines/parts/core_left_atk_draw.txt",
+      "layers": [
+        {
+          "part": "assets/unit/ines/parts/arrow_left_atk_draw.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_hand_left_atk_draw.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "water_base",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_left_atk_draw.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_hand_left_atk_draw.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        }
+      ]
+    },
+    "left_atk_hit": {
+      "body": "assets/unit/ines/parts/core_left_atk_hit.txt",
+      "layers": [
+        {
+          "part": "assets/unit/ines/parts/arrow_left_atk_hit.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_hand_left_atk_hit.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "water_base",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_left_atk_hit.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_hand_left_atk_hit.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        }
+      ]
+    },
+    "left_atk_release": {
+      "body": "assets/unit/ines/parts/core_left_atk_release.txt",
+      "layers": [
+        {
+          "part": "assets/unit/ines/parts/arrow_left_atk_release.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_hand_left_atk_release.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "water_base",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_left_atk_release.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_hand_left_atk_release.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        }
+      ]
+    },
+    "right_base": {
+      "body": "assets/unit/ines/parts/core_right_base.txt",
+      "layers": [
+        {
+          "part": "assets/unit/ines/parts/bow_hand_right_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_right_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_hand_right_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "water_base",
+            "wood_shadow"
+          ]
+        }
+      ]
+    },
+    "right_idle2": {
+      "body": "assets/unit/ines/parts/core_right_idle2.txt",
+      "layers": [
+        {
+          "part": "assets/unit/ines/parts/bow_hand_right_idle2.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_right_idle2.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_right_idle2.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_hand_right_idle2.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "water_base",
+            "wood_shadow"
+          ]
+        }
+      ]
+    },
+    "right_walk_a": {
+      "body": "assets/unit/ines/parts/core_right_walk_a.txt",
+      "layers": [
+        {
+          "part": "assets/unit/ines/parts/bow_hand_right_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_right_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_hand_right_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "water_base",
+            "wood_shadow"
+          ]
+        }
+      ]
+    },
+    "right_walk_b": {
+      "body": "assets/unit/ines/parts/core_right_walk_b.txt",
+      "layers": [
+        {
+          "part": "assets/unit/ines/parts/bow_hand_right_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_right_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_hand_right_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "water_base",
+            "wood_shadow"
+          ]
+        }
+      ]
+    },
+    "right_atk_wind": {
+      "body": "assets/unit/ines/parts/core_right_atk_wind.txt",
+      "layers": [
+        {
+          "part": "assets/unit/ines/parts/bow_hand_right_atk_wind.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_right_atk_wind.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_right_atk_wind.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_hand_right_atk_wind.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "water_base",
+            "wood_shadow"
+          ]
+        }
+      ]
+    },
+    "right_atk_draw": {
+      "body": "assets/unit/ines/parts/core_right_atk_draw.txt",
+      "layers": [
+        {
+          "part": "assets/unit/ines/parts/bow_hand_right_atk_draw.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_right_atk_draw.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_right_atk_draw.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_hand_right_atk_draw.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "water_base",
+            "wood_shadow"
+          ]
+        }
+      ]
+    },
+    "right_atk_hit": {
+      "body": "assets/unit/ines/parts/core_right_atk_hit.txt",
+      "layers": [
+        {
+          "part": "assets/unit/ines/parts/bow_hand_right_atk_hit.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_right_atk_hit.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_right_atk_hit.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_hand_right_atk_hit.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "water_base",
+            "wood_shadow"
+          ]
+        }
+      ]
+    },
+    "right_atk_release": {
+      "body": "assets/unit/ines/parts/core_right_atk_release.txt",
+      "layers": [
+        {
+          "part": "assets/unit/ines/parts/bow_hand_right_atk_release.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/unit/ines/parts/bow_right_atk_release.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_right_atk_release.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/unit/ines/parts/arrow_hand_right_atk_release.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "water_base",
+            "wood_shadow"
+          ]
+        }
+      ]
+    }
+  }
+}
