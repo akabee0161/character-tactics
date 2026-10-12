@@ -58,9 +58,12 @@
 .venv/bin/python tools/unit_check.py assets/unit/ines --items klmstuw  # unit の脚の中心と増えた切れ目（自己チェック①）
 .venv/bin/python tools/weapon_check.py assets/unit/gau --blade stone_hi,stone_base --weapon wood_hi,wood_base,wood_shadow --hand skin_rose_hi,skin_rose_base,skin_rose_shadow --hidden left_atk_wind,up_atk_wind,up_atk_hit --depth down  # 武器と握る手（自己チェック①。ユニットごとの指定は types/unit/SPEC.md）
 .venv/bin/python tools/body_check.py assets/unit/roran/parts  # 体（core）の部品を単品で見た「当たり前」: 頭・胴・脚の中心、胴からのはみ出し、輪郭の切れ目、穴（--head/--trunk/--legs で行の範囲を変える）
+.venv/bin/python tools/hand_mirror.py compose/ines.json  # 攻撃以外のコマで、down と up・left と right の拳の位置が左右反転で合っているか
 .venv/bin/python tools/hand_outline.py assets/unit/roran/parts/sword_hand_down_base.txt --hand skin_rose_hi,skin_rose_base,skin_rose_shadow  # 拳の部品の輪郭の切れ目を出す（--write で直す）
 .venv/bin/python tools/compose.py compose/gau.json --out /tmp/cand   # 素体と部品を重ねて unit のコマを組み立てる（手で直したコマは上書きせず止まる）
 .venv/bin/python tools/compose.py compose/roran.json --check   # ロランは全24コマが部品から再現できる（拳が閉じていないと終了 2）
+.venv/bin/python tools/compose.py compose/ines.json --check    # イネスは全32コマが部品から再現できる
+# cand/gen/ines_layers.py --export は描き直す前の書き出しに一度だけ使った。今走らせると描き直した部品を上書きするので実行しない（新しいユニットは tools/parts_export.py で同じ形の定義を書く）
 .venv/bin/python tools/compose_page.py --help  # 部品と組んだ結果を層の順に並べる確認ページ（--dirs down,right のようにカンマ区切り）
 .venv/bin/python tools/face_down.py IMG N OUT_PREFIX  # 拡大されたドット絵の顔を N 升に戻す
 .venv/bin/python tools/present.py OUT.png A.txt B.txt --ref face.png  # 案を並べて見せる画像

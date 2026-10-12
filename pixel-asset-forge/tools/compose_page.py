@@ -26,7 +26,7 @@ from compose import ComposeError, compose_frame, compose_labels, load_config, op
 from gridfile import BACKGROUND, REPO_ROOT, Grid, GridError, load_palette, parse  # noqa: E402
 
 SCALE = 6
-GROUND = (225, 225, 225, 255)
+GROUND = (60, 150, 150, 255)  # 暗い青緑。白に近い弦（stone_hi）も輪郭も見分けられる（2026-10-12）
 RED = (230, 0, 0, 255)
 
 Pixels = dict[tuple[int, int], str]
