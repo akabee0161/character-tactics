@@ -26,3 +26,11 @@ Final: minor (deferred): test_gen_enemy が現役の assets/part の件数 108 �
 Final: minor (deferred): parts_export の .. と絶対パスのテストが何も書かないことまでは見ていない。dir='.' が通る
 Final: minor (deferred): mkparts.py・anim_compare.py の空行の体裁
 Final: minor (deferred): 確かめ方の弱い所（ガウの compose --check は件数だけ、味方のシートは enemy_build で作り直されない）
+Final: 依頼者の決定（2026-10-12）: Minor も PR 前にこのセッションで直す。下の deferred はすべて 7e5c502 で直した
+Final: fixed reorder の状態の無い部品名 — test_parts_without_a_state_in_the_name_are_named_by_their_first_half RED→GREEN
+Final: fixed reorder が一部のコマにしか無い部品で止まる（ガウの left_atk_wind で見つけた） — test_part_missing_from_some_frames_is_skipped_there RED→GREEN
+Final: fixed anim_compare の doctype・charset — test_page_declares_html5_and_utf8 RED→GREEN
+Final: fixed anim_compare の見出しの数・シートの大きさ — test_labels_must_be_two・test_sheet_too_small_for_the_game_unit_stops RED→GREEN
+Final: fixed parts_export の dir='.' と、.. ・絶対パスで何も書かないこと — test_part_directory_must_stay_under_the_part_root RED（. と ./）→GREEN
+Final: fixed test_gen_enemy の件数固定、SPEC の一文、空行の体裁 — 文書・テストのみ
+Final: fixed 確かめ方の弱い所 — ガウの差ありのコマ名16件が整理前と同じ、味方3体のシートが 86adaf4 のコマから作ったものと同じ（check_allies.sh）。suite 429/429
