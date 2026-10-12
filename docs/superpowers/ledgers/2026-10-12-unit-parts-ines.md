@@ -65,3 +65,4 @@ Task 7: complete (commits 2c4a80d..c5e2b1b, tests: unittest discover → Ran 419
 - Final: minor (deferred): テストの抜け（芯だけが違う歩きの再現、hand_mirror で陰の色が違う拳の組・終了 2 の経路）
 - Final: minor (deferred): hand_mirror の反転が 31 - x 固定（unit は 32x32 固定なので今は実害なし）
 - Final: minor (deferred): 拳の keep の wood_shadow がズボンと同じ色（ISSUES.md に1行）
+- PR #32: CodeRabbit の指摘（export が前提を確かめる前に書き始める）を直した（92396ae、テスト6件追加、全体 425 件 OK）。ISSUES.md の該当行を消した。読めないコマのテストは、unit_charmap が先に全コマを読むので実装前から通った（挙動を固定するテストとして残した）
