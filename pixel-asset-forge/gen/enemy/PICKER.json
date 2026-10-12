@@ -1,7 +1,7 @@
 {
   "unit": "enemy-parts",
   "title": "敵の部品（ガウの素体）",
-  "body": "cand/enemy/gau_body_{dir}.txt",
+  "body": "assets/part/body/gau/gau_body_{dir}.txt",
   "elements": {
     "eyes": {
       "label": "目",
@@ -10,7 +10,7 @@
           "label": "ガウと同じ縦線",
           "layers": [
             {
-              "part": "cand/enemy/eye_E0_{dir}.txt",
+              "part": "assets/part/eye/E0/eye_E0_{dir}.txt",
               "z": "front"
             }
           ]
@@ -19,7 +19,7 @@
           "label": "横線",
           "layers": [
             {
-              "part": "cand/enemy/eye_E1_{dir}.txt",
+              "part": "assets/part/eye/E1/eye_E1_{dir}.txt",
               "z": "front"
             }
           ]
@@ -28,7 +28,7 @@
           "label": "つり目",
           "layers": [
             {
-              "part": "cand/enemy/eye_E2_{dir}.txt",
+              "part": "assets/part/eye/E2/eye_E2_{dir}.txt",
               "z": "front"
             }
           ]
@@ -37,7 +37,7 @@
           "label": "たれ目",
           "layers": [
             {
-              "part": "cand/enemy/eye_E3_{dir}.txt",
+              "part": "assets/part/eye/E3/eye_E3_{dir}.txt",
               "z": "front"
             }
           ]
@@ -46,7 +46,7 @@
           "label": "点",
           "layers": [
             {
-              "part": "cand/enemy/eye_E4_{dir}.txt",
+              "part": "assets/part/eye/E4/eye_E4_{dir}.txt",
               "z": "front"
             }
           ]
@@ -55,7 +55,7 @@
           "label": "眼帯",
           "layers": [
             {
-              "part": "cand/enemy/eye_E5_{dir}.txt",
+              "part": "assets/part/eye/E5/eye_E5_{dir}.txt",
               "z": "front"
             }
           ]
@@ -69,7 +69,7 @@
           "label": "素の髪",
           "layers": [
             {
-              "part": "cand/enemy/head_bare_{dir}.txt",
+              "part": "assets/part/head/bare/head_bare_{dir}.txt",
               "z": "front"
             }
           ]
@@ -78,7 +78,7 @@
           "label": "バンダナ",
           "layers": [
             {
-              "part": "cand/enemy/head_bandana_{dir}.txt",
+              "part": "assets/part/head/bandana/head_bandana_{dir}.txt",
               "z": "front"
             }
           ]
@@ -87,7 +87,7 @@
           "label": "角付きの兜",
           "layers": [
             {
-              "part": "cand/enemy/head_horn_{dir}.txt",
+              "part": "assets/part/head/horn/head_horn_{dir}.txt",
               "z": "front"
             }
           ]
@@ -96,7 +96,7 @@
           "label": "フルフェイス",
           "layers": [
             {
-              "part": "cand/enemy/head_full_{dir}.txt",
+              "part": "assets/part/head/full/head_full_{dir}.txt",
               "z": "front"
             }
           ]
@@ -110,7 +110,7 @@
           "label": "ガウのまま",
           "layers": [
             {
-              "part": "cand/enemy/cloth_none_{dir}.txt",
+              "part": "assets/part/cloth/none/cloth_none_{dir}.txt",
               "z": "front"
             }
           ]
@@ -119,7 +119,7 @@
           "label": "ベルト",
           "layers": [
             {
-              "part": "cand/enemy/cloth_belt_{dir}.txt",
+              "part": "assets/part/cloth/belt/cloth_belt_{dir}.txt",
               "z": "front"
             }
           ]
@@ -128,7 +128,7 @@
           "label": "ボロ",
           "layers": [
             {
-              "part": "cand/enemy/cloth_tatter_{dir}.txt",
+              "part": "assets/part/cloth/tatter/cloth_tatter_{dir}.txt",
               "z": "front"
             }
           ]
@@ -137,11 +137,11 @@
           "label": "ベルト+ボロ",
           "layers": [
             {
-              "part": "cand/enemy/cloth_belt_{dir}.txt",
+              "part": "assets/part/cloth/belt/cloth_belt_{dir}.txt",
               "z": "front"
             },
             {
-              "part": "cand/enemy/cloth_tatter_{dir}.txt",
+              "part": "assets/part/cloth/tatter/cloth_tatter_{dir}.txt",
               "z": "front"
             }
           ]
@@ -155,7 +155,7 @@
           "label": "短剣",
           "layers": [
             {
-              "part": "assets/part/dagger/dagger_{dir}.txt",
+              "part": "assets/part/equip/dagger/dagger_{dir}.txt",
               "z": {
                 "up": "back",
                 "left": "back"

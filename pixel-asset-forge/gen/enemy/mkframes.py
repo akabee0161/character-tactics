@@ -13,16 +13,16 @@ MAPC = {"cloth_hi": "cloak_dark_hi", "cloth_base": "cloak_dark_base", "cloth_sha
         "skin_hi": "skin_rose_hi", "skin_base": "skin_rose_base", "skin_shadow": "skin_rose_shadow"}
 RAW = {
     "male": {"base": "types/unit/base/male_{d}.txt",
-             "idle2": "assets/unit/gau/parts/body_idle2_{d}.txt",
-             "noarm": "assets/unit/gau/parts/body_noarm_{d}.txt"},
+             "idle2": "assets/part/body/gau/body_idle2_{d}.txt",
+             "noarm": "assets/part/body/gau/body_noarm_{d}.txt"},
     "female": {"base": "types/unit/base/female_{d}.txt",
-               "idle2": "cand/enemy/female_body_idle2_{d}.txt",
-               "noarm": "cand/enemy/female_body_noarm_{d}.txt"},
+               "idle2": mp.part_path("female_body_idle2", "{d}").as_posix(),
+               "noarm": mp.part_path("female_body_noarm", "{d}").as_posix()},
 }
 # 歩きの脚（y=28〜30 だけを使う）。男性はガウの完成コマ、女性は女性の細い脚
-WALK = {"male": "assets/unit/gau/{d}_{st}.txt", "female": "cand/enemy/female_{st}_{d}.txt"}
+WALK = {"male": "assets/unit/gau/{d}_{st}.txt", "female": mp.part_path("female_{st}", "{d}").as_posix()}
 
-ENEMIES = {  # id: (名前, 目, 頭, 服, 武器, 素体[, 長い髪])。長い髪は cand/enemy/hair_<名前>_<dir>.txt（頭の部品の下に重ねる）
+ENEMIES = {  # id: (名前, 目, 頭, 服, 武器, 素体[, 長い髪])。長い髪は assets/part/hair/<名前>/hair_<名前>_<dir>.txt（頭の部品の下に重ねる）
     "dagger-bandit": ("眼帯のバンダナ", "E5", "bandana", ["belt", "tatter"], "dagger", "male"),
     "dagger-knight": ("フルフェイス", "E0", "full", ["belt"], "dagger", "male"),
     "dagger-horn": ("角付きの兜", "E2", "horn", ["tatter"], "dagger", "male"),
@@ -78,19 +78,19 @@ def frame(eid, d, st, weapon="dagger", hair_back=True):
         for y, x, n in add:
             canvas[y][x] = n
     # 重ねる順: 目 → 服 → 長い髪（背中や肩の服に掛かる）→ 頭（髪の上にかぶる）
-    layers = [mp.eb.read_frame(Path(f"cand/enemy/eye_{eye}_{d}.txt"))]
+    layers = [mp.eb.read_frame(mp.part_path(f"eye_{eye}", d))]
     for c in cloth:
         layers.append({"belt": mp.belt, "tatter": mp.tatter}[c](d))
     if hair:
-        layers.append(mp.eb.read_frame(Path(f"cand/enemy/hair_{hair}_{d}.txt")))
+        layers.append(mp.eb.read_frame(mp.part_path(f"hair_{hair}", d)))
     if head:  # None は被り物なし（長い髪だけ）
-        layers.append(mp.eb.read_frame(Path(f"cand/enemy/head_{head}_{d}.txt")))
+        layers.append(mp.eb.read_frame(mp.part_path(f"head_{head}", d)))
     for g in layers:
         overlay(canvas, g)
     if hair and hair_back:  # 肩より下の髪は体の後ろ（空いている画素だけ）。武器を重ねるときは武器の後で（mkweapons）
-        overlay(canvas, mp.eb.read_frame(Path(f"cand/enemy/hair_{hair}_back_{d}.txt")), "back")
+        overlay(canvas, mp.eb.read_frame(mp.part_path(f"hair_{hair}_back", d)), "back")
     if weapon == "dagger" and st in ("base", "walk_a", "walk_b", "idle2"):
-        dag = eb.read_frame(Path(f"assets/part/dagger/dagger_{d}.txt"))
+        dag = eb.read_frame(Path(f"assets/part/equip/dagger/dagger_{d}.txt"))
         overlay(canvas, dag, "back" if d in ("up", "left") else "front", -2 if st == "idle2" else 0)
     if st.startswith("walk"):
         w = eb.read_frame(Path(WALK[sex].format(d=d, st=st)))

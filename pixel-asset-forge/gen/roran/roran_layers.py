@@ -120,12 +120,14 @@ def small(frame, marks=(), fill=()):
     return uri(im.resize((128, 128)))
 
 
-PARTS_DIR = Path("assets/unit/roran/parts")
+PART_ROOT = Path("assets/part")
 CONFIG = Path("compose/roran.json")
 HAND_COLOURS = ["skin_rose_hi", "skin_rose_base", "skin_rose_shadow"]
 # 部品の名前 → ファイル名の前半（剣を持つ腕・拳、left は奥の腕・拳、は "hand": true の拳の部品）
 PART_FILE = {"剣": "sword", "盾": "shield", "剣を持つ腕・拳": "sword_hand", "奥の腕・拳": "sword_hand",
              "盾を持つ腕・拳": "shield_hand", "手前の腕・拳": "shield_hand"}
+# ファイル名の前半 → 置き場（assets/part/ からの相対）
+PART_DIR = {"sword": "equip/sword", "shield": "equip/shield", "sword_hand": "fist/roran", "shield_hand": "fist/roran"}
 SWORD_HANDS = ("剣を持つ腕・拳", "奥の腕・拳")
 SHIELD_HANDS = ("盾を持つ腕・拳", "手前の腕・拳")
 MAP_PER_LINE = 6
@@ -151,11 +153,13 @@ def grid_text(frame, chars, note):
     return "\n".join(lines) + "\n"
 
 
-def export(parts_dir: Path, config_path: Path):
+def export(part_root: Path, config_path: Path):
     """ロランの今のコマを部品に切り、部品のファイルと compose の設定を書く（コマは書かない）。
     歩きの剣・盾・腕は立ち（base）のファイルを使い回す。"""
     chars = charmap()
-    parts_dir.mkdir(parents=True, exist_ok=True)
+    core_dir = part_root / "body" / "roran"
+    for folder in {core_dir, *(part_root / where for where in PART_DIR.values())}:
+        folder.mkdir(parents=True, exist_ok=True)
     frames = {}
     for d in DIRS:
         order = ORDERS[d]
@@ -164,11 +168,11 @@ def export(parts_dir: Path, config_path: Path):
         for st in STATES:
             layers = layers_of(d, st)
             key = "base" if st.startswith("walk") else st
-            core_path = parts_dir / f"core_{d}_{st}.txt"
+            core_path = core_dir / f"core_{d}_{st}.txt"
             core_path.write_text(grid_text(layers[CORE].frame, chars, f"ロラン {d}_{st} の芯"), encoding="utf-8")
             entries = []
             for name in [*reversed(back), *front]:  # 芯に近い奥から back、奥から手前へ front
-                path = parts_dir / f"{PART_FILE[name]}_{d}_{key}.txt"
+                path = part_root / PART_DIR[PART_FILE[name]] / f"{PART_FILE[name]}_{d}_{key}.txt"
                 if st == key:
                     path.write_text(grid_text(layers[name].frame, chars, f"ロラン {d}_{key} の{name}"),
                                     encoding="utf-8")
@@ -230,7 +234,7 @@ def main(out):
 
 if __name__ == "__main__":
     if sys.argv[1:] == ["--export"]:
-        export(PARTS_DIR, CONFIG)
-        print("書いた", PARTS_DIR, CONFIG)
+        export(PART_ROOT, CONFIG)
+        print("書いた", PART_ROOT, CONFIG)
     else:
         main(sys.argv[1])

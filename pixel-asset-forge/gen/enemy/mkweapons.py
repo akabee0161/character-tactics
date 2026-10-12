@@ -319,10 +319,10 @@ def build_frame(eid, d, st):
     apply(canvas, patch, dy=-2 if st == "idle2" else 0)
     hair = mf.ENEMIES[eid][6] if len(mf.ENEMIES[eid]) > 6 else None
     if hair:  # 肩より下の髪は、体の後ろに置いた武器のさらに後ろ（空いている画素だけ）
-        mf.overlay(canvas, eb.read_frame(Path(f"cand/enemy/hair_{hair}_back_{d}.txt")), "back")
+        mf.overlay(canvas, eb.read_frame(mf.mp.part_path(f"hair_{hair}_back", d)), "back")
     if hair and d in FAR:  # 奥の手・腕・武器は髪の後ろ。武器を持たせる前に髪（輪郭を含む）だった画素を戻す（2026-10-08 依頼者の指摘）
         plain = mf.frame(eid, d, st, weapon="none")
-        parts = [eb.read_frame(Path(f"cand/enemy/hair_{hair}{s}_{d}.txt")) for s in ("", "_back")]
+        parts = [eb.read_frame(mf.mp.part_path(f"hair_{hair}{s}", d)) for s in ("", "_back")]
         for y in range(32):
             for x in range(32):
                 drawn = [p[y][x] for p in parts if p[y][x] is not None]

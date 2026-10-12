@@ -1,6 +1,6 @@
 """イネスの今のコマ（assets/unit/ines、部品を持たない完成した絵）を部品に書き出す（2026-10-12。描き直す前に一度だけ使った）。
 
-今は走らせない。描き直した部品（assets/unit/ines/parts）と compose/ines.json を、切り出した部品で上書きしてしまう。
+今は走らせない。描き直した部品（assets/part/ の body/ines・equip/bow・equip/arrow・fist/ines）と compose/ines.json を、切り出した部品で上書きしてしまう。
 
     .venv/bin/python gen/ines/ines_layers.py --export
 
@@ -52,12 +52,12 @@ ORDERS = {
 INES = UnitDef(
     unit="ines", src=Path("assets/unit/ines"), dirs=DIRS, states=STATES,
     shares={"walk_a": "base", "walk_b": "base"},
-    parts=(PartDef("弓", "bow", frozenset("klms")),
-           PartDef("矢", "arrow", frozenset("wtu")),
+    parts=(PartDef("弓", "bow", frozenset("klms"), dir="equip/bow"),
+           PartDef("矢", "arrow", frozenset("wtu"), dir="equip/arrow"),
            PartDef("弓の拳", "bow_hand", SKIN, BOW_HAND, hand=True,
-                   keep=GRIPPED),
+                   keep=GRIPPED, dir="fist/ines"),
            PartDef("矢の拳", "arrow_hand", SKIN, ARROW_HAND, hand=True,
-                   keep=GRIPPED)),
+                   keep=GRIPPED, dir="fist/ines")),
     orders=ORDERS,
     hand_colours=("skin_hi", "skin_base", "skin_shadow"),
 )
@@ -67,8 +67,8 @@ def main(argv):
     if argv != ["--export"]:
         print(__doc__, file=sys.stderr)
         return 2
-    export(INES, Path("assets/unit/ines/parts"), Path("compose/ines.json"), Path("."))
-    print("書き出した assets/unit/ines/parts と compose/ines.json")
+    export(INES, Path("assets/part"), Path("compose/ines.json"), Path("."))
+    print("書き出した assets/part/ の弓・矢・拳・芯と compose/ines.json")
     return 0
 
 

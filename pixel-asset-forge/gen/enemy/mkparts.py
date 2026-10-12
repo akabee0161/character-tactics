@@ -5,7 +5,27 @@ from pathlib import Path
 sys.path.insert(0, "tools")
 import enemy_build as eb
 
-OUT = Path("cand/enemy")
+PART_ROOT = Path("assets/part")
+KINDS = (("head_", "head"), ("hair_", "hair"), ("eye_", "eye"), ("cloth_", "cloth"))  # 部品の名前の前半 → 種類
+
+
+def part_path(name, d):
+    """敵の部品の名前（head_horn・hair_A_back・female_walk_a など）と向きから、assets/part/<種類>/<名前>/ のファイルを返す。
+    d に "{dir}" を渡すと、選ぶページの設定のテンプレートになる。決まらない名前は ValueError（黙って変な所に書かない）。"""
+    if name == "gau_body":
+        where = "body/gau"
+    elif name.startswith("female_") and len(name) > len("female_"):
+        where = "body/female"
+    else:
+        where = None
+        for prefix, kind in KINDS:
+            rest = name[len(prefix):].removesuffix("_back") if name.startswith(prefix) else ""
+            if rest and not rest.startswith("_"):
+                where = f"{kind}/{rest}"
+                break
+        if where is None:
+            raise ValueError(f"部品の名前から置き場が決まらない: {name!r}")
+    return PART_ROOT / where / f"{name}_{d}.txt"
 DIRS = ["down", "up", "left", "right"]
 
 
@@ -68,7 +88,9 @@ def ser(g, note):
 
 
 def write(name, d, g, note):
-    (OUT / f"{name}_{d}.txt").write_text(ser(g, note), encoding="utf-8")
+    path = part_path(name, d)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(ser(g, note), encoding="utf-8")
 
 
 def emit(name, sets, m, shade, note):
@@ -251,13 +273,13 @@ def tatter(d, sex=None):
 
 # ---- 選ぶページの設定 ----
 def lay(name, zs=None):
-    return [{"part": f"cand/enemy/{name}_{{dir}}.txt", "z": "front"}]
+    return [{"part": part_path(name, "{dir}").as_posix(), "z": "front"}]
 
 
 cfg = {
     "unit": "enemy-parts",
     "title": "敵の部品（ガウの素体）",
-    "body": "cand/enemy/gau_body_{dir}.txt",
+    "body": part_path("gau_body", "{dir}").as_posix(),
     "elements": {
         "eyes": {"label": "目", "variants": {
             k: {"label": v[0], "layers": lay(f"eye_{k}")} for k, v in eyes.items()}},
@@ -273,7 +295,7 @@ cfg = {
             "C3": {"label": "ベルト+ボロ", "layers": lay("cloth_belt") + lay("cloth_tatter")}}},
         "dagger": {"label": "武器", "variants": {
             "D1": {"label": "短剣", "layers": [
-                {"part": "assets/part/dagger/dagger_{dir}.txt",
+                {"part": "assets/part/equip/dagger/dagger_{dir}.txt",
                  "z": {"up": "back", "left": "back"}}]}}},
     },
     "default": {"eyes": "E0", "head": "H1", "clothes": "C0", "dagger": "D1"},
@@ -285,13 +307,13 @@ cfg = {
 cfg_female = {
     "unit": "enemy-parts-female",
     "title": "敵の部品（女性の素体）",
-    "body": "cand/enemy/female_gau_body_{dir}.txt",
+    "body": part_path("female_gau_body", "{dir}").as_posix(),
     "elements": {
         "eyes": cfg["elements"]["eyes"],
         "hair": {"label": "長い髪", "variants": {  # 頭の部品より先に重ねる（頭の部品が上に来る）
             "N": {"label": "なし", "layers": lay("cloth_none")},
             **{k: {"label": v[0], "layers": lay(f"hair_{k}")
-                   + [{"part": f"cand/enemy/hair_{k}_back_{{dir}}.txt", "z": "back"}]}
+                   + [{"part": part_path(f"hair_{k}_back", "{dir}").as_posix(), "z": "back"}]}
                for k, v in LONG_HAIR.items()}}},
         "head": {"label": "頭", "variants": {
             "H0": {"label": "被り物なし", "layers": lay("cloth_none")}, **cfg["elements"]["head"]["variants"]}},
@@ -313,8 +335,7 @@ cfg_female = {
 
 
 def main():
-    """部品を cand/enemy/ に、選ぶページの設定を gen/enemy/ に書き出す。import しただけでは書かない（mkframes・mkweapons が import する）。"""
-    OUT.mkdir(parents=True, exist_ok=True)
+    """部品を assets/part/<種類>/<名前>/ に、選ぶページの設定を gen/enemy/ に書き出す。import しただけでは書かない（mkframes・mkweapons が import する）。"""
     emit("head_bare", bare, HAIR, HAIR_S, "素の髪（短い荒れ髪）")
     emit("head_bandana", band, BAND, BAND_S, "バンダナ（赤）")
     emit("head_horn", horn, STONE, STONE_S, "角付きの兜")
