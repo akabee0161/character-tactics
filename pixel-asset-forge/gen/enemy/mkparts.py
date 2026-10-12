@@ -26,6 +26,8 @@ def part_path(name, d):
         if where is None:
             raise ValueError(f"部品の名前から置き場が決まらない: {name!r}")
     return PART_ROOT / where / f"{name}_{d}.txt"
+
+
 DIRS = ["down", "up", "left", "right"]
 
 

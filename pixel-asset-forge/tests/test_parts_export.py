@@ -180,10 +180,10 @@ class PartsExportTest(unittest.TestCase):
         self.stops_without_writing(self.unit, "other")
 
     def test_part_directory_must_stay_under_the_part_root(self):
-        for bad in ("../equip/bow", "/tmp/bow"):
-            parts = (PartDef("弓", "bow", frozenset("m"), dir=bad), *self.unit.parts[1:])
-            with self.assertRaisesRegex(ExportError, "置き場"):
-                self.run_export(UnitDef(**{**self.unit.__dict__, "parts": parts}))
+        for bad in ("../equip/bow", "/tmp/bow", ".", "./"):
+            with self.subTest(dir=bad):
+                parts = (PartDef("弓", "bow", frozenset("m"), dir=bad), *self.unit.parts[1:])
+                self.stops_without_writing(UnitDef(**{**self.unit.__dict__, "parts": parts}), "置き場")
 
     def test_conflicting_charmaps_stop(self):
         bad = self.root / "bad.txt"

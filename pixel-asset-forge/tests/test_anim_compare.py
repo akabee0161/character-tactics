@@ -55,6 +55,26 @@ class AnimCompareTest(unittest.TestCase):
         self.assertIn('data-row="6" data-frames="4" data-fps="8"', page)   # 歩きの left
         self.assertIn("<title>題</title>", page)
 
+    def test_page_declares_html5_and_utf8(self):
+        page = build_page(self.dir / "now.png", self.dir / "cand.png", load_states(self.game(GAME)),
+                          ["down"], "題", "", ["今", "案"])
+        self.assertTrue(page.lower().startswith("<!doctype html>"))
+        self.assertIn('<meta charset="utf-8">', page)
+
+    def test_labels_must_be_two(self):
+        for labels in (["今"], ["今", "案", "別"]):
+            with self.assertRaisesRegex(AnimError, "見出し"):
+                build_page(self.dir / "now.png", self.dir / "cand.png", load_states(self.game(GAME)),
+                           ["down"], "題", "", labels)
+
+    def test_sheet_too_small_for_the_game_unit_stops(self):
+        Image.new("RGBA", (32 * 3, 32 * 12)).save(self.dir / "narrow.png")  # 歩きの4コマが入らない
+        Image.new("RGBA", (32 * 6, 32 * 8)).save(self.dir / "short.png")  # 攻撃の4行が無い
+        for name in ("narrow.png", "short.png"):
+            with self.assertRaisesRegex(AnimError, name):
+                build_page(self.dir / "now.png", self.dir / name, load_states(self.game(GAME)),
+                           ["down"], "題", "", ["今", "案"])
+
     def test_unknown_direction_stops(self):
         with self.assertRaisesRegex(AnimError, "north"):
             build_page(self.dir / "now.png", self.dir / "cand.png", load_states(self.game(GAME)),
@@ -64,7 +84,7 @@ class AnimCompareTest(unittest.TestCase):
         out = self.dir / "page.html"
         args = [str(self.dir / "now.png"), str(self.dir / "cand.png"), str(out)]
         self.assertEqual(main(args + ["--anim", str(self.game(GAME))]), 0)
-        self.assertTrue(out.read_text(encoding="utf-8").startswith("<title>"))
+        self.assertTrue(out.read_text(encoding="utf-8").lower().startswith("<!doctype html>"))
         self.assertEqual(main(args + ["--anim", str(self.dir / "none.json")]), 2)
         self.assertEqual(main([str(self.dir / "none.png"), args[1], args[2], "--anim", str(self.game(GAME))]), 2)
 

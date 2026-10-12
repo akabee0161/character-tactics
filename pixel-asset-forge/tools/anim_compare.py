@@ -14,6 +14,8 @@ import json
 import sys
 from pathlib import Path
 
+from PIL import Image
+
 DIRS = ["down", "up", "left", "right"]
 DIR_JA = {"down": "下（正面）", "up": "上（背面）", "left": "左", "right": "右"}
 STATE_JA = {"idle": "待機", "walk": "歩き", "attack": "攻撃"}
@@ -47,7 +49,10 @@ def load_states(path: Path) -> list[tuple[str, str, int, float]]:
         out.append((key, ja, frames, fps))
     return out
 
-PAGE = """<title>{title}</title>
+
+PAGE = """<!doctype html>
+<meta charset="utf-8">
+<title>{title}</title>
 <style>
 :root {{
   --bg: #eef1ea; --panel: #f9faf6; --ink: #22261f; --muted: #5d6656; --line: #cfd6c6;
@@ -131,10 +136,27 @@ def uri(path: Path) -> str:
         raise AnimError(f"{path}: 読めない: {exc}") from None
 
 
+def _check_sheet(path: Path, states) -> None:
+    """シートに、状態×4方向の行と、一番長い状態のコマが入っているか（入っていないと空のセルが黙って再生される）。"""
+    try:
+        with Image.open(path) as im:
+            width, height = im.size
+    except OSError as exc:
+        raise AnimError(f"{path}: 読めない: {exc}") from None
+    need_w, need_h = max(frames for _k, _ja, frames, _fps in states) * 32, len(states) * len(DIRS) * 32
+    if width < need_w or height < need_h:
+        raise AnimError(f"{path}: シートが {width}x{height} で、ゲームのユニット設定の {need_w}x{need_h} に足りない"
+                        "（別のユニットのシートか、--anim の取り違え）")
+
+
 def build_page(now: Path, cand: Path, states, dirs: list[str], title: str, note: str, labels: list[str]) -> str:
     unknown = [d for d in dirs if d not in DIRS]
     if unknown:
         raise AnimError(f"向きは {', '.join(DIRS)} から選ぶ（{', '.join(unknown)} だった）")
+    if len(labels) != 2:
+        raise AnimError(f"見出し（--labels）は 左,右 の2つにする（{len(labels)} つだった）")
+    for sheet in (now, cand):
+        _check_sheet(sheet, states)
     labels = [html.escape(s) for s in labels]
     sections = []
     for si, (_key, ja, frames, fps) in enumerate(states):

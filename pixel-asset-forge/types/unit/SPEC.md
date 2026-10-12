@@ -305,7 +305,7 @@ tools/weapon_check.py assets/unit/spear-thug-c-f $C --ref assets/unit/spear-thug
 `--arm` はコマごとに外せない。依頼者了承 2026-10-08）。`left_idle2` は「手が細い」（奥の拳が長い髪に半分隠れ、1px 幅だけのぞく）。
 ほかの女性6体は全項目を通る。
 
-`assets/unit/` の生成したコマには `unit_check.py` を使えない。`--items` はファイルの中の文字で持ち物を指定するが、
+敵の生成したコマ（`assets/unit/<敵の id>/`）には `unit_check.py` を使えない。`--items` はファイルの中の文字で持ち物を指定するが、
 生成したコマは文字の割り当てがコマごとに違う。脚と足元は、再生ページ（`tools/enemy_gallery.py`）とシートのプレビューの足元ライン（y=30）で確かめる。
 
 弓（イネス）は対象外。ガウ・ロランは全項目を通る（2026-10-07）。

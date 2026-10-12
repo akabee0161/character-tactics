@@ -43,6 +43,28 @@ class ReorderTest(unittest.TestCase):
             with self.assertRaisesRegex(ReorderError, word):
                 reorder(CONFIG, "left", order)
 
+    def test_parts_without_a_state_in_the_name_are_named_by_their_first_half(self):
+        # ガウの頭巾・髪・短剣は向きごとに1枚（hood_left.txt）で、状態の名前が付かない
+        gau = {"unit": "gau", "frames": {"left_base": {"body": "core.txt", "layers": [
+            {"part": "assets/part/head/hood/hood_left.txt", "z": "front"},
+            {"part": "assets/part/equip/dagger/dagger_left.txt", "z": "back"}]}}}
+        out = reorder(gau, "left", ["CORE", "dagger", "hood"])
+        self.assertEqual([(Path(entry["part"]).stem, entry["z"]) for entry in out["frames"]["left_base"]["layers"]],
+                         [("dagger_left", "front"), ("hood_left", "front")])
+
+    def test_part_missing_from_some_frames_is_skipped_there(self):
+        # ガウの left_atk_wind は短剣の層を持たない（体に隠れる）。ほかのコマにある部品は、無いコマでは飛ばす
+        gau = {"unit": "gau", "frames": {
+            "left_base": {"body": "core.txt", "layers": [{"part": "p/hood_left.txt", "z": "front"},
+                                                          {"part": "p/dagger_left.txt", "z": "back"}]},
+            "left_atk_wind": {"body": "core.txt", "layers": [{"part": "p/hood_left.txt", "z": "front"}]}}}
+        out = reorder(gau, "left", ["dagger", "CORE", "hood"])
+        self.assertEqual([Path(e["part"]).stem for e in out["frames"]["left_atk_wind"]["layers"]], ["hood_left"])
+        self.assertEqual([(Path(e["part"]).stem, e["z"]) for e in out["frames"]["left_base"]["layers"]],
+                         [("dagger_left", "back"), ("hood_left", "front")])
+        with self.assertRaisesRegex(ReorderError, "shield"):  # どのコマにも無い名前は書き間違いとして止める
+            reorder(gau, "left", ["dagger", "CORE", "hood", "shield"])
+
     def test_direction_without_frames_stops(self):
         with self.assertRaisesRegex(ReorderError, "up"):
             reorder(CONFIG, "up", ["CORE"])

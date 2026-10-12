@@ -96,7 +96,7 @@ def _validate(unit: UnitDef) -> None:
     PR #32 の CodeRabbit の指摘、2026-10-12）。"""
     for part in unit.parts:
         where = Path(part.dir)
-        if not part.dir or where.is_absolute() or ".." in where.parts:
+        if not where.parts or where.is_absolute() or ".." in where.parts:  # 空・"." は assets/part/ の直下になる
             raise ExportError(f"{part.name} の置き場（dir）が無いか、assets/part/ の中の相対パスでない: {part.dir!r}")
     names = [p.name for p in unit.parts]
     for d in unit.dirs:

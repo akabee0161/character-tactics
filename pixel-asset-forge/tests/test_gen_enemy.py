@@ -40,7 +40,7 @@ class PartPathTest(unittest.TestCase):
         found = [p for kind in ("head", "hair", "eye", "cloth") for p in (root / kind).rglob("*.txt")
                  if p.parent.name not in ("hood", "gau")]  # ガウの頭巾（head/hood）・髪（hair/gau）は mkparts の部品でない
         found += list((root / "body" / "female").glob("*.txt")) + list((root / "body" / "gau").glob("gau_body_*.txt"))
-        self.assertEqual(len(found), 108, "敵の部品は108ファイル")
+        self.assertTrue(found, "敵の部品が1つも見つからない")  # 件数は固定しない（D で部品が増減する）
         for p in found:
             stem, d = p.stem.rsplit("_", 1)
             self.assertEqual(REPO_ROOT / part_path(stem, d), p)
