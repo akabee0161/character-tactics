@@ -1,4 +1,6 @@
-"""イネスの今のコマ（assets/unit/ines、部品を持たない完成した絵）を部品に書き出す（2026-10-12。描き直す前に一度だけ使う）。
+"""イネスの今のコマ（assets/unit/ines、部品を持たない完成した絵）を部品に書き出す（2026-10-12。描き直す前に一度だけ使った）。
+
+今は走らせない。描き直した部品（assets/unit/ines/parts）と compose/ines.json を、切り出した部品で上書きしてしまう。
 
     .venv/bin/python cand/gen/ines_layers.py --export
 
