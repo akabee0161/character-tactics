@@ -634,10 +634,6 @@
       "body": "assets/unit/ines/parts/core_left_base.txt",
       "layers": [
         {
-          "part": "assets/unit/ines/parts/arrow_left_base.txt",
-          "z": "back"
-        },
-        {
           "part": "assets/unit/ines/parts/arrow_hand_left_base.txt",
           "z": "back",
           "hand": true,
@@ -651,8 +647,12 @@
           ]
         },
         {
+          "part": "assets/unit/ines/parts/arrow_left_base.txt",
+          "z": "back"
+        },
+        {
           "part": "assets/unit/ines/parts/bow_left_base.txt",
-          "z": "front"
+          "z": "back"
         },
         {
           "part": "assets/unit/ines/parts/bow_hand_left_base.txt",
@@ -673,10 +673,6 @@
       "body": "assets/unit/ines/parts/core_left_idle2.txt",
       "layers": [
         {
-          "part": "assets/unit/ines/parts/arrow_left_idle2.txt",
-          "z": "back"
-        },
-        {
           "part": "assets/unit/ines/parts/arrow_hand_left_idle2.txt",
           "z": "back",
           "hand": true,
@@ -690,8 +686,12 @@
           ]
         },
         {
+          "part": "assets/unit/ines/parts/arrow_left_idle2.txt",
+          "z": "back"
+        },
+        {
           "part": "assets/unit/ines/parts/bow_left_idle2.txt",
-          "z": "front"
+          "z": "back"
         },
         {
           "part": "assets/unit/ines/parts/bow_hand_left_idle2.txt",
@@ -712,10 +712,6 @@
       "body": "assets/unit/ines/parts/core_left_walk_a.txt",
       "layers": [
         {
-          "part": "assets/unit/ines/parts/arrow_left_base.txt",
-          "z": "back"
-        },
-        {
           "part": "assets/unit/ines/parts/arrow_hand_left_base.txt",
           "z": "back",
           "hand": true,
@@ -729,8 +725,12 @@
           ]
         },
         {
+          "part": "assets/unit/ines/parts/arrow_left_base.txt",
+          "z": "back"
+        },
+        {
           "part": "assets/unit/ines/parts/bow_left_base.txt",
-          "z": "front"
+          "z": "back"
         },
         {
           "part": "assets/unit/ines/parts/bow_hand_left_base.txt",
@@ -751,10 +751,6 @@
       "body": "assets/unit/ines/parts/core_left_walk_b.txt",
       "layers": [
         {
-          "part": "assets/unit/ines/parts/arrow_left_base.txt",
-          "z": "back"
-        },
-        {
           "part": "assets/unit/ines/parts/arrow_hand_left_base.txt",
           "z": "back",
           "hand": true,
@@ -768,8 +764,12 @@
           ]
         },
         {
+          "part": "assets/unit/ines/parts/arrow_left_base.txt",
+          "z": "back"
+        },
+        {
           "part": "assets/unit/ines/parts/bow_left_base.txt",
-          "z": "front"
+          "z": "back"
         },
         {
           "part": "assets/unit/ines/parts/bow_hand_left_base.txt",
@@ -790,10 +790,6 @@
       "body": "assets/unit/ines/parts/core_left_atk_wind.txt",
       "layers": [
         {
-          "part": "assets/unit/ines/parts/arrow_left_atk_wind.txt",
-          "z": "back"
-        },
-        {
           "part": "assets/unit/ines/parts/arrow_hand_left_atk_wind.txt",
           "z": "back",
           "hand": true,
@@ -807,8 +803,12 @@
           ]
         },
         {
+          "part": "assets/unit/ines/parts/arrow_left_atk_wind.txt",
+          "z": "back"
+        },
+        {
           "part": "assets/unit/ines/parts/bow_left_atk_wind.txt",
-          "z": "front"
+          "z": "back"
         },
         {
           "part": "assets/unit/ines/parts/bow_hand_left_atk_wind.txt",
@@ -829,10 +829,6 @@
       "body": "assets/unit/ines/parts/core_left_atk_draw.txt",
       "layers": [
         {
-          "part": "assets/unit/ines/parts/arrow_left_atk_draw.txt",
-          "z": "back"
-        },
-        {
           "part": "assets/unit/ines/parts/arrow_hand_left_atk_draw.txt",
           "z": "back",
           "hand": true,
@@ -846,8 +842,12 @@
           ]
         },
         {
+          "part": "assets/unit/ines/parts/arrow_left_atk_draw.txt",
+          "z": "back"
+        },
+        {
           "part": "assets/unit/ines/parts/bow_left_atk_draw.txt",
-          "z": "front"
+          "z": "back"
         },
         {
           "part": "assets/unit/ines/parts/bow_hand_left_atk_draw.txt",
@@ -868,10 +868,6 @@
       "body": "assets/unit/ines/parts/core_left_atk_hit.txt",
       "layers": [
         {
-          "part": "assets/unit/ines/parts/arrow_left_atk_hit.txt",
-          "z": "back"
-        },
-        {
           "part": "assets/unit/ines/parts/arrow_hand_left_atk_hit.txt",
           "z": "back",
           "hand": true,
@@ -885,8 +881,12 @@
           ]
         },
         {
+          "part": "assets/unit/ines/parts/arrow_left_atk_hit.txt",
+          "z": "back"
+        },
+        {
           "part": "assets/unit/ines/parts/bow_left_atk_hit.txt",
-          "z": "front"
+          "z": "back"
         },
         {
           "part": "assets/unit/ines/parts/bow_hand_left_atk_hit.txt",
@@ -907,10 +907,6 @@
       "body": "assets/unit/ines/parts/core_left_atk_release.txt",
       "layers": [
         {
-          "part": "assets/unit/ines/parts/arrow_left_atk_release.txt",
-          "z": "back"
-        },
-        {
           "part": "assets/unit/ines/parts/arrow_hand_left_atk_release.txt",
           "z": "back",
           "hand": true,
@@ -924,8 +920,12 @@
           ]
         },
         {
+          "part": "assets/unit/ines/parts/arrow_left_atk_release.txt",
+          "z": "back"
+        },
+        {
           "part": "assets/unit/ines/parts/bow_left_atk_release.txt",
-          "z": "front"
+          "z": "back"
         },
         {
           "part": "assets/unit/ines/parts/bow_hand_left_atk_release.txt",
