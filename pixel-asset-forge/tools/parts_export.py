@@ -89,8 +89,31 @@ def _box(part: PartDef, d: str, key: str) -> Box:
     return part.boxes[(d, key)]
 
 
+def _validate(unit: UnitDef) -> None:
+    """書き始める前に、全部の向き・状態について重なり順と箱を確かめる（途中で止まって一部だけ上書きしないように。
+    PR #32 の CodeRabbit の指摘、2026-10-12）。"""
+    names = [p.name for p in unit.parts]
+    for d in unit.dirs:
+        if d not in unit.orders:
+            raise ExportError(f"{d} の重なり順（orders）が無い")
+        order = unit.orders[d]
+        if order.count(CORE) != 1:
+            raise ExportError(f"{d} の重なり順に芯（{CORE}）がちょうど1つ無い: {order}")
+        unknown = [n for n in order if n != CORE and n not in names]
+        if unknown:
+            raise ExportError(f"{d} の重なり順に、部品に無い名前がある: {', '.join(unknown)}")
+        missing = [n for n in names if n not in order]
+        if missing:
+            raise ExportError(f"{d} の重なり順に、部品が入っていない（画素が芯の穴になる）: {', '.join(missing)}")
+        for st in unit.states:
+            for part in unit.parts:
+                _box(part, d, unit.shares.get(st, st))
+
+
 def export(unit: UnitDef, parts_dir: Path, config_path: Path, root: Path) -> None:
-    """部品のファイルと compose の設定を書く（コマは書かない）。設定のパスは root からの相対。"""
+    """部品のファイルと compose の設定を書く（コマは書かない）。設定のパスは root からの相対。
+    定義に誤りがあれば、何も書かずに ExportError で止める。"""
+    _validate(unit)
     charmap = unit_charmap(sorted(unit.src.glob("*.txt")))
     by_name = {p.name: p for p in unit.parts}
     parts_dir.mkdir(parents=True, exist_ok=True)

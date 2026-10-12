@@ -109,6 +109,52 @@ class PartsExportTest(unittest.TestCase):
         with self.assertRaisesRegex(ExportError, "down_idle2 の箱が無い"):
             self.run_export(unit)
 
+    def stops_without_writing(self, unit, message):
+        """書き出しが message で止まり、前からある部品・芯・設定を1つも変えず、新しいファイルも作らない。"""
+        parts = self.root / "assets/unit/t/parts"
+        parts.mkdir(parents=True)
+        kept = {parts / "core_down_base.txt": "前からある芯\n", parts / "bow_down_base.txt": "前からある弓\n",
+                self.root / "compose/t.json": "前からある設定\n"}
+        for path, text in kept.items():
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(text, encoding="utf-8")
+        with self.assertRaisesRegex(ExportError, message):
+            self.run_export(unit)
+        for path, text in kept.items():
+            self.assertEqual(path.read_text(encoding="utf-8"), text, path.name)
+        self.assertEqual(sorted(p.name for p in parts.iterdir()), ["bow_down_base.txt", "core_down_base.txt"])
+
+    def test_missing_box_in_a_later_state_writes_nothing(self):
+        # 後ろの状態（idle2）で箱が無くても、前の状態（base）の部品を書いてから止まらない（PR #32 の CodeRabbit の指摘）
+        self.stops_without_writing(UnitDef(**{**self.unit.__dict__, "states": ("base", "idle2")}),
+                                   "down_idle2 の箱が無い")
+
+    def test_order_without_the_core_writes_nothing(self):
+        orders = {"down": ("矢の拳", "弓", "矢", "弓の拳")}
+        self.stops_without_writing(UnitDef(**{**self.unit.__dict__, "orders": orders}), "芯")
+
+    def test_order_naming_an_unknown_part_writes_nothing(self):
+        orders = {"down": ("矢の拳", "弓", CORE, "矢", "弓の拳", "盾")}
+        self.stops_without_writing(UnitDef(**{**self.unit.__dict__, "orders": orders}), "盾")
+
+    def test_part_missing_from_the_order_writes_nothing(self):
+        orders = {"down": ("弓", CORE, "矢", "弓の拳")}
+        self.stops_without_writing(UnitDef(**{**self.unit.__dict__, "orders": orders}), "矢の拳")
+
+    def test_direction_without_an_order_writes_nothing(self):
+        self.stops_without_writing(UnitDef(**{**self.unit.__dict__, "orders": {}}), "down")
+
+    def test_unreadable_frame_in_a_later_state_writes_nothing(self):
+        (self.src / "down_walk_a.txt").write_text("# type: unit\n# size: 32x32\nこわれた行\n", encoding="utf-8")
+        parts = self.root / "assets/unit/t/parts"
+        parts.mkdir(parents=True)
+        (parts / "core_down_base.txt").write_text("前からある芯\n", encoding="utf-8")
+        with self.assertRaises(Exception):
+            self.run_export()
+        self.assertEqual((parts / "core_down_base.txt").read_text(encoding="utf-8"), "前からある芯\n")
+        self.assertEqual([p.name for p in parts.iterdir()], ["core_down_base.txt"])
+        self.assertFalse((self.root / "compose/t.json").exists())
+
     def test_conflicting_charmaps_stop(self):
         bad = self.root / "bad.txt"
         bad.write_text(frame({}).replace("m=wood_shadow", "m=wood_base"), encoding="utf-8")
