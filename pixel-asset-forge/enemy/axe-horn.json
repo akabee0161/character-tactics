@@ -1,0 +1,12 @@
+{
+  "id": "axe-horn",
+  "name": "角付きの兜（斧）",
+  "archetype": "axe",
+  "body": "male",
+  "frames": "cand/enemy-frames/axe-horn",
+  "recolor": {
+    "cloak_dark_hi": "leaf_hi",
+    "cloak_dark_base": "leaf_base",
+    "cloak_dark_shadow": "leaf_shadow"
+  }
+}

@@ -1,0 +1,182 @@
+{
+  "unit": "enemy-parts",
+  "title": "敵の部品（ガウの素体）",
+  "body": "cand/enemy/gau_body_{dir}.txt",
+  "elements": {
+    "eyes": {
+      "label": "目",
+      "variants": {
+        "E0": {
+          "label": "ガウと同じ縦線",
+          "layers": [
+            {
+              "part": "cand/enemy/eye_E0_{dir}.txt",
+              "z": "front"
+            }
+          ]
+        },
+        "E1": {
+          "label": "横線",
+          "layers": [
+            {
+              "part": "cand/enemy/eye_E1_{dir}.txt",
+              "z": "front"
+            }
+          ]
+        },
+        "E2": {
+          "label": "つり目",
+          "layers": [
+            {
+              "part": "cand/enemy/eye_E2_{dir}.txt",
+              "z": "front"
+            }
+          ]
+        },
+        "E3": {
+          "label": "たれ目",
+          "layers": [
+            {
+              "part": "cand/enemy/eye_E3_{dir}.txt",
+              "z": "front"
+            }
+          ]
+        },
+        "E4": {
+          "label": "点",
+          "layers": [
+            {
+              "part": "cand/enemy/eye_E4_{dir}.txt",
+              "z": "front"
+            }
+          ]
+        },
+        "E5": {
+          "label": "眼帯",
+          "layers": [
+            {
+              "part": "cand/enemy/eye_E5_{dir}.txt",
+              "z": "front"
+            }
+          ]
+        }
+      }
+    },
+    "head": {
+      "label": "頭",
+      "variants": {
+        "H1": {
+          "label": "素の髪",
+          "layers": [
+            {
+              "part": "cand/enemy/head_bare_{dir}.txt",
+              "z": "front"
+            }
+          ]
+        },
+        "H2": {
+          "label": "バンダナ",
+          "layers": [
+            {
+              "part": "cand/enemy/head_bandana_{dir}.txt",
+              "z": "front"
+            }
+          ]
+        },
+        "H3": {
+          "label": "角付きの兜",
+          "layers": [
+            {
+              "part": "cand/enemy/head_horn_{dir}.txt",
+              "z": "front"
+            }
+          ]
+        },
+        "H4": {
+          "label": "フルフェイス",
+          "layers": [
+            {
+              "part": "cand/enemy/head_full_{dir}.txt",
+              "z": "front"
+            }
+          ]
+        }
+      }
+    },
+    "clothes": {
+      "label": "服",
+      "variants": {
+        "C0": {
+          "label": "ガウのまま",
+          "layers": [
+            {
+              "part": "cand/enemy/cloth_none_{dir}.txt",
+              "z": "front"
+            }
+          ]
+        },
+        "C1": {
+          "label": "ベルト",
+          "layers": [
+            {
+              "part": "cand/enemy/cloth_belt_{dir}.txt",
+              "z": "front"
+            }
+          ]
+        },
+        "C2": {
+          "label": "ボロ",
+          "layers": [
+            {
+              "part": "cand/enemy/cloth_tatter_{dir}.txt",
+              "z": "front"
+            }
+          ]
+        },
+        "C3": {
+          "label": "ベルト+ボロ",
+          "layers": [
+            {
+              "part": "cand/enemy/cloth_belt_{dir}.txt",
+              "z": "front"
+            },
+            {
+              "part": "cand/enemy/cloth_tatter_{dir}.txt",
+              "z": "front"
+            }
+          ]
+        }
+      }
+    },
+    "dagger": {
+      "label": "武器",
+      "variants": {
+        "D1": {
+          "label": "短剣",
+          "layers": [
+            {
+              "part": "assets/part/dagger/dagger_{dir}.txt",
+              "z": {
+                "up": "back",
+                "left": "back"
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "default": {
+    "eyes": "E0",
+    "head": "H1",
+    "clothes": "C0",
+    "dagger": "D1"
+  },
+  "matrix": {
+    "rows": "head",
+    "cols": "eyes"
+  },
+  "refs": {
+    "ガウ（完成）": "assets/unit/gau/{dir}_base.txt"
+  }
+}

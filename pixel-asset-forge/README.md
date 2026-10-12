@@ -250,6 +250,17 @@ cat sheets/roran.txt
 - **脚の中心**: 向きごとに、全コマの脚（y=24 から下。輪郭と `--items` の持ち物の文字を除く）の中心がそろっているか。そろっていなければ終了コード 1
 - **増えた切れ目**: 同じ向きの `base` に無かった輪郭の切れ目を並べる。歩きの足先のようにわざと切れているものもあるので、報告だけ（終了コードは変わらない）
 
+片手で握る武器を持つユニットは、`tools/weapon_check.py` で武器と手も確かめる（色は色名で指定。ユニットごとの指定は `types/unit/SPEC.md` の自己チェック①）。
+
+```sh
+.venv/bin/python tools/weapon_check.py assets/unit/gau --blade stone_hi,stone_base --weapon wood_hi,wood_base,wood_shadow \
+    --hand skin_rose_hi,skin_rose_base,skin_rose_shadow --hidden left_atk_wind,up_atk_wind,up_atk_hit --depth down
+```
+
+- 手と武器が消えていないか、手の輪郭が背景に接していないか、握る手が 2px 幅以上あるか、手が腕とつながっているか（`--arm`。腕・袖を持たない「体 + 拳」のユニットでは意味が薄い）
+- 攻撃の当たりのコマで穂先が向いている側にあるか、武器がコマの端で切れていないか
+- 攻撃 → 構えで、武器の中の握る位置と武器の長さが変わらないか（`--depth` の向きは奥行きの表現として除く）
+
 髪・かぶり物・武器を素体抜きの部品として描いたユニットは、`tools/compose.py` で素体と重ねてコマにする。
 
 ```sh
@@ -259,6 +270,8 @@ cat sheets/roran.txt
 
 組み立て方は `compose/<ユニット>.json` に書く（`assets/` の下に置くと `validate.py` がグリッドとして読んで落ちる）。
 部品ごとに `front`（上に描く）か `back`（透明な画素にだけ描く。体に隠れる）を選び、`dx`・`dy` でずらす。
+`front` は積んだ時点の一番手前へ、`back` は一番奥へ入る（`back` は体に近いものから先に書く）。拳の部品には `hand: true` を付けると、四方を輪郭で閉じているかを `--check` が確かめる。
+ロランは全向きを、完全な単品の部品（体・剣・剣の拳・盾・盾の拳）で組んでいる（`compose/roran.json`。決まりは `types/unit/SPEC.md`「部品で組む規約」）。
 手順は `types/unit/SPEC.md` の「描く手順」。
 組み立てた後に手で直したコマ（ガウは16コマ。色・目・襟・腕を描き足した）は組み立て結果と違うので、`compose.py` は上書きせずに止まる（`--force` を付けたときだけ上書きする）。
 `compose/gau.json` は組み立ての出発点の記録で、今のガウの絵はこれだけでは再現しない（`ISSUES.md`「組み立てた後の描き足しが forge の道具になっていない」）。
@@ -311,6 +324,29 @@ forge をゲームリポジトリへコピーして使うときは、ゲーム�
 `export.py` は `build/` を空にして全アセットを描き直してから、対応表どおりにコピーする。
 対応表が誤っていれば（生成物が無い、名前が重なる など）何もコピーせずに止まる。
 **このコマンドはリポジトリの外（書き出し先）を書き換える。** ツアーの他のコマンドと違うので注意。
+
+### 2.11 敵のバリエーション（元のコマを色替えしてシートにする）
+
+元のコマ（味方の完成コマ、または部品で組んだ敵のコマ）の色名を置き換えて、敵のシートを機械的に作る。画素は変えない。
+経緯は `docs/superpowers/specs/2026-10-06-enemy-variants-design.md`（character-tactics）。
+
+```sh
+.venv/bin/python tools/enemy_build.py enemy/dagger-bandit.json   # build/sheets/<id>.png（と _preview.png）
+.venv/bin/python tools/enemy_build.py --all                     # enemy/ の全レシピ
+.venv/bin/python tools/enemy_build.py --colours dagger          # 男女の元のコマが使う色の差（女性の元のコマができるまで使えない）
+```
+
+- レシピは `enemy/<id>.json`（キー: `id` `name` `archetype` `body` `recolor` `frames`）。`id` はファイル名と同じ
+- `archetype` は `dagger` `axe` `spear`（シート定義はどれも `sheets/gau.txt`）。`body` は `male` か `female`
+- `frames` は元のコマの置き場（リポジトリからの相対パス）。今の16体（男性8・女性8）は `cand/enemy-frames/<id>`
+  （部品で組んだコマ）を指す。`axe` `spear` では必須。
+  書かなければ `dagger` の `male` は `assets/unit/gau/`、`female` は `assets/unit/enemy-src/dagger-female/`
+  （`--colours` が比べるのもこの2つ。短剣の女性の元のコマはまだ無いので、今は置き場が無いと言って止まる）
+- 部品で組んだコマの生成（cwd は forge の直下）: `cand/gen/mkparts.py`（頭・目・服・長い髪の部品と選ぶページの設定）→
+  `cand/gen/mkweapons.py`（斧・槍の男女の敵。敵の一覧は `cand/gen/mkframes.py` の `ENEMIES`、女性の8体は
+  `mkweapons.py` で足す）。女性の id は `<男性の id>-<髪 a・b・c>-f`（a 前髪ありのロング・b 前髪なしのロング・c ポニーテール）
+- `recolor` は「元のコマが使うパレット名 → 置き換え後のパレット名」。元のコマが使わない名前は止める
+- 元のコマの絵を直したら `enemy_build.py --all` で作り直す。`build/` は生成物
 
 ### まとめ
 

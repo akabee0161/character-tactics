@@ -51,8 +51,17 @@
 .venv/bin/python tools/tilemap.py             # tile を 3x3 で並べる（継ぎ目の確認）
 .venv/bin/python tools/sheet.py sheets/roran.txt  # unit のシートとプレビューを出す
 .venv/bin/python tools/sheet_gif.py sheets/roran.txt  # unit の動きを状態ごとの GIF にする（README 2.7）
+.venv/bin/python tools/enemy_build.py enemy/dagger-bandit.json  # 敵のレシピから、元のコマ（frames）を色替えして敵のシートを作る（build/sheets/<id>.png）
+.venv/bin/python tools/enemy_build.py --all                      # enemy/ の全レシピを作る
+.venv/bin/python tools/enemy_build.py --colours dagger           # 男女の元のコマが使う色の差（女性の元のコマができるまで使えない）
+.venv/bin/python tools/enemy_gallery.py build/enemy_gallery.html --ref build/sheets/gau.png:ガウ（味方）  # 敵を並べて動きを再生する確認ページ（依頼者へ渡す）
 .venv/bin/python tools/unit_check.py assets/unit/ines --items klmstuw  # unit の脚の中心と増えた切れ目（自己チェック①）
+.venv/bin/python tools/weapon_check.py assets/unit/gau --blade stone_hi,stone_base --weapon wood_hi,wood_base,wood_shadow --hand skin_rose_hi,skin_rose_base,skin_rose_shadow --hidden left_atk_wind,up_atk_wind,up_atk_hit --depth down  # 武器と握る手（自己チェック①。ユニットごとの指定は types/unit/SPEC.md）
+.venv/bin/python tools/body_check.py assets/unit/roran/parts  # 体（core）の部品を単品で見た「当たり前」: 頭・胴・脚の中心、胴からのはみ出し、輪郭の切れ目、穴（--head/--trunk/--legs で行の範囲を変える）
+.venv/bin/python tools/hand_outline.py assets/unit/roran/parts/sword_hand_down_base.txt --hand skin_rose_hi,skin_rose_base,skin_rose_shadow  # 拳の部品の輪郭の切れ目を出す（--write で直す）
 .venv/bin/python tools/compose.py compose/gau.json --out /tmp/cand   # 素体と部品を重ねて unit のコマを組み立てる（手で直したコマは上書きせず止まる）
+.venv/bin/python tools/compose.py compose/roran.json --check   # ロランは全24コマが部品から再現できる（拳が閉じていないと終了 2）
+.venv/bin/python tools/compose_page.py --help  # 部品と組んだ結果を層の順に並べる確認ページ（--dirs down,right のようにカンマ区切り）
 .venv/bin/python tools/face_down.py IMG N OUT_PREFIX  # 拡大されたドット絵の顔を N 升に戻す
 .venv/bin/python tools/present.py OUT.png A.txt B.txt --ref face.png  # 案を並べて見せる画像
 .venv/bin/python tools/unit_picker.py PICKER.json --out build/picker/gau.html  # unit の部品の案を組み合わせて選ぶページ（CP1 で必須）

@@ -1,0 +1,12 @@
+{
+  "id": "spear-thug-b-f",
+  "name": "素の髪のごろつき（槍・女・前髪なしのロング）",
+  "archetype": "spear",
+  "body": "female",
+  "frames": "cand/enemy-frames/spear-thug-b-f",
+  "recolor": {
+    "cloak_dark_hi": "orchid_base",
+    "cloak_dark_base": "orchid_shadow",
+    "cloak_dark_shadow": "orchid_dark"
+  }
+}

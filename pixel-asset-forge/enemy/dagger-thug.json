@@ -1,0 +1,12 @@
+{
+  "id": "dagger-thug",
+  "name": "素の髪のごろつき（短剣）",
+  "archetype": "dagger",
+  "body": "male",
+  "frames": "cand/enemy-frames/dagger-thug",
+  "recolor": {
+    "cloak_dark_hi": "orchid_base",
+    "cloak_dark_base": "orchid_shadow",
+    "cloak_dark_shadow": "orchid_dark"
+  }
+}

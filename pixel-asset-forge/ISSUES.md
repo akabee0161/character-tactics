@@ -27,6 +27,9 @@
 | **`probe_colors.py --pairs` の読み込みエラーがトレースバックになる** | `read_pairs()` の呼び出しが `main()` の `try` の外にあるので、1色だけの行の `GridError` や、ファイルが無いときの `OSError` が `FAIL`（終了コード 2）にならずに漏れる | 小 | 同上 |
 | **`RiverDerivationTest` が現役の川のタイルを読んでいる** | `tests/test_tools.py` の `RiverDerivationTest` が `assets/tile/river_*.txt` を直接読んでおり、「回帰テストに現役のアートを参照させない」（CLAUDE.md）に反する。出荷する川の派生宣言の検査は残したまま、比較する入力を `tests/fixtures/` に固定する | 小 | character-tactics#22 の CodeRabbit の指摘（2026-09-30） |
 | **`check_colors.py` が既定の実行で毎回失敗する** | 原因は上の `knight` 1件だけだが、そのせいで新しい hard failure が出ても終了コードで区別できない。`knight` の色が決まれば解消する | 小（色の決定待ち） | 2026-09-23 |
+| **`weapon_check.py --far-shade` が振りかぶりの明るい奥の拳を拾わない** | `axe-horn` の `left_atk_wind` は奥の拳が明るい肌色のまま（2026-10-09 依頼者の指摘）なのに、SPEC の斧の指定（`--far left --far-shade skin_rose_shadow ... --partial ...left_atk_wind`）で「ok」になった。原因は未確認（`--partial` で外れるのか、攻撃のコマを見ていないのか）。層の試作（`cand/gen/mklayers.py`）は left の握る手を影の色にしたが、`cand/enemy-frames/` の男女の斧・槍の振りかぶりは今も明るい。ロランの `left_atk_wind` の奥の拳（x22〜24, y13〜14）も明るい（2026-10-09 に層の切り出しで見つけた） | 小 | 2026-10-09 |
+| **`weapon_check.py` が色名とコマ名を検査しない** | `--weapon` の色名を打ち間違えると柄の色が空になり、黙って「柄の色が無い武器」の扱いになる（刃と同じ色の兜を取り違えない仕組みが効かない）。`--hidden` `--partial` の無いコマ名も黙る。`load_palette()` で色名を確かめ、無いコマ名は止める | 小 | 最終レビュー 2026-10-07 |
+| **`cand/gen/build_sheets.py` が色替え済みのシートを上書きする** | レシピと同じ id・`recolor={}` で `build/sheets/<id>.png` に書く。レシピの `frames` ができて役目を終えたので、消すか出力先を分ける | 小 | 最終レビュー 2026-10-07 |
 
 ## ツールの改善（挙動は変えない）
 
@@ -37,11 +40,18 @@
 | **共有関数が `SystemExit` を投げる** | `tilemap.read_layout` は `sheet.py` と `sets.py` からも呼ばれるのに、エラー時に `SystemExit` で終了する。`sets.py` は `SystemExit` を定義ごとに受け止めて失敗として数えている（2026-09-29、PR #7 の CodeRabbit の指摘）。`load_tile` は型注釈が `str` なのに `Path` も受け付けている | 小 | 2026-09-23 |
 | **テストが一時ファイルを /tmp に残す** | `test_check_colors` / `test_probe_colors` / `test_sheet` / `test_tilemap` / `test_tools` の一時ファイルを作る関数が `NamedTemporaryFile(delete=False)` で作ったまま消さない。2026-10-02 時点でこの端末の /tmp に `tmp*.txt` が約3900個あった。`test_sheet_gif` は `addCleanup` で消すように直した（character-tactics の PR #24 の CodeRabbit の指摘）。同じ形に揃えれば直る | 小 | 2026-10-02 |
 | **パレットを差し替えられない** | `palette/master.json` のパスが `tools/gridfile.py` で固定で、別のパレットを渡すオプションがどのツールにも無い。2Pカラーのような色違いを作るなら `--palette` が要る。必要になるまで作らない | 小 | 2026-09-23 |
+| **CLAUDE.md・README のガウの `weapon_check` の例に `--arm` が無い** | SPEC の指定には `--arm` があり、手が体から浮くのを落とすのはこの指定だけ。例をそのまま使うとこの検査が抜ける。例を SPEC と同じにする | 小 | 最終レビュー 2026-10-07 |
+| **`weapon_check.py` の docstring の例が無いディレクトリを指す** | `cand/enemy-frames/spear-soldier` は削除済み。`spear-knight` にする | 小 | 最終レビュー 2026-10-07 |
+| **レシピが読む元のコマが `validate.py` の既定の範囲に無い** | 8体の元のコマは `cand/enemy-frames/`。README の「`--all` で作り直す」の前に `validate.py cand/enemy-frames` を通す手順を書く | 小 | 最終レビュー 2026-10-07 |
+| **再生ページが古いシートに気付かない** | `enemy_gallery.py` は `build/sheets/<id>.png` があるかだけを見る。元のコマを直して `enemy_build.py --all` を忘れると古い絵を見せる。レシピ・元のコマより古ければ警告する | 小 | 最終レビュー 2026-10-07 |
 
 ## アセット・構成
 
 | 課題 | 詳細・直し方の見当 | 大きさ | 出どころ |
 |---|---|---|---|
+| **`cand/` の中身と名前が合わず、コードとアセットの置き場が整理されていない** | `cand`（candidate、候補置き場）に、敵16体の元のコマ（`cand/enemy-frames`。レシピが `frames` で読むので実際に使われている）、生成スクリプト（`cand/gen`）、敵の別の置き場（`cand/enemy`。中身は未確認）、いずれ置き換わる層の試作（`cand/layer-trial`）が混ざっている。使われているアセットは `assets/` へ、スクリプトは `tools/` か専用の場所へ移し、試作は消す。移すとレシピの `frames`・README・CLAUDE.md・`.coderabbit.yaml` の除外パスも変わる。今は `.coderabbit.yaml` で `cand/gen` 以外を CodeRabbit の対象から外している（2026-10-11）。ほかにも置き場に迷うコード・アセットが無いか、あわせて洗い出す | 大 | 2026-10-11 |
+| **短剣の敵4体のコマを、生成スクリプトから作り直せない** | `cand/gen/mkframes.py` を走らせると、`cand/enemy-frames/dagger-*/right_atk_wind.txt` の y=21〜22 が変わる（コミット済みのコマは生成後に手で直したとみられる）。直しを `mkframes.py` の `extras` に入れるか、短剣の4体は作り直さないと決める。`/tmp/cand2`（ガウの組み直しコマ）にも頼っている | 小 | 最終レビュー 2026-10-08 |
+| **`mkframes.py` 単体では、後ろの髪を短剣より先に描く** | `frame()` の `hair_back=True`（既定）は短剣を描く前に後ろの髪を描く。`mkweapons.py` は武器の後に描く（先に描くと、体の後ろの武器が消えた）。短剣の女性を `ENEMIES` に足すと、left・up の立ちで短剣が消える。既定を外し、短剣の後に描くようにそろえる | 小 | 最終レビュー 2026-10-08 |
 | **レイアウトに置かれていないタイルが11点** | `bridge_v` `dirt` `fence_v` `mountain_{ne,nw,se,sw}` `path_sw` `path_t_{n,s,w}`。CLAUDE.md の「全点を置いたレイアウトを `layouts/` に足す」を満たしていない。特に `mountain_*` の4点は、どう組む想定かがマップで確認されていない | 小 | 2026-09-23 |
 | **`tile` / `item` の `reference/` が無い** | `tile` は `reference/` が無く、当面 `layouts/` のマップをお手本にしている。`item` は `SPEC.md` を 2026-10-02 に作った（issue #23 の3番目）が、`reference/` に何を置くかは未定で、当面 `assets/item/` の3点（`chest`・`sword`・`bow`）を手本にしている | 小 | GitHub #1 |
 | **`seed/face32.py` が実行経路に無い** | リポジトリ化前の原型で、分解済み。git の履歴に残るので削除できる | 小 | 2026-09-23 |
@@ -62,6 +72,13 @@
 | **道と畑の土が同系色** | `path_*` と `crop_field` はどちらも `dirt_*` なので、畑を横切る道の境界が弱い。畑の土を一段暗くするか、道に縁を入れる | 小 | README（旧） |
 | **森・崖の縁タイルが無い** | `forest` を敷くと境界が直角になる。縁を作るなら4〜8点、崖（高低差）はさらに別サブシステムで、どちらも単独の依頼として設計したい | 大 | README（旧） |
 | **`stump` がまだ樽か木箱に見える（主観）** | README では「木箱に見える」を直した後の版だが、`layouts/field.txt` に置いた状態で見て、2026-09-23 時点でもその印象が残った。1人の目視なので、別の目でも確認したい | 小 | 2026-09-23 |
+| **男性の素体の left で、奥の手が 1px 幅** | `types/unit/base/male_left` の奥の手（x21, y18〜19）が 1px 幅で、武器を持たせると握った拳に見えない（`tools/weapon_check.py` の「手が細い」）。ガウ・ロランの `left_{base,idle2,walk_a,walk_b}` は、拳の中身の2行を x21〜22 の2px 幅にして直した（2026-10-07 依頼者承認）。素体のままなので、この素体から新しいユニットを組むと同じ手になる。素体を直すか、組むたびに直すかは未定 | 素体1枚 | 2026-10-07 |
+| **ガウ・イネス・敵を 体 + 拳 の方針で組み直すか** | 依頼者の方針（2026-10-11）は 体 + 拳（+ 武器・盾）だけで、腕の部品も袖の名残も作らない。ロランは全24コマを完全な単品の部品で組み直し、拳は四方を輪郭で囲った（`hand_outline.py`、`compose.py` の `hand: true`）。ガウ・イネス・敵は未対応で、袖・腕が残る。SPEC の「1px の袖口は残す」と `weapon_check.py` の「手の輪郭」「`--arm`」も、この方針に合わせて見直す。描き直すかは依頼者に聞く | 大 | 2026-10-11 |
+| **`mklayers --check` が試作の書き出し済みコマで FAIL 23件** | Task 1 の KEEP への切り替え（`close_hands` が袖の上にも輪郭を描く）で、`cand/layer-trial/` の書き出し済みコマが古くなった。移す前から同じ。試作は作り直さない決まりで、敵を部品で組み直す計画で置き換わる | 小 | 2026-10-10 |
+| **`mklayers --check` が `noweapon` と `labels.json` を無視する** | 試作の検査は武器なしのコマと名前の対応を見ない | 小 | 2026-10-10 |
+| **`build_layers` が体の芯を書き換える** | 層を切り出すとき芯を書き換える。手前の手が芯に残る | 小 | 2026-10-10 |
+| **`weapon_check.py` が部品の取り付けの大きさと位置を見ない** | 部品で組むユニットで、部品を置いた大きさ・位置のずれを検査しない（`--far-shade` と色名・コマ名は別の行） | 小 | 2026-10-10 |
+| **ロランの down の盾の最上段が 5 幅で非対称** | 盾自身の形の問題で、今回は直していない | 小 | 2026-10-11 |
 | **`layouts/field.txt` の川が途切れている** | 右端の `river_v` は3行目で草地にぶつかって終わり、U字の内側の `river_v` は `river_h` に合流せず岸で閉じる。タイルではなくレイアウトの組み方の問題。検証用マップとしては、繋がっていない箇所があると継ぎ目の確認が弱くなる | 小 | 2026-09-23 |
 
 ## `unit` とゲーム側

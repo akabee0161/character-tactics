@@ -1,0 +1,12 @@
+{
+  "id": "dagger-horn",
+  "name": "角付きの兜（短剣）",
+  "archetype": "dagger",
+  "body": "male",
+  "frames": "cand/enemy-frames/dagger-horn",
+  "recolor": {
+    "cloak_dark_hi": "leaf_hi",
+    "cloak_dark_base": "leaf_base",
+    "cloak_dark_shadow": "leaf_shadow"
+  }
+}

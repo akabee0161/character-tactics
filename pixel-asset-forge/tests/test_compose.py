@@ -12,7 +12,9 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "tools"))
 
-from compose import ComposeError, Layer, compose_frame, load_config, main, render_text  # noqa: E402
+from compose import (  # noqa: E402
+    ComposeError, Layer, compose_frame, compose_labels, load_config, main, open_hand_pixels, render_text,
+    stack_order)
 from gridfile import parse  # noqa: E402
 
 
@@ -98,6 +100,33 @@ class ComposeFrameTest(unittest.TestCase):
         part = self.ws.grid("part.txt", {(20, 20): "h"}, "o=outline h=leaf_base u=water_base")
         _, groups = compose_frame(self.body, [(part, Layer(part.path, "front"))])
         self.assertEqual(groups, [[("o", "outline"), ("b", "skin_base")], [("h", "leaf_base")]])
+
+
+class StackTest(unittest.TestCase):
+    def setUp(self):
+        self.ws = Workspace()
+        self.body = self.ws.grid("body.txt", {(10, 10): "b"}, BODY_MAP)
+
+    def tearDown(self):
+        self.ws.close()
+
+    def test_back_layers_go_behind_everything_drawn_so_far(self):
+        layers = [Layer(Path("a"), "front"), Layer(Path("b"), "back"), Layer(Path("c"), "back"), Layer(Path("d"), "front")]
+        self.assertEqual(stack_order(layers), [2, 1, -1, 0, 3])
+
+    def test_labels_name_the_visible_part(self):
+        front = self.ws.grid("front.txt", {(10, 10): "h", (12, 10): "h"}, PART_MAP)
+        back = self.ws.grid("back.txt", {(10, 10): "h", (13, 10): "h"}, PART_MAP)
+        labels = compose_labels(self.body, [(front, Layer(front.path, "front")), (back, Layer(back.path, "back"))])
+        self.assertEqual(labels[10][10], "front.txt")
+        self.assertEqual(labels[10][12], "front.txt")
+        self.assertEqual(labels[10][13], "back.txt")
+        self.assertIsNone(labels[0][0])
+
+    def test_labels_name_the_body_where_no_part_covers_it(self):
+        part = self.ws.grid("part.txt", {(12, 10): "h"}, PART_MAP)
+        labels = compose_labels(self.body, [(part, Layer(part.path, "front"))])
+        self.assertEqual(labels[10][10], "body.txt")
 
 
 class RenderTextTest(unittest.TestCase):
@@ -228,6 +257,102 @@ class MainTest(unittest.TestCase):
         code, _, err = self.run_main([str(self.cfg), "--out", str(self.out), "--frames", "up_base"])
         self.assertEqual(code, 2)
         self.assertIn("up_base", err)
+
+
+class GripAndHandTest(unittest.TestCase):
+    def setUp(self):
+        self.ws = Workspace()
+        self.body = self.ws.grid("body.txt", {(0, 0): "o"}, BODY_MAP)
+        # 縦の柄（w）を、輪郭（o）で囲った拳（b）が握る
+        self.shaft = self.ws.grid("shaft.txt", {(10, y): "w" for y in range(5, 15)}, "o=outline w=wood_base")
+        fist = {(10, 9): "b", (10, 10): "b"}
+        fist.update({p: "o" for p in [(10, 8), (10, 11), (9, 9), (9, 10), (11, 9), (11, 10)]})
+        self.fist = self.ws.grid("fist.txt", fist, BODY_MAP)
+
+    def tearDown(self):
+        self.ws.close()
+
+    def rows(self, keep):
+        layers = [(self.shaft, Layer(self.shaft.path, "front")),
+                  (self.fist, Layer(self.fist.path, "front", keep=frozenset(keep)))]
+        return compose_frame(self.body, layers)[0]
+
+    def test_fist_outline_is_not_drawn_over_the_gripped_shaft(self):
+        rows = self.rows({"wood_base"})
+        self.assertEqual(rows[8][10], "w")
+        self.assertEqual(rows[11][10], "w")
+        self.assertEqual(rows[9][10], "b")   # 拳の肌は柄の上に描く
+        self.assertEqual(rows[9][9], "o")    # 柄の無い所の輪郭は描く
+
+    def test_without_keep_the_outline_covers_the_shaft(self):
+        self.assertEqual(self.rows(set())[8][10], "o")
+
+    def test_keep_only_looks_at_the_colour_right_below(self):
+        rows = self.rows({"leaf_base"})
+        self.assertEqual(rows[8][10], "o")
+
+    def test_labels_follow_keep(self):
+        layers = [(self.shaft, Layer(self.shaft.path, "front")),
+                  (self.fist, Layer(self.fist.path, "front", keep=frozenset({"wood_base"})))]
+        labels = compose_labels(self.body, layers)
+        self.assertEqual(labels[8][10], "shaft.txt")
+        self.assertEqual(labels[9][9], "fist.txt")
+
+    def test_open_hand_pixels_finds_a_fist_touching_a_sleeve_or_nothing(self):
+        part = self.ws.grid("open.txt", {(10, 10): "b", (11, 10): "b", (9, 10): "q", (10, 9): "o"},
+                            "o=outline b=skin_base q=cloak_dark_base")
+        self.assertEqual(open_hand_pixels(part, {"skin_base"}), [(10, 10), (11, 10)])
+
+    def test_closed_fist_passes(self):
+        self.assertEqual(open_hand_pixels(self.fist, {"skin_base"}), [])
+
+    def test_fist_at_the_frame_edge_is_open(self):
+        part = self.ws.grid("edge.txt", {(0, 5): "b", (1, 5): "o", (0, 4): "o", (0, 6): "o"}, BODY_MAP)
+        self.assertEqual(open_hand_pixels(part, {"skin_base"}), [(0, 5)])
+
+    def config(self, layer: dict, **top) -> Path:
+        self.ws.write("body2.txt", grid_text({(0, 0): "o"}, BODY_MAP))
+        config = {"unit": "t", **top,
+                  "frames": {"down_base": {"body": str(self.ws.root / "body2.txt"), "layers": [layer]}}}
+        return self.ws.write("compose/t.json", json.dumps(config))
+
+    def run_main(self, path: Path) -> tuple[int, str]:
+        err = io.StringIO()
+        with contextlib.redirect_stderr(err), contextlib.redirect_stdout(io.StringIO()):
+            code = main([str(path), "--out", str(self.ws.root / "out")])
+        return code, err.getvalue()
+
+    def test_main_stops_on_an_open_hand_part(self):
+        part = self.ws.write("open.txt", grid_text({(10, 10): "b"}, BODY_MAP))
+        path = self.config({"part": str(part), "z": "front", "hand": True}, hand_colours=["skin_base"])
+        code, err = self.run_main(path)
+        self.assertEqual(code, 2)
+        self.assertIn("open.txt: 拳が四方とも輪郭で閉じていない", err)
+        self.assertIn("(10,10)", err)
+        self.assertFalse((self.ws.root / "out").exists())
+
+    def test_main_composes_a_closed_hand_part(self):
+        part = self.ws.write("closed.txt", self.fist.path.read_text(encoding="utf-8"))
+        path = self.config({"part": str(part), "z": "front", "hand": True}, hand_colours=["skin_base"])
+        self.assertEqual(self.run_main(path)[0], 0)
+
+    def test_hand_without_hand_colours_is_an_error(self):
+        path = self.config({"part": "p.txt", "z": "front", "hand": True})
+        with self.assertRaisesRegex(ComposeError, "hand_colours"):
+            load_config(path, self.ws.root)
+
+    def test_keep_and_hand_are_read(self):
+        path = self.config({"part": "p.txt", "z": "front", "hand": True, "keep": ["wood_base"]},
+                           hand_colours=["skin_base"])
+        _, frames = load_config(path, self.ws.root)
+        layer = frames["down_base"].layers[0]
+        self.assertEqual((layer.keep, layer.hand), (frozenset({"wood_base"}), True))
+        self.assertEqual(frames["down_base"].hand_colours, frozenset({"skin_base"}))
+
+    def test_keep_must_be_a_list_of_strings(self):
+        path = self.config({"part": "p.txt", "z": "front", "keep": "wood_base"})
+        with self.assertRaisesRegex(ComposeError, "keep"):
+            load_config(path, self.ws.root)
 
 
 if __name__ == "__main__":
