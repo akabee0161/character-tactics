@@ -74,3 +74,14 @@ class ComposePageTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class GroundTest(unittest.TestCase):
+    def test_ground_stands_apart_from_every_palette_colour(self):
+        # 地が薄い灰色だと、白に近い弦（stone_hi）が地に溶けて見えなかった（2026-10-12 依頼者の指摘）
+        from compose_page import GROUND
+        from gridfile import load_palette
+
+        for name, colour in load_palette().items():
+            gap = sum(abs(a - b) for a, b in zip(GROUND[:3], colour[:3]))
+            self.assertGreaterEqual(gap, 50, f"{name} が地の色に近い（差 {gap}）")
