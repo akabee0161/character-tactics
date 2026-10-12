@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """体（core）の部品を、単品として見たときの「当たり前」を機械で確かめる。
 
-    tools/body_check.py assets/unit/roran/parts                     # core_*.txt を全部
+    tools/body_check.py assets/part/body/roran                      # core_*.txt を全部
     tools/body_check.py assets/part/body/roran/core_down_base.txt --head 3-14 --trunk 15-24 --legs 25-31
 
 見るもの（どれも1つでもあれば終了コード 1）:
