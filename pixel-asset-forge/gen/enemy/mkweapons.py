@@ -1,6 +1,6 @@
 """斧と槍の敵のコマを作る（候補）。mkframes の素体（武器なし）に、武器と拳のパッチを重ねる。
 
-使い方（pixel-asset-forge で）: python cand/gen/mkweapons.py [敵のid ...]
+使い方（pixel-asset-forge で）: .venv/bin/python gen/enemy/mkweapons.py [敵のid ...]
 パッチの文字: . = 触らない / _ = 消す / x = 空いているときだけ輪郭 / 他は色（下の COL）
 """
 import math
@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, "tools")
-sys.path.insert(0, "cand/gen")
+sys.path.insert(0, "gen/enemy")
 import enemy_build as eb
 import mkframes as mf
 from hand_outline import close_hands

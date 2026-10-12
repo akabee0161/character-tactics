@@ -2,7 +2,7 @@
 
 今は走らせない。描き直した部品（assets/unit/ines/parts）と compose/ines.json を、切り出した部品で上書きしてしまう。
 
-    .venv/bin/python cand/gen/ines_layers.py --export
+    .venv/bin/python gen/ines/ines_layers.py --export
 
 文字で切る（tools/parts_export.py）。拳の箱は、今の絵の肌の小さな塊を 2026-10-12 に数えて決めた。
 歩きは立ち（base）の部品を使い回す。計画: character-tactics の docs/superpowers/plans/2026-10-12-unit-parts-ines.md

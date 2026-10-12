@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, "tools")
-sys.path.insert(0, str(Path(__file__).resolve().parent))  # 同じ cand/gen の mkparts を読む（/tmp の古い写しを読まない）
+sys.path.insert(0, str(Path(__file__).resolve().parent))  # 同じ gen/enemy の mkparts を読む（/tmp の古い写しを読まない）
 import enemy_build as eb
 import mkparts as mp
 

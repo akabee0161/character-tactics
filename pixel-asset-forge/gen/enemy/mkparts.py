@@ -313,7 +313,7 @@ cfg_female = {
 
 
 def main():
-    """部品と選ぶページの設定を cand/enemy/ に書き出す。import しただけでは書かない（mkframes・mkweapons が import する）。"""
+    """部品を cand/enemy/ に、選ぶページの設定を gen/enemy/ に書き出す。import しただけでは書かない（mkframes・mkweapons が import する）。"""
     OUT.mkdir(parents=True, exist_ok=True)
     emit("head_bare", bare, HAIR, HAIR_S, "素の髪（短い荒れ髪）")
     emit("head_bandana", band, BAND, BAND_S, "バンダナ（赤）")
@@ -332,8 +332,8 @@ def main():
         write("female_gau_body", d, BODIES["female"][d], "ガウ色の素体（女性）")
         write("cloth_belt_female", d, belt(d, "female"), "服 ベルト（女性の胴）")
         write("cloth_tatter_female", d, tatter(d, "female"), "服 ボロ（女性の胴）")
-    Path("cand/enemy/PICKER.json").write_text(json.dumps(cfg, ensure_ascii=False, indent=2), encoding="utf-8")
-    Path("cand/enemy/PICKER_female.json").write_text(json.dumps(cfg_female, ensure_ascii=False, indent=2),
+    Path("gen/enemy/PICKER.json").write_text(json.dumps(cfg, ensure_ascii=False, indent=2), encoding="utf-8")
+    Path("gen/enemy/PICKER_female.json").write_text(json.dumps(cfg_female, ensure_ascii=False, indent=2),
                                                      encoding="utf-8")
     print("ok")
 

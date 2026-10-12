@@ -3,7 +3,9 @@
 4方向×6コマ。隠れて絵に無い所（盾の陰の腕、拳の中の柄など）はまだ描いていない（芯や部品の穴になる）。
 部品を動かして新しいコマを作るときに、要る所だけ描く（2026-10-09 依頼者と決めた）。
 
-    .venv/bin/python cand/gen/roran_layers.py build/table_roran.html
+    .venv/bin/python gen/roran/roran_layers.py build/table_roran.html
+
+--export は走らせない。2026-10-11 に描き直した部品（体 + 拳）と compose/roran.json を、描き直す前の切り方で上書きしてしまう。
 """
 import base64
 import io
