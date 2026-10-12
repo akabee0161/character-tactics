@@ -5,17 +5,43 @@
 
     .venv/bin/python cand/gen/roran_layers.py build/table_roran.html
 """
+import base64
+import io
 import json
 import sys
 from pathlib import Path
 
+from PIL import Image, ImageDraw
+
 sys.path.insert(0, "tools")
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import enemy_build as eb  # noqa: E402
-from gridfile import parse  # noqa: E402
+from gridfile import load_palette, parse  # noqa: E402
 from cut_layers import CORE, Part, cut, torn  # noqa: E402
-from layer_page import png, uri  # noqa: E402
 from layers import blank, compose, differences  # noqa: E402
+
+S = 8  # 表のページの拡大率
+PAL = load_palette()
+
+
+def png(frame, bg=(225, 225, 225, 255), marks=()):
+    im = Image.new("RGBA", (32, 32), bg)
+    for y, row in enumerate(frame):
+        for x, n in enumerate(row):
+            if n:
+                im.putpixel((x, y), tuple(PAL[n][:3]) + (255,))
+    im = im.resize((32 * S, 32 * S), Image.NEAREST)
+    d = ImageDraw.Draw(im)
+    for x, y in marks:
+        d.rectangle([x * S, y * S, x * S + S - 1, y * S + S - 1], outline=(230, 0, 0), width=2)
+    return im
+
+
+def uri(im):
+    buf = io.BytesIO()
+    im.save(buf, "PNG")
+    return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode()
+
 
 SRC = Path("assets/unit/roran")
 DIRS = ["down", "up", "left", "right"]

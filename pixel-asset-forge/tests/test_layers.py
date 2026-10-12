@@ -7,12 +7,8 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "tools"))
-sys.path.insert(0, str(REPO_ROOT / "cand" / "gen"))
 
-from layers import ADDED, Layer, LayerError, attach, blank, compose, differences, finish, shifted  # noqa: E402
-
-HAND = {"skin_base", "skin_shadow"}
-KEEP = {"wood_base"}
+from layers import Layer, LayerError, blank, compose, differences  # noqa: E402
 
 
 def box(x0, y0, x1, y1, name):
@@ -51,44 +47,7 @@ class ComposeTest(unittest.TestCase):
             compose({"a": Layer([[None] * 31 for _ in range(32)])}, ["a"])
 
 
-class PlaceTest(unittest.TestCase):
-    def test_shifted_moves_pixels_and_anchors(self):
-        layer = box(5, 5, 5, 5, "x")
-        layer.anchors["grip"] = (5, 5)
-        moved = shifted(layer, -1, 2)
-        self.assertEqual(moved.frame[7][4], "x")
-        self.assertIsNone(moved.frame[5][5])
-        self.assertEqual(moved.anchors["grip"], (4, 7))
-
-    def test_shifted_out_of_frame_raises(self):
-        with self.assertRaises(LayerError):
-            shifted(box(0, 0, 0, 0, "x"), -1, 0)
-
-    def test_attach_aligns_points(self):
-        spear = box(9, 0, 9, 24, "wood_base")
-        spear.anchors["grip"] = (9, 12)
-        fist = box(20, 18, 21, 19, "skin_shadow")
-        fist.anchors["grip"] = (20, 18)
-        placed = attach(spear, fist, "grip")
-        self.assertEqual(placed.anchors["grip"], (20, 18))
-        self.assertEqual(placed.frame[18][20], "wood_base")
-        self.assertEqual(placed.frame[6][20], "wood_base")
-
-    def test_attach_without_point_raises(self):
-        with self.assertRaises(LayerError):
-            attach(box(0, 0, 0, 0, "x"), box(1, 1, 1, 1, "y"), "grip")
-
-
-class FinishTest(unittest.TestCase):
-    def test_added_outline_is_labelled_and_reproducible(self):
-        frame, labels = compose({"拳": box(20, 20, 21, 21, "skin_base")}, ["拳"])
-        out1, lab1 = finish(frame, labels, HAND, KEEP)
-        out2, _ = finish(frame, labels, HAND, KEEP)
-        self.assertEqual(out1[19][20], "outline")
-        self.assertEqual(lab1[19][20], ADDED)
-        self.assertEqual(lab1[20][20], "拳")
-        self.assertEqual(differences(out1, out2), [])
-
+class DifferencesTest(unittest.TestCase):
     def test_differences_lists_changed_pixels(self):
         a, b = blank(), blank()
         b[3][4] = "x"
