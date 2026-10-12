@@ -29,7 +29,12 @@ C・D で作る部品とスクリプトを、最初から整理後の置き場�
 `assets/part/` に短剣だけがあるのは、2026-10-04 にガウを描いたとき「ユニットをまたいで使い回す武器は `assets/part/`」と決めて置き、
 後から切り出した剣・弓は「まだ1体しか使っていない」ので各ユニットの `parts/` に置いたため。この「何体が使うか」の切り口は時間で変わるので、やめる。
 
-また、`tools/enemy_build.py`・README・テストが、一度も作られていない `assets/unit/enemy-src/dagger-female/` を指している。
+また、`tools/enemy_build.py`・README・テストが、女性の短剣の敵の元のコマの置き場として、まだ作っていない `assets/unit/enemy-src/dagger-female/` を指している
+（`--colours dagger` は「置き場が無い（まだ作っていない？）」と言って止まる。予定の置き場として意図したもの）。整理後の決まりに合わせて `assets/unit/dagger-female/` にする。
+
+もう一つ、敵の生成スクリプト（`mkparts`・`mkframes`・`mkweapons`）を今走らせると、部品（`cand/enemy/`）は今のファイルと同じになるが、
+コマ（`cand/enemy-frames/`）は419ファイルが画素で変わる（2026-10-12 に確かめた）。コマは 2026-10-08 にコミットしたままで、
+その後 2026-10-10 に手の輪郭の閉じ方（`hand_outline.py` の KEEP）を変えたため。今回は直さず、ISSUES.md に足す。
 
 ## 決めたこと（2026-10-12 依頼者）
 
@@ -95,7 +100,7 @@ pixel-asset-forge/
 | `cand/gen/mkparts.py` `mkframes.py` `mkweapons.py` | `gen/enemy/` | 敵を作る（D まで使う） |
 | `cand/gen/ines_layers.py` | `gen/ines/` | イネスの部品の書き出し定義。走らせない（部品を上書きする）が、`parts_export.py` の定義の例として README・SPEC が指す |
 | `cand/gen/roran_layers.py` | `gen/roran/` | ロランの部品の書き出し定義と表のページ。`layer_page.py` から借りている `png`・`uri` は、`tools/compose_page.py` の `png_uri` に替える（または同じ働きの関数を持たせる） |
-| イネスの作業フォルダの `anim_compare.py` | `tools/anim_compare.py` | シート2枚を並べて再生するページ。どのユニットにも使え、4回使った |
+| イネスの作業フォルダの `anim_compare.py` | `tools/anim_compare.py` | シート2枚を並べて再生するページ。4回使った。コマ数と fps がイネスの値で固定なので、ゲームのユニット設定（`assets/units/<ユニット>.json` の `sprites.map`）から読むようにして、どのユニットにも使えるようにする |
 | イネスの作業フォルダの `reorder.py` | `tools/reorder.py` | compose の設定の重なり順を変えた写しを作る。どのユニットにも使える |
 | `cand/gen/mklayers.py` `layer_page.py` `table_page.py` と `tests/test_mklayers.py` `test_layer_page.py` `test_table_page.py` | 消す | 層の試作。D で部品から組み直す計画で置き換わる（ISSUES.md） |
 | `cand/layer-trial/` | 消す | 同上の書き出し |
@@ -113,7 +118,7 @@ pixel-asset-forge/
 ## 書き換えるもの
 
 - コード: `gen/enemy/*.py` の読み書きのパス（`mkparts.py` は部品を種類ごとのフォルダへ書く）、`tools/enemy_build.py`（`SOURCES` の `enemy-src`）、
-  `tools/parts_export.py`（部品の書き出し先）、`tools/` の説明文のパス（`weapon_check`・`unit_picker`・`present`・`hand_outline`・`body_check`・`compose`・`compose_page`）
+  `tools/parts_export.py`（部品の書き出し先。部品の定義 `PartDef` に置き場 `dir`（`assets/part/` からの相対、例 `equip/bow`）を持たせ、芯は `body/<ユニット>/` に書く）、`tools/` の説明文のパス（`weapon_check`・`unit_picker`・`present`・`hand_outline`・`body_check`・`compose`・`compose_page`）
 - 設定: `compose/{roran,ines,gau}.json` の部品のパス、`enemy/*.json` の `frames`、`gen/enemy/PICKER*.json`
 - テスト: パスを書いているもの（`test_enemy_build`・`test_parts_export` など）
 - 文書: forge の README・CLAUDE.md・`types/unit/SPEC.md`・ISSUES.md、character-tactics の `.coderabbit.yaml`・HANDOVER.md（パスを書いている所だけ）
@@ -135,7 +140,8 @@ pixel-asset-forge/
 1. `tools/enemy_build.py --all` で作る敵16体のシートの PNG（ハッシュを比べる）
 2. `tools/compose.py compose/<名前>.json --check`: ロラン・イネスは差なし、ガウは今と同じ16コマが差あり（手で描き足したコマ。ISSUES.md 既出）
 3. 部品・コマのファイルの中身: 移す前後で、ファイルの中身のハッシュの集合が同じ（`git mv` なので名前以外は変わらない）
-4. `gen/enemy/` の3本を走らせ直して、`git status` が変わらない（例外は ISSUES.md 既出の短剣4体の y=21〜22。`mkframes.py` は `/tmp/cand2` にも頼っている。これも既出）
+4. `gen/enemy/` の3本を走らせた結果が、移す前に `cand/gen/` の3本を走らせた結果（作業用フォルダに控えた）と、ファイルごとに同じ。
+   コミット済みのコマとは比べない（上の「もう一つ」のとおり、移す前から違う）。比べた後、走らせて変わったファイルは元に戻す
 5. `tools/validate.py`（既定）: 今の405枚に、敵のコマと部品が加わって通る
 6. `python -m unittest discover -s tests`: 全部通る（今は425件。消すテスト3本の分だけ減り、足すテストの分だけ増える）
 7. `gen/roran/roran_layers.py <out.html>` が動く（`--export` は走らせない）。`gen/ines/ines_layers.py` は走らせない
