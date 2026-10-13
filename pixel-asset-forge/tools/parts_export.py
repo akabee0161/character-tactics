@@ -1,13 +1,15 @@
 """完成した unit のコマを、文字で切って部品のファイルにし、tools/compose.py の設定を書く（2026-10-12）。
 
-ロランの書き出し（cand/gen/roran_layers.py --export）は色名で切ったが、イネスは弓の暗い面・矢の軸・ズボンが
+ロランの書き出し（gen/roran/roran_layers.py --export）は色名で切ったが、イネスは弓の暗い面・矢の軸・ズボンが
 同じ wood_shadow なので、専用の文字（SPEC「持ち物の部品には専用の文字を割り当てる」）で切る。
 部品の取り方は tools/cut_layers.cut と同じ（箱の中の、その部品の文字。輪郭は接するすべての層に入る）。
-ユニットごとの定義（UnitDef）は cand/gen/<ユニット>_layers.py に置く。書くのは部品と設定だけで、コマは書かない。
+ユニットごとの定義（UnitDef）は gen/<ユニット>/<ユニット>_layers.py に置く。書くのは部品と設定だけで、コマは書かない。
+部品は assets/part/<種類>/<名前>/ に書く（芯は body/<ユニット>/、ほかは PartDef.dir。2026-10-12 依頼者と決めた置き場）。
 """
 from __future__ import annotations
 
 import json
+import posixpath
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -32,6 +34,7 @@ class PartDef:
     boxes: dict[tuple[str, str], Box] | None = None  # (向き, 部品の状態) → 箱。None は枠全体
     hand: bool = False
     keep: tuple[str, ...] = ()  # 色名
+    dir: str = ""  # 置き場（assets/part/ からの相対。例 equip/bow・fist/ines）
 
 
 @dataclass(frozen=True)
@@ -92,6 +95,10 @@ def _box(part: PartDef, d: str, key: str) -> Box:
 def _validate(unit: UnitDef) -> None:
     """書き始める前に、全部の向き・状態について重なり順と箱を確かめる（途中で止まって一部だけ上書きしないように。
     PR #32 の CodeRabbit の指摘、2026-10-12）。"""
+    for part in unit.parts:
+        where = Path(part.dir)
+        if not where.parts or where.is_absolute() or ".." in where.parts:  # 空・"." は assets/part/ の直下になる
+            raise ExportError(f"{part.name} の置き場（dir）が無いか、assets/part/ の中の相対パスでない: {part.dir!r}")
     names = [p.name for p in unit.parts]
     for d in unit.dirs:
         if d not in unit.orders:
@@ -110,16 +117,43 @@ def _validate(unit: UnitDef) -> None:
                 _box(part, d, unit.shares.get(st, st))
 
 
-def export(unit: UnitDef, parts_dir: Path, config_path: Path, root: Path) -> None:
-    """部品のファイルと compose の設定を書く（コマは書かない）。設定のパスは root からの相対。
-    定義に誤りがあれば、何も書かずに ExportError で止める。"""
+def _check_not_used_elsewhere(targets: set[str], config_path: Path, root: Path) -> None:
+    """書き出し先の部品を、ほかのユニットの設定（root/compose/*.json）が使っていたら止める。
+    部品の置き場は種類ごとで、ユニットをまたいで共有する（equip/sword など）ので、黙って上書きしないため（2026-10-12 最終レビュー）。"""
+    for other in sorted((root / "compose").glob("*.json")):
+        if other.resolve() == config_path.resolve():
+            continue
+        try:
+            frames = json.loads(other.read_text(encoding="utf-8")).get("frames", {})
+        except (OSError, json.JSONDecodeError, AttributeError) as exc:
+            raise ExportError(f"{other}: ほかのユニットの設定を読めない（上書きの確かめができない）: {exc}") from None
+        used = {spec.get("body") for spec in frames.values()}
+        used |= {layer.get("part") for spec in frames.values() for layer in spec.get("layers", [])}
+        # compose.py は ./ や a/../ の付いたパスでも同じファイルを読むので、そろえてから比べる
+        used = {posixpath.normpath(p) for p in used if isinstance(p, str)}
+        clash = sorted({posixpath.normpath(t) for t in targets} & used)
+        if clash:
+            raise ExportError(f"{other.name} が使っている部品を上書きする: {', '.join(clash[:3])}"
+                              f"{' ほか' if len(clash) > 3 else ''}（ファイル名の前半か dir を変える）")
+
+
+def export(unit: UnitDef, part_root: Path, config_path: Path, root: Path) -> None:
+    """部品のファイルと compose の設定を書く（コマは書かない）。芯は part_root/body/<ユニット>/、部品は part_root/<dir>/。
+    設定のパスは root からの相対。定義に誤りがあれば、何も書かずに ExportError で止める。"""
     _validate(unit)
     charmap = unit_charmap(sorted(unit.src.glob("*.txt")))
     by_name = {p.name: p for p in unit.parts}
-    parts_dir.mkdir(parents=True, exist_ok=True)
+    core_dir = part_root / "body" / unit.unit
 
     def rel(path: Path) -> str:
         return path.relative_to(root).as_posix()
+
+    targets = {rel(core_dir / f"core_{d}_{st}.txt") for d in unit.dirs for st in unit.states}
+    targets |= {rel(part_root / p.dir / f"{p.file}_{d}_{unit.shares.get(st, st)}.txt")
+                for p in unit.parts for d in unit.dirs for st in unit.states}
+    _check_not_used_elsewhere(targets, config_path, root)
+    for folder in {core_dir, *(part_root / p.dir for p in unit.parts)}:
+        folder.mkdir(parents=True, exist_ok=True)
 
     frames = {}
     for d in unit.dirs:
@@ -130,12 +164,12 @@ def export(unit: UnitDef, parts_dir: Path, config_path: Path, root: Path) -> Non
             key = unit.shares.get(st, st)
             grid = parse(unit.src / f"{d}_{st}.txt")
             layers = cut_chars(grid.rows, charmap, [Part(p.name, _box(p, d, key), set(p.chars)) for p in unit.parts])
-            core_path = parts_dir / f"core_{d}_{st}.txt"
+            core_path = core_dir / f"core_{d}_{st}.txt"
             core_path.write_text(grid_text(layers[CORE], charmap, f"{unit.unit} {d}_{st} の芯"), encoding="utf-8")
             entries = []
             for name in [*reversed(back), *front]:  # back は芯に近いものから（「部品で組む規約」）
                 part = by_name[name]
-                path = parts_dir / f"{part.file}_{d}_{key}.txt"
+                path = part_root / part.dir / f"{part.file}_{d}_{key}.txt"
                 if st == key:
                     path.write_text(grid_text(layers[name], charmap, f"{unit.unit} {d}_{key} の{name}"),
                                     encoding="utf-8")

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""拳の部品のファイル（assets/unit/<ユニット>/parts/ の拳）で、手の輪郭が切れている所を閉じる。
+"""拳の部品のファイル（assets/part/fist/<ユニット>/ の拳）で、手の輪郭が切れている所を閉じる。
 
-    tools/hand_outline.py assets/unit/roran/parts/sword_hand_down_base.txt \\
+    tools/hand_outline.py assets/part/fist/roran/sword_hand_down_base.txt \\
         --hand skin_rose_hi,skin_rose_base,skin_rose_shadow           # 直す所を出すだけ
     tools/hand_outline.py ... --write                                # 書き換える
 

@@ -45,11 +45,11 @@ class PartsExportTest(unittest.TestCase):
             (self.src / f"down_{st}.txt").write_text(frame({**BODY, **BOW, **ARROW, **FIST}), encoding="utf-8")
         self.unit = UnitDef(
             unit="t", src=self.src, dirs=("down",), states=("base", "walk_a"), shares={"walk_a": "base"},
-            parts=(PartDef("弓", "bow", frozenset("m")),
-                   PartDef("矢", "arrow", frozenset("w")),
+            parts=(PartDef("弓", "bow", frozenset("m"), dir="equip/bow"),
+                   PartDef("矢", "arrow", frozenset("w"), dir="equip/arrow"),
                    PartDef("弓の拳", "bow_hand", frozenset("b"), {("down", "base"): (21, 15, 21, 16)},
-                           hand=True, keep=("wood_shadow",)),
-                   PartDef("矢の拳", "arrow_hand", frozenset("b"), {("down", "base"): NONE}, hand=True)),
+                           hand=True, keep=("wood_shadow",), dir="fist/t"),
+                   PartDef("矢の拳", "arrow_hand", frozenset("b"), {("down", "base"): NONE}, hand=True, dir="fist/t")),
             orders={"down": ("矢の拳", "弓", CORE, "矢", "弓の拳")},
             hand_colours=("skin_base",))
 
@@ -57,7 +57,7 @@ class PartsExportTest(unittest.TestCase):
         self.tmp.cleanup()
 
     def run_export(self, unit=None):
-        export(unit or self.unit, self.root / "assets/unit/t/parts", self.root / "compose/t.json", self.root)
+        export(unit or self.unit, self.root / "assets/part", self.root / "compose/t.json", self.root)
         return json.loads((self.root / "compose/t.json").read_text(encoding="utf-8"))
 
     def test_same_colour_different_chars_stay_apart(self):
@@ -94,13 +94,13 @@ class PartsExportTest(unittest.TestCase):
         config = self.run_export()
         self.assertEqual(config["hand_colours"], ["skin_base"])
         by_name = {Path(entry["part"]).name: entry for entry in config["frames"]["down_base"]["layers"]}
-        self.assertEqual(by_name["bow_hand_down_base.txt"], {"part": "assets/unit/t/parts/bow_hand_down_base.txt",
+        self.assertEqual(by_name["bow_hand_down_base.txt"], {"part": "assets/part/fist/t/bow_hand_down_base.txt",
                                                             "z": "front", "hand": True, "keep": ["wood_shadow"]})
         self.assertNotIn("keep", by_name["arrow_hand_down_base.txt"])
 
     def test_empty_part_is_written_with_the_outline_map(self):
         self.run_export()
-        grid = parse(self.root / "assets/unit/t/parts/arrow_hand_down_base.txt")
+        grid = parse(self.root / "assets/part/fist/t/arrow_hand_down_base.txt")
         self.assertEqual(grid.charmap, {"o": "outline"})
         self.assertTrue(all(set(row) == {"."} for row in grid.rows))
 
@@ -111,9 +111,9 @@ class PartsExportTest(unittest.TestCase):
 
     def stops_without_writing(self, unit, message):
         """書き出しが message で止まり、前からある部品・芯・設定を1つも変えず、新しいファイルも作らない。"""
-        parts = self.root / "assets/unit/t/parts"
-        parts.mkdir(parents=True)
-        kept = {parts / "core_down_base.txt": "前からある芯\n", parts / "bow_down_base.txt": "前からある弓\n",
+        part_root = self.root / "assets/part"
+        kept = {part_root / "body/t/core_down_base.txt": "前からある芯\n",
+                part_root / "equip/bow/bow_down_base.txt": "前からある弓\n",
                 self.root / "compose/t.json": "前からある設定\n"}
         for path, text in kept.items():
             path.parent.mkdir(parents=True, exist_ok=True)
@@ -122,7 +122,8 @@ class PartsExportTest(unittest.TestCase):
             self.run_export(unit)
         for path, text in kept.items():
             self.assertEqual(path.read_text(encoding="utf-8"), text, path.name)
-        self.assertEqual(sorted(p.name for p in parts.iterdir()), ["bow_down_base.txt", "core_down_base.txt"])
+        self.assertEqual(sorted(p.relative_to(part_root).as_posix() for p in part_root.rglob("*") if p.is_file()),
+                         ["body/t/core_down_base.txt", "equip/bow/bow_down_base.txt"])
 
     def test_missing_box_in_a_later_state_writes_nothing(self):
         # 後ろの状態（idle2）で箱が無くても、前の状態（base）の部品を書いてから止まらない（PR #32 の CodeRabbit の指摘）
@@ -146,7 +147,7 @@ class PartsExportTest(unittest.TestCase):
 
     def test_unreadable_frame_in_a_later_state_writes_nothing(self):
         (self.src / "down_walk_a.txt").write_text("# type: unit\n# size: 32x32\nこわれた行\n", encoding="utf-8")
-        parts = self.root / "assets/unit/t/parts"
+        parts = self.root / "assets/part/body/t"
         parts.mkdir(parents=True)
         (parts / "core_down_base.txt").write_text("前からある芯\n", encoding="utf-8")
         with self.assertRaises(Exception):
@@ -154,6 +155,44 @@ class PartsExportTest(unittest.TestCase):
         self.assertEqual((parts / "core_down_base.txt").read_text(encoding="utf-8"), "前からある芯\n")
         self.assertEqual([p.name for p in parts.iterdir()], ["core_down_base.txt"])
         self.assertFalse((self.root / "compose/t.json").exists())
+
+    def test_parts_land_in_their_kind_directories(self):
+        config = self.run_export()
+        part_root = self.root / "assets/part"
+        for rel in ("body/t/core_down_base.txt", "body/t/core_down_walk_a.txt", "equip/bow/bow_down_base.txt",
+                    "equip/arrow/arrow_down_base.txt", "fist/t/bow_hand_down_base.txt"):
+            self.assertTrue((part_root / rel).is_file(), rel)
+        frame = config["frames"]["down_walk_a"]
+        self.assertEqual(frame["body"], "assets/part/body/t/core_down_walk_a.txt")
+        self.assertIn("assets/part/equip/bow/bow_down_base.txt", [layer["part"] for layer in frame["layers"]])
+
+    def test_part_without_a_directory_writes_nothing(self):
+        parts = tuple(PartDef(p.name, p.file, p.chars, p.boxes, p.hand, p.keep) for p in self.unit.parts)
+        self.stops_without_writing(UnitDef(**{**self.unit.__dict__, "parts": parts}), "置き場")
+
+    def test_part_used_by_another_unit_is_not_overwritten(self):
+        # 部品の置き場は種類ごとで、ほかのユニットと共有する（equip/bow など）。ほかのユニットの設定が使っている部品は上書きしない
+        other = {"unit": "other", "frames": {"down_base": {"body": "assets/part/body/other/core_down_base.txt",
+                                                           "layers": [{"part": "assets/part/equip/bow/bow_down_base.txt",
+                                                                       "z": "front"}]}}}
+        (self.root / "compose").mkdir(parents=True, exist_ok=True)
+        (self.root / "compose/other.json").write_text(json.dumps(other), encoding="utf-8")
+        self.stops_without_writing(self.unit, "other")
+
+    def test_part_used_by_another_unit_through_an_unnormalized_path_is_not_overwritten(self):
+        # compose.py は ./ の付いたパスでも同じファイルを読むので、上書きの確かめでも同じファイルとして扱う
+        other = {"unit": "other", "frames": {"down_base": {"body": "assets/part/body/other/core_down_base.txt",
+                                                           "layers": [{"part": "assets/part/equip/bow/./bow_down_base.txt",
+                                                                       "z": "front"}]}}}
+        (self.root / "compose").mkdir(parents=True, exist_ok=True)
+        (self.root / "compose/other.json").write_text(json.dumps(other), encoding="utf-8")
+        self.stops_without_writing(self.unit, "other")
+
+    def test_part_directory_must_stay_under_the_part_root(self):
+        for bad in ("../equip/bow", "/tmp/bow", ".", "./"):
+            with self.subTest(dir=bad):
+                parts = (PartDef("弓", "bow", frozenset("m"), dir=bad), *self.unit.parts[1:])
+                self.stops_without_writing(UnitDef(**{**self.unit.__dict__, "parts": parts}), "置き場")
 
     def test_conflicting_charmaps_stop(self):
         bad = self.root / "bad.txt"

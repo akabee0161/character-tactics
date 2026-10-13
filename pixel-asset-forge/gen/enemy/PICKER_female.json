@@ -1,0 +1,230 @@
+{
+  "unit": "enemy-parts-female",
+  "title": "敵の部品（女性の素体）",
+  "body": "assets/part/body/female/female_gau_body_{dir}.txt",
+  "elements": {
+    "eyes": {
+      "label": "目",
+      "variants": {
+        "E0": {
+          "label": "ガウと同じ縦線",
+          "layers": [
+            {
+              "part": "assets/part/eye/E0/eye_E0_{dir}.txt",
+              "z": "front"
+            }
+          ]
+        },
+        "E1": {
+          "label": "横線",
+          "layers": [
+            {
+              "part": "assets/part/eye/E1/eye_E1_{dir}.txt",
+              "z": "front"
+            }
+          ]
+        },
+        "E2": {
+          "label": "つり目",
+          "layers": [
+            {
+              "part": "assets/part/eye/E2/eye_E2_{dir}.txt",
+              "z": "front"
+            }
+          ]
+        },
+        "E3": {
+          "label": "たれ目",
+          "layers": [
+            {
+              "part": "assets/part/eye/E3/eye_E3_{dir}.txt",
+              "z": "front"
+            }
+          ]
+        },
+        "E4": {
+          "label": "点",
+          "layers": [
+            {
+              "part": "assets/part/eye/E4/eye_E4_{dir}.txt",
+              "z": "front"
+            }
+          ]
+        },
+        "E5": {
+          "label": "眼帯",
+          "layers": [
+            {
+              "part": "assets/part/eye/E5/eye_E5_{dir}.txt",
+              "z": "front"
+            }
+          ]
+        }
+      }
+    },
+    "hair": {
+      "label": "長い髪",
+      "variants": {
+        "N": {
+          "label": "なし",
+          "layers": [
+            {
+              "part": "assets/part/cloth/none/cloth_none_{dir}.txt",
+              "z": "front"
+            }
+          ]
+        },
+        "A": {
+          "label": "ロング・前髪あり",
+          "layers": [
+            {
+              "part": "assets/part/hair/A/hair_A_{dir}.txt",
+              "z": "front"
+            },
+            {
+              "part": "assets/part/hair/A/hair_A_back_{dir}.txt",
+              "z": "back"
+            }
+          ]
+        },
+        "B": {
+          "label": "ロング・前髪なし（額を出す）",
+          "layers": [
+            {
+              "part": "assets/part/hair/B/hair_B_{dir}.txt",
+              "z": "front"
+            },
+            {
+              "part": "assets/part/hair/B/hair_B_back_{dir}.txt",
+              "z": "back"
+            }
+          ]
+        },
+        "C": {
+          "label": "ポニーテール",
+          "layers": [
+            {
+              "part": "assets/part/hair/C/hair_C_{dir}.txt",
+              "z": "front"
+            },
+            {
+              "part": "assets/part/hair/C/hair_C_back_{dir}.txt",
+              "z": "back"
+            }
+          ]
+        }
+      }
+    },
+    "head": {
+      "label": "頭",
+      "variants": {
+        "H0": {
+          "label": "被り物なし",
+          "layers": [
+            {
+              "part": "assets/part/cloth/none/cloth_none_{dir}.txt",
+              "z": "front"
+            }
+          ]
+        },
+        "H1": {
+          "label": "素の髪",
+          "layers": [
+            {
+              "part": "assets/part/head/bare/head_bare_{dir}.txt",
+              "z": "front"
+            }
+          ]
+        },
+        "H2": {
+          "label": "バンダナ",
+          "layers": [
+            {
+              "part": "assets/part/head/bandana/head_bandana_{dir}.txt",
+              "z": "front"
+            }
+          ]
+        },
+        "H3": {
+          "label": "角付きの兜",
+          "layers": [
+            {
+              "part": "assets/part/head/horn/head_horn_{dir}.txt",
+              "z": "front"
+            }
+          ]
+        },
+        "H4": {
+          "label": "フルフェイス",
+          "layers": [
+            {
+              "part": "assets/part/head/full/head_full_{dir}.txt",
+              "z": "front"
+            }
+          ]
+        }
+      }
+    },
+    "clothes": {
+      "label": "服",
+      "variants": {
+        "C0": {
+          "label": "なし",
+          "layers": [
+            {
+              "part": "assets/part/cloth/none/cloth_none_{dir}.txt",
+              "z": "front"
+            }
+          ]
+        },
+        "C1": {
+          "label": "ベルト",
+          "layers": [
+            {
+              "part": "assets/part/cloth/belt_female/cloth_belt_female_{dir}.txt",
+              "z": "front"
+            }
+          ]
+        },
+        "C2": {
+          "label": "ボロ",
+          "layers": [
+            {
+              "part": "assets/part/cloth/tatter_female/cloth_tatter_female_{dir}.txt",
+              "z": "front"
+            }
+          ]
+        },
+        "C3": {
+          "label": "ベルト+ボロ",
+          "layers": [
+            {
+              "part": "assets/part/cloth/belt_female/cloth_belt_female_{dir}.txt",
+              "z": "front"
+            },
+            {
+              "part": "assets/part/cloth/tatter_female/cloth_tatter_female_{dir}.txt",
+              "z": "front"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "default": {
+    "eyes": "E0",
+    "hair": "A",
+    "head": "H0",
+    "clothes": "C0"
+  },
+  "matrix": {
+    "rows": "head",
+    "cols": "hair"
+  },
+  "refs": {
+    "眼帯のバンダナ（斧・男）": "assets/unit/axe-bandit/{dir}_base.txt",
+    "角付きの兜（斧・男）": "assets/unit/axe-horn/{dir}_base.txt",
+    "フルフェイス（槍・男）": "assets/unit/spear-knight/{dir}_base.txt",
+    "素の髪のごろつき（槍・男）": "assets/unit/spear-thug/{dir}_base.txt"
+  }
+}

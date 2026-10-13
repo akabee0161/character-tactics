@@ -3,7 +3,7 @@
   "name": "フルフェイス（短剣）",
   "archetype": "dagger",
   "body": "male",
-  "frames": "cand/enemy-frames/dagger-knight",
+  "frames": "assets/unit/dagger-knight",
   "recolor": {
     "cloak_dark_hi": "floor_base",
     "cloak_dark_base": "floor_shadow",

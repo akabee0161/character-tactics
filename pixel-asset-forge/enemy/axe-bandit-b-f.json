@@ -3,7 +3,7 @@
   "name": "眼帯のバンダナ（斧・女・前髪なしのロング）",
   "archetype": "axe",
   "body": "female",
-  "frames": "cand/enemy-frames/axe-bandit-b-f",
+  "frames": "assets/unit/axe-bandit-b-f",
   "recolor": {
     "cloak_dark_hi": "dirt_hi",
     "cloak_dark_base": "dirt_base",

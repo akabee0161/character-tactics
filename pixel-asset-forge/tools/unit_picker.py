@@ -18,9 +18,9 @@
       "directions": ["down", "up", "left", "right"],          # 省略時はこの4つ
       "elements": {                                            # 書いた順に重ね、この順で記号に並べる
         "head": {"label": "頭", "variants": {
-          "H1": {"label": "丸い頭巾", "layers": [{"part": "cand/hood_A_{dir}.txt", "z": "front"}]}}},
+          "H1": {"label": "丸い頭巾", "layers": [{"part": "build/cand/hood_A_{dir}.txt", "z": "front"}]}}},
         "dagger": {"label": "短剣", "variants": {
-          "D1": {"label": "4px", "layers": [{"part": "cand/dagger_A_{dir}.txt", "z": {"left": "back"}}]}}}
+          "D1": {"label": "4px", "layers": [{"part": "build/cand/dagger_A_{dir}.txt", "z": {"left": "back"}}]}}}
       },
       "default": {"head": "H1", "dagger": "D1"},               # 省略時は各要素の最初の案
       "matrix": {"rows": "head", "cols": "dagger"},            # 一覧の表の行と列（省略時は最初の2要素）

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """ユニットの武器と、それを握る手を、見せる前に機械で確かめる（自己チェック①の道具の1つ）。
 
-    tools/weapon_check.py cand/enemy-frames/spear-soldier \\
+    tools/weapon_check.py assets/unit/spear-knight \\
         --blade stone_hi,stone_base --weapon wood_base,wood_shadow \\
         --hand skin_rose_hi,skin_rose_base,skin_rose_shadow --hidden left_atk_hit,right_atk_hit
 

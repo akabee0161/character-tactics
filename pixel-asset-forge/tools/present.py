@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """案を並べて見せる画像を作る。
 
-    tools/present.py OUT.png cand/hood_A.txt cand/hood_B.txt --ref face32.png
+    tools/present.py OUT.png build/cand/hood_A.txt build/cand/hood_B.txt --ref face32.png
 
 上の段: 参考の画像（--ref、任意）と各グリッドを --scale 倍（既定 8）で横に並べ、上に名前を書く。
 下の段: 同じ並びの等倍を草の色（grass_base）の上に置く（ゲームでの大きさの見え方）。

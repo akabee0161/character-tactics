@@ -87,7 +87,7 @@ ARCHETYPES = {"dagger": "sheets/gau.txt", "axe": "sheets/gau.txt", "spear": "she
 BODIES = ("male", "female")
 SOURCES = {
     ("dagger", "male"): "assets/unit/gau",
-    ("dagger", "female"): "assets/unit/enemy-src/dagger-female",
+    ("dagger", "female"): "assets/unit/dagger-female",  # まだ作っていない（--colours dagger は置き場が無いと言って止まる）
 }
 RECIPE_KEYS = {"id", "name", "archetype", "body", "recolor", "frames"}
 ID_RE = re.compile(r"[a-z0-9]+(-[a-z0-9]+)*")

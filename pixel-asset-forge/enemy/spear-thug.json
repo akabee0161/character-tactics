@@ -3,7 +3,7 @@
   "name": "素の髪のごろつき（槍）",
   "archetype": "spear",
   "body": "male",
-  "frames": "cand/enemy-frames/spear-thug",
+  "frames": "assets/unit/spear-thug",
   "recolor": {
     "cloak_dark_hi": "orchid_base",
     "cloak_dark_base": "orchid_shadow",

@@ -233,6 +233,8 @@ cat sheets/roran.txt
 .venv/bin/python tools/sheet_gif.py sheets/roran.txt                 # idle / walk / attack の3本
 .venv/bin/python tools/sheet_gif.py sheets/roran.txt --state attack  # 1本だけ
 .venv/bin/python tools/sheet_gif.py sheets/roran.txt --fps attack=12 --scale 6
+.venv/bin/python tools/anim_compare.py NOW.png CAND.png OUT.html --anim ../assets/units/ines.json --dirs down   # 今と案のシートを並べて再生する確認ページ
+.venv/bin/python tools/reorder.py compose/ines.json OUT.json left bow,arrow,arrow_hand,CORE,bow_hand          # ある向きの重なり順だけを変えた設定の写し
 ```
 
 - `build/sheets/roran_<状態>.gif`：4方向（down / up / left / right）を横に並べ、上の段は拡大、下の段は草の上に等倍（ゲームで描かれる大きさ）
@@ -272,7 +274,7 @@ cat sheets/roran.txt
 部品ごとに `front`（上に描く）か `back`（透明な画素にだけ描く。体に隠れる）を選び、`dx`・`dy` でずらす。
 `front` は積んだ時点の一番手前へ、`back` は一番奥へ入る（`back` は体に近いものから先に書く）。拳の部品には `hand: true` を付けると、四方を輪郭で閉じているかを `--check` が確かめる。
 ロランは全向きを、完全な単品の部品（体・剣・剣の拳・盾・盾の拳）で組んでいる（`compose/roran.json`。決まりは `types/unit/SPEC.md`「部品で組む規約」）。
-イネスも全32コマを、芯・弓（弦を含む）・矢・弓の拳・矢の拳で組んでいる（`compose/ines.json`、部品は `assets/unit/ines/parts/`）。
+イネスも全32コマを、芯・弓（弦を含む）・矢・弓の拳・矢の拳で組んでいる（`compose/ines.json`、部品は `assets/part/` の `body/ines/`・`equip/bow/`・`equip/arrow/`・`fist/ines/`）。
 
 ```sh
 .venv/bin/python tools/compose.py compose/ines.json --check     # 全32コマが部品から再現できる
@@ -281,7 +283,7 @@ cat sheets/roran.txt
 ```
 
 部品を持たない完成した絵を部品に分けるときは、`tools/parts_export.py` を使う（文字で切るので、同じ色の別の物も分けられる）。
-ユニットごとの切り方（部品の文字・拳の箱・重なり順）は `cand/gen/<ユニット>_layers.py` に書く（イネスは `cand/gen/ines_layers.py`。書き出すのは部品と設定だけで、コマは書かない）。
+ユニットごとの切り方（部品の文字・拳の箱・重なり順）は `gen/<ユニット>/<ユニット>_layers.py` に書く（イネスは `gen/ines/ines_layers.py`。書き出すのは部品と設定だけで、コマは書かない）。
 書き出しは描き直す前に一度だけ使う。部品を描き直した後に走らせると上書きするので、イネスでは実行しない。
 手順は `types/unit/SPEC.md` の「描く手順」。
 組み立てた後に手で直したコマ（ガウは16コマ。色・目・襟・腕を描き足した）は組み立て結果と違うので、`compose.py` は上書きせずに止まる（`--force` を付けたときだけ上書きする）。
@@ -349,13 +351,14 @@ forge をゲームリポジトリへコピーして使うときは、ゲーム�
 
 - レシピは `enemy/<id>.json`（キー: `id` `name` `archetype` `body` `recolor` `frames`）。`id` はファイル名と同じ
 - `archetype` は `dagger` `axe` `spear`（シート定義はどれも `sheets/gau.txt`）。`body` は `male` か `female`
-- `frames` は元のコマの置き場（リポジトリからの相対パス）。今の16体（男性8・女性8）は `cand/enemy-frames/<id>`
+- `frames` は元のコマの置き場（リポジトリからの相対パス）。今の16体（男性8・女性8）は `assets/unit/<id>`
   （部品で組んだコマ）を指す。`axe` `spear` では必須。
-  書かなければ `dagger` の `male` は `assets/unit/gau/`、`female` は `assets/unit/enemy-src/dagger-female/`
+  書かなければ `dagger` の `male` は `assets/unit/gau/`、`female` は `assets/unit/dagger-female/`
   （`--colours` が比べるのもこの2つ。短剣の女性の元のコマはまだ無いので、今は置き場が無いと言って止まる）
-- 部品で組んだコマの生成（cwd は forge の直下）: `cand/gen/mkparts.py`（頭・目・服・長い髪の部品と選ぶページの設定）→
-  `cand/gen/mkweapons.py`（斧・槍の男女の敵。敵の一覧は `cand/gen/mkframes.py` の `ENEMIES`、女性の8体は
-  `mkweapons.py` で足す）。女性の id は `<男性の id>-<髪 a・b・c>-f`（a 前髪ありのロング・b 前髪なしのロング・c ポニーテール）
+- 部品で組んだコマの生成（cwd は forge の直下）: `gen/enemy/mkparts.py`（頭・目・服・長い髪の部品を `assets/part/` に、選ぶページの設定を `gen/enemy/PICKER*.json` に）→
+  `gen/enemy/mkweapons.py`（斧・槍の男女の敵。敵の一覧は `gen/enemy/mkframes.py` の `ENEMIES`、女性の8体は
+  `mkweapons.py` で足す）。女性の id は `<男性の id>-<髪 a・b・c>-f`（a 前髪ありのロング・b 前髪なしのロング・c ポニーテール）。
+  今走らせると、コマはコミット済みのものと違う（`ISSUES.md`「敵の生成スクリプトの出力が、コミット済みのコマと違う」）
 - `recolor` は「元のコマが使うパレット名 → 置き換え後のパレット名」。元のコマが使わない名前は止める
 - 元のコマの絵を直したら `enemy_build.py --all` で作り直す。`build/` は生成物
 
@@ -393,6 +396,11 @@ types/<type>/SPEC.md       型ごとの機械的な規約（寸法・構成・�
 types/<type>/reference/    合格済みのお手本。絵柄はここで揃える（`unit` は `reference/` を持たない。手本は `assets/unit/roran/`（剣と盾）・`assets/unit/ines/`（弓）・`assets/unit/gau/`（短剣）、土台は `types/unit/base/` の素体）
 types/unit/base/           unit の素体（4方向）。新しい unit を複製して作る土台
 assets/<type>/<name>.txt   アセットの元テキスト（これが正）
+assets/unit/<unit>/        unit のコマ。味方3体と、部品で組んだ敵16体（`assets/unit/<敵の id>/`）
+assets/part/<種類>/<名前>/  unit の部品。種類は equip・fist・body・head・hair・eye・cloth（`types/unit/SPEC.md`）
+compose/<unit>.json        部品の組み立て方（tools/compose.py が読む）
+enemy/<id>.json            敵のレシピ（tools/enemy_build.py が読む）
+gen/<unit>/                1体（または敵だけ）のためのスクリプト（敵は gen/enemy）。汎用の道具は tools/
 sheets/<unit>.txt          unit のシート定義
 sets/<物>.txt              物のセットの定義（16px の部品をどう組むか）
 layouts/<map>.txt          tilemap.py --layout に渡すマップ
@@ -410,7 +418,7 @@ seed/face32.py             リポジトリ化前の原型。もう使ってい�
 | `face`（顔グラ） | reference 1点（`knight`） | 32x32 | [`types/face/SPEC.md`](types/face/SPEC.md) |
 | `item`（小物） | 3点（`chest`・`sword`・`bow`） | 16x16 | [`types/item/SPEC.md`](types/item/SPEC.md) |
 | `tile`（マップ） | 77点（草原57・城内20）。うち12点は物のセット3つ（村・岩・木）の部品 | 16x16（セットは 32x32） | [`types/tile/SPEC.md`](types/tile/SPEC.md) |
-| `unit`（マップ上のキャラ） | 3体（ロラン・ガウ 24コマ、イネス 32コマ）＋素体 `male_*`・`female_*` 4方向ずつ | 32x32 | [`types/unit/SPEC.md`](types/unit/SPEC.md) |
+| `unit`（マップ上のキャラ） | 3体（ロラン・ガウ 24コマ、イネス 32コマ）＋素体 `male_*`・`female_*` 4方向ずつ。ほかに敵16体（24コマずつ。部品で生成し、`enemy_build.py` で色替えする） | 32x32 | [`types/unit/SPEC.md`](types/unit/SPEC.md) |
 
 **「正」はテキストで、PNG は生成物。** 絵を変えるときに編集するのは `assets/**/*.txt` だけで、
 PNG を直接編集しない。

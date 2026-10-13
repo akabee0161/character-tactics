@@ -3,7 +3,7 @@
   "name": "素の髪のごろつき（槍・女・ポニーテール）",
   "archetype": "spear",
   "body": "female",
-  "frames": "cand/enemy-frames/spear-thug-c-f",
+  "frames": "assets/unit/spear-thug-c-f",
   "recolor": {
     "cloak_dark_hi": "orchid_base",
     "cloak_dark_base": "orchid_shadow",
