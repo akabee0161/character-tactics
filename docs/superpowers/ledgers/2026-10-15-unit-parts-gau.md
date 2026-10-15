@@ -34,3 +34,4 @@ Final review: opus の code-reviewer。Critical 0、Important 2、Minor 4
 Final: fixed I-1 weapon_check の left「手が細い」が正典に無い — SPEC の weapon_check の節と ISSUES のロランの行（ガウを含める）を直した（文書のみ。weapon_check を走らせて 4件の FAIL を確かめた）
 Final: I-2 体に隠れる短剣（up_atk_wind・left_atk_wind）を空にした件は、計画どおり依頼者に聞く（Task 3 の Ruling は剣と拳が両方隠れる場合の例外を当てはめ過ぎていた）
 Final: fixed M-1 SPEC の拳の大きさの記述、M-2 ISSUES の body_check の up、M-3 空き手の拳の keep を外した（compose --check 0、24コマ変わらず）、M-4 台帳の写しを最後に取り直す
+Final: Ruling 取り消し: up_atk_wind・left_atk_wind の短剣を空にしたのは誤り（決まりは「部品は単品として完全に描く」で、依頼者に聞くことでもなかった。2026-10-15 依頼者の指摘）。隠れる位置に描いた: up は拳の後ろに刃を奥へ向けた端からの姿（鍔と刃の断面）、left は拳から体の後ろを通って前へ向けた水平の短剣（right の構えの形）。compose --check 0（24コマ変わらず）
