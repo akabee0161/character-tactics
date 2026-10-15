@@ -1,247 +1,632 @@
 {
   "unit": "gau",
+  "hand_colours": [
+    "skin_rose_hi",
+    "skin_rose_base",
+    "skin_rose_shadow"
+  ],
   "frames": {
     "down_base": {
-      "body": "types/unit/base/male_down.txt",
+      "body": "assets/part/body/gau/core_down_base.txt",
       "layers": [
         {
-          "part": "assets/part/head/hood/hood_down.txt",
+          "part": "assets/part/equip/dagger/dagger_down_base.txt",
           "z": "front"
         },
         {
-          "part": "assets/part/hair/gau/hair_down.txt",
+          "part": "assets/part/fist/gau/dagger_hand_down_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/part/fist/gau/free_hand_down_base.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "down_idle2": {
+      "body": "assets/part/body/gau/core_down_idle2.txt",
+      "layers": [
+        {
+          "part": "assets/part/equip/dagger/dagger_down_idle2.txt",
           "z": "front"
         },
         {
-          "part": "assets/part/equip/dagger/dagger_down.txt",
+          "part": "assets/part/fist/gau/dagger_hand_down_idle2.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/part/fist/gau/free_hand_down_idle2.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "down_walk_a": {
+      "body": "assets/part/body/gau/core_down_walk_a.txt",
+      "layers": [
+        {
+          "part": "assets/part/equip/dagger/dagger_down_base.txt",
           "z": "front"
+        },
+        {
+          "part": "assets/part/fist/gau/dagger_hand_down_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/part/fist/gau/free_hand_down_base.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "down_walk_b": {
+      "body": "assets/part/body/gau/core_down_walk_b.txt",
+      "layers": [
+        {
+          "part": "assets/part/equip/dagger/dagger_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/gau/dagger_hand_down_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/part/fist/gau/free_hand_down_base.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "down_atk_wind": {
+      "body": "assets/part/body/gau/core_down_atk_wind.txt",
+      "layers": [
+        {
+          "part": "assets/part/equip/dagger/dagger_down_atk_wind.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/gau/dagger_hand_down_atk_wind.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/part/fist/gau/free_hand_down_atk_wind.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "down_atk_hit": {
+      "body": "assets/part/body/gau/core_down_atk_hit.txt",
+      "layers": [
+        {
+          "part": "assets/part/equip/dagger/dagger_down_atk_hit.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/gau/dagger_hand_down_atk_hit.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/part/fist/gau/free_hand_down_atk_hit.txt",
+          "z": "front",
+          "hand": true
         }
       ]
     },
     "up_base": {
-      "body": "types/unit/base/male_up.txt",
+      "body": "assets/part/body/gau/core_up_base.txt",
       "layers": [
         {
-          "part": "assets/part/head/hood/hood_up.txt",
-          "z": "front"
+          "part": "assets/part/fist/gau/free_hand_up_base.txt",
+          "z": "back",
+          "hand": true
         },
         {
-          "part": "assets/part/hair/gau/hair_up.txt",
-          "z": "front"
+          "part": "assets/part/fist/gau/dagger_hand_up_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
         },
         {
-          "part": "assets/part/equip/dagger/dagger_up.txt",
+          "part": "assets/part/equip/dagger/dagger_up_base.txt",
+          "z": "back"
+        }
+      ]
+    },
+    "up_idle2": {
+      "body": "assets/part/body/gau/core_up_idle2.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/gau/free_hand_up_idle2.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/fist/gau/dagger_hand_up_idle2.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/part/equip/dagger/dagger_up_idle2.txt",
+          "z": "back"
+        }
+      ]
+    },
+    "up_walk_a": {
+      "body": "assets/part/body/gau/core_up_walk_a.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/gau/free_hand_up_base.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/fist/gau/dagger_hand_up_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/part/equip/dagger/dagger_up_base.txt",
+          "z": "back"
+        }
+      ]
+    },
+    "up_walk_b": {
+      "body": "assets/part/body/gau/core_up_walk_b.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/gau/free_hand_up_base.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/fist/gau/dagger_hand_up_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/part/equip/dagger/dagger_up_base.txt",
+          "z": "back"
+        }
+      ]
+    },
+    "up_atk_wind": {
+      "body": "assets/part/body/gau/core_up_atk_wind.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/gau/free_hand_up_atk_wind.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/fist/gau/dagger_hand_up_atk_wind.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/part/equip/dagger/dagger_up_atk_wind.txt",
+          "z": "back"
+        }
+      ]
+    },
+    "up_atk_hit": {
+      "body": "assets/part/body/gau/core_up_atk_hit.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/gau/free_hand_up_atk_hit.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/fist/gau/dagger_hand_up_atk_hit.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/part/equip/dagger/dagger_up_atk_hit.txt",
           "z": "back"
         }
       ]
     },
     "left_base": {
-      "body": "types/unit/base/male_left.txt",
+      "body": "assets/part/body/gau/core_left_base.txt",
       "layers": [
         {
-          "part": "assets/part/head/hood/hood_left.txt",
-          "z": "front"
-        },
-        {
-          "part": "assets/part/hair/gau/hair_left.txt",
-          "z": "front"
-        },
-        {
-          "part": "assets/part/equip/dagger/dagger_left.txt",
-          "z": "back"
-        }
-      ]
-    },
-    "right_base": {
-      "body": "types/unit/base/male_right.txt",
-      "layers": [
-        {
-          "part": "assets/part/head/hood/hood_right.txt",
-          "z": "front"
-        },
-        {
-          "part": "assets/part/hair/gau/hair_right.txt",
-          "z": "front"
-        },
-        {
-          "part": "assets/part/equip/dagger/dagger_right.txt",
-          "z": "front"
-        }
-      ]
-    },
-    "down_idle2": {
-      "body": "assets/part/body/gau/body_idle2_down.txt",
-      "layers": [
-        {
-          "part": "assets/part/head/hood/hood_down.txt",
-          "z": "front"
-        },
-        {
-          "part": "assets/part/hair/gau/hair_down.txt",
-          "z": "front"
-        },
-        {
-          "part": "assets/part/equip/dagger/dagger_down.txt",
-          "z": "front",
-          "dy": -2
-        }
-      ]
-    },
-    "up_idle2": {
-      "body": "assets/part/body/gau/body_idle2_up.txt",
-      "layers": [
-        {
-          "part": "assets/part/head/hood/hood_up.txt",
-          "z": "front"
-        },
-        {
-          "part": "assets/part/hair/gau/hair_up.txt",
-          "z": "front"
-        },
-        {
-          "part": "assets/part/equip/dagger/dagger_up.txt",
+          "part": "assets/part/fist/gau/dagger_hand_left_base.txt",
           "z": "back",
-          "dy": -2
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/part/equip/dagger/dagger_left_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/fist/gau/free_hand_left_base.txt",
+          "z": "front",
+          "hand": true
         }
       ]
     },
     "left_idle2": {
-      "body": "assets/part/body/gau/body_idle2_left.txt",
+      "body": "assets/part/body/gau/core_left_idle2.txt",
       "layers": [
         {
-          "part": "assets/part/head/hood/hood_left.txt",
-          "z": "front"
-        },
-        {
-          "part": "assets/part/hair/gau/hair_left.txt",
-          "z": "front"
-        },
-        {
-          "part": "assets/part/equip/dagger/dagger_left.txt",
+          "part": "assets/part/fist/gau/dagger_hand_left_idle2.txt",
           "z": "back",
-          "dy": -2
-        }
-      ]
-    },
-    "right_idle2": {
-      "body": "assets/part/body/gau/body_idle2_right.txt",
-      "layers": [
-        {
-          "part": "assets/part/head/hood/hood_right.txt",
-          "z": "front"
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
         },
         {
-          "part": "assets/part/hair/gau/hair_right.txt",
-          "z": "front"
+          "part": "assets/part/equip/dagger/dagger_left_idle2.txt",
+          "z": "back"
         },
         {
-          "part": "assets/part/equip/dagger/dagger_right.txt",
+          "part": "assets/part/fist/gau/free_hand_left_idle2.txt",
           "z": "front",
-          "dy": -2
+          "hand": true
         }
       ]
     },
-    "down_atk_wind": {
-      "body": "assets/part/body/gau/body_noarm_down.txt",
+    "left_walk_a": {
+      "body": "assets/part/body/gau/core_left_walk_a.txt",
       "layers": [
         {
-          "part": "assets/part/head/hood/hood_down.txt",
-          "z": "front"
+          "part": "assets/part/fist/gau/dagger_hand_left_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
         },
         {
-          "part": "assets/part/hair/gau/hair_down.txt",
-          "z": "front"
+          "part": "assets/part/equip/dagger/dagger_left_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/fist/gau/free_hand_left_base.txt",
+          "z": "front",
+          "hand": true
         }
       ]
     },
-    "up_atk_wind": {
-      "body": "assets/part/body/gau/body_noarm_up.txt",
+    "left_walk_b": {
+      "body": "assets/part/body/gau/core_left_walk_b.txt",
       "layers": [
         {
-          "part": "assets/part/head/hood/hood_up.txt",
-          "z": "front"
+          "part": "assets/part/fist/gau/dagger_hand_left_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
         },
         {
-          "part": "assets/part/hair/gau/hair_up.txt",
-          "z": "front"
+          "part": "assets/part/equip/dagger/dagger_left_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/fist/gau/free_hand_left_base.txt",
+          "z": "front",
+          "hand": true
         }
       ]
     },
     "left_atk_wind": {
-      "body": "assets/part/body/gau/body_noarm_left.txt",
+      "body": "assets/part/body/gau/core_left_atk_wind.txt",
       "layers": [
         {
-          "part": "assets/part/head/hood/hood_left.txt",
-          "z": "front"
+          "part": "assets/part/fist/gau/dagger_hand_left_atk_wind.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
         },
         {
-          "part": "assets/part/hair/gau/hair_left.txt",
-          "z": "front"
-        }
-      ]
-    },
-    "right_atk_wind": {
-      "body": "assets/part/body/gau/body_noarm_right.txt",
-      "layers": [
-        {
-          "part": "assets/part/head/hood/hood_right.txt",
-          "z": "front"
+          "part": "assets/part/equip/dagger/dagger_left_atk_wind.txt",
+          "z": "back"
         },
         {
-          "part": "assets/part/hair/gau/hair_right.txt",
-          "z": "front"
-        }
-      ]
-    },
-    "down_atk_hit": {
-      "body": "assets/part/body/gau/body_noarm_down.txt",
-      "layers": [
-        {
-          "part": "assets/part/head/hood/hood_down.txt",
-          "z": "front"
-        },
-        {
-          "part": "assets/part/hair/gau/hair_down.txt",
-          "z": "front"
-        }
-      ]
-    },
-    "up_atk_hit": {
-      "body": "assets/part/body/gau/body_noarm_up.txt",
-      "layers": [
-        {
-          "part": "assets/part/head/hood/hood_up.txt",
-          "z": "front"
-        },
-        {
-          "part": "assets/part/hair/gau/hair_up.txt",
-          "z": "front"
+          "part": "assets/part/fist/gau/free_hand_left_atk_wind.txt",
+          "z": "front",
+          "hand": true
         }
       ]
     },
     "left_atk_hit": {
-      "body": "assets/part/body/gau/body_noarm_left.txt",
+      "body": "assets/part/body/gau/core_left_atk_hit.txt",
       "layers": [
         {
-          "part": "assets/part/head/hood/hood_left.txt",
+          "part": "assets/part/fist/gau/dagger_hand_left_atk_hit.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/part/equip/dagger/dagger_left_atk_hit.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/fist/gau/free_hand_left_atk_hit.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "right_base": {
+      "body": "assets/part/body/gau/core_right_base.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/gau/free_hand_right_base.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/equip/dagger/dagger_right_base.txt",
           "z": "front"
         },
         {
-          "part": "assets/part/hair/gau/hair_left.txt",
+          "part": "assets/part/fist/gau/dagger_hand_right_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        }
+      ]
+    },
+    "right_idle2": {
+      "body": "assets/part/body/gau/core_right_idle2.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/gau/free_hand_right_idle2.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/equip/dagger/dagger_right_idle2.txt",
           "z": "front"
+        },
+        {
+          "part": "assets/part/fist/gau/dagger_hand_right_idle2.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        }
+      ]
+    },
+    "right_walk_a": {
+      "body": "assets/part/body/gau/core_right_walk_a.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/gau/free_hand_right_base.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/equip/dagger/dagger_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/gau/dagger_hand_right_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        }
+      ]
+    },
+    "right_walk_b": {
+      "body": "assets/part/body/gau/core_right_walk_b.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/gau/free_hand_right_base.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/equip/dagger/dagger_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/gau/dagger_hand_right_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        }
+      ]
+    },
+    "right_atk_wind": {
+      "body": "assets/part/body/gau/core_right_atk_wind.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/gau/free_hand_right_atk_wind.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/equip/dagger/dagger_right_atk_wind.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/gau/dagger_hand_right_atk_wind.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
         }
       ]
     },
     "right_atk_hit": {
-      "body": "assets/part/body/gau/body_noarm_right.txt",
+      "body": "assets/part/body/gau/core_right_atk_hit.txt",
       "layers": [
         {
-          "part": "assets/part/head/hood/hood_right.txt",
+          "part": "assets/part/fist/gau/free_hand_right_atk_hit.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/equip/dagger/dagger_right_atk_hit.txt",
           "z": "front"
         },
         {
-          "part": "assets/part/hair/gau/hair_right.txt",
-          "z": "front"
+          "part": "assets/part/fist/gau/dagger_hand_right_atk_hit.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
         }
       ]
     }

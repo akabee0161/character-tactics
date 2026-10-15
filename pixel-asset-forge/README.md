@@ -275,6 +275,7 @@ cat sheets/roran.txt
 `front` は積んだ時点の一番手前へ、`back` は一番奥へ入る（`back` は体に近いものから先に書く）。拳の部品には `hand: true` を付けると、四方を輪郭で閉じているかを `--check` が確かめる。
 ロランは全向きを、完全な単品の部品（体・剣・剣の拳・盾・盾の拳）で組んでいる（`compose/roran.json`。決まりは `types/unit/SPEC.md`「部品で組む規約」）。
 イネスも全32コマを、芯・弓（弦を含む）・矢・弓の拳・矢の拳で組んでいる（`compose/ines.json`、部品は `assets/part/` の `body/ines/`・`equip/bow/`・`equip/arrow/`・`fist/ines/`）。
+ガウも全24コマを、芯・短剣・短剣の拳・空き手の拳で組んでいる（`compose/gau.json`、部品は `assets/part/` の `body/gau/core_*`・`equip/dagger/dagger_<向き>_<状態>`・`fist/gau/`）。
 
 ```sh
 .venv/bin/python tools/compose.py compose/ines.json --check     # 全32コマが部品から再現できる
@@ -283,11 +284,10 @@ cat sheets/roran.txt
 ```
 
 部品を持たない完成した絵を部品に分けるときは、`tools/parts_export.py` を使う（文字で切るので、同じ色の別の物も分けられる）。
-ユニットごとの切り方（部品の文字・拳の箱・重なり順）は `gen/<ユニット>/<ユニット>_layers.py` に書く（イネスは `gen/ines/ines_layers.py`。書き出すのは部品と設定だけで、コマは書かない）。
-書き出しは描き直す前に一度だけ使う。部品を描き直した後に走らせると上書きするので、イネスでは実行しない。
+ユニットごとの切り方（部品の文字・拳の箱・重なり順）は `gen/<ユニット>/<ユニット>_layers.py` に書く（イネスは `gen/ines/ines_layers.py`、ガウは `gen/gau/gau_layers.py`。書き出すのは部品と設定だけで、コマは書かない）。
+書き出しは描き直す前に一度だけ使う。部品を描き直した後に走らせると上書きするので、イネス・ガウでは実行しない。
 手順は `types/unit/SPEC.md` の「描く手順」。
-組み立てた後に手で直したコマ（ガウは16コマ。色・目・襟・腕を描き足した）は組み立て結果と違うので、`compose.py` は上書きせずに止まる（`--force` を付けたときだけ上書きする）。
-`compose/gau.json` は組み立ての出発点の記録で、今のガウの絵はこれだけでは再現しない（`ISSUES.md`「組み立てた後の描き足しが forge の道具になっていない」）。
+組み立てた後に手で直したコマは組み立て結果と違うので、`compose.py` は上書きせずに止まる（`--force` を付けたときだけ上書きする）。
 
 部品の案を一括で作ったら、`tools/unit_picker.py` で組み合わせを選ぶページを書き出して依頼者に渡す（必須。依頼者が頭の中で組み合わせを試さずに済むように）。
 
