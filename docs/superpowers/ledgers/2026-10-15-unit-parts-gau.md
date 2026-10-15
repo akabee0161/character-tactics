@@ -29,3 +29,8 @@ Task 5: 依頼者が right を承認（2026-10-15）。コマを組み直した�
 Task 5: complete (commits 49f2c3e..b9392de, tests: bash -c 'cd pixel-asset-forge && .venv/bin/python -m unittest discover -s tests 2>&1 | tail -1' → ok   /tmp/tmptpxk1hft/tmpdm88fhi4_attack.gif  1 frame(s) at 6fps (170ms))
 Task 6: SPEC（体＋拳の対応状況、短剣の持ち方を部品・重なり順・腕なしの攻撃に書き直し、書き出しの定義にガウ）・README・CLAUDE.md・ISSUES（敵だけ残す、ガウの古い部品は敵だけが使う、描き足しの道具の行は解消して消す、body_check・unit_check・スマホ用画像の道具を足す）を直した
 Task 6: Ruling: 作業フォルダ（.superpowers/sdd/2026-10-15-unit-parts-gau/）は計画の終わりでも消さない — ISSUES にスマホ用画像の道具の置き場として書いたため（イネスでも作業スクリプトは消さなかった） — 外れたら手で消す
+Task 6: complete (commits b9392de..030d640, tests: bash -c 'cd pixel-asset-forge && .venv/bin/python -m unittest discover -s tests 2>&1 | grep -E '^(OK|FAILED)'' → OK)
+Final review: opus の code-reviewer。Critical 0、Important 2、Minor 4
+Final: fixed I-1 weapon_check の left「手が細い」が正典に無い — SPEC の weapon_check の節と ISSUES のロランの行（ガウを含める）を直した（文書のみ。weapon_check を走らせて 4件の FAIL を確かめた）
+Final: I-2 体に隠れる短剣（up_atk_wind・left_atk_wind）を空にした件は、計画どおり依頼者に聞く（Task 3 の Ruling は剣と拳が両方隠れる場合の例外を当てはめ過ぎていた）
+Final: fixed M-1 SPEC の拳の大きさの記述、M-2 ISSUES の body_check の up、M-3 空き手の拳の keep を外した（compose --check 0、24コマ変わらず）、M-4 台帳の写しを最後に取り直す

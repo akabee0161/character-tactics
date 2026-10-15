@@ -53,7 +53,7 @@ GAU = UnitDef(
            PartDef("短剣の拳", "dagger_hand", SKIN, DAGGER_HAND, hand=True,
                    keep=GRIPPED, dir="fist/gau"),
            PartDef("空き手の拳", "free_hand", SKIN, FREE_HAND, hand=True,
-                   keep=GRIPPED, dir="fist/gau")),
+                   dir="fist/gau")),  # 何も握らないので keep は無い（書き出した時は GRIPPED。2026-10-15 に compose/gau.json から外した）
     orders=ORDERS,
     hand_colours=("skin_rose_hi", "skin_rose_base", "skin_rose_shadow"),
 )

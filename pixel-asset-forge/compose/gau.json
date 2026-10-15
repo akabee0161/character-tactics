@@ -28,14 +28,7 @@
         {
           "part": "assets/part/fist/gau/free_hand_down_base.txt",
           "z": "front",
-          "hand": true,
-          "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
-          ]
+          "hand": true
         }
       ]
     },
@@ -61,14 +54,7 @@
         {
           "part": "assets/part/fist/gau/free_hand_down_idle2.txt",
           "z": "front",
-          "hand": true,
-          "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
-          ]
+          "hand": true
         }
       ]
     },
@@ -94,14 +80,7 @@
         {
           "part": "assets/part/fist/gau/free_hand_down_base.txt",
           "z": "front",
-          "hand": true,
-          "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
-          ]
+          "hand": true
         }
       ]
     },
@@ -127,14 +106,7 @@
         {
           "part": "assets/part/fist/gau/free_hand_down_base.txt",
           "z": "front",
-          "hand": true,
-          "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
-          ]
+          "hand": true
         }
       ]
     },
@@ -160,14 +132,7 @@
         {
           "part": "assets/part/fist/gau/free_hand_down_atk_wind.txt",
           "z": "front",
-          "hand": true,
-          "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
-          ]
+          "hand": true
         }
       ]
     },
@@ -193,14 +158,7 @@
         {
           "part": "assets/part/fist/gau/free_hand_down_atk_hit.txt",
           "z": "front",
-          "hand": true,
-          "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
-          ]
+          "hand": true
         }
       ]
     },
@@ -210,14 +168,7 @@
         {
           "part": "assets/part/fist/gau/free_hand_up_base.txt",
           "z": "back",
-          "hand": true,
-          "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
-          ]
+          "hand": true
         },
         {
           "part": "assets/part/fist/gau/dagger_hand_up_base.txt",
@@ -243,14 +194,7 @@
         {
           "part": "assets/part/fist/gau/free_hand_up_idle2.txt",
           "z": "back",
-          "hand": true,
-          "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
-          ]
+          "hand": true
         },
         {
           "part": "assets/part/fist/gau/dagger_hand_up_idle2.txt",
@@ -276,14 +220,7 @@
         {
           "part": "assets/part/fist/gau/free_hand_up_base.txt",
           "z": "back",
-          "hand": true,
-          "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
-          ]
+          "hand": true
         },
         {
           "part": "assets/part/fist/gau/dagger_hand_up_base.txt",
@@ -309,14 +246,7 @@
         {
           "part": "assets/part/fist/gau/free_hand_up_base.txt",
           "z": "back",
-          "hand": true,
-          "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
-          ]
+          "hand": true
         },
         {
           "part": "assets/part/fist/gau/dagger_hand_up_base.txt",
@@ -342,14 +272,7 @@
         {
           "part": "assets/part/fist/gau/free_hand_up_atk_wind.txt",
           "z": "back",
-          "hand": true,
-          "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
-          ]
+          "hand": true
         },
         {
           "part": "assets/part/fist/gau/dagger_hand_up_atk_wind.txt",
@@ -375,14 +298,7 @@
         {
           "part": "assets/part/fist/gau/free_hand_up_atk_hit.txt",
           "z": "back",
-          "hand": true,
-          "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
-          ]
+          "hand": true
         },
         {
           "part": "assets/part/fist/gau/dagger_hand_up_atk_hit.txt",
@@ -424,14 +340,7 @@
         {
           "part": "assets/part/fist/gau/free_hand_left_base.txt",
           "z": "front",
-          "hand": true,
-          "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
-          ]
+          "hand": true
         }
       ]
     },
@@ -457,14 +366,7 @@
         {
           "part": "assets/part/fist/gau/free_hand_left_idle2.txt",
           "z": "front",
-          "hand": true,
-          "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
-          ]
+          "hand": true
         }
       ]
     },
@@ -490,14 +392,7 @@
         {
           "part": "assets/part/fist/gau/free_hand_left_base.txt",
           "z": "front",
-          "hand": true,
-          "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
-          ]
+          "hand": true
         }
       ]
     },
@@ -523,14 +418,7 @@
         {
           "part": "assets/part/fist/gau/free_hand_left_base.txt",
           "z": "front",
-          "hand": true,
-          "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
-          ]
+          "hand": true
         }
       ]
     },
@@ -556,14 +444,7 @@
         {
           "part": "assets/part/fist/gau/free_hand_left_atk_wind.txt",
           "z": "front",
-          "hand": true,
-          "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
-          ]
+          "hand": true
         }
       ]
     },
@@ -589,14 +470,7 @@
         {
           "part": "assets/part/fist/gau/free_hand_left_atk_hit.txt",
           "z": "front",
-          "hand": true,
-          "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
-          ]
+          "hand": true
         }
       ]
     },
@@ -606,14 +480,7 @@
         {
           "part": "assets/part/fist/gau/free_hand_right_base.txt",
           "z": "back",
-          "hand": true,
-          "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
-          ]
+          "hand": true
         },
         {
           "part": "assets/part/equip/dagger/dagger_right_base.txt",
@@ -639,14 +506,7 @@
         {
           "part": "assets/part/fist/gau/free_hand_right_idle2.txt",
           "z": "back",
-          "hand": true,
-          "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
-          ]
+          "hand": true
         },
         {
           "part": "assets/part/equip/dagger/dagger_right_idle2.txt",
@@ -672,14 +532,7 @@
         {
           "part": "assets/part/fist/gau/free_hand_right_base.txt",
           "z": "back",
-          "hand": true,
-          "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
-          ]
+          "hand": true
         },
         {
           "part": "assets/part/equip/dagger/dagger_right_base.txt",
@@ -705,14 +558,7 @@
         {
           "part": "assets/part/fist/gau/free_hand_right_base.txt",
           "z": "back",
-          "hand": true,
-          "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
-          ]
+          "hand": true
         },
         {
           "part": "assets/part/equip/dagger/dagger_right_base.txt",
@@ -738,14 +584,7 @@
         {
           "part": "assets/part/fist/gau/free_hand_right_atk_wind.txt",
           "z": "back",
-          "hand": true,
-          "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
-          ]
+          "hand": true
         },
         {
           "part": "assets/part/equip/dagger/dagger_right_atk_wind.txt",
@@ -771,14 +610,7 @@
         {
           "part": "assets/part/fist/gau/free_hand_right_atk_hit.txt",
           "z": "back",
-          "hand": true,
-          "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
-          ]
+          "hand": true
         },
         {
           "part": "assets/part/equip/dagger/dagger_right_atk_hit.txt",
