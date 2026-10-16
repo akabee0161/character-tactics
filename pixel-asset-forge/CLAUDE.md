@@ -49,6 +49,8 @@
 .venv/bin/python tools/probe_colors.py a b    # 2色が区別できるか（描く前に使う）
 .venv/bin/python tools/render.py              # txt -> png（等倍と x8）
 .venv/bin/python tools/tilemap.py             # tile を 3x3 で並べる（継ぎ目の確認）
+.venv/bin/python tools/tilemap.py --unplaced  # どのレイアウトにも置かれていないタイル（あれば終了コード 1）
+.venv/bin/python tools/item_check.py          # item の長い持ち物の形が軸 x+y=15 で左右対称か
 .venv/bin/python tools/sheet.py sheets/roran.txt  # unit のシートとプレビューを出す
 .venv/bin/python tools/sheet_gif.py sheets/roran.txt  # unit の動きを状態ごとの GIF にする（README 2.7）
 .venv/bin/python tools/enemy_build.py enemy/dagger-bandit.json  # 敵のレシピから、元のコマ（frames）を色替えして敵のシートを作る（build/sheets/<id>.png）
@@ -66,6 +68,7 @@
 .venv/bin/python tools/compose.py compose/gau.json --check     # ガウは全24コマが部品から再現できる
 # gen/ines/ines_layers.py --export・gen/gau/gau_layers.py --export は描き直す前の書き出しに一度だけ使った。今走らせると描き直した部品を上書きするので実行しない（gen/roran/roran_layers.py --export も同じ理由で実行しない）（新しいユニットは tools/parts_export.py で同じ形の定義を書く）
 .venv/bin/python tools/compose_page.py --help  # 部品と組んだ結果を層の順に並べる確認ページ（--dirs down,right のようにカンマ区切り）
+.venv/bin/python tools/phone_sheet.py order compose/gau.json build/phone  # スマホで見る PNG（部品を奥→手前。今の絵と案を並べる diff・cmp もある。--help）
 .venv/bin/python tools/anim_compare.py NOW.png CAND.png OUT.html --anim ../assets/units/ines.json --dirs down  # 今と案のシートを並べて再生する確認ページ（コマ数と fps はゲームのユニット設定から読む）
 .venv/bin/python tools/reorder.py compose/ines.json OUT.json left bow,arrow,arrow_hand,CORE,bow_hand  # ある向きの重なり順だけを変えた compose の設定の写し
 .venv/bin/python tools/face_down.py IMG N OUT_PREFIX  # 拡大されたドット絵の顔を N 升に戻す
@@ -78,7 +81,7 @@
 ```
 
 `tilemap.py --layout layouts/{example,field,castle_interior,objects}.txt` でマップを組む。
-新しいセットを作ったら、その全点を置いたレイアウトを `layouts/` に足すこと。
+新しいセットを作ったら、その全点を置いたレイアウトを `layouts/` に足すこと。`tilemap.py --unplaced` で確かめる。
 
 初回のみ（Python 3.14 を uv で。uv が無ければ先に[インストール手順](https://docs.astral.sh/uv/getting-started/installation/)どおりに入れる）: `uv python install 3.14 && uv venv --python 3.14 .venv && uv pip install --python .venv/bin/python -r requirements.txt`
 
@@ -115,7 +118,7 @@
 
 **変形は光源を一緒に動かす。** 陰影が変形軸について対称なものにしか使えない。
 川は使えるが、顔グラや城には使えない。`unit` にも使わない（`left` と `right` で装備の手前と奥が
-入れ替わる。`types/unit/SPEC.md`）。機械では検査していない。
+入れ替わる。`types/unit/SPEC.md`）。`unit` の派生は `validate.py` が落とす（2026-10-16）。顔グラや城は機械では検査していない。
 
 ## 新しい機械チェックを思いついたら、まず偽陽性を数える
 
@@ -128,7 +131,8 @@
 
 `tests/` から `assets/` の生きているタイルを読むと、そのタイルを描き直したときに
 テストが落ちる。実際に `river_v` の作り直しで落ちた。比較したい相手は
-`tests/fixtures/` に固定する。
+`tests/fixtures/` に固定する。`tests/test_no_live_assets.py` が、テストが `assets/` を読むと落とす。
+わざと出荷物を確かめるテストは、そのファイルの `ALLOWED` に理由を書く（2026-10-16）。
 
 ## 残っている課題は ISSUES.md にある
 
