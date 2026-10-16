@@ -99,6 +99,46 @@ class CheckTest(unittest.TestCase):
         errors = check(parse(write(GOOD.replace("b=skin_base", "b=not_a_colour"))), PALETTE)
         self.assertIn("map references 'not_a_colour', which is not in the master palette", errors)
 
+
+UNIT = """# type: unit
+# size: 2x2
+# light: upper-left
+# bg: transparent
+# map: o=outline b=skin_base
+ob
+bo
+"""
+
+
+class UnitMirrorTest(unittest.TestCase):
+    """unit に mirror を使わない（types/unit/SPEC.md。left と right で手前と奥が入れ替わり、光源も反転する）。"""
+
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.dir = Path(tmp.name)
+        (self.dir / "right_base.txt").write_text(UNIT, encoding="utf-8")
+
+    def errors(self, text: str) -> list[str]:
+        path = self.dir / "left_base.txt"
+        path.write_text(text, encoding="utf-8")
+        return check(parse(path), PALETTE)
+
+    def test_derived_unit_fails(self):
+        errors = self.errors("# from: right_base.txt\n# transform: mirror_x\n")
+        self.assertTrue(any(e.startswith("unit must not be derived") for e in errors), errors)
+
+    def test_unit_with_transform_but_no_from_fails(self):
+        errors = self.errors(UNIT.replace("# bg: transparent\n", "# bg: transparent\n# transform: mirror_x\n"))
+        self.assertTrue(any(e.startswith("unit must not be derived") for e in errors), errors)
+
+    def test_plain_unit_passes(self):
+        self.assertEqual(self.errors(UNIT), [])
+
+    def test_derived_tile_still_passes(self):
+        (self.dir / "right_base.txt").write_text(UNIT.replace("type: unit", "type: tile"), encoding="utf-8")
+        self.assertEqual(self.errors("# from: right_base.txt\n# transform: mirror_x\n"), [])
+
     def test_reports_every_problem_at_once(self):
         broken = GOOD.replace("obbo", "oxbbo")
         self.assertEqual(len(check(parse(write(broken)), PALETTE)), 2)

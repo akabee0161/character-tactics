@@ -333,6 +333,10 @@ def check(grid: Grid, palette: dict[str, tuple[int, int, int]]) -> list[str]:
     for ch, y in sorted(unknown.items()):
         errors.append(f"row {y}: character {ch!r} is not bound by 'map'")
 
+    if grid.type == "unit" and ("from" in grid.headers or "transform" in grid.headers):
+        # left と right は手前と奥が入れ替わり、反転すると光源も動く（types/unit/SPEC.md「unit に mirror を使わない」）
+        errors.append("unit must not be derived with 'from'/'transform' (types/unit/SPEC.md: no mirror for unit)")
+
     if grid.max_colors is not None and not errors:
         used = len(grid.used_colors(palette))
         if used > grid.max_colors:
