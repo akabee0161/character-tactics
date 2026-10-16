@@ -1,0 +1,25 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# The bend joining north and east, redrawn around river_v's two-pixel dirt
+# bank. The east edge has to read bank, bank, shadow, water at rows 2 to 5 and
+# again on the way out at rows 11 to 13, because that is what river_h presents
+# at its west edge.
+# map: g=grass_base a=grass_hi b=dirt_base
+# map: h=water_hi w=water_base d=water_shadow
+ggbbdwwwwwwdbbgg
+ggbbdwwwwwwdbbgg
+ggbbdwhhwwwdbbbb
+ggbbdwwwwwwdbbbb
+ggbbdwwwwwwddddd
+ggbbdwwwwwwwwwww
+ggbbdwwwwwwwwhhw
+ggbbdwwwwwwwwwww
+ggbbdwwwwhhwwwww
+ggbbdwwwwwwwwwww
+ggbbdwwwwwwwddww
+ggbbdddddddddddd
+ggbbbbbbbbbbbbbb
+gggbbbbbbbbbbbbb
+gggggggggggggggg
+gagggggggggggggg

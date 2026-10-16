@@ -51,26 +51,30 @@ class LayoutTest(unittest.TestCase):
 
 
 class ComposeTest(unittest.TestCase):
+    """タイルは tests/fixtures/ の写し（2026-10-16 に assets/tile/ から写した）を並べる。"""
+
+    FIXTURES = REPO_ROOT / "tests" / "fixtures"
+
     def setUp(self):
         self.palette = load_palette()
 
     def test_size_is_tiles_times_grid_times_scale(self):
-        sheet = tilemap.compose([["plain"] * 3] * 2, self.palette, scale=4)
+        sheet = tilemap.compose([["plain"] * 3] * 2, self.palette, scale=4, tile_dir=self.FIXTURES)
         self.assertEqual(sheet.size, (3 * 16 * 4, 2 * 16 * 4))
 
     def test_empty_cells_stay_transparent(self):
-        sheet = tilemap.compose([["plain", None]], self.palette, scale=1)
+        sheet = tilemap.compose([["plain", None]], self.palette, scale=1, tile_dir=self.FIXTURES)
         self.assertEqual(sheet.size, (32, 16))
         self.assertEqual(sheet.getpixel((24, 8))[3], 0)
         self.assertNotEqual(sheet.getpixel((8, 8))[3], 0)
 
     def test_a_derived_tile_composes_like_any_other(self):
-        sheet = tilemap.compose([["river_nw"]], self.palette, scale=1)
+        sheet = tilemap.compose([["river_nw"]], self.palette, scale=1, tile_dir=self.FIXTURES)
         self.assertEqual(sheet.size, (16, 16))
 
     def test_an_empty_layout_is_rejected(self):
         with self.assertRaises(GridError):
-            tilemap.compose([[None, None]], self.palette, scale=1)
+            tilemap.compose([[None, None]], self.palette, scale=1, tile_dir=self.FIXTURES)
 
 
 class SeamFixtureTest(unittest.TestCase):

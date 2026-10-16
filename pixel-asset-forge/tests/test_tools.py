@@ -364,21 +364,26 @@ class CommentTest(unittest.TestCase):
 
 
 class RiverDerivationTest(unittest.TestCase):
-    """The shipped bends are derived, so this pins the migration."""
+    """The shipped bends are derived, so this pins the migration.
 
+    変形の確かめは tests/fixtures/ の写し（2026-10-16 に assets/tile/ から写した）で行う。
+    出荷する曲がりが行を持たない派生の宣言であることだけは、出荷物そのものを見る（tests/test_no_live_assets.py の ALLOWED）。
+    """
+
+    FIXTURES = REPO_ROOT / "tests" / "fixtures"
     TILES = REPO_ROOT / "assets" / "tile"
 
     def test_nw_is_ne_mirrored(self):
-        source = parse(self.TILES / "river_ne.txt")
-        self.assertEqual(parse(self.TILES / "river_nw.txt").rows, TRANSFORMS["mirror_x"](source.rows))
+        source = parse(self.FIXTURES / "river_ne.txt")
+        self.assertEqual(parse(self.FIXTURES / "river_nw.txt").rows, TRANSFORMS["mirror_x"](source.rows))
 
     def test_se_is_ne_flipped(self):
-        source = parse(self.TILES / "river_ne.txt")
-        self.assertEqual(parse(self.TILES / "river_se.txt").rows, TRANSFORMS["mirror_y"](source.rows))
+        source = parse(self.FIXTURES / "river_ne.txt")
+        self.assertEqual(parse(self.FIXTURES / "river_se.txt").rows, TRANSFORMS["mirror_y"](source.rows))
 
     def test_sw_is_ne_turned_around(self):
-        source = parse(self.TILES / "river_ne.txt")
-        self.assertEqual(parse(self.TILES / "river_sw.txt").rows, TRANSFORMS["rotate_180"](source.rows))
+        source = parse(self.FIXTURES / "river_ne.txt")
+        self.assertEqual(parse(self.FIXTURES / "river_sw.txt").rows, TRANSFORMS["rotate_180"](source.rows))
 
     def test_the_derived_bends_carry_no_rows_of_their_own(self):
         for name in ("river_nw", "river_se", "river_sw"):
