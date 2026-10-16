@@ -1,4 +1,4 @@
-"""Checks for tools/tip_check.py (6 輪郭に囲まれた1画素)."""
+"""Checks for tools/tip_check.py (6 刃・鏃の先端を輪郭に囲まれた1画素で描かない)."""
 from __future__ import annotations
 
 import sys
@@ -11,6 +11,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from tip_check import main  # noqa: E402
 from unit_fixture import UnitFixture  # noqa: E402
 
+# 刃の上の蓋（y=5）を外し、刃の先 (22,4) を1画素だけ出して上下左右を輪郭で囲む
+TIP = {(21, 5): "o", (22, 5): "i", (23, 5): "o", (21, 4): "o", (22, 4): "i", (23, 4): "o", (22, 3): "o"}
+
 
 class TipCheckTest(unittest.TestCase):
     def setUp(self):
@@ -20,27 +23,42 @@ class TipCheckTest(unittest.TestCase):
     def test_the_default_unit_passes(self):
         code, out = self.fx.run(main)
         self.assertEqual(code, 0, out)
+        self.assertIn("1画素の先端: ok", out)
 
-    def test_a_pixel_with_outline_on_all_four_sides_fails(self):
-        # 盾の上に1画素の先端: (8,16) の上下左右を輪郭にする
+    def test_a_blade_pixel_with_outline_on_all_four_sides_fails(self):
+        self.fx.frames["down_base"]["sword"].update(TIP | {(22, 5): "o"})
+        code, out = self.fx.run(main)
+        self.assertEqual(code, 1)
+        self.assertIn("FAIL down_base: sword の刃の先が輪郭に囲まれた1画素 1 件: (22,4)", out)
+
+    def test_other_pixels_with_outline_on_all_four_sides_pass(self):
+        # 盾（刃の文字でない）の1画素は見ない。鍔の端・斜めの矢・足先と同じ形（2026-10-16 依頼者）
         self.fx.frames["down_base"]["shield"].update(
             {(8, 16): "m", (8, 15): "o", (7, 16): "o", (9, 16): "o", (8, 17): "o"})
         code, out = self.fx.run(main)
-        self.assertEqual(code, 1)
-        self.assertIn("FAIL down_base: 輪郭に囲まれた1画素 1 件: (8,16)", out)
-
-    def test_the_frame_edge_is_not_outline(self):
-        self.fx.frames["down_base"]["shield"].update({(0, 16): "m", (0, 15): "o", (1, 16): "o", (0, 17): "o"})
-        code, out = self.fx.run(main)
         self.assertEqual(code, 0, out)
+
+    def test_a_blade_of_a_part_that_is_not_a_weapon_is_checked(self):
+        # 矢の鏃のように、weapon でない部品も blade を書けば見る
+        self.fx.frames["down_base"]["sword"].update(TIP | {(22, 5): "o"})
+        self.fx.checks["parts"]["sword"]["weapon"] = False
+        code, out = self.fx.run(main)
+        self.assertEqual(code, 1)
+        self.assertIn("(22,4)", out)
+
+    def test_a_blade_pixel_hidden_by_a_nearer_part_is_not_checked(self):
+        self.fx.frames["down_base"]["sword"].update(TIP | {(22, 5): "o"})
+        self.fx.frames["down_base"]["shield"][(22, 4)] = "m"  # 手前の盾が刃の先を隠す
+        code, out = self.fx.run(main)
+        self.assertNotIn("(22,4)", out)
 
     def test_it_looks_at_the_composed_frame(self):
         # 部品の上では3方向だけ輪郭でも、手前の部品の輪郭で4方向目がふさがれば落ちる
-        self.fx.frames["down_base"]["shield"].update({(8, 16): "m", (8, 15): "o", (7, 16): "o", (8, 17): "o"})
-        self.fx.frames["down_base"]["sword_hand"][(9, 16)] = "o"
+        self.fx.frames["down_base"]["sword"].update(TIP)
+        self.fx.frames["down_base"]["shield"][(22, 5)] = "o"
         code, out = self.fx.run(main)
         self.assertEqual(code, 1)
-        self.assertIn("(8,16)", out)
+        self.assertIn("(22,4)", out)
 
 
 if __name__ == "__main__":
