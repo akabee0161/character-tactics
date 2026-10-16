@@ -4,6 +4,7 @@
     tools/tilemap.py                          # every tile asset, repeated 3x3
     tools/tilemap.py --repeat river_v --grid 4x4
     tools/tilemap.py --layout layouts/example.txt
+    tools/tilemap.py --unplaced               # どのレイアウトにも置かれていないタイル（CLAUDE.md: 全点をレイアウトに置く）
 
 A layout file is whitespace-separated tile names, one map row per line. `.`
 leaves a cell empty. Lines starting with `#` are comments.
@@ -38,6 +39,7 @@ from render import to_image
 
 TILE_DIR = REPO_ROOT / "assets" / "tile"
 OUTPUT_DIR = REPO_ROOT / "build" / "tilemap"
+LAYOUT_DIR = REPO_ROOT / "layouts"
 
 
 def load_tile(name: str | Path, palette, tile_dir: Path = TILE_DIR) -> Image.Image:
@@ -82,6 +84,12 @@ def read_layout(path: Path) -> list[list[str | None]]:
     return rows
 
 
+def unplaced(tile_dir: Path = TILE_DIR, layout_dir: Path = LAYOUT_DIR) -> list[str]:
+    """どのレイアウト（layout_dir/*.txt）にも置かれていないタイルの名前（名前順）。"""
+    placed = {cell for path in sorted(layout_dir.glob("*.txt")) for row in read_layout(path) for cell in row if cell}
+    return sorted(p.stem for p in find_grids(tile_dir) if p.stem not in placed)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--repeat", help="tile name to lay out on its own")
@@ -89,10 +97,19 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--grid", default="3x3", help="columns x rows for --repeat (default: 3x3)")
     parser.add_argument("--scale", type=int, default=4, help="enlargement factor (default: 4)")
     parser.add_argument("-o", "--outdir", type=Path, default=OUTPUT_DIR)
+    parser.add_argument("--unplaced", action="store_true", help="どのレイアウトにも置かれていないタイルを出す（あれば終了コード 1）")
     args = parser.parse_args(argv)
 
     if args.repeat and args.layout:
         raise SystemExit("error: use --repeat or --layout, not both")
+    if args.unplaced:
+        if args.repeat or args.layout:
+            raise SystemExit("error: use --unplaced on its own")
+        names = unplaced()
+        for name in names:
+            print(f"unplaced {name}")
+        print(f"\n{len(names)} tile(s) in no layout under {display(LAYOUT_DIR)}" if names else "every tile is in a layout")
+        return 1 if names else 0
     if args.scale < 1:
         raise SystemExit("error: --scale must be 1 or greater")
 

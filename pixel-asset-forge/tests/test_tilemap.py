@@ -104,5 +104,31 @@ class SeamFixtureTest(unittest.TestCase):
         self.assertEqual(differing, [0, 15])
 
 
+class UnplacedTest(unittest.TestCase):
+    """新しいセットは全点をレイアウトに置く（CLAUDE.md）。どのレイアウトにも無いタイルを出す。"""
+
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        root = Path(tmp.name)
+        self.tiles, self.layouts = root / "tile", root / "layouts"
+        (self.tiles / "set").mkdir(parents=True)
+        self.layouts.mkdir()
+        for name in ("plain", "river_v", "set/rock_nw"):
+            (self.tiles / f"{name}.txt").write_text("# placeholder\n", encoding="utf-8")
+        (self.layouts / "a.txt").write_text("# comment\nplain .\nplain plain\n", encoding="utf-8")
+
+    def test_lists_tiles_in_no_layout(self):
+        self.assertEqual(tilemap.unplaced(self.tiles, self.layouts), ["river_v", "rock_nw"])
+
+    def test_a_tile_in_any_layout_counts_as_placed(self):
+        (self.layouts / "b.txt").write_text("river_v rock_nw\n", encoding="utf-8")
+        self.assertEqual(tilemap.unplaced(self.tiles, self.layouts), [])
+
+    def test_unplaced_cannot_be_combined_with_layout(self):
+        with self.assertRaises(SystemExit):
+            tilemap.main(["--unplaced", "--layout", str(self.layouts / "a.txt")])
+
+
 if __name__ == "__main__":
     unittest.main()
