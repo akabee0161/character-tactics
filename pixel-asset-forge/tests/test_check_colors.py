@@ -121,7 +121,10 @@ class InspectTest(unittest.TestCase):
 
 class RepositoryTest(unittest.TestCase):
     """Threshold regression. If these start firing, the thresholds or the
-    palette moved, and the spec in docs/ needs revisiting."""
+    palette moved, and the spec in docs/ needs revisiting.
+
+    入力は tests/fixtures/ の写し（2026-10-16 に assets/ から写した。絵を描き直しても、このテストは落ちない）。
+    パレットは現役の palette/master.json を読むので、パレットが動いたら気付ける。"""
 
     def assert_report(self, relative: str, hard: int, warn: int):
         grid = parse(REPO_ROOT / relative)
@@ -131,12 +134,12 @@ class RepositoryTest(unittest.TestCase):
 
     def test_converged_assets_are_clean(self):
         for relative in (
-            "assets/item/chest.txt",
-            "assets/tile/plain.txt",
-            "assets/tile/castle_nw.txt",
-            "assets/tile/castle_ne.txt",
-            "assets/tile/castle_sw.txt",
-            "assets/tile/castle_se.txt",
+            "tests/fixtures/chest.txt",
+            "tests/fixtures/plain.txt",
+            "tests/fixtures/castle_nw.txt",
+            "tests/fixtures/castle_ne.txt",
+            "tests/fixtures/castle_sw.txt",
+            "tests/fixtures/castle_se.txt",
         ):
             with self.subTest(relative):
                 self.assert_report(relative, hard=0, warn=0)

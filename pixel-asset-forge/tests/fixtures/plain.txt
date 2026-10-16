@@ -1,0 +1,27 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# The ground the whole field set sits on.
+# Two things keep the repeat from reading as a lattice. The tufts are not all
+# the same shape - some are 2px dashes, one is a 2px upright blade, and the one
+# on row 7 is split across the left and right edges so it only completes when
+# the tile is laid next to itself. And the spacing is uneven, because evenly
+# spaced marks line up into rows and columns once the field is laid out. See
+# the README for what the first two attempts looked like.
+# map: g=grass_base a=grass_hi s=grass_shadow
+ggaagggggggggggg
+gggggggggggggggg
+gggggggggssggggg
+gggggggggggggssg
+gggggagggggggggg
+gggggagggggggggg
+gggggggggggggggg
+agggggggggggggga
+gggggggssggggggg
+ggggggggggggaagg
+gggggggggggggggg
+gggssggggggggggg
+ggggggggggssgggg
+ggggggggaagggggg
+gggggssggggggggg
+gggggggggggggggg

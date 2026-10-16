@@ -189,6 +189,8 @@ def parse(path: Path, stack: tuple[Path, ...] = ()) -> Grid:
         text = path.read_text(encoding="utf-8")
     except OSError as exc:
         raise GridError(f"{path}: cannot read: {exc}") from None
+    except UnicodeDecodeError as exc:
+        raise GridError(f"{path}: not UTF-8: {exc}") from None
 
     headers, charmap, rows = _read(path, text)
 
@@ -332,6 +334,10 @@ def check(grid: Grid, palette: dict[str, tuple[int, int, int]]) -> list[str]:
                 unknown.setdefault(ch, y)
     for ch, y in sorted(unknown.items()):
         errors.append(f"row {y}: character {ch!r} is not bound by 'map'")
+
+    if grid.type == "unit" and ("from" in grid.headers or "transform" in grid.headers):
+        # left と right は手前と奥が入れ替わり、反転すると光源も動く（types/unit/SPEC.md「unit に mirror を使わない」）
+        errors.append("unit must not be derived with 'from'/'transform' (types/unit/SPEC.md: no mirror for unit)")
 
     if grid.max_colors is not None and not errors:
         used = len(grid.used_colors(palette))

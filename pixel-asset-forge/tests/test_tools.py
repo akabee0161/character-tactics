@@ -38,6 +38,15 @@ def write(text: str) -> Path:
 
 
 class ParseTest(unittest.TestCase):
+    def test_undecodable_file_is_a_grid_error(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        path = Path(tmp.name) / "bad.txt"
+        path.write_bytes(b"\xff\xfe\n")
+        with self.assertRaises(GridError) as caught:
+            parse(path)
+        self.assertIn("bad.txt", str(caught.exception))
+
     def test_reads_headers_and_rows(self):
         grid = parse(write(GOOD))
         self.assertEqual(grid.type, "face")
@@ -98,6 +107,46 @@ class CheckTest(unittest.TestCase):
     def test_colour_outside_master_palette(self):
         errors = check(parse(write(GOOD.replace("b=skin_base", "b=not_a_colour"))), PALETTE)
         self.assertIn("map references 'not_a_colour', which is not in the master palette", errors)
+
+
+UNIT = """# type: unit
+# size: 2x2
+# light: upper-left
+# bg: transparent
+# map: o=outline b=skin_base
+ob
+bo
+"""
+
+
+class UnitMirrorTest(unittest.TestCase):
+    """unit に mirror を使わない（types/unit/SPEC.md。left と right で手前と奥が入れ替わり、光源も反転する）。"""
+
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.dir = Path(tmp.name)
+        (self.dir / "right_base.txt").write_text(UNIT, encoding="utf-8")
+
+    def errors(self, text: str) -> list[str]:
+        path = self.dir / "left_base.txt"
+        path.write_text(text, encoding="utf-8")
+        return check(parse(path), PALETTE)
+
+    def test_derived_unit_fails(self):
+        errors = self.errors("# from: right_base.txt\n# transform: mirror_x\n")
+        self.assertTrue(any(e.startswith("unit must not be derived") for e in errors), errors)
+
+    def test_unit_with_transform_but_no_from_fails(self):
+        errors = self.errors(UNIT.replace("# bg: transparent\n", "# bg: transparent\n# transform: mirror_x\n"))
+        self.assertTrue(any(e.startswith("unit must not be derived") for e in errors), errors)
+
+    def test_plain_unit_passes(self):
+        self.assertEqual(self.errors(UNIT), [])
+
+    def test_derived_tile_still_passes(self):
+        (self.dir / "right_base.txt").write_text(UNIT.replace("type: unit", "type: tile"), encoding="utf-8")
+        self.assertEqual(self.errors("# from: right_base.txt\n# transform: mirror_x\n"), [])
 
     def test_reports_every_problem_at_once(self):
         broken = GOOD.replace("obbo", "oxbbo")
@@ -324,21 +373,26 @@ class CommentTest(unittest.TestCase):
 
 
 class RiverDerivationTest(unittest.TestCase):
-    """The shipped bends are derived, so this pins the migration."""
+    """The shipped bends are derived, so this pins the migration.
 
+    変形の確かめは tests/fixtures/ の写し（2026-10-16 に assets/tile/ から写した）で行う。
+    出荷する曲がりが行を持たない派生の宣言であることだけは、出荷物そのものを見る（tests/test_no_live_assets.py の ALLOWED）。
+    """
+
+    FIXTURES = REPO_ROOT / "tests" / "fixtures"
     TILES = REPO_ROOT / "assets" / "tile"
 
     def test_nw_is_ne_mirrored(self):
-        source = parse(self.TILES / "river_ne.txt")
-        self.assertEqual(parse(self.TILES / "river_nw.txt").rows, TRANSFORMS["mirror_x"](source.rows))
+        source = parse(self.FIXTURES / "river_ne.txt")
+        self.assertEqual(parse(self.FIXTURES / "river_nw.txt").rows, TRANSFORMS["mirror_x"](source.rows))
 
     def test_se_is_ne_flipped(self):
-        source = parse(self.TILES / "river_ne.txt")
-        self.assertEqual(parse(self.TILES / "river_se.txt").rows, TRANSFORMS["mirror_y"](source.rows))
+        source = parse(self.FIXTURES / "river_ne.txt")
+        self.assertEqual(parse(self.FIXTURES / "river_se.txt").rows, TRANSFORMS["mirror_y"](source.rows))
 
     def test_sw_is_ne_turned_around(self):
-        source = parse(self.TILES / "river_ne.txt")
-        self.assertEqual(parse(self.TILES / "river_sw.txt").rows, TRANSFORMS["rotate_180"](source.rows))
+        source = parse(self.FIXTURES / "river_ne.txt")
+        self.assertEqual(parse(self.FIXTURES / "river_sw.txt").rows, TRANSFORMS["rotate_180"](source.rows))
 
     def test_the_derived_bends_carry_no_rows_of_their_own(self):
         for name in ("river_nw", "river_se", "river_sw"):
