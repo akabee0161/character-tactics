@@ -133,6 +133,10 @@ class UnplacedTest(unittest.TestCase):
         (self.layouts / "b.txt").write_text("river_v rock_nw\n", encoding="utf-8")  # load_tile は tile/rock_nw.txt を探す
         self.assertEqual(tilemap.unplaced(self.tiles, self.layouts), ["set/rock_nw"])
 
+    def test_a_missing_layout_dir_stops_instead_of_listing_every_tile(self):
+        with self.assertRaises(SystemExit):
+            tilemap.unplaced(self.tiles, self.layouts / "nowhere")
+
     def test_unplaced_cannot_be_combined_with_layout(self):
         with self.assertRaises(SystemExit):
             tilemap.main(["--unplaced", "--layout", str(self.layouts / "a.txt")])

@@ -121,6 +121,10 @@ def run_order(config: Path, outdir: Path, dirs: list[str], states: list[str], ag
             continue
         rows = []
         for name in names:
+            for path in (specs[name].body, *(layer.part for layer in specs[name].layers)):  # 描く前に validate と同じ検査
+                errors = check(parse(path), palette)
+                if errors:
+                    raise PhoneSheetError(f"{path}: {errors[0]}")
             frame = analyse_frame(specs[name], against, name)
             cells = [(re.sub(rf"_{d}(_.*)?$", "", Path(item["file"]).stem), tile(frame["size"], item["pixels"], palette))
                      for item in frame["items"]]

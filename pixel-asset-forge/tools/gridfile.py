@@ -189,6 +189,8 @@ def parse(path: Path, stack: tuple[Path, ...] = ()) -> Grid:
         text = path.read_text(encoding="utf-8")
     except OSError as exc:
         raise GridError(f"{path}: cannot read: {exc}") from None
+    except UnicodeDecodeError as exc:
+        raise GridError(f"{path}: not UTF-8: {exc}") from None
 
     headers, charmap, rows = _read(path, text)
 

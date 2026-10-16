@@ -124,6 +124,13 @@ class PhoneSheetTest(unittest.TestCase):
         self.assertFalse((self.root / "out" / "t_up_order.png").exists())  # 設定に up のコマが無い
         self.assertIn("t_down_order.png", stdout)
 
+    def test_order_part_with_an_unknown_colour_is_an_error(self):
+        config = self.order_config({(11, 10): "h"})
+        self.ws.write("part.txt", grid_text({(11, 10): "h"}, "o=outline h=no_such_colour"))
+        code, _, err = self.run_main("order", config, self.root / "out", "--against", self.root / "now")
+        self.assertEqual(code, 2)
+        self.assertIn("part.txt", err)
+
     def test_order_unknown_direction_is_an_error(self):
         config = self.order_config({(11, 10): "h"})
         code, _, err = self.run_main("order", config, self.root / "out", "--dirs", "down,side")

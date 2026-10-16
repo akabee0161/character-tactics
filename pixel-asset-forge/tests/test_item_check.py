@@ -71,6 +71,19 @@ class ItemCheckTest(unittest.TestCase):
         self.assertEqual(code, 2)
         self.assertIn("FAIL bad.txt", out)
 
+    def test_square_but_not_16_is_an_input_error(self):
+        path = self.write("a.txt", item_text(set(), size="8x8"))  # 軸 x+y=15 は 16x16 の対角線
+        self.assertEqual(self.run_main(path)[0], 2)
+
+    def test_undecodable_file_is_an_input_error_and_the_rest_is_still_checked(self):
+        undecodable = self.dir / "undecodable.txt"
+        undecodable.write_bytes(b"\xff\xfe\n")
+        bad = self.write("bad.txt", item_text(SYMMETRIC | {(4, 4)}))
+        code, out = self.run_main(undecodable, bad)
+        self.assertEqual(code, 2)
+        self.assertIn("undecodable.txt", out)
+        self.assertIn("FAIL bad.txt", out)
+
     def test_non_item_is_an_input_error(self):
         path = self.write("a.txt", item_text(SYMMETRIC, kind="tile"))
         self.assertEqual(self.run_main(path)[0], 2)

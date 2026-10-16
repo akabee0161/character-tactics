@@ -6,10 +6,10 @@
 
 types/item/SPEC.md「形は軸について左右対称にする。軸 x+y=15 で折り返して形（不透明な画素）が重なること」。
 色は光源に従うので比べない（左上側が *_hi、右下側が *_shadow）。不透明かどうかだけを比べる。
-16x16 なら画素 (x, y) を (15-y, 15-x) へ折り返す。折り返した先が透明な画素を出す。
+16x16（types/item/SPEC.md）の画素 (x, y) を (15-y, 15-x) へ折り返す。折り返した先が透明な画素を出す。
 正面向きの物（FRONT_FACING）は斜め置きでないので、既定の対象から外す（SPEC「未確定」: 長くない小物の向き）。
 既定はそれ以外をすべて見るので、正面向きの item を足したら FRONT_FACING にも足す（足さないと FAIL で気付く）。
-終了コード: 0 すべて対称、1 対称でない item がある、2 読めない・item でない・正方形でないファイルがある。
+終了コード: 0 すべて対称、1 対称でない item がある、2 読めない・item でない・16x16 でないファイルがある。
 """
 from __future__ import annotations
 
@@ -23,18 +23,19 @@ from gridfile import BACKGROUND, REPO_ROOT, GridError, find_grids, parse  # noqa
 
 ITEM_DIR = REPO_ROOT / "assets" / "item"
 FRONT_FACING = {"chest"}
+SIZE = 16
 
 
 class ItemCheckError(Exception):
-    """この検査の前提（正方形の item）に合わない。"""
+    """この検査の前提（16x16 の item）に合わない。"""
 
 
 def asymmetric(grid) -> list[tuple[int, int]]:
     if grid.type != "item":
         raise ItemCheckError(f"{grid.path.name}: type が item でない（{grid.type}）")
-    if grid.width != grid.height:
-        raise ItemCheckError(f"{grid.path.name}: 正方形でない（{grid.width}x{grid.height}）")
-    n = grid.width
+    if (grid.width, grid.height) != (SIZE, SIZE):  # 軸 x+y=15 は 16x16 の対角線（types/item/SPEC.md）
+        raise ItemCheckError(f"{grid.path.name}: {SIZE}x{SIZE} でない（{grid.width}x{grid.height}）")
+    n = SIZE
     opaque = {(x, y) for y, row in enumerate(grid.rows) for x, ch in enumerate(row) if ch != BACKGROUND}
     return sorted(((x, y) for x, y in opaque if (n - 1 - y, n - 1 - x) not in opaque), key=lambda p: (p[1], p[0]))
 

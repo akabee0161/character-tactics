@@ -87,7 +87,10 @@ def read_layout(path: Path) -> list[list[str | None]]:
 def unplaced(tile_dir: Path = TILE_DIR, layout_dir: Path = LAYOUT_DIR) -> list[str]:
     """どのレイアウト（layout_dir/*.txt）にも置かれていないタイルの名前（名前順）。
 
-    名前は load_tile がレイアウトのセルから探すのと同じ、tile_dir からの相対パス（拡張子なし。入れ子なら set/rock_nw）。"""
+    名前は load_tile がレイアウトのセルから探すのと同じ、tile_dir からの相対パス（拡張子なし。入れ子なら set/rock_nw）。
+    layout_dir が無いときは止める（全部を「置かれていない」と言わない）。"""
+    if not layout_dir.is_dir():
+        raise SystemExit(f"error: no layout directory: {layout_dir}")
     placed = {cell for path in sorted(layout_dir.glob("*.txt")) for row in read_layout(path) for cell in row if cell}
     names = (p.relative_to(tile_dir).with_suffix("").as_posix() for p in find_grids(tile_dir))
     return sorted(name for name in names if name not in placed)

@@ -38,6 +38,15 @@ def write(text: str) -> Path:
 
 
 class ParseTest(unittest.TestCase):
+    def test_undecodable_file_is_a_grid_error(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        path = Path(tmp.name) / "bad.txt"
+        path.write_bytes(b"\xff\xfe\n")
+        with self.assertRaises(GridError) as caught:
+            parse(path)
+        self.assertIn("bad.txt", str(caught.exception))
+
     def test_reads_headers_and_rows(self):
         grid = parse(write(GOOD))
         self.assertEqual(grid.type, "face")
