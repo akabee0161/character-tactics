@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
-"""芯の目の置き方を確かめる（2026-10-16。方針の確認 12）。
+"""芯の目が、左右の隣の色に溶けて見分けられなくなっていないかを確かめる（2026-10-16。方針の確認 12）。
 
     .venv/bin/python tools/eye_check.py checks/gau.json
 
-目と輪郭は同じ outline の色なので、設定ファイルの eyes に向きごとの目の行（[上の行, 下の行]、目の無い向きは null）を書く。
-その行の輪郭の画素のうち、左右のどちらかが顔の肌（colours.face）のものを目とみなし、
+目と輪郭は同じ outline の色なので、設定ファイルの eyes に向きごとの目の画素（x の列と [上の行, 下の行]、目の無い向きは null）を書く。
 
-- もう片方の隣が顔の肌でない目（髪・かぶり物・顔の輪郭に横で接する。types/unit/SPEC.md「自己チェック」②）
-- 目の上端の行が、同じ状態のコマの間で向きによってそろわないもの（「立ち絵4方向の規約」の顔）
-- 目のある向きなのに目が見つからないコマ
+- 目の画素の左右の隣（目の画素どうしは除く）が、probe_colors.py の判定で目（outline）と見分けられない色
+  （WARN・HARD。check_colors.py と同じ基準）のもの
+- 設定の目の画素が outline でないもの（絵の目を動かしたのに設定を直し忘れた）
+- 目の上端の行が、同じ状態のコマの間で向きによってそろわないもの（types/unit/SPEC.md「立ち絵4方向の規約」の顔）
 
-を落とす。顔の左右の縁の輪郭も「片側だけ肌の輪郭」なので目とみなされる（設計で予想した誤検出。数えて採否を決める）。
+を落とす。上下と斜めは見ない（「真上が前髪や頭巾の縁の輪郭なのはよい」、SPEC「自己チェック」②）。
+左右の隣が髪・かぶり物でも、輪郭と見分けられる色なら目は読めるので通す（2026-10-16 依頼者の判断。
+設計の「顔の肌でない隣を落とす」は顔の縁の輪郭を目と取り違え、ロランの目の横の髪のように問題ない絵も落とした）。
 """
 from __future__ import annotations
 
@@ -19,31 +21,28 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from gridfile import load_palette  # noqa: E402
+from probe_colors import verdict  # noqa: E402
 from unit_config import OUTLINE, UnitConfig, points, run_check  # noqa: E402
 
 
 def check(cfg: UnitConfig) -> list[tuple[str, str]]:
+    palette = load_palette()
     failures = []
     tops: dict[str, dict[str, int]] = {}
     for name, frame in cfg.frames.items():
-        rows = cfg.eyes[frame.direction]
-        if rows is None:
+        eyes = cfg.eyes[frame.direction]
+        if eyes is None:
             continue
         pixels = frame.core_pixels()
-        eyes, bad = set(), set()
-        for (x, y), colour in pixels.items():
-            if colour != OUTLINE or not rows[0] <= y <= rows[1]:
-                continue
-            left, right = pixels.get((x - 1, y)) in cfg.face, pixels.get((x + 1, y)) in cfg.face
-            if left or right:
-                eyes.add((x, y))
-                if not (left and right):
-                    bad.add((x, y))
-        if not eyes:
-            failures.append((name, f"目が見つからない（y={rows[0]}〜{rows[1]}）"))
-            continue
-        if bad:
-            failures.append((name, f"目の左右の片方が顔の肌でない {len(bad)} 件: {points(bad)}"))
+        missing = {p for p in eyes if pixels.get(p) != OUTLINE}
+        if missing:
+            failures.append((name, f"目の画素が輪郭の色でない {len(missing)} 件: {points(missing)}"))
+        blurred = {(x + dx, y) for x, y in eyes - missing for dx in (-1, 1)
+                   if (x + dx, y) not in eyes and (x + dx, y) in pixels
+                   and not verdict(OUTLINE, pixels[(x + dx, y)], palette)[0].startswith("OK")}
+        if blurred:
+            failures.append((name, f"目の左右の隣が目と見分けられない色 {len(blurred)} 件: {points(blurred)}"))
         tops.setdefault(frame.state, {})[frame.direction] = min(y for _x, y in eyes)
     for state, by_direction in tops.items():
         if len(set(by_direction.values())) > 1:

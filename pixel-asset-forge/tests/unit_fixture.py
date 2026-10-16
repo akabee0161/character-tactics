@@ -75,7 +75,7 @@ def default_checks() -> dict:
     return {
         "unit": "t",
         "compose": "compose/t.json",
-        "colours": {"face": []},
+        "head_chars": "",
         "items": "ikm",
         "parts": {
             "sword": {"weapon": True, "blade": "i", "moves": True},

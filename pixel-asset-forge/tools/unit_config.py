@@ -6,16 +6,20 @@ docs/superpowers/specs/2026-10-16-policy-check-tools-design.md の「ユニッ�
     {
       "unit": "gau",
       "compose": "compose/gau.json",
-      "colours": {"face": ["skin_rose_hi", ...]},
+      "head_chars": "efgh",
       "items": "stlmn",
       "parts": {"dagger": {"weapon": true, "blade": "st", "moves": true}, ...},
       "orders": {"down": ["CORE", "dagger", ...], ...},
-      "eyes": {"down": [11, 12], "up": null, ...},
+      "eyes": {"down": {"x": [14, 17], "y": [11, 12]}, "up": null, ...},
       "weapon_check": {"blade": [...], "weapon": [...], "hand": [...], "hidden": [...], "depth": [...], "partial": [...]},
       "exceptions": [{"check": "...", "frames": [...], "what": "...", "why": "...", "approved": "2026-10-16 依頼者"}]
     }
 
 手の肌の色は compose の設定の hand_colours を使う（同じ色を2か所に書かない）。
+head_chars は芯に描いた髪・かぶり物の文字（body_check.py が胴のはみ出しと中心から外す。芯に髪・かぶり物を
+含めて組んだロラン・イネス・ガウのため。2026-10-16 から髪・かぶり物は別の部品にする）。色でなく文字で書くのは、
+ガウの頭巾と胴の服が同じ cloak_dark_* で、文字だけが違う（頭巾 f g h、胴 p q r）ため。
+eyes は向きごとの目の画素（x の列と、[上の行, 下の行]）。目の無い向きは null。
 知らないキー・無い部品・compose にあるのに parts に無い部品・無いコマ・パレットに無い色名・部品のファイルに無い文字は
 UnitConfigError（道具は終了コード 2）。parts の役割:
 
@@ -47,8 +51,8 @@ DIRECTIONS = ("down", "up", "left", "right")
 CHECKS = ("validate", "compose", "body_check", "hand_mirror", "unit_check", "weapon_check",
           "order_check", "blade_height", "still_check", "height_check", "tip_check", "part_chars", "eye_check",
           "part_outline", "fist_check")
-CONFIG_KEYS = {"unit", "compose", "colours", "items", "parts", "orders", "eyes", "weapon_check", "exceptions"}
-COLOUR_KEYS = {"face"}
+CONFIG_KEYS = {"unit", "compose", "head_chars", "items", "parts", "orders", "eyes", "weapon_check", "exceptions"}
+EYE_KEYS = {"x", "y"}
 PART_KEYS = {"weapon", "blade", "fist", "grips", "fist_sizes", "moves", "fixed", "open_chars"}
 WEAPON_CHECK_KEYS = {"blade", "weapon", "hand", "hidden", "depth", "partial"}
 EXCEPTION_KEYS = {"check", "frames", "what", "why", "approved"}
@@ -104,11 +108,11 @@ class UnitConfig:
     unit: str
     compose: Path
     hand: frozenset[str]
-    face: frozenset[str]
+    head_chars: frozenset[str]
     items: str
     parts: dict[str, dict]
     orders: dict[str, list[str]]
-    eyes: dict[str, tuple[int, int] | None]
+    eyes: dict[str, frozenset[Point] | None]  # 向き → 目の画素
     weapon_check: dict[str, list[str]] | None
     exceptions: list[dict]
     frames: dict[str, Frame]
@@ -141,6 +145,10 @@ def _names(value, where: str) -> list[str]:
     if not isinstance(value, list) or not all(isinstance(v, str) and v for v in value):
         raise UnitConfigError(f"{where}: 文字列の配列でない: {value!r}")
     return value
+
+
+def _coord(value) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool) and 0 <= value < 32
 
 
 def _colours(value, palette, where: str) -> frozenset[str]:
@@ -194,8 +202,13 @@ def load_unit_config(path: Path, root: Path = REPO_ROOT) -> UnitConfig:
         raise UnitConfigError(str(exc)) from None
     hand = next(iter(specs.values())).hand_colours
 
-    _keys(data["colours"], COLOUR_KEYS, f"{path.name} の colours")
-    face = _colours(data["colours"].get("face", []), palette, f"{path.name} の colours.face")
+    if not isinstance(data["head_chars"], str):
+        raise UnitConfigError(f"{path.name} の head_chars: 文字列でない")
+    core_chars = set().union(*(frame.core.used_chars() for frame in frames.values()))
+    absent = sorted(set(data["head_chars"]) - core_chars)
+    if absent:
+        raise UnitConfigError(f"{path.name} の head_chars: 芯のファイルに無い文字 {''.join(absent)}")
+    head_chars = frozenset(data["head_chars"])
     if not isinstance(data["items"], str):
         raise UnitConfigError(f"{path.name} の items: 文字列でない")
 
@@ -245,13 +258,17 @@ def load_unit_config(path: Path, root: Path = REPO_ROOT) -> UnitConfig:
     eyes = {}
     for direction in sorted(directions):
         value = data["eyes"].get(direction)
-        if value is not None and not (isinstance(value, list) and len(value) == 2
-                                      and all(isinstance(v, int) and not isinstance(v, bool) for v in value)
-                                      and 0 <= value[0] <= value[1] < 32):
-            raise UnitConfigError(f"{path.name} の eyes.{direction}: [上の行, 下の行] か null: {value!r}")
-        eyes[direction] = tuple(value) if value is not None else None
-    if any(eyes.values()) and not face:
-        raise UnitConfigError(f"{path.name}: eyes があるのに colours.face（顔の肌の色名）が無い")
+        if value is None:
+            eyes[direction] = None
+            continue
+        where = f"{path.name} の eyes.{direction}"
+        _keys(value, EYE_KEYS, where)
+        xs, ys = value.get("x"), value.get("y")
+        if not (isinstance(xs, list) and xs and all(_coord(v) for v in xs)):
+            raise UnitConfigError(f"{where}.x: 目の列（0〜31 の整数の配列）でない: {xs!r}")
+        if not (isinstance(ys, list) and len(ys) == 2 and all(_coord(v) for v in ys) and ys[0] <= ys[1]):
+            raise UnitConfigError(f"{where}.y: [上の行, 下の行]（0〜31）でない: {ys!r}")
+        eyes[direction] = frozenset((x, y) for x in xs for y in range(ys[0], ys[1] + 1))
 
     weapon_check = data["weapon_check"]
     if weapon_check is not None:
@@ -285,7 +302,7 @@ def load_unit_config(path: Path, root: Path = REPO_ROOT) -> UnitConfig:
             if not isinstance(exception[key], str) or not exception[key]:
                 raise UnitConfigError(f"{where}.{key}: 空でない文字列")
 
-    return UnitConfig(path, data["unit"], compose_path, hand, face, data["items"], data["parts"], orders, eyes,
+    return UnitConfig(path, data["unit"], compose_path, hand, head_chars, data["items"], data["parts"], orders, eyes,
                       weapon_check, data["exceptions"], frames, root)
 
 

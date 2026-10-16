@@ -92,17 +92,35 @@ class LoadTest(unittest.TestCase):
         self.assertConfigError("orders.up")
 
     def test_colour_not_in_the_palette(self):
-        self.fx.checks["colours"]["face"] = ["skin_bse"]
+        self.fx.checks["weapon_check"] = {"blade": ["stone_hi"], "hand": ["skin_bse"]}
         self.assertConfigError("パレットに無い色名 skin_bse")
 
-    def test_eyes_need_face_colours(self):
-        self.fx.checks["eyes"]["down"] = [11, 12]
-        self.assertConfigError("colours.face")
+    def test_the_colours_key_is_gone(self):
+        # 目の確認は色の見分けで測り、髪・かぶり物は文字で指定する（2026-10-16）
+        self.fx.checks["colours"] = {"face": ["skin_base"]}
+        self.assertConfigError("知らないキー colours")
 
-    def test_eyes_must_be_two_rows(self):
-        self.fx.checks["colours"]["face"] = ["skin_base"]
-        self.fx.checks["eyes"]["down"] = [12, 11]
-        self.assertConfigError("eyes.down")
+    def test_head_chars_are_core_chars(self):
+        self.fx.checks["head_chars"] = "c"
+        self.assertEqual(self.load().head_chars, frozenset("c"))
+
+    def test_head_chars_not_in_the_core_files(self):
+        self.fx.checks["head_chars"] = "cz"
+        self.assertConfigError("芯のファイルに無い文字 z")
+
+    def test_eyes_become_the_eye_pixels(self):
+        self.fx.checks["eyes"]["down"] = {"x": [14, 17], "y": [11, 12]}
+        cfg = self.load()
+        self.assertEqual(cfg.eyes["down"], frozenset({(14, 11), (14, 12), (17, 11), (17, 12)}))
+        self.assertIsNone(cfg.eyes["up"])
+
+    def test_eyes_must_be_columns_and_two_rows(self):
+        for value, text in (([11, 12], "オブジェクトでない"), ({"x": [14], "y": [12, 11]}, "eyes.down.y"),
+                            ({"x": [], "y": [11, 12]}, "eyes.down.x"), ({"x": [32], "y": [11, 12]}, "eyes.down.x"),
+                            ({"x": [14], "y": [11, 12], "z": 1}, "知らないキー z")):
+            with self.subTest(value=value):
+                self.fx.checks["eyes"]["down"] = value
+                self.assertConfigError(text)
 
     def test_weapon_check_colour_and_frame_names_are_checked(self):
         base = {"blade": ["stone_hi"], "hand": ["skin_hi"]}
