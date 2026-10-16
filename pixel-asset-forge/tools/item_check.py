@@ -8,6 +8,8 @@ types/item/SPEC.md「形は軸について左右対称にする。軸 x+y=15 で
 色は光源に従うので比べない（左上側が *_hi、右下側が *_shadow）。不透明かどうかだけを比べる。
 16x16 なら画素 (x, y) を (15-y, 15-x) へ折り返す。折り返した先が透明な画素を出す。
 正面向きの物（FRONT_FACING）は斜め置きでないので、既定の対象から外す（SPEC「未確定」: 長くない小物の向き）。
+既定はそれ以外をすべて見るので、正面向きの item を足したら FRONT_FACING にも足す（足さないと FAIL で気付く）。
+終了コード: 0 すべて対称、1 対称でない item がある、2 読めない・item でない・正方形でないファイルがある。
 """
 from __future__ import annotations
 
@@ -43,20 +45,21 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     paths = args.paths or [p for p in find_grids(ITEM_DIR) if p.stem not in FRONT_FACING]
 
-    bad = 0
-    for path in paths:
+    bad = broken = 0
+    for path in paths:  # 読めないファイルがあっても、残りの報告は出す
         try:
             found = asymmetric(parse(path))
         except (GridError, ItemCheckError) as exc:
             print(f"error: {exc}", file=sys.stderr)
-            return 2
+            broken += 1
+            continue
         if found:
             bad += 1
             print(f"FAIL {path.name}: 軸 x+y=15 で折り返した先が透明な画素 {len(found)}: "
                   + " ".join(f"({x},{y})" for x, y in found))
         else:
             print(f"ok   {path.name}")
-    return 1 if bad else 0
+    return 2 if broken else 1 if bad else 0
 
 
 if __name__ == "__main__":

@@ -64,6 +64,13 @@ class ItemCheckTest(unittest.TestCase):
         path = self.write("a.txt", item_text(set(), size="16x8"))
         self.assertEqual(self.run_main(path)[0], 2)
 
+    def test_an_input_error_does_not_hide_the_other_reports(self):
+        broken = self.write("broken.txt", item_text(SYMMETRIC, kind="tile"))
+        bad = self.write("bad.txt", item_text(SYMMETRIC | {(4, 4)}))
+        code, out = self.run_main(broken, bad)
+        self.assertEqual(code, 2)
+        self.assertIn("FAIL bad.txt", out)
+
     def test_non_item_is_an_input_error(self):
         path = self.write("a.txt", item_text(SYMMETRIC, kind="tile"))
         self.assertEqual(self.run_main(path)[0], 2)

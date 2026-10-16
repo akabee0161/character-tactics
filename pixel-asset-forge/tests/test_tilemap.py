@@ -123,11 +123,15 @@ class UnplacedTest(unittest.TestCase):
         (self.layouts / "a.txt").write_text("# comment\nplain .\nplain plain\n", encoding="utf-8")
 
     def test_lists_tiles_in_no_layout(self):
-        self.assertEqual(tilemap.unplaced(self.tiles, self.layouts), ["river_v", "rock_nw"])
+        self.assertEqual(tilemap.unplaced(self.tiles, self.layouts), ["river_v", "set/rock_nw"])
 
     def test_a_tile_in_any_layout_counts_as_placed(self):
-        (self.layouts / "b.txt").write_text("river_v rock_nw\n", encoding="utf-8")
+        (self.layouts / "b.txt").write_text("river_v set/rock_nw\n", encoding="utf-8")
         self.assertEqual(tilemap.unplaced(self.tiles, self.layouts), [])
+
+    def test_a_nested_tile_is_named_by_its_path_like_load_tile(self):
+        (self.layouts / "b.txt").write_text("river_v rock_nw\n", encoding="utf-8")  # load_tile は tile/rock_nw.txt を探す
+        self.assertEqual(tilemap.unplaced(self.tiles, self.layouts), ["set/rock_nw"])
 
     def test_unplaced_cannot_be_combined_with_layout(self):
         with self.assertRaises(SystemExit):

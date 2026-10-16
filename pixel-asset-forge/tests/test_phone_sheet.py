@@ -77,6 +77,20 @@ class PhoneSheetTest(unittest.TestCase):
         self.assertEqual(code, 2)
         self.assertIn("left", err)
 
+    def test_diff_broken_candidate_is_an_error_not_a_traceback(self):
+        cases = {
+            "unknown colour": grid_text({(10, 10): "b"}, "o=outline b=no_such_colour"),
+            "long row": grid_text({(10, 10): "b"}, BODY_MAP).replace("." * 32, "." * 33, 1),
+            "other size": grid_text({(10, 10): "b"}, BODY_MAP, size=34),
+        }
+        for label, text in cases.items():
+            with self.subTest(label):
+                self.ws.write("cand/down_base.txt", text)
+                code, _, err = self.run_main("diff", self.root / "now", self.root / "cand", "down",
+                                             self.root / "x.png", "--states", "base")
+                self.assertEqual(code, 2)
+                self.assertIn("down_base.txt", err)
+
     # cmp
     def test_cmp_puts_each_candidate_in_its_own_column(self):
         out = self.root / "cmp.png"
@@ -86,10 +100,11 @@ class PhoneSheetTest(unittest.TestCase):
         self.assertEqual(Image.open(out).size, sheet_size(3, 1))
 
     def test_cmp_rejects_a_malformed_candidate(self):
-        for spec in ("A", f"={self.root / 'cand'}", f"A={self.root / 'cand'}@side"):
+        for spec in ("A", f"={self.root / 'cand'}", f"A={self.root / 'cand'}@side", "A=@up"):
             with self.subTest(spec):
-                code, _, _ = self.run_main("cmp", self.root / "now", "down", self.root / "x.png", spec)
+                code, _, err = self.run_main("cmp", self.root / "now", "down", self.root / "x.png", spec)
                 self.assertEqual(code, 2)
+                self.assertIn("案の", err)  # 指定の誤りとして止まる（後で「ファイルが無い」と言わない）
 
     # order
     def order_config(self, part_pixels: dict, dx: int = 0) -> Path:
@@ -108,6 +123,12 @@ class PhoneSheetTest(unittest.TestCase):
         self.assertEqual(Image.open(written).size, sheet_size(3, 1))  # 芯・部品・組んだ絵
         self.assertFalse((self.root / "out" / "t_up_order.png").exists())  # 設定に up のコマが無い
         self.assertIn("t_down_order.png", stdout)
+
+    def test_order_unknown_direction_is_an_error(self):
+        config = self.order_config({(11, 10): "h"})
+        code, _, err = self.run_main("order", config, self.root / "out", "--dirs", "down,side")
+        self.assertEqual(code, 2)
+        self.assertIn("side", err)
 
     def test_order_unknown_state_is_an_error(self):
         config = self.order_config({(11, 10): "h"})

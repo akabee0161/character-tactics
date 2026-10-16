@@ -29,7 +29,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from compose import ComposeError, load_config  # noqa: E402
 from compose_page import GROUND, RED, _pixels, analyse_frame  # noqa: E402
-from gridfile import REPO_ROOT, GridError, load_palette, parse  # noqa: E402
+from gridfile import REPO_ROOT, GridError, check, load_palette, parse  # noqa: E402
 
 SCALE, PAD, LABEL = 6, 8, 16
 SHEET_BG = (187, 187, 187, 255)
@@ -81,11 +81,18 @@ def _states_in(folder: Path, direction: str) -> list[str]:
     return sorted(states, key=_state_key)
 
 
-def _frame(folder: Path, name: str):
+def _frame(folder: Path, name: str, palette, size: tuple[int, int] | None = None):
+    """コマを読む。案の置き場は検査を通していない作業中の絵なので、validate と同じ検査で止める。
+    size を渡すと、その大きさでないコマも止める（今の絵と大きさの違う案を、今の大きさで切って見せない）。"""
     path = folder / f"{name}.txt"
     if not path.is_file():
         raise PhoneSheetError(f"{path} が無い")
     grid = parse(path)
+    errors = check(grid, palette)
+    if errors:
+        raise PhoneSheetError(f"{path}: {errors[0]}")
+    if size is not None and (grid.width, grid.height) != size:
+        raise PhoneSheetError(f"{path}: 大きさ {grid.width}x{grid.height} が今の絵の {size[0]}x{size[1]} と違う")
     return (grid.width, grid.height), _pixels(grid)
 
 
@@ -94,6 +101,9 @@ def _split(text: str | None) -> list[str]:
 
 
 def run_order(config: Path, outdir: Path, dirs: list[str], states: list[str], against: Path | None) -> list[Path]:
+    unknown = [d for d in dirs if d not in DIRECTIONS]
+    if unknown:
+        raise PhoneSheetError(f"向き {', '.join(unknown)} は {', '.join(DIRECTIONS)} のどれでもない")
     unit, specs = load_config(config)
     against = against or REPO_ROOT / "assets" / "unit" / unit
     palette = load_palette()
@@ -129,8 +139,8 @@ def run_diff(now: Path, cand: Path, direction: str, out: Path, states: list[str]
     rows, lines = [], []
     for state in states or _states_in(now, direction):
         name = f"{direction}_{state}"
-        size, before = _frame(now, name)
-        _, after = _frame(cand, name)
+        size, before = _frame(now, name, palette)
+        _, after = _frame(cand, name, palette, size)
         diff = sorted(p for p in set(before) | set(after) if before.get(p) != after.get(p))
         rows.append((f"{name}   diff {len(diff)} px", [("NOW", tile(size, before, palette)),
                                                        ("NEW", tile(size, after, palette)),
@@ -146,6 +156,8 @@ def _candidate(spec: str, direction: str) -> tuple[str, Path, str]:
     if not sep or not label or not rest:
         raise PhoneSheetError(f"案の指定は ラベル=置き場[@向き]: {spec!r}")
     folder, at, other = rest.partition("@")
+    if not folder:
+        raise PhoneSheetError(f"案の置き場が空: {spec!r}")
     if at and other not in DIRECTIONS:
         raise PhoneSheetError(f"案の向き {other!r} は {', '.join(DIRECTIONS)} のどれでもない: {spec!r}")
     return label, Path(folder), other if at else direction
@@ -158,7 +170,7 @@ def run_cmp(now: Path, direction: str, out: Path, specs: list[str], states: list
     for state in states or _states_in(now, direction):
         cells = []
         for label, folder, d in candidates:
-            size, pixels = _frame(folder, f"{d}_{state}")
+            size, pixels = _frame(folder, f"{d}_{state}", palette)
             cells.append((f"{label} ({d}_{state})", tile(size, pixels, palette)))
         rows.append((f"{direction}_{state}", cells))
     out.parent.mkdir(parents=True, exist_ok=True)

@@ -7,11 +7,17 @@ tests/ の他のテストを1件ずつ走らせ、その間に開かれたファ
 （builtins.open と io.open を見張る。Path.read_text・Image.open もどちらかを通る）。
 一時フォルダの中の assets/ はリポジトリの外なので数えない。他のテストの成否はここでは見ない。
 わざと出荷物の構造を確かめるテストは ALLOWED に、理由と日付と一緒に挙げる。
+
+見えないもの（2026-10-16 の時点で、どれにも当たるテストは無い）:
+- モジュールを読み込むときに開くファイル（discover の読み込みは見張りの前に終わる。例 gen/enemy/mkparts.py は読み込み時に types/ を読む）
+- setUpClass・setUpModule の中で開くファイル（1件ずつ走らせるので呼ばれない。そのテストは失敗し、失敗はここでは見ない）
+- サブプロセスが開くファイル
 """
 from __future__ import annotations
 
 import builtins
 import contextlib
+import functools
 import io
 import os
 import tempfile
@@ -62,9 +68,12 @@ def record_reads(tests, assets_root: Path) -> dict[str, set[Path]]:
     return reads
 
 
+@functools.cache
 def suite_reads() -> dict[str, set[Path]]:
+    """tests/ の他のテストが開いた assets/ のファイル。1回の実行で1度だけ走らせる（2つのテストが使う）。"""
     suite = unittest.TestLoader().discover(str(TESTS), pattern="test*.py", top_level_dir=str(TESTS))
-    tests = [t for t in _cases(suite) if not t.id().startswith(f"{__name__.rsplit('.', 1)[-1]}.")]
+    own = f"{Path(__file__).stem}."  # 直接実行すると __name__ は __main__ なので、ファイル名で自分を外す
+    tests = [t for t in _cases(suite) if not t.id().startswith(own)]
     return record_reads(tests, ASSETS)
 
 
