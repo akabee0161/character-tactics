@@ -44,7 +44,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from compose import ComposeError, FrameSpec, Layer, compose_frame, load_config, stack_order  # noqa: E402
+from compose import ComposeError, FrameSpec, Layer, load_config, stack_order  # noqa: E402
 from gridfile import BACKGROUND, REPO_ROOT, Grid, GridError, load_palette, parse  # noqa: E402
 
 CORE = "CORE"
@@ -94,15 +94,9 @@ class Frame:
     core: Grid
     parts: dict[str, Part]          # 部品の名前 → 部品（設定に書いた順）
     order: list[str]                # 奥→手前の部品の名前（芯は CORE）
-    rows: list[str]                 # 組んだコマ
-    charmap: dict[str, str]         # 組んだコマの文字 → 色名
 
     def core_pixels(self) -> dict[Point, str]:
         return {(x, y): self.core.charmap[ch] for y, row in enumerate(self.core.rows)
-                for x, ch in enumerate(row) if ch != BACKGROUND}
-
-    def composed(self) -> dict[Point, str]:
-        return {(x, y): self.charmap[ch] for y, row in enumerate(self.rows)
                 for x, ch in enumerate(row) if ch != BACKGROUND}
 
 
@@ -177,9 +171,7 @@ def build_frame(name: str, spec: FrameSpec) -> Frame:
         parts[key] = Part(key, layer, parse(layer.part))
     names = list(parts)
     order = [CORE if i < 0 else names[i] for i in stack_order(spec.layers)]
-    rows, groups = compose_frame(core, [(p.grid, p.layer) for p in parts.values()])
-    charmap = {ch: colour for group in groups for ch, colour in group}
-    return Frame(name, direction, state, core, parts, order, rows, charmap)
+    return Frame(name, direction, state, core, parts, order)
 
 
 def load_unit_config(path: Path, root: Path = REPO_ROOT) -> UnitConfig:
@@ -243,6 +235,8 @@ def load_unit_config(path: Path, root: Path = REPO_ROOT) -> UnitConfig:
                 raise UnitConfigError(f"{where}.{text_key}: 部品のファイルに無い文字 {''.join(absent)}")
         if role.get("weapon") and not role.get("blade"):
             raise UnitConfigError(f"{where}: weapon には blade（刃の文字）が要る")
+        if "grips" in role and not isinstance(role["grips"], str):
+            raise UnitConfigError(f"{where}.grips: 部品の名前（文字列）でない: {role['grips']!r}")
         if "grips" in role and role["grips"] not in known:
             raise UnitConfigError(f"{where}.grips: 無い部品 {role['grips']!r}")
         for size in _names(role.get("fist_sizes", []), f"{where}.fist_sizes"):
@@ -264,7 +258,9 @@ def load_unit_config(path: Path, root: Path = REPO_ROOT) -> UnitConfig:
     _keys(data["eyes"], set(directions), f"{path.name} の eyes")
     eyes = {}
     for direction in sorted(directions):
-        value = data["eyes"].get(direction)
+        if direction not in data["eyes"]:  # 書き忘れた向きの目を黙って見ないままにしない
+            raise UnitConfigError(f"{path.name} の eyes.{direction} が無い（目の無い向きは null と書く）")
+        value = data["eyes"][direction]
         if value is None:
             eyes[direction] = None
             continue

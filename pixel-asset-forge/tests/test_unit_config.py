@@ -75,6 +75,16 @@ class LoadTest(unittest.TestCase):
         self.fx.checks["parts"]["sword_hand"]["grips"] = "spear"
         self.assertConfigError("無い部品 'spear'")
 
+    def test_grips_must_be_a_string(self):
+        # リストで書くとトレースバックで落ちていた（最終レビュー 2026-10-17）
+        self.fx.checks["parts"]["sword_hand"]["grips"] = ["sword"]
+        self.assertConfigError("grips: 部品の名前（文字列）")
+
+    def test_eyes_must_list_every_direction(self):
+        # 向きを書き忘れると、その向きの目を黙って見なかった（最終レビュー 2026-10-17）。目の無い向きは null と書く
+        del self.fx.checks["eyes"]["up"]
+        self.assertConfigError("eyes.up が無い")
+
     def test_fist_size_must_look_like_3x2(self):
         self.fx.checks["parts"]["sword_hand"]["fist_sizes"] = ["3*2"]
         self.assertConfigError("3x2 の形でない")

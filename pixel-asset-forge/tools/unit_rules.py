@@ -13,6 +13,13 @@
 失敗の行は、道具が出す「FAIL 」（compose.py は「差あり 」）で始まる行。設定ファイルの exceptions の1件は、
 check が同じで、行の「:」より前の部分に frames のどれかの名前があり、行に what を含むとき、その行を通す
 （what を長く書くほど狭く通す）。使われなかった例外は「使われなかった例外」と出す（終了コードは変えない）。
+frames に書く名前は、道具が「:」より前に出す名前: コマ（order_check・blade_height・still_check・height_check・
+part_chars・fist_check・hand_mirror・weapon_check のコマごとの行）、部品のファイル名（tip_check・part_outline。例
+arrow_up_atk_draw）、芯のファイル名（body_check。例 core_down_base）、向き（unit_check・weapon_check の向きごとの行）、
+eyes（eye_check の上端の行）、ファイルのパス（validate）。
+
+compose.py は --root を持たず、compose の設定の相対パスをリポジトリの直下で読む。--root に別の場所を渡すときは、
+compose の設定のパスを絶対パスにする（テストの tests/unit_fixture.py がそうしている）。
 
 終了コード: 0 すべて ok か例外で通した、1 例外で通らない失敗がある、2 設定の誤りか、道具が入力の誤りで止まった。
 """
@@ -70,8 +77,15 @@ def plan(cfg: UnitConfig, config: Path, root: Path) -> list[tuple[str, list[str]
 
 
 def failure_lines(name: str, text: str) -> list[str]:
+    """失敗の行。validate は理由を次の字下げの行に出すので、失敗の行に続けてつなぐ。"""
     prefix = "差あり " if name == "compose" else "FAIL "
-    return [line for line in text.splitlines() if line.startswith(prefix)]
+    lines: list[str] = []
+    for line in text.splitlines():
+        if line.startswith(prefix):
+            lines.append(line)
+        elif name == "validate" and lines and line.startswith(" ") and line.strip():
+            lines[-1] += "  " + line.strip()
+    return lines
 
 
 def covered_by(line: str, exception: dict) -> bool:
@@ -87,6 +101,9 @@ def run(name: str, argv: list[str]) -> tuple[int, str]:
             code = module.main(argv)
         except SystemExit as exc:  # argparse の誤りや、validate の「ファイルが無い」
             code = exc.code if isinstance(exc.code, int) else 2
+        except Exception as exc:  # noqa: BLE001 想定外の例外は「絵の失敗」（1）でなく入力の誤り（2）として出す
+            print(f"{type(exc).__name__}: {exc}")
+            code = 2
     return code, out.getvalue()
 
 

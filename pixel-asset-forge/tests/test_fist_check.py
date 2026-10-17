@@ -45,6 +45,13 @@ class FistCheckTest(unittest.TestCase):
         code, out = self.fx.run(main)
         self.assertEqual(code, 0, out)
 
+    def test_an_empty_fist_without_the_gripped_layer_is_not_checked(self):
+        # 体に隠れて何も描かない拳のコマで、握る部品の層ごと無くても落とさない（最終レビュー 2026-10-17）
+        del self.fx.frames["down_atk_hit"]["sword"]
+        self.fx.frames["down_atk_hit"]["sword_hand"] = {}
+        code, out = self.fx.run(main)
+        self.assertNotIn("down_atk_hit", out)
+
     def test_an_empty_part_is_not_checked(self):
         self.fx.frames["down_atk_hit"]["sword"] = {}
         self.fx.frames["down_atk_hit"]["sword_hand"] = {}

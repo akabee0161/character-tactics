@@ -8,7 +8,8 @@
 - 目の画素の左右の隣（目の画素どうしは除く）が、probe_colors.py の判定で目（outline）と見分けられない色
   （WARN・HARD。check_colors.py と同じ基準）のもの
 - 設定の目の画素が outline でないもの（絵の目を動かしたのに設定を直し忘れた）
-- 目の上端の行が、同じ状態のコマの間で向きによってそろわないもの（types/unit/SPEC.md「立ち絵4方向の規約」の顔）
+- 設定の目の上端の行が、目のある向きの間でそろわないもの（types/unit/SPEC.md「立ち絵4方向の規約」の顔。名前は eyes で1回だけ出す。
+  絵の目が設定とずれたことは、上の「目の画素が outline でない」で分かる）
 
 を落とす。上下と斜めは見ない（「真上が前髪や頭巾の縁の輪郭なのはよい」、SPEC「自己チェック」②）。
 左右の隣が髪・かぶり物でも、輪郭と見分けられる色なら目は読めるので通す（2026-10-16 依頼者の判断。
@@ -29,7 +30,11 @@ from unit_config import OUTLINE, UnitConfig, points, run_check  # noqa: E402
 def check(cfg: UnitConfig) -> list[tuple[str, str]]:
     palette = load_palette()
     failures = []
-    tops: dict[str, dict[str, int]] = {}
+    # 目の位置は設定に書くので、上端の行は設定どうしを1回だけ比べる（名前は設定のキー eyes）
+    tops = {d: min(y for _x, y in eyes) for d, eyes in cfg.eyes.items() if eyes}
+    if len(set(tops.values())) > 1:
+        detail = " ".join(f"{d}={y}" for d, y in tops.items())
+        failures.append(("eyes", f"目の上端の行が向きでそろわない: {detail}"))
     for name, frame in cfg.frames.items():
         eyes = cfg.eyes[frame.direction]
         if eyes is None:
@@ -43,11 +48,6 @@ def check(cfg: UnitConfig) -> list[tuple[str, str]]:
                    and not verdict(OUTLINE, pixels[(x + dx, y)], palette)[0].startswith("OK")}
         if blurred:
             failures.append((name, f"目の左右の隣が目と見分けられない色 {len(blurred)} 件: {points(blurred)}"))
-        tops.setdefault(frame.state, {})[frame.direction] = min(y for _x, y in eyes)
-    for state, by_direction in tops.items():
-        if len(set(by_direction.values())) > 1:
-            detail = " ".join(f"{d}={y}" for d, y in by_direction.items())
-            failures.append((state, f"目の上端の行が向きでそろわない: {detail}"))
     return failures
 
 

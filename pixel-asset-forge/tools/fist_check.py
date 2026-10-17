@@ -38,7 +38,7 @@ def check(cfg: UnitConfig) -> list[tuple[str, str]]:
                 if size not in sizes:
                     failures.append((name, f"{key} の大きさ {size}（{', '.join(sizes)} のどれでもない）"))
             grips = cfg.role(key, "grips")
-            if grips:
+            if grips and pixels:  # 空の拳（体に隠れて何も描かないコマ）は握りを見ない
                 held = frame.parts.get(grips)
                 if held is None:
                     failures.append((name, f"{key} が握る {grips} がこのコマに無い"))

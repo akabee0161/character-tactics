@@ -74,7 +74,9 @@ class EyeCheckTest(unittest.TestCase):
                 face(layers["core"], [14, 17], top=11)
         code, out = self.fx.run(main)
         self.assertEqual(code, 1)
-        self.assertIn("FAIL base: 目の上端の行が向きでそろわない: down=10 up=11", out)
+        # 目の位置は設定に書くので、設定どうしを1回だけ比べる（状態の数だけ同じ行を出さない。最終レビュー 2026-10-17）
+        self.assertIn("FAIL eyes: 目の上端の行が向きでそろわない: down=10 up=11", out)
+        self.assertEqual(out.count("目の上端の行"), 1)
 
     def test_directions_without_eyes_are_skipped(self):
         self.fx.checks["eyes"]["down"] = None

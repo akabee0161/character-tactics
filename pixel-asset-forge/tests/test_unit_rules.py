@@ -102,6 +102,21 @@ class UnitRulesTest(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertIn("（tip_check が終了コード 1 を返したが、失敗の行が無い）", out)
 
+    def test_an_unexpected_exception_in_a_tool_exits_2_not_1(self):
+        # 道具の想定外の例外は「絵の失敗」（1）でなく、入力の誤り（2）として出す（最終レビュー 2026-10-17）
+        def boom(argv):
+            raise TypeError("unhashable type: 'list'")
+
+        with mock.patch.object(unit_rules.importlib, "import_module", lambda name: mock.Mock(main=boom)):
+            code, out = unit_rules.run("tip_check", [])
+        self.assertEqual(code, 2)
+        self.assertIn("TypeError", out)
+
+    def test_validate_reasons_are_kept_with_the_failure(self):
+        text = "FAIL assets/unit/t/down_base.txt\n       row 3: length 31, expected 32\nok   x\n"
+        self.assertEqual(unit_rules.failure_lines("validate", text),
+                         ["FAIL assets/unit/t/down_base.txt  row 3: length 31, expected 32"])
+
     def test_a_tool_stopping_on_bad_input_exits_2(self):
         with mock.patch.object(unit_rules, "run", lambda name, argv: (2, "error: 読めない\n")):
             code, out = self.fx.run(main)
