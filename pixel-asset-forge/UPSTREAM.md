@@ -23,6 +23,7 @@ forge 本体も並行して開発が続く。forge の改善をこちらへ取�
 - `tools/present.py`・`tools/face_down.py`（新規）・`tests/test_present_face_down.py`: 案を並べて見せる画像を作る、拡大された顔を元の画素に戻す。ロランとイネスの作業で2回作った使い捨てをまとめた（同、2026-10-04）
 - `tools/unit_picker.py`・`tools/unit_picker.html`（新規）・`tests/test_unit_picker.py`: unit の部品の案を組み合わせて選ぶページを書き出す。全部の組み合わせを `compose.py` の規則で組み立てて埋め込み、4方向・ゲームの大きさ・部品だけ・見本との比較・一覧で見せる。ロランの顔の `compose_face.py --html` と同じ考え。部品を一括で作るときの必須の道具（依頼者の判断、ガウの CP1、2026-10-04）。README 2.7・CLAUDE.md・SPEC の「描く手順」に案内
 - `types/unit/SPEC.md`: 「描く手順」（確認ポイント CP0〜CP4 と自己チェック①②③）と、部品・組み立ての設定ファイルの配置を足した。`CLAUDE.md` の原則にも案内（同、2026-10-04）
+- 方針を確かめる道具（2026-10-16〜17。character-tactics の `docs/superpowers/specs/2026-10-16-policy-check-tools-design.md`）: スマホで見る画像 `tools/phone_sheet.py`、item の対称 `tools/item_check.py`、`validate.py` の unit の派生の禁止、`tilemap.py --unplaced`、テストが `assets/` を読まない `tests/test_no_live_assets.py`（PR 1）。ユニットごとの設定ファイル `checks/<ユニット>.json` と読み込み `tools/unit_config.py`、入口 `tools/unit_rules.py`、確認 `order_check`・`blade_height`・`still_check`・`height_check`・`tip_check`・`part_chars`・`eye_check`・`part_outline`・`fist_check`（PR 2）。`body_check.py` の `--hanging`・`--no-protrusion` と外とつながらない穴、`unit_check.py` の `--core`。テストは `tests/test_<道具>.py` と `tests/unit_fixture.py`
 
 ## forge から持ってきたもの
 
