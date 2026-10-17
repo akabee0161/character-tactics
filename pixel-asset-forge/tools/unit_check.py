@@ -16,6 +16,10 @@
 どちらも検査に使えなかった（docs/superpowers/specs/2026-10-04-unit-drawing-workflow-design.md）。
 
 DIR の直下の `<向き>_<名前>.txt` だけを読む（`parts/` などの下は読まない）。
+
+--core CORE_DIR: 部品で組むユニットは、脚の中心を組んだコマでなく芯（CORE_DIR/core_<コマ>.txt）で測る。
+手前の武器・弓の輪郭がつま先にかかると、組んだコマでは脚の中心がずれて見えるため（イネスの down の攻撃。
+武器が重なる形はほかにも多くありうる。2026-10-16 依頼者）。増えた切れ目は組んだコマで見る。
 """
 from __future__ import annotations
 
@@ -116,6 +120,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("directory", type=Path, help="assets/unit/<ユニット>")
     parser.add_argument("--items", default="", help="持ち物の文字。脚の中心から除く（例: klmstuw）")
+    parser.add_argument("--core", type=Path, help="芯の置き場（core_<コマ>.txt）。脚の中心を芯で測る")
     args = parser.parse_args(argv)
 
     if not args.directory.is_dir():
@@ -123,7 +128,15 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     try:
         frames = load_frames(args.directory)
-        failures = check_legs(frames, set(args.items))
+        legs = frames
+        if args.core is not None:
+            legs = {}
+            for name in frames:
+                path = args.core / f"core_{name}.txt"
+                if not path.is_file():
+                    raise UnitCheckError(f"{args.core}: 芯 {path.name} が無い")
+                legs[name] = parse(path).rows
+        failures = check_legs(legs, set(args.items))
         edges = new_edges(frames)
     except (GridError, UnitCheckError) as exc:
         print(f"error: {exc}", file=sys.stderr)
