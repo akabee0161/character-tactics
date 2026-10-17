@@ -1,0 +1,31 @@
+{
+  "unit": "gau",
+  "compose": "compose/gau.json",
+  "body": "male",
+  "head_chars": "efgh",
+  "items": "stlmn",
+  "parts": {
+    "dagger": {"weapon": true, "blade": "st", "moves": true},
+    "dagger_hand": {"fist": true, "grips": "dagger", "fist_sizes": ["3x2", "2x2"], "moves": true},
+    "free_hand": {"fist": true, "fist_sizes": ["2x2"]}
+  },
+  "orders": {
+    "down": ["CORE", "dagger", "dagger_hand", "free_hand"],
+    "up": ["dagger", "dagger_hand", "free_hand", "CORE"],
+    "left": ["dagger", "dagger_hand", "CORE", "free_hand"],
+    "right": ["free_hand", "CORE", "dagger", "dagger_hand"]
+  },
+  "eyes": {"down": {"x": [14, 17], "y": [11, 12]}, "up": null, "left": {"x": [14], "y": [11, 12]}, "right": null},
+  "weapon_check": {
+    "blade": ["stone_hi", "stone_base"],
+    "weapon": ["wood_hi", "wood_base", "wood_shadow"],
+    "hand": ["skin_rose_hi", "skin_rose_base", "skin_rose_shadow"],
+    "hidden": ["left_atk_wind", "up_atk_wind", "up_atk_hit"],
+    "depth": ["down"]
+  },
+  "exceptions": [
+    {"check": "weapon_check", "frames": ["left_base", "left_idle2", "left_walk_a", "left_walk_b"], "what": "手が細い（1x2px",
+     "why": "短剣の拳は体の奥で、体の縁から幅1px だけ見える（拳の位置を上下左右で合わせた。ISSUES「ロラン・ガウの left の武器の拳が…」）",
+     "approved": "2026-10-15 依頼者"}
+  ]
+}
