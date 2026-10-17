@@ -43,12 +43,18 @@ def plan(cfg: UnitConfig, config: Path, root: Path) -> list[tuple[str, list[str]
     cores = {frame.core.path.parent for frame in cfg.frames.values()}
     if len(cores) != 1:
         raise UnitConfigError(f"芯の部品の置き場が1つでない: {', '.join(sorted(map(str, cores)))}")
+    core_dir = str(cores.pop())
+    body_check = [core_dir]
+    if cfg.head_chars:
+        body_check += ["--hanging", "".join(sorted(cfg.head_chars))]
+    if cfg.body == "female":  # 「はみ出し」は胴がまっすぐな男性の体だけ（2026-10-17 依頼者）
+        body_check.append("--no-protrusion")
     steps: list[tuple[str, list[str] | None]] = [
         ("validate", ["-q", str(cfg.unit_dir), *grids]),
         ("compose", [str(cfg.compose), "--check", "--out", str(cfg.unit_dir)]),
-        ("body_check", [str(cores.pop())]),
+        ("body_check", body_check),
         ("hand_mirror", [str(cfg.compose), "--root", str(root)]),
-        ("unit_check", [str(cfg.unit_dir), "--items", cfg.items]),
+        ("unit_check", [str(cfg.unit_dir), "--items", cfg.items, "--core", core_dir]),  # 脚の中心は芯で測る
     ]
     wc = cfg.weapon_check
     if wc is None:

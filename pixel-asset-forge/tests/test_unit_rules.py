@@ -124,6 +124,23 @@ class UnitRulesTest(unittest.TestCase):
             "--hidden", "down_atk_hit,up_atk_hit", "--depth", "down"])
 
 
+    def steps(self) -> dict:
+        path = self.fx.write(build=False)
+        return dict(plan(load_unit_config(path, self.fx.root), path, self.fx.root))
+
+    def test_body_check_gets_the_hanging_chars_and_skips_protrusion_for_a_female_body(self):
+        core = str(self.fx.root / "assets/part/body/t")
+        self.assertEqual(self.steps()["body_check"], [core])
+        self.fx.checks["head_chars"] = "c"
+        self.fx.checks["body"] = "female"  # 女性の体には「はみ出し」を掛けない（2026-10-17 依頼者）
+        self.assertEqual(self.steps()["body_check"], [core, "--hanging", "c", "--no-protrusion"])
+
+    def test_unit_check_measures_the_legs_on_the_core(self):
+        steps = self.steps()
+        self.assertEqual(steps["unit_check"], [str(self.fx.root / "assets/unit/t"), "--items", "ikm",
+                                               "--core", str(self.fx.root / "assets/part/body/t")])
+
+
 class CoveredByTest(unittest.TestCase):
     def test_the_frame_name_must_be_before_the_colon(self):
         e = exception(check="weapon_check", frames=["left_base"], what="手が細い")

@@ -6,6 +6,7 @@ docs/superpowers/specs/2026-10-16-policy-check-tools-design.md の「ユニッ�
     {
       "unit": "gau",
       "compose": "compose/gau.json",
+      "body": "male",
       "head_chars": "efgh",
       "items": "stlmn",
       "parts": {"dagger": {"weapon": true, "blade": "st", "moves": true}, ...},
@@ -16,6 +17,7 @@ docs/superpowers/specs/2026-10-16-policy-check-tools-design.md の「ユニッ�
     }
 
 手の肌の色は compose の設定の hand_colours を使う（同じ色を2か所に書かない）。
+body は素体の型（male・female）。female の体には body_check.py の「はみ出し」を掛けない（2026-10-17 依頼者）。
 head_chars は芯に描いた髪・かぶり物の文字（body_check.py が胴のはみ出しと中心から外す。芯に髪・かぶり物を
 含めて組んだロラン・イネス・ガウのため。2026-10-16 から髪・かぶり物は別の部品にする）。色でなく文字で書くのは、
 ガウの頭巾と胴の服が同じ cloak_dark_* で、文字だけが違う（頭巾 f g h、胴 p q r）ため。
@@ -51,7 +53,9 @@ DIRECTIONS = ("down", "up", "left", "right")
 CHECKS = ("validate", "compose", "body_check", "hand_mirror", "unit_check", "weapon_check",
           "order_check", "blade_height", "still_check", "height_check", "tip_check", "part_chars", "eye_check",
           "part_outline", "fist_check")
-CONFIG_KEYS = {"unit", "compose", "head_chars", "items", "parts", "orders", "eyes", "weapon_check", "exceptions"}
+CONFIG_KEYS = {"unit", "compose", "body", "head_chars", "items", "parts", "orders", "eyes", "weapon_check",
+               "exceptions"}
+BODIES = ("male", "female")
 EYE_KEYS = {"x", "y"}
 PART_KEYS = {"weapon", "blade", "fist", "grips", "fist_sizes", "moves", "fixed", "open_chars"}
 WEAPON_CHECK_KEYS = {"blade", "weapon", "hand", "hidden", "depth", "partial"}
@@ -108,6 +112,7 @@ class UnitConfig:
     unit: str
     compose: Path
     hand: frozenset[str]
+    body: str  # 素体の型 male・female
     head_chars: frozenset[str]
     items: str
     parts: dict[str, dict]
@@ -202,6 +207,8 @@ def load_unit_config(path: Path, root: Path = REPO_ROOT) -> UnitConfig:
         raise UnitConfigError(str(exc)) from None
     hand = next(iter(specs.values())).hand_colours
 
+    if data["body"] not in BODIES:
+        raise UnitConfigError(f"{path.name} の body: male か female（{data['body']!r} だった）")
     if not isinstance(data["head_chars"], str):
         raise UnitConfigError(f"{path.name} の head_chars: 文字列でない")
     core_chars = set().union(*(frame.core.used_chars() for frame in frames.values()))
@@ -302,7 +309,7 @@ def load_unit_config(path: Path, root: Path = REPO_ROOT) -> UnitConfig:
             if not isinstance(exception[key], str) or not exception[key]:
                 raise UnitConfigError(f"{where}.{key}: 空でない文字列")
 
-    return UnitConfig(path, data["unit"], compose_path, hand, head_chars, data["items"], data["parts"], orders, eyes,
+    return UnitConfig(path, data["unit"], compose_path, hand, data["body"], head_chars, data["items"], data["parts"], orders, eyes,
                       weapon_check, data["exceptions"], frames, root)
 
 

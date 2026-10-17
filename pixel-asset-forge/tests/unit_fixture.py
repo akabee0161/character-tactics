@@ -75,6 +75,7 @@ def default_checks() -> dict:
     return {
         "unit": "t",
         "compose": "compose/t.json",
+        "body": "male",
         "head_chars": "",
         "items": "ikm",
         "parts": {

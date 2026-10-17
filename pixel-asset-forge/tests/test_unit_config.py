@@ -100,6 +100,11 @@ class LoadTest(unittest.TestCase):
         self.fx.checks["colours"] = {"face": ["skin_base"]}
         self.assertConfigError("知らないキー colours")
 
+    def test_body_is_male_or_female(self):
+        self.assertEqual(self.load().body, "male")
+        self.fx.checks["body"] = "child"
+        self.assertConfigError("body: male か female")
+
     def test_head_chars_are_core_chars(self):
         self.fx.checks["head_chars"] = "c"
         self.assertEqual(self.load().head_chars, frozenset("c"))
