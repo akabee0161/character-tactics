@@ -66,3 +66,4 @@ Final: fixed 例外の frames に書く名前と compose の --root の制約を
 Final: fixed 髪を別の部品にしたユニットで目の確認が髪を見ない件を ISSUES に立てた（文書）
 Final: suite 568/568、unit_rules roran 0・ines 1（tip_check の矢、意図）・gau 0
 Final: Ruling: Minor も直した — 依頼者の方針（レビューの Minor も PR 前に直す）— 誤りなら変更が少し増えただけ
+Task 9: Ruling: 保留にした6件（先端の描き方・女性の体の線・はみ出しを D の後にやめる・手が細いの例外の見直し・髪を分けたユニットの目の確認・動きのページの作り直し）は、すべて D の前に行う（2026-10-17 依頼者）。ISSUES に時期を書いた
