@@ -29,7 +29,7 @@ class TipCheckTest(unittest.TestCase):
         self.fx.frames["down_base"]["sword"].update(TIP | {(22, 5): "o"})
         code, out = self.fx.run(main)
         self.assertEqual(code, 1)
-        self.assertIn("FAIL down_base: sword の刃の先が輪郭に囲まれた1画素 1 件: (22,4)", out)
+        self.assertIn("FAIL sword_down_base: sword の刃の先が輪郭に囲まれた1画素 1 件: (22,4)", out)
 
     def test_other_pixels_with_outline_on_all_four_sides_pass(self):
         # 盾（刃の文字でない）の1画素は見ない。鍔の端・斜めの矢・足先と同じ形（2026-10-16 依頼者）
@@ -46,19 +46,21 @@ class TipCheckTest(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertIn("(22,4)", out)
 
-    def test_a_blade_pixel_hidden_by_a_nearer_part_is_not_checked(self):
+    def test_a_blade_pixel_hidden_by_a_nearer_part_is_still_checked(self):
+        # 部品ごとの形で判断する（2026-10-17 依頼者）。隠れていても、部品の先端が1画素なら落とす
         self.fx.frames["down_base"]["sword"].update(TIP | {(22, 5): "o"})
         self.fx.frames["down_base"]["shield"][(22, 4)] = "m"  # 手前の盾が刃の先を隠す
         code, out = self.fx.run(main)
-        self.assertNotIn("(22,4)", out)
+        self.assertEqual(code, 1)
+        self.assertIn("(22,4)", out)
 
-    def test_it_looks_at_the_composed_frame(self):
-        # 部品の上では3方向だけ輪郭でも、手前の部品の輪郭で4方向目がふさがれば落ちる
+    def test_a_tip_that_looks_one_pixel_only_because_it_is_hidden_passes(self):
+        # 部品では2画素の先端が、手前の部品の輪郭に半分隠れて1画素に見えるのはよい
+        # （イネスの up の待機2で、矢を引くと鏃の半分が弓に隠れる。2026-10-17 依頼者）
         self.fx.frames["down_base"]["sword"].update(TIP)
         self.fx.frames["down_base"]["shield"][(22, 5)] = "o"
         code, out = self.fx.run(main)
-        self.assertEqual(code, 1)
-        self.assertIn("(22,4)", out)
+        self.assertEqual(code, 0, out)
 
 
 if __name__ == "__main__":
