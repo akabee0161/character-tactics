@@ -8,7 +8,9 @@
 
 - idle2: 芯が base と違う画素のうち、base の拳（fist の部品）の手の肌の位置に無いもの
   （拳がどいて見えるようになった胴を埋めた所は通す）。moves でない部品が base と違うもの
-- walk_*: 芯の y<=27 が base と違う画素（脚 y=28〜30 だけを動かす）。部品が base と違うもの（上半身と剣は base のまま）
+- walk_*: 芯の y<=26 が base と違う画素（脚 y=28〜30 と、上げた足の上を閉じる輪郭の y=27 だけを動かす。
+  細い脚では、上げた足が脚の幅からはみ出し、その上の輪郭が y=27 に来る。イネス、2026-10-17 依頼者）。
+  部品が base と違うもの（上半身と剣は base のまま）
 - すべてのコマ: fixed の部品（盾）が base と違うもの（盾はどのコマでも base の位置から動かさない）
 
 部品は色名と位置（dx・dy でずらした後）で比べる。
@@ -22,7 +24,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from unit_config import UnitConfig, points, run_check  # noqa: E402
 
-LEG_TOP = 28
+LEG_TOP = 27
 
 
 def check(cfg: UnitConfig) -> list[tuple[str, str]]:

@@ -41,11 +41,17 @@ class StillCheckTest(unittest.TestCase):
         self.assertIn("FAIL down_idle2: sword_hand が base と違う（このコマでは動かさない部品）", out)
 
     def test_walk_upper_body_change_fails_but_legs_pass(self):
-        self.fx.frames["down_walk_a"]["core"][(13, 27)] = "b"
+        self.fx.frames["down_walk_a"]["core"][(13, 26)] = "b"
         code, out = self.fx.run(main)
         self.assertEqual(code, 1)
-        self.assertIn("FAIL down_walk_a: 芯の y<28 が base と違う画素 1 件: (13,27)", out)
+        self.assertIn("FAIL down_walk_a: 芯の y<27 が base と違う画素 1 件: (13,26)", out)
         self.assertNotIn("(13,29)", out)  # 既定の脚の動き
+
+    def test_walk_may_change_y27_for_the_outline_over_a_raised_foot(self):
+        # 細い脚で足を上げると、脚の幅からはみ出した足の上を閉じる輪郭が y=27 に来る（イネス。2026-10-17 依頼者）
+        self.fx.frames["down_walk_a"]["core"][(13, 27)] = "b"
+        code, out = self.fx.run(main)
+        self.assertEqual(code, 0, out)
 
     def test_walk_part_change_fails(self):
         self.fx.frames["down_walk_a"]["sword_hand"] = sword_hand(-1)
