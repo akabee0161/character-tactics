@@ -44,14 +44,28 @@ class StillCheckTest(unittest.TestCase):
         self.fx.frames["down_walk_a"]["core"][(13, 26)] = "b"
         code, out = self.fx.run(main)
         self.assertEqual(code, 1)
-        self.assertIn("FAIL down_walk_a: 芯の y<27 が base と違う画素 1 件: (13,26)", out)
+        self.assertIn("FAIL down_walk_a: 芯の y<28 が base と違う画素 1 件（y=27 は輪郭が増えた所だけ通す）: (13,26)", out)
         self.assertNotIn("(13,29)", out)  # 既定の脚の動き
 
-    def test_walk_may_change_y27_for_the_outline_over_a_raised_foot(self):
+    def test_walk_may_add_an_outline_at_y27_over_a_raised_foot(self):
         # 細い脚で足を上げると、脚の幅からはみ出した足の上を閉じる輪郭が y=27 に来る（イネス。2026-10-17 依頼者）
-        self.fx.frames["down_walk_a"]["core"][(13, 27)] = "b"
+        self.fx.frames["down_walk_a"]["core"][(11, 27)] = "o"
         code, out = self.fx.run(main)
         self.assertEqual(code, 0, out)
+
+    def test_walk_may_not_change_y27_to_anything_but_outline(self):
+        # 許すのは足の上を閉じる輪郭だけ（CodeRabbit の指摘、PR #37）
+        self.fx.frames["down_walk_a"]["core"][(13, 27)] = "b"
+        code, out = self.fx.run(main)
+        self.assertEqual(code, 1)
+        self.assertIn("FAIL down_walk_a: 芯の y<28 が base と違う画素 1 件（y=27 は輪郭が増えた所だけ通す）: (13,27)", out)
+
+    def test_a_fixed_part_missing_from_a_frame_fails(self):
+        # 盾の部品がコマごと抜けても、比べる相手が無いので気付けなかった（CodeRabbit の指摘、PR #37）
+        del self.fx.frames["down_atk_hit"]["shield"]
+        code, out = self.fx.run(main)
+        self.assertEqual(code, 1)
+        self.assertIn("FAIL down_atk_hit: shield が無い（どのコマでも動かさない部品）", out)
 
     def test_walk_part_change_fails(self):
         self.fx.frames["down_walk_a"]["sword_hand"] = sword_hand(-1)

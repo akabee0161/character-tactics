@@ -50,6 +50,7 @@ class FistCheckTest(unittest.TestCase):
         del self.fx.frames["down_atk_hit"]["sword"]
         self.fx.frames["down_atk_hit"]["sword_hand"] = {}
         code, out = self.fx.run(main)
+        self.assertEqual(code, 0, out)
         self.assertNotIn("down_atk_hit", out)
 
     def test_an_empty_part_is_not_checked(self):

@@ -67,3 +67,8 @@ Final: fixed 髪を別の部品にしたユニットで目の確認が髪を見�
 Final: suite 568/568、unit_rules roran 0・ines 1（tip_check の矢、意図）・gau 0
 Final: Ruling: Minor も直した — 依頼者の方針（レビューの Minor も PR 前に直す）— 誤りなら変更が少し増えただけ
 Task 9: Ruling: 保留にした6件（先端の描き方・女性の体の線・はみ出しを D の後にやめる・手が細いの例外の見直し・髪を分けたユニットの目の確認・動きのページの作り直し）は、すべて D の前に行う（2026-10-17 依頼者）。ISSUES に時期を書いた
+CodeRabbit (PR #37): fixed still_check の歩きの y=27 を「輪郭が増えた所」だけに — test_walk_may_not_change_y27_to_anything_but_outline RED→GREEN（依頼者の判断「上げた足の上を閉じる輪郭」に合わせた）
+CodeRabbit (PR #37): fixed fixed の部品がコマに無いと気付けない — test_a_fixed_part_missing_from_a_frame_fails RED→GREEN
+CodeRabbit (PR #37): fixed validate の例外をパスで書くと当たらない — test_a_validate_path_matches_as_written RED→GREEN
+CodeRabbit (PR #37): fixed 空の拳のテストで終了コード 0 も確かめる（Nitpick。テストを締めただけ）
+CodeRabbit (PR #37): suite 571/571、unit_rules roran 0・ines 1（意図）・gau 0

@@ -167,6 +167,12 @@ class CoveredByTest(unittest.TestCase):
         e = exception(check="weapon_check", frames=["left_base"], what="手が細い（1x2px")
         self.assertFalse(covered_by("FAIL left_base: 手が細い（1x3px、(21,18) から）", e))
 
+    def test_a_validate_path_matches_as_written(self):
+        # パスは / と . で語が分かれていたので、そのまま書いた例外が当たらなかった（CodeRabbit の指摘、PR #37）
+        e = exception(check="validate", frames=["assets/unit/t/down_base.txt"], what="row 3")
+        self.assertTrue(covered_by("FAIL assets/unit/t/down_base.txt  row 3: length 31, expected 32", e))
+        self.assertFalse(covered_by("FAIL assets/unit/t/up_base.txt  row 3: length 31, expected 32", e))
+
     def test_lines_without_a_colon_use_the_whole_line(self):
         e = exception(check="compose", frames=["down_base"], what="差あり")
         self.assertTrue(covered_by("差あり down_base（/x/assets/unit/t/down_base.txt）", e))

@@ -90,7 +90,8 @@ def failure_lines(name: str, text: str) -> list[str]:
 
 def covered_by(line: str, exception: dict) -> bool:
     head = line.split(":", 1)[0]
-    return bool(set(NAME_RE.findall(head)) & set(exception["frames"])) and exception["what"] in line
+    names = set(NAME_RE.findall(head)) | set(head.split())  # 空白で区切った語も（validate のファイルのパス）
+    return bool(names & set(exception["frames"])) and exception["what"] in line
 
 
 def run(name: str, argv: list[str]) -> tuple[int, str]:

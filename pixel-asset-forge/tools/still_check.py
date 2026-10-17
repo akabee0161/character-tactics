@@ -8,10 +8,10 @@
 
 - idle2: 芯が base と違う画素のうち、base の拳（fist の部品）の手の肌の位置に無いもの
   （拳がどいて見えるようになった胴を埋めた所は通す）。moves でない部品が base と違うもの
-- walk_*: 芯の y<=26 が base と違う画素（脚 y=28〜30 と、上げた足の上を閉じる輪郭の y=27 だけを動かす。
-  細い脚では、上げた足が脚の幅からはみ出し、その上の輪郭が y=27 に来る。イネス、2026-10-17 依頼者）。
+- walk_*: 芯の y<=27 が base と違う画素。ただし y=27 で輪郭が増えた所は通す（脚 y=28〜30 と、上げた足の上を閉じる
+  輪郭だけを動かす。細い脚では、上げた足が脚の幅からはみ出し、その上の輪郭が y=27 に来る。イネス、2026-10-17 依頼者）。
   部品が base と違うもの（上半身と剣は base のまま）
-- すべてのコマ: fixed の部品（盾）が base と違うもの（盾はどのコマでも base の位置から動かさない）
+- すべてのコマ: fixed の部品（盾）が base と違うもの・コマに無いもの（盾はどのコマでも base の位置から動かさない）
 
 部品は色名と位置（dx・dy でずらした後）で比べる。
 """
@@ -22,9 +22,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from unit_config import UnitConfig, points, run_check  # noqa: E402
+from unit_config import OUTLINE, UnitConfig, points, run_check  # noqa: E402
 
-LEG_TOP = 27
+LEG_TOP = 28      # 脚 y=28〜30 は動いてよい
+OUTLINE_ROW = 27  # 上げた足の上を閉じる輪郭だけ動いてよい行
 
 
 def check(cfg: UnitConfig) -> list[tuple[str, str]]:
@@ -46,9 +47,14 @@ def check(cfg: UnitConfig) -> list[tuple[str, str]]:
             if bad:
                 failures.append((name, f"芯が base と違う画素 {len(bad)} 件: {points(bad)}"))
         elif walk:
-            bad = {p for p in moved if p[1] < LEG_TOP}
+            # y=27 は、上げた足の上を閉じる輪郭が増えた所だけ通す
+            bad = {p for p in moved if p[1] < OUTLINE_ROW or (p[1] == OUTLINE_ROW and mine.get(p) != OUTLINE)}
             if bad:
-                failures.append((name, f"芯の y<{LEG_TOP} が base と違う画素 {len(bad)} 件: {points(bad)}"))
+                failures.append((name, f"芯の y<{LEG_TOP} が base と違う画素 {len(bad)} 件"
+                                       f"（y={OUTLINE_ROW} は輪郭が増えた所だけ通す）: {points(bad)}"))
+        for key in base.parts.keys() - frame.parts.keys():  # 盾がコマごと抜けても気付けるように
+            if cfg.role(key, "fixed"):
+                failures.append((name, f"{key} が無い（どのコマでも動かさない部品）"))
         for key, part in frame.parts.items():
             fixed = cfg.role(key, "fixed")
             if not (fixed or walk or (frame.state == "idle2" and not cfg.role(key, "moves"))):
