@@ -245,6 +245,11 @@ def load_unit_config(path: Path, root: Path = REPO_ROOT) -> UnitConfig:
                 raise UnitConfigError(f"{where}.fist_sizes: 3x2 の形でない: {size!r}")
         if ("grips" in role or "fist_sizes" in role) and not role.get("fist"):
             raise UnitConfigError(f"{where}: grips・fist_sizes は fist の部品にだけ書ける")
+        if role.get("head") and (role.get("weapon") or role.get("fist")):
+            raise UnitConfigError(f"{where}: head（髪・かぶり物）は weapon・fist と一緒に書けない")
+        # eye_check は手前の部品で上書きして重ねるので、compose の keep（輪郭の下の色を見せる）を真似ない
+        if role.get("head") and any(frame.parts[key].layer.keep for frame in frames.values() if key in frame.parts):
+            raise UnitConfigError(f"{where}: head の部品に compose の keep は使えない（eye_check が組んだ絵と違う画素を見る）")
 
     directions = {frame.direction for frame in frames.values()}
     _keys(data["orders"], set(directions), f"{path.name} の orders")

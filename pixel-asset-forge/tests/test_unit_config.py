@@ -67,6 +67,16 @@ class LoadTest(unittest.TestCase):
         self.fx.checks["parts"]["shield"] = {"head": "yes"}
         self.assertConfigError("parts.shield.head: true か false")
 
+    def test_head_cannot_be_a_weapon_or_a_fist(self):
+        self.fx.checks["parts"]["sword_hand"]["head"] = True
+        self.assertConfigError("head（髪・かぶり物）は weapon・fist と一緒に書けない")
+
+    def test_head_part_cannot_use_keep(self):
+        # eye_check は手前の部品で上書きして重ねるので、keep を使うと組んだ絵と違う画素を見る
+        self.fx.checks["parts"]["shield"] = {"head": True}
+        self.fx.keep["shield"] = ["skin_base"]
+        self.assertConfigError("head の部品に compose の keep は使えない")
+
     def test_blade_char_not_in_the_part_files(self):
         self.fx.checks["parts"]["sword"]["blade"] = "iz"
         self.assertConfigError("部品のファイルに無い文字 z")

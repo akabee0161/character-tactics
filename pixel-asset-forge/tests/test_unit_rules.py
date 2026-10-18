@@ -143,9 +143,24 @@ class UnitRulesTest(unittest.TestCase):
         # 無ければ fist_check は大きさを見ないので、weapon_check が組んだコマで見る
         self.fx.checks["weapon_check"] = {"blade": ["stone_hi"], "hand": ["skin_hi"]}
         del self.fx.checks["parts"]["sword_hand"]["fist_sizes"]
-        path = self.fx.write()
-        steps = dict(plan(load_unit_config(path, self.fx.root), path, self.fx.root))
-        self.assertNotIn("--no-hand-width", steps["weapon_check"])
+        self.assertNotIn("--no-hand-width", self.steps()["weapon_check"])
+
+    def test_weapon_check_measures_the_hand_width_when_sizes_are_empty(self):
+        self.fx.checks["weapon_check"] = {"blade": ["stone_hi"], "hand": ["skin_hi"]}
+        self.fx.checks["parts"]["sword_hand"]["fist_sizes"] = []  # fist_check も大きさを見ない
+        self.assertNotIn("--no-hand-width", self.steps()["weapon_check"])
+
+    def test_weapon_check_measures_the_hand_width_when_a_weapon_has_no_gripping_fist(self):
+        # weapon_check は手を色で見つけるので、握る拳の部品が無い武器の手は fist_check が見ない
+        self.fx.checks["weapon_check"] = {"blade": ["stone_hi"], "hand": ["skin_hi"]}
+        self.fx.checks["parts"]["sword_hand"] = {"fist": True, "fist_sizes": ["3x2"]}
+        self.assertNotIn("--no-hand-width", self.steps()["weapon_check"])
+
+    def test_weapon_check_measures_the_hand_width_when_any_fist_has_no_sizes(self):
+        # 大きさを持たない拳が1つでもあれば渡さない（weapon_check が色で見つける手がどの拳の部品かは決まらない）
+        self.fx.checks["weapon_check"] = {"blade": ["stone_hi"], "hand": ["skin_hi"]}
+        self.fx.checks["parts"]["shield"] = {"fist": True}
+        self.assertNotIn("--no-hand-width", self.steps()["weapon_check"])
 
 
     def steps(self) -> dict:

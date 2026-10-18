@@ -100,6 +100,7 @@ class UnitFixture:
         self.checks = default_checks()
         self.maps = dict(MAPS)
         self.back: set[str] = set()
+        self.keep: dict[str, list[str]] = {}  # 部品の名前 → compose の keep
 
     def close(self) -> None:
         self.ws.close()
@@ -117,6 +118,8 @@ class UnitFixture:
                 path = self.ws.write(f"assets/part/x/{key}_{direction}_{state}.txt",
                                      grid_text(pixels, self.maps[key]))
                 layer = {"part": str(path), "z": "back" if key in self.back else "front"}
+                if key in self.keep:
+                    layer["keep"] = self.keep[key]
                 if key.endswith("_hand"):
                     layer["hand"] = True
                 parts.append(layer)
