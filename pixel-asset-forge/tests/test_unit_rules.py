@@ -136,7 +136,16 @@ class UnitRulesTest(unittest.TestCase):
         steps = dict(plan(load_unit_config(path, self.fx.root), path, self.fx.root))
         self.assertEqual(steps["weapon_check"], [
             str(self.fx.root / "assets/unit/t"), "--blade", "stone_hi", "--weapon", "wood_base", "--hand", "skin_hi",
-            "--hidden", "down_atk_hit,up_atk_hit", "--depth", "down"])
+            "--hidden", "down_atk_hit,up_atk_hit", "--depth", "down", "--no-hand-width"])
+
+    def test_weapon_check_measures_the_hand_width_when_a_gripping_fist_has_no_sizes(self):
+        # 手の幅は、武器を握る拳の部品に fist_sizes があれば fist_check が部品の形で見る（2026-10-18）。
+        # 無ければ fist_check は大きさを見ないので、weapon_check が組んだコマで見る
+        self.fx.checks["weapon_check"] = {"blade": ["stone_hi"], "hand": ["skin_hi"]}
+        del self.fx.checks["parts"]["sword_hand"]["fist_sizes"]
+        path = self.fx.write()
+        steps = dict(plan(load_unit_config(path, self.fx.root), path, self.fx.root))
+        self.assertNotIn("--no-hand-width", steps["weapon_check"])
 
 
     def steps(self) -> dict:

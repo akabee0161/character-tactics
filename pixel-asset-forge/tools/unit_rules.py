@@ -71,6 +71,11 @@ def plan(cfg: UnitConfig, config: Path, root: Path) -> list[tuple[str, list[str]
         for key in ("blade", "weapon", "hand", "hidden", "depth", "partial"):
             if wc.get(key):
                 args += [f"--{key}", ",".join(wc[key])]
+        # 武器を握る拳の大きさを fist_check が部品の形で見るなら、組んだコマの見える幅では見ない（2026-10-18）
+        weapons = {key for key, role in cfg.parts.items() if role.get("weapon")}
+        gripping = [role for role in cfg.parts.values() if role.get("fist") and role.get("grips") in weapons]
+        if gripping and all(role.get("fist_sizes") for role in gripping):
+            args.append("--no-hand-width")
         steps.append(("weapon_check", args))
     steps += [(name, [str(config), "--root", str(root)]) for name in NEW_CHECKS]
     return steps
