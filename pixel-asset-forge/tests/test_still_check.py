@@ -60,6 +60,13 @@ class StillCheckTest(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertIn("FAIL down_walk_a: 芯の y<28 が base と違う画素 1 件（y=27 は輪郭が増えた所だけ通す）: (13,27)", out)
 
+    def test_walk_may_not_replace_a_y27_pixel_with_outline(self):
+        # 通すのは透明だった所に輪郭が増えた所だけ。もとの服の画素を輪郭に置き換えるのは落とす（CodeRabbit の指摘、PR #37）
+        self.fx.frames["down_walk_a"]["core"][(13, 27)] = "o"
+        code, out = self.fx.run(main)
+        self.assertEqual(code, 1)
+        self.assertIn("(13,27)", out)
+
     def test_a_fixed_part_missing_from_a_frame_fails(self):
         # 盾の部品がコマごと抜けても、比べる相手が無いので気付けなかった（CodeRabbit の指摘、PR #37）
         del self.fx.frames["down_atk_hit"]["shield"]

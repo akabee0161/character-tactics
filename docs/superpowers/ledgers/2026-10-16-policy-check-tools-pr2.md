@@ -72,3 +72,4 @@ CodeRabbit (PR #37): fixed fixed の部品がコマに無いと気付けない �
 CodeRabbit (PR #37): fixed validate の例外をパスで書くと当たらない — test_a_validate_path_matches_as_written RED→GREEN
 CodeRabbit (PR #37): fixed 空の拳のテストで終了コード 0 も確かめる（Nitpick。テストを締めただけ）
 CodeRabbit (PR #37): suite 571/571、unit_rules roran 0・ines 1（意図）・gau 0
+CodeRabbit (PR #37, 2回目): fixed 歩きの y=27 で、もとの画素を輪郭に置き換えた所も通していた — test_walk_may_not_replace_a_y27_pixel_with_outline RED→GREEN、suite 572/572、3体の still_check ok

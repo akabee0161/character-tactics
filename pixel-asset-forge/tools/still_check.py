@@ -8,7 +8,7 @@
 
 - idle2: 芯が base と違う画素のうち、base の拳（fist の部品）の手の肌の位置に無いもの
   （拳がどいて見えるようになった胴を埋めた所は通す）。moves でない部品が base と違うもの
-- walk_*: 芯の y<=27 が base と違う画素。ただし y=27 で輪郭が増えた所は通す（脚 y=28〜30 と、上げた足の上を閉じる
+- walk_*: 芯の y<=27 が base と違う画素。ただし y=27 で、base では透明だった所に輪郭が増えた所は通す（脚 y=28〜30 と、上げた足の上を閉じる
   輪郭だけを動かす。細い脚では、上げた足が脚の幅からはみ出し、その上の輪郭が y=27 に来る。イネス、2026-10-17 依頼者）。
   部品が base と違うもの（上半身と剣は base のまま）
 - すべてのコマ: fixed の部品（盾）が base と違うもの・コマに無いもの（盾はどのコマでも base の位置から動かさない）
@@ -47,8 +47,9 @@ def check(cfg: UnitConfig) -> list[tuple[str, str]]:
             if bad:
                 failures.append((name, f"芯が base と違う画素 {len(bad)} 件: {points(bad)}"))
         elif walk:
-            # y=27 は、上げた足の上を閉じる輪郭が増えた所だけ通す
-            bad = {p for p in moved if p[1] < OUTLINE_ROW or (p[1] == OUTLINE_ROW and mine.get(p) != OUTLINE)}
+            # y=27 は、上げた足の上を閉じる輪郭が増えた所（base では透明）だけ通す
+            added = {p for p in moved if p[1] == OUTLINE_ROW and mine.get(p) == OUTLINE and p not in theirs}
+            bad = {p for p in moved if p[1] <= OUTLINE_ROW} - added
             if bad:
                 failures.append((name, f"芯の y<{LEG_TOP} が base と違う画素 {len(bad)} 件"
                                        f"（y={OUTLINE_ROW} は輪郭が増えた所だけ通す）: {points(bad)}"))
