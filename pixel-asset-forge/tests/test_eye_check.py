@@ -78,6 +78,38 @@ class EyeCheckTest(unittest.TestCase):
         self.assertIn("FAIL eyes: 目の上端の行が向きでそろわない: down=10 up=11", out)
         self.assertEqual(out.count("目の上端の行"), 1)
 
+    def add_hair(self, pixels: dict, head: bool = True) -> None:
+        """down_base に髪の部品を芯の手前に重ねる（ミストから髪・かぶり物を別の部品にする。2026-10-16）。"""
+        self.fx.maps["hair"] = "o=outline h=hair_base"
+        self.fx.frames["down_base"]["hair"] = pixels
+        self.fx.checks["parts"]["hair"] = {"head": True} if head else {}
+        self.fx.checks["orders"]["down"] = self.fx.checks["orders"]["down"] + ["hair"]
+
+    def test_a_hair_part_beside_the_eye_is_seen(self):
+        # 目は芯と髪・かぶり物の部品を重ねて見る（2026-10-18。武器や拳は重ねない）
+        self.add_hair({(18, 10): "o"})
+        code, out = self.fx.run(main)
+        self.assertEqual(code, 1)
+        self.assertIn("FAIL down_base: 目の左右の隣が目と見分けられない色 1 件: (18,10)", out)
+
+    def test_a_hair_part_over_the_eye_is_seen(self):
+        self.add_hair({(14, 10): "h"})
+        code, out = self.fx.run(main)
+        self.assertEqual(code, 1)
+        self.assertIn("FAIL down_base: 目の画素が輪郭の色でない 1 件: (14,10)", out)
+
+    def test_parts_that_are_not_hair_or_headwear_are_not_seen(self):
+        self.add_hair({(18, 10): "o"}, head=False)
+        code, out = self.fx.run(main)
+        self.assertEqual(code, 0, out)
+
+    def test_a_hair_part_behind_the_core_does_not_cover_it(self):
+        self.add_hair({(14, 10): "h"})
+        self.fx.checks["orders"]["down"] = ["hair"] + self.fx.checks["orders"]["down"][:-1]
+        self.fx.back = {"hair"}
+        code, out = self.fx.run(main)
+        self.assertEqual(code, 0, out)
+
     def test_directions_without_eyes_are_skipped(self):
         self.fx.checks["eyes"]["down"] = None
         self.fx.frames["down_base"]["core"][(18, 10)] = "o"

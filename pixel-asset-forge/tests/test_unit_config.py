@@ -63,6 +63,10 @@ class LoadTest(unittest.TestCase):
         self.fx.checks["parts"]["shield"] = {"fixd": True}
         self.assertConfigError("知らないキー fixd")
 
+    def test_head_is_true_or_false(self):
+        self.fx.checks["parts"]["shield"] = {"head": "yes"}
+        self.assertConfigError("parts.shield.head: true か false")
+
     def test_blade_char_not_in_the_part_files(self):
         self.fx.checks["parts"]["sword"]["blade"] = "iz"
         self.assertConfigError("部品のファイルに無い文字 z")
