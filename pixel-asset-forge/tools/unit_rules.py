@@ -41,6 +41,9 @@ from unit_config import UnitConfig, UnitConfigError, load_unit_config  # noqa: E
 NEW_CHECKS = ("order_check", "blade_height", "still_check", "height_check", "tip_check", "part_chars",
               "eye_check", "part_outline", "fist_check")
 NAME_RE = re.compile(r"[A-Za-z0-9_]+")
+# body_check の「はみ出し」を掛ける体。胴がまっすぐな男性の体だけ（2026-10-17 依頼者）。袖の名残を見つけるためのもので、
+# D で敵の袖を消し終えたら () にしてやめる（ISSUES.md。body_check.py のコードは古いコマを確かめ直すときのために残す）
+PROTRUSION_BODIES = ("male",)
 
 
 def plan(cfg: UnitConfig, config: Path, root: Path) -> list[tuple[str, list[str] | None]]:
@@ -54,7 +57,7 @@ def plan(cfg: UnitConfig, config: Path, root: Path) -> list[tuple[str, list[str]
     body_check = [core_dir]
     if cfg.head_chars:
         body_check += ["--hanging", "".join(sorted(cfg.head_chars))]
-    if cfg.body == "female":  # 「はみ出し」は胴がまっすぐな男性の体だけ（2026-10-17 依頼者）
+    if cfg.body not in PROTRUSION_BODIES:
         body_check.append("--no-protrusion")
     steps: list[tuple[str, list[str] | None]] = [
         ("validate", ["-q", str(cfg.unit_dir), *grids]),
