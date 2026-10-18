@@ -243,25 +243,17 @@ cat sheets/roran.txt
 
 静止画のシートでは良く見えた剣が、3コマを続けて動かすと不自然に見えることがある（ロランの攻撃の描き直しで実際にあった）。
 
-見せる前に、`tools/unit_check.py` で機械的に確かめられることを確かめる。
+見せる前に、`tools/unit_rules.py` で機械的に確かめられることをまとめて確かめる（`types/unit/SPEC.md` の自己チェック①）。
 
 ```sh
-.venv/bin/python tools/unit_check.py assets/unit/ines --items klmstuw
+.venv/bin/python tools/unit_rules.py checks/gau.json
 ```
 
-- **脚の中心**: 向きごとに、全コマの脚（y=24 から下。輪郭と `--items` の持ち物の文字を除く）の中心がそろっているか。そろっていなければ終了コード 1
-- **増えた切れ目**: 同じ向きの `base` に無かった輪郭の切れ目を並べる。歩きの足先のようにわざと切れているものもあるので、報告だけ（終了コードは変わらない）
-
-片手で握る武器を持つユニットは、`tools/weapon_check.py` で武器と手も確かめる（色は色名で指定。ユニットごとの指定は `types/unit/SPEC.md` の自己チェック①）。
-
-```sh
-.venv/bin/python tools/weapon_check.py assets/unit/gau --blade stone_hi,stone_base --weapon wood_hi,wood_base,wood_shadow \
-    --hand skin_rose_hi,skin_rose_base,skin_rose_shadow --hidden left_atk_wind,up_atk_wind,up_atk_hit --depth down
-```
-
-- 手と武器が消えていないか、手の輪郭が背景に接していないか、握る手が 2px 幅以上あるか、手が腕とつながっているか（`--arm`。腕・袖を持たない「体 + 拳」のユニットでは意味が薄い）
-- 攻撃の当たりのコマで穂先が向いている側にあるか、武器がコマの端で切れていないか
-- 攻撃 → 構えで、武器の中の握る位置と武器の長さが変わらないか（`--depth` の向きは奥行きの表現として除く）
+- 設定ファイル `checks/<ユニット>.json` に、素体の型（男性・女性）・芯に描いた髪とかぶり物の文字・承認された重なり順・部品の役割（武器と刃の文字・拳・動いてよい部品・動かない盾）・目の位置・`weapon_check.py` の指定・例外を書く（形は `tools/unit_config.py` の docstring）
+- 今ある道具（`validate.py`・`compose.py --check`・`body_check.py`・`hand_mirror.py`・`unit_check.py`・`weapon_check.py`）と、方針の確認（重なり順・切っ先の高さ・動かない所と盾・背丈・刃と鏃の1画素の先端・部品の文字・目・部品が閉じている・拳の大きさと握り）を順に走らせ、確認ごとに1行「ok／NG」を出す
+- 例外に書いていない失敗が1つでもあれば終了コード 1、設定の誤り（知らないキー・無い部品・無いコマ・パレットに無い色名）は 2。例外は基本的に作らず、正しい絵が落ちたら道具の判定を直す
+- `unit_check.py` の「増えた切れ目」は報告だけ（歩きの足先のようにわざと切れているものもあるので、1件ずつ目で確かめる）。`weapon_check.py` の `--arm` は使わない（体＋拳の方針、2026-10-16）
+- 確認はそれぞれ単独でも走らせられる（`tools/order_check.py checks/gau.json` など）
 
 髪・かぶり物・武器を素体抜きの部品として描いたユニットは、`tools/compose.py` で素体と重ねてコマにする。
 

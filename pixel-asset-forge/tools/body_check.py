@@ -8,10 +8,17 @@
 1. 中心（down・up だけ）: 頭・胴・脚それぞれの左右の中心（その行の範囲の最小と最大の真ん中）が同じか。
 2. はみ出し: 胴の行の左端・右端が、胴でいちばん多い端の位置と違う画素（腕の袖の名残など）。
 3. 輪郭の切れ目: 輪郭でない画素の上下左右に透明がある（輪郭が閉じていない）。
-4. 穴: 同じ行の左右に画素があるのに、間が透明の画素（脚の間の隙間も出るので、歩きの脚は目で確かめる）。
+4. 穴: 輪郭に囲まれて外とつながらない透明の画素（耳と頭の間のすき間・脚の間のすき間のように、
+   上下左右にたどってコマの外へ出られる透明は穴としない。2026-10-16 依頼者）。
 
 行の範囲は 32px の体の既定値（頭 3-14、胴 15-24、脚 25-31）。別の体は --head --trunk --legs で指定する。
 `<向き>` は core_<向き>_<名前>.txt の名前から読む。左右向き（left・right）は中心の検査をしない。
+
+--hanging 文字: 芯に髪・かぶり物を含めて組んだユニット（ロラン・イネス・ガウ）の、髪・かぶり物の文字。
+  その文字の塊のうち胴の行まで垂れているものと、それだけを囲む輪郭を、1（中心）と 2（はみ出し）から外す
+  （ガウの頭巾の垂れ。頭の上だけの髪は外さない。外すと頭の中心がずれる）。2026-10-16 から髪・かぶり物は別の部品にする。
+--no-protrusion: 2（はみ出し）を見ない。はみ出しは「胴はまっすぐな筒」が前提で、袖の名残を見つけるためのもの。
+  肩が広く腰がくびれた女性の体には掛けない。D で敵の袖を消し終えたら使わない（2026-10-17 依頼者の判断）。
 """
 from __future__ import annotations
 
@@ -82,26 +89,74 @@ def open_edges(rows: list[str], charmap: dict[str, str]) -> list[tuple[int, int]
 
 
 def holes(rows: list[str]) -> list[tuple[int, int]]:
-    found = []
-    for y in range(len(rows)):
-        xs = _filled(rows, y)
-        if xs:
-            found += [(x, y) for x in range(min(xs), max(xs)) if rows[y][x] == BACKGROUND]
-    return found
+    """外（コマの外）とつながらない透明の画素。"""
+    height = len(rows)
+    clear = {(x, y) for y, row in enumerate(rows) for x, ch in enumerate(row) if ch == BACKGROUND}
+    outside = {(x, y) for x, y in clear if x in (0, len(rows[y]) - 1) or y in (0, height - 1)}
+    stack = list(outside)
+    while stack:
+        x, y = stack.pop()
+        for dx, dy in NEIGHBOURS:
+            p = (x + dx, y + dy)
+            if p in clear and p not in outside:
+                outside.add(p)
+                stack.append(p)
+    return sorted(clear - outside, key=lambda p: (p[1], p[0]))
+
+
+def hanging_pixels(rows: list[str], charmap: dict[str, str], chars: set[str], trunk_top: int) -> set[tuple[int, int]]:
+    """chars（髪・かぶり物の文字）の上下左右でつながった塊のうち、胴の行（trunk_top 以下）まで垂れているものと、
+    その塊のほかには色の付いた画素に上下左右で接していない輪郭。"""
+    def at(x: int, y: int) -> str:
+        return rows[y][x] if 0 <= y < len(rows) and 0 <= x < len(rows[y]) else BACKGROUND
+
+    left = {(x, y) for y, row in enumerate(rows) for x, ch in enumerate(row) if ch in chars}
+    hanging: set[tuple[int, int]] = set()
+    while left:
+        stack = [left.pop()]
+        lump = set(stack)
+        while stack:
+            x, y = stack.pop()
+            for dx, dy in NEIGHBOURS:
+                p = (x + dx, y + dy)
+                if p in left:
+                    left.remove(p)
+                    lump.add(p)
+                    stack.append(p)
+        if max(y for _, y in lump) >= trunk_top:
+            hanging |= lump
+    rims = set()
+    for y, row in enumerate(rows):
+        for x, ch in enumerate(row):
+            if charmap.get(ch) != OUTLINE_NAME:
+                continue
+            near = [(x + dx, y + dy) for dx in (-1, 0, 1) for dy in (-1, 0, 1) if (dx, dy) != (0, 0)]
+            if any(p in hanging for p in near) and not any(
+                    at(x + dx, y + dy) != BACKGROUND and charmap.get(at(x + dx, y + dy)) != OUTLINE_NAME
+                    and (x + dx, y + dy) not in hanging for dx, dy in NEIGHBOURS):
+                rims.add((x, y))
+    return hanging | rims
+
+
+def without(rows: list[str], pixels: set[tuple[int, int]]) -> list[str]:
+    return ["".join(BACKGROUND if (x, y) in pixels else ch for x, ch in enumerate(row)) for y, row in enumerate(rows)]
 
 
 def _points(points: list[tuple[int, int]]) -> str:
     return " ".join(f"({x},{y})" for x, y in sorted(points, key=lambda p: (p[1], p[0])))
 
 
-def check_file(path: Path, bands: dict[str, tuple[int, int]]) -> list[str]:
+def check_file(path: Path, bands: dict[str, tuple[int, int]], hanging: set[str] = frozenset(),
+               protrusion: bool = True) -> list[str]:
     parts = path.stem.split("_")
     direction = parts[1] if len(parts) > 1 else ""
     grid = parse(path)
+    body = without(grid.rows, hanging_pixels(grid.rows, grid.charmap, set(hanging), bands["trunk"][0])) \
+        if hanging else grid.rows
     failures = []
     if direction in FRONT_BACK:
-        failures += centre_failures(grid.rows, bands)
-    if points := protrusions(grid.rows, bands["trunk"]):
+        failures += centre_failures(body, bands)
+    if protrusion and (points := protrusions(body, bands["trunk"])):
         failures.append(f"胴からはみ出した画素 {len(points)} 件: {_points(points)}")
     if points := open_edges(grid.rows, grid.charmap):
         failures.append(f"輪郭の切れ目 {len(points)} 件: {_points(points)}")
@@ -125,6 +180,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("target", type=Path, help="core_<向き>_<名前>.txt か、それらのあるディレクトリ")
     for name, (lo, hi) in DEFAULT_BANDS.items():
         parser.add_argument(f"--{name}", type=_band, default=(lo, hi), help=f"{BAND_LABEL[name]}の行の範囲（既定 {lo}-{hi}）")
+    parser.add_argument("--hanging", default="", help="芯に描いた髪・かぶり物の文字（胴まで垂れた塊を中心とはみ出しから外す）")
+    parser.add_argument("--no-protrusion", action="store_true", help="はみ出しを見ない（女性の体）")
     args = parser.parse_args(argv)
     bands = {name: getattr(args, name) for name in DEFAULT_BANDS}
 
@@ -142,7 +199,7 @@ def main(argv: list[str] | None = None) -> int:
     bad = 0
     for path in paths:
         try:
-            failures = check_file(path, bands)
+            failures = check_file(path, bands, set(args.hanging), not args.no_protrusion)
         except GridError as exc:
             print(f"error: {path}: {exc}", file=sys.stderr)
             return 2

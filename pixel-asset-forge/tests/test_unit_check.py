@@ -151,6 +151,35 @@ class MainTest(unittest.TestCase):
             self.assertEqual(code, 1)
             self.assertIn("FAIL", err)
 
+    def test_core_measures_the_legs_on_the_core_parts(self):
+        # 手前の弓の輪郭がつま先を隠すと、組んだコマでは脚の中心がずれて見える（イネスの down の攻撃）。
+        # 部品で組むユニットは芯で測る（2026-10-16 依頼者）
+        with tempfile.TemporaryDirectory() as tmp:
+            unit, core = Path(tmp) / "unit", Path(tmp) / "core"
+            unit.mkdir()
+            core.mkdir()
+            covered = body(12, 20, 19, 30)
+            for y in range(24, 30):
+                covered[(18, y)] = "o"  # 手前の弓の輪郭が脚の右の列にかぶる
+            self.write_unit(unit, covered)
+            for name in ("down_base", "down_walk_a"):
+                (core / f"core_{name}.txt").write_text(grid_text(body(12, 20, 19, 30)), encoding="utf-8")
+            self.assertEqual(self.run_main([str(unit)])[0], 1)
+            code, out, err = self.run_main([str(unit), "--core", str(core)])
+            self.assertEqual(code, 0, err)
+            self.assertIn("脚の中心: ok", out)
+
+    def test_core_without_the_core_file_exits_two(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            unit, core = Path(tmp) / "unit", Path(tmp) / "core"
+            unit.mkdir()
+            core.mkdir()
+            self.write_unit(unit, body(12, 20, 19, 30))
+            (core / "core_down_base.txt").write_text(grid_text(body(12, 20, 19, 30)), encoding="utf-8")
+            code, _, err = self.run_main([str(unit), "--core", str(core)])
+            self.assertEqual(code, 2)
+            self.assertIn("core_down_walk_a.txt", err)
+
     def test_missing_directory_exits_two(self):
         code, _, err = self.run_main(["/nonexistent/unit"])
         self.assertEqual(code, 2)

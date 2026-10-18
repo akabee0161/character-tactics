@@ -1,0 +1,32 @@
+{
+  "unit": "roran",
+  "compose": "compose/roran.json",
+  "body": "male",
+  "head_chars": "efgh",
+  "items": "GHJRkmns",
+  "parts": {
+    "sword": {"weapon": true, "blade": "ij", "moves": true},
+    "sword_hand": {"fist": true, "grips": "sword", "fist_sizes": ["3x2"], "moves": true},
+    "shield": {"fixed": true},
+    "shield_hand": {"fist": true, "grips": "shield", "fist_sizes": ["3x2"]}
+  },
+  "orders": {
+    "down": ["CORE", "shield_hand", "shield", "sword", "sword_hand"],
+    "up": ["sword", "shield", "sword_hand", "shield_hand", "CORE"],
+    "left": ["sword", "sword_hand", "CORE", "shield_hand", "shield"],
+    "right": ["shield_hand", "shield", "CORE", "sword", "sword_hand"]
+  },
+  "eyes": {"down": {"x": [14, 17], "y": [11, 12]}, "up": null, "left": {"x": [12], "y": [11, 12]}, "right": {"x": [19], "y": [11, 12]}},
+  "weapon_check": {
+    "blade": ["stone_hi", "stone_base"],
+    "weapon": ["wood_hi", "wood_base", "wood_shadow", "roof_base"],
+    "hand": ["skin_rose_hi", "skin_rose_base", "skin_rose_shadow", "skin_rose_deep"],
+    "hidden": ["left_atk_hit", "up_atk_hit"],
+    "depth": ["down"]
+  },
+  "exceptions": [
+    {"check": "weapon_check", "frames": ["left_base", "left_idle2", "left_walk_a", "left_walk_b"], "what": "手が細い（1x2px",
+     "why": "剣の拳は体の奥で、体の縁から幅1px だけ見える（拳の位置を上下左右で合わせた。ISSUES「ロラン・ガウの left の武器の拳が…」）",
+     "approved": "2026-10-15 依頼者"}
+  ]
+}

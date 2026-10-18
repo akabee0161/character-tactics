@@ -1,0 +1,22 @@
+{
+  "unit": "ines",
+  "compose": "compose/ines.json",
+  "body": "female",
+  "head_chars": "efgh",
+  "items": "klmstuw",
+  "parts": {
+    "bow": {"moves": true, "open_chars": "s"},
+    "arrow": {"blade": "t", "moves": true},
+    "bow_hand": {"fist": true, "grips": "bow", "fist_sizes": ["2x2"]},
+    "arrow_hand": {"fist": true, "grips": "arrow", "fist_sizes": ["2x2"], "moves": true}
+  },
+  "orders": {
+    "down": ["CORE", "bow", "arrow", "bow_hand", "arrow_hand"],
+    "up": ["arrow", "arrow_hand", "bow", "bow_hand", "CORE"],
+    "left": ["bow", "arrow", "arrow_hand", "CORE", "bow_hand"],
+    "right": ["CORE", "bow", "bow_hand", "arrow", "arrow_hand"]
+  },
+  "eyes": {"down": {"x": [14, 17], "y": [11, 12]}, "up": null, "left": {"x": [12], "y": [11, 12]}, "right": {"x": [19], "y": [11, 12]}},
+  "weapon_check": null,
+  "exceptions": []
+}
