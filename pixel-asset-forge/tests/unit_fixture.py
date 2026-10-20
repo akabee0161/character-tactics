@@ -91,7 +91,7 @@ def default_checks() -> dict:
 
 
 class UnitFixture:
-    """frames: コマの名前 → {"core": 画素, 部品の名前: 画素}（部品は書いた順に front で重ねる）。"""
+    """frames: コマの名前 → {"core": 画素, 部品の名前: 画素}（部品は書いた順に front で重ねる。back に挙げた部品の名前は back）。"""
 
     def __init__(self) -> None:
         self.ws = Workspace()
@@ -99,6 +99,8 @@ class UnitFixture:
         self.frames = default_frames()
         self.checks = default_checks()
         self.maps = dict(MAPS)
+        self.back: set[str] = set()
+        self.keep: dict[str, list[str]] = {}  # 部品の名前 → compose の keep
 
     def close(self) -> None:
         self.ws.close()
@@ -115,7 +117,9 @@ class UnitFixture:
                     continue
                 path = self.ws.write(f"assets/part/x/{key}_{direction}_{state}.txt",
                                      grid_text(pixels, self.maps[key]))
-                layer = {"part": str(path), "z": "front"}
+                layer = {"part": str(path), "z": "back" if key in self.back else "front"}
+                if key in self.keep:
+                    layer["keep"] = self.keep[key]
                 if key.endswith("_hand"):
                     layer["hand"] = True
                 parts.append(layer)

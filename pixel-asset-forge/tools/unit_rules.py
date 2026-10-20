@@ -41,6 +41,9 @@ from unit_config import UnitConfig, UnitConfigError, load_unit_config  # noqa: E
 NEW_CHECKS = ("order_check", "blade_height", "still_check", "height_check", "tip_check", "part_chars",
               "eye_check", "part_outline", "fist_check")
 NAME_RE = re.compile(r"[A-Za-z0-9_]+")
+# body_check の「はみ出し」を掛ける体。胴がまっすぐな男性の体だけ（2026-10-17 依頼者）。袖の名残を見つけるためのもので、
+# D で敵の袖を消し終えたら () にしてやめる（ISSUES.md。body_check.py のコードは古いコマを確かめ直すときのために残す）
+PROTRUSION_BODIES = ("male",)
 
 
 def plan(cfg: UnitConfig, config: Path, root: Path) -> list[tuple[str, list[str] | None]]:
@@ -54,7 +57,7 @@ def plan(cfg: UnitConfig, config: Path, root: Path) -> list[tuple[str, list[str]
     body_check = [core_dir]
     if cfg.head_chars:
         body_check += ["--hanging", "".join(sorted(cfg.head_chars))]
-    if cfg.body == "female":  # 「はみ出し」は胴がまっすぐな男性の体だけ（2026-10-17 依頼者）
+    if cfg.body not in PROTRUSION_BODIES:
         body_check.append("--no-protrusion")
     steps: list[tuple[str, list[str] | None]] = [
         ("validate", ["-q", str(cfg.unit_dir), *grids]),
@@ -71,6 +74,13 @@ def plan(cfg: UnitConfig, config: Path, root: Path) -> list[tuple[str, list[str]
         for key in ("blade", "weapon", "hand", "hidden", "depth", "partial"):
             if wc.get(key):
                 args += [f"--{key}", ",".join(wc[key])]
+        # 武器を握る拳の大きさを fist_check が部品の形で見るなら、組んだコマの見える幅では見ない（2026-10-18）。
+        # weapon_check は手を色で見つけるので、どの武器にも握る拳の部品があり、拳の部品すべてに fist_sizes があるときだけ
+        fists = [role for role in cfg.parts.values() if role.get("fist")]
+        weapons = {key for key, role in cfg.parts.items() if role.get("weapon")}
+        if weapons and weapons <= {role.get("grips") for role in fists} \
+                and all(role.get("fist_sizes") for role in fists):
+            args.append("--no-hand-width")
         steps.append(("weapon_check", args))
     steps += [(name, [str(config), "--root", str(root)]) for name in NEW_CHECKS]
     return steps

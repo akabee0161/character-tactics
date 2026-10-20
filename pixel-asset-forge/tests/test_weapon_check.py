@@ -115,6 +115,15 @@ class HandTest(unittest.TestCase):
         fist(f, 9, 18, w=1)
         self.assertIn("手が細い（1x2px", " ".join(check_frame("down_base", analyse(f), set(), set())))
 
+    def test_hand_width_is_left_to_the_fist_part_when_asked(self):
+        # 拳を部品で描いたユニットでは、手の幅は fist_check が部品の形で見る。組んだコマで拳が体に隠れて
+        # 1px 幅だけ見えるのは、承認した重なり順の結果で、拳が細いのではない（2026-10-18）
+        f = blank()
+        body(f)
+        spear_v(f, 9, 6, 25)
+        fist(f, 9, 18, w=1)
+        self.assertEqual(check_frame("down_base", analyse(f), set(), set(), hand_width=False), [])
+
     def test_fist_on_the_shaft_beats_a_face_as_near_beside_it(self):
         # 肩幅の狭い体では、柄から顔までと、柄から拳までが同じ 2px になる（女性の敵の down）
         f = blank()
@@ -394,6 +403,17 @@ class MainTest(unittest.TestCase):
             code, out, _ = self.run_main([tmp, *self.ARGS])
             self.assertEqual(code, 0)
             self.assertIn("ok", out)
+
+    def test_no_hand_width_lets_a_thin_hand_pass(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            f = blank()
+            body(f)
+            spear_v(f, 9, 6, 25)
+            fist(f, 9, 18, w=1)
+            self.write(Path(tmp), "down_base", f)
+            self.assertEqual(self.run_main([tmp, *self.ARGS])[0], 1)
+            code, out, _ = self.run_main([tmp, *self.ARGS, "--no-hand-width"])
+            self.assertEqual(code, 0, out)
 
     def test_bad_unit_exits_one(self):
         with tempfile.TemporaryDirectory() as tmp:

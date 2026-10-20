@@ -24,9 +24,5 @@
     "hidden": ["left_atk_hit", "up_atk_hit"],
     "depth": ["down"]
   },
-  "exceptions": [
-    {"check": "weapon_check", "frames": ["left_base", "left_idle2", "left_walk_a", "left_walk_b"], "what": "手が細い（1x2px",
-     "why": "剣の拳は体の奥で、体の縁から幅1px だけ見える（拳の位置を上下左右で合わせた。ISSUES「ロラン・ガウの left の武器の拳が…」）",
-     "approved": "2026-10-15 依頼者"}
-  ]
+  "exceptions": []
 }

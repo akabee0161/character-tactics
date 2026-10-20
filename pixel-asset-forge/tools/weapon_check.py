@@ -15,7 +15,10 @@
 確かめること（どれか1つでも落ちたら終了コード 1）:
 1. 手と武器が消えない: 武器と、その近くの手がある（--hidden に挙げた、体に隠れるコマは除く）
 2. 手の輪郭: 手の画素が、透明・コマの外と上下左右で直に接していない（柄を握るので柄とは接してよい）
-3. 手の幅: 武器を握る手の塊が、縦横とも 2px 以上ある
+3. 手の幅: 武器を握る手の塊が、縦横とも 2px 以上ある（--no-hand-width で見ない。拳を部品で描いたユニットでは、
+   拳の大きさは fist_check.py が部品の形で見る。組んだコマで拳が体に隠れて 1px 幅だけ見えるのは、承認した重なり順の
+   結果で、拳が細いのではない。2026-10-18。tip_check.py が部品の形で見るのと同じ考え。unit_rules.py が、どの武器にも
+   握る拳の部品（grips）があり、拳の部品すべてに fist_sizes があるときに渡す）
 4. 穂先の向き: 攻撃のコマ（--hit）で、手の中心（手が隠れるコマは体の中心）から見た穂先が、向いている側にある
 5. 枠に収まる: 武器の画素がコマの端（x=0,31 / y=0,31）に無い
 6. 握る位置: 向きごとに、--seq のコマ（攻撃 → 構え）で、手の中心から穂先までの距離が 1.5px 以内でそろう
@@ -267,7 +270,7 @@ def floating(a: Analysis, arm: set[str]) -> bool:
 
 
 def check_frame(name: str, a: Analysis, hidden: set[str], hit_states: set[str],
-                arm: set[str] = frozenset()) -> list[str]:
+                arm: set[str] = frozenset(), hand_width: bool = True) -> list[str]:
     fails = []
     if not a.weapon:
         return [] if name in hidden else [f"{name}: 武器が見えない（刃と柄がつながった塊が無い）"]
@@ -283,7 +286,7 @@ def check_frame(name: str, a: Analysis, hidden: set[str], hit_states: set[str],
             xs = [x for x, _ in c]
             ys = [y for _, y in c]
             w, h = max(xs) - min(xs) + 1, max(ys) - min(ys) + 1
-            if min(w, h) < 2:
+            if hand_width and min(w, h) < 2:
                 fails.append(f"{name}: 手が細い（{w}x{h}px、(%d,%d) から）" % (min(xs), min(ys)))
         # 拳が柄の真ん中に無い、または柄から離れている（斧の down の当たり・女性の up の立ち、2026-10-08 依頼者の
         # 指摘）。拳から 3px 以内の柄の向きが武器全体の向きと同じとき（柄に直角な短剣・剣の鍔は測らない）、縦の柄
@@ -320,10 +323,11 @@ def check_frame(name: str, a: Analysis, hidden: set[str], hit_states: set[str],
 
 def check_unit(frames: dict[str, Analysis], hidden: set[str], hit_states: set[str],
                seq: list[str], depth: set[str] = frozenset(),
-               arm: set[str] = frozenset(), partial: set[str] = frozenset()) -> tuple[list[str], list[str]]:
+               arm: set[str] = frozenset(), partial: set[str] = frozenset(),
+               hand_width: bool = True) -> tuple[list[str], list[str]]:
     fails, notes = [], []
     for name, a in frames.items():
-        fails += check_frame(name, a, hidden, hit_states, arm)
+        fails += check_frame(name, a, hidden, hit_states, arm, hand_width)
     for d in DIRECTIONS:
         if d in depth:
             continue
@@ -398,6 +402,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--ref", type=Path, help="武器を持たせる前のコマの置き場（同じ名前の .txt）。--far と使う")
     parser.add_argument("--cover", default="", help="--far の向きで、どのコマでも手・腕・武器に上書きされてはいけない色（長い髪など）")
     parser.add_argument("--far-shade", default="", help="--far の向きの立ち・待機2・歩きで、奥の手に使ってよい肌の色（影の色）")
+    parser.add_argument("--no-hand-width", action="store_true",
+                        help="3（手の幅）を確かめない。拳を部品で描き、fist_check.py が部品の形で大きさを見るユニット用")
     args = parser.parse_args(argv)
 
     if not args.directory.is_dir():
@@ -421,7 +427,7 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     fails, notes = check_unit(frames, _names(args.hidden), _names(args.hit),
                               [s for s in args.seq.split(",") if s], _names(args.depth), _names(args.arm),
-                              _names(args.partial))
+                              _names(args.partial), not args.no_hand_width)
     attack = (set(s for s in args.seq.split(",") if s) - {"base"}) | _names(args.hit)
     for name, ref in refs.items():
         final = read_frame(args.directory / f"{name}.txt")

@@ -29,6 +29,7 @@ UnitConfigError（道具は終了コード 2）。parts の役割:
 - fist: 拳。grips（握る部品）・fist_sizes（手の肌の外接矩形「横x縦」）は 81
 - moves: 待機の2コマ目に base から動いてよい。fixed: どのコマでも動かない。3・4
 - open_chars: 体の上で輪郭を付けない文字（弓の弦）。33
+- head: 髪・かぶり物の部品（ミストから芯と分ける。2026-10-16）。eye_check.py が芯に重ねて目の隣を見る
 
 部品の名前は、部品のファイル名の「_<向き>_」より前（dagger_hand_down_base.txt → dagger_hand）。芯は CORE。
 exceptions の check は CHECKS の名前（道具のモジュール名）。
@@ -57,7 +58,7 @@ CONFIG_KEYS = {"unit", "compose", "body", "head_chars", "items", "parts", "order
                "exceptions"}
 BODIES = ("male", "female")
 EYE_KEYS = {"x", "y"}
-PART_KEYS = {"weapon", "blade", "fist", "grips", "fist_sizes", "moves", "fixed", "open_chars"}
+PART_KEYS = {"weapon", "blade", "fist", "grips", "fist_sizes", "moves", "fixed", "open_chars", "head"}
 WEAPON_CHECK_KEYS = {"blade", "weapon", "hand", "hidden", "depth", "partial"}
 EXCEPTION_KEYS = {"check", "frames", "what", "why", "approved"}
 SIZE_RE = re.compile(r"^(\d+)x(\d+)$")
@@ -223,7 +224,7 @@ def load_unit_config(path: Path, root: Path = REPO_ROOT) -> UnitConfig:
     for key, role in data["parts"].items():
         where = f"{path.name} の parts.{key}"
         _keys(role, PART_KEYS, where)
-        for flag in ("weapon", "fist", "moves", "fixed"):
+        for flag in ("weapon", "fist", "moves", "fixed", "head"):
             if not isinstance(role.get(flag, False), bool):
                 raise UnitConfigError(f"{where}.{flag}: true か false")
         for text_key in ("blade", "open_chars"):
@@ -244,6 +245,11 @@ def load_unit_config(path: Path, root: Path = REPO_ROOT) -> UnitConfig:
                 raise UnitConfigError(f"{where}.fist_sizes: 3x2 の形でない: {size!r}")
         if ("grips" in role or "fist_sizes" in role) and not role.get("fist"):
             raise UnitConfigError(f"{where}: grips・fist_sizes は fist の部品にだけ書ける")
+        if role.get("head") and (role.get("weapon") or role.get("fist")):
+            raise UnitConfigError(f"{where}: head（髪・かぶり物）は weapon・fist と一緒に書けない")
+        # eye_check は手前の部品で上書きして重ねるので、compose の keep（輪郭の下の色を見せる）を真似ない
+        if role.get("head") and any(frame.parts[key].layer.keep for frame in frames.values() if key in frame.parts):
+            raise UnitConfigError(f"{where}: head の部品に compose の keep は使えない（eye_check が組んだ絵と違う画素を見る）")
 
     directions = {frame.direction for frame in frames.values()}
     _keys(data["orders"], set(directions), f"{path.name} の orders")
