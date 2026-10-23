@@ -172,6 +172,16 @@ class TipRuleTest(unittest.TestCase):
         wide_cap = rows[:3] + ["...ooo.."] + rows[4:]
         self.assert_rule(wide_cap, "決まり1")
 
+    def test_outline_of_a_wider_hilt_is_not_counted_as_the_blade(self):
+        # 刃が1行で柄に接する行は根元。柄の黒（(1,2)）まで外形に数えない（ガウの短剣の up_atk_wind）。蓋は今までどおり見る
+        rows = ["........",
+                ".ohmho..",
+                ".ooijo..",
+                "...oo...",
+                "........"]
+        self.assert_one_pass(rows, "down", 2)
+        self.assert_rule(rows[:3] + ["..ooo..."] + rows[4:], "決まり1")
+
     def test_non_blade_characters_are_ignored(self):
         self.assertEqual(tips(["...", ".o.", "oho", "oho", "..."]), [])
 

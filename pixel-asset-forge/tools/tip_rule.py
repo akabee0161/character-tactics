@@ -87,8 +87,9 @@ def _run(xs: list[int]) -> bool:
     return xs == list(range(xs[0], xs[0] + len(xs)))
 
 
-def _judge_axis(light: set[Point], kind, n: int) -> tuple[list[str], Point]:
-    """先端が上を向いた縦の刃。kind(p) は 'light'・'outline'・'background'・'other'。"""
+def _judge_axis(light: set[Point], root: set[Point], kind, n: int) -> tuple[list[str], Point]:
+    """先端が上を向いた縦の刃。kind(p) は 'light'・'outline'・'background'・'other'。
+    根元（柄に接する画素）のある行は外形を見ない（柄の黒を刃の外形に数えないため。ガウの短剣の up_atk_wind）。"""
     problems: list[str] = []
     top = min(y for _, y in light)
     rows: dict[int, list[int]] = {}
@@ -126,10 +127,14 @@ def _judge_axis(light: set[Point], kind, n: int) -> tuple[list[str], Point]:
     rule1 = rule4 = sym = False
     if cap_r - cap_l + 1 > n:
         rule1 = True
+    if first[0] + first[-1] != centre:
+        sym = True
     prev_w = None
     y = top
     while y in rows:
         xs = rows[y]
+        if any((x, y) in root for x in xs):
+            break
         if not _run(xs):
             rule1 = True
             break
@@ -227,7 +232,7 @@ def find_tips(rows: list[str], blade: frozenset[str], outline: frozenset[str],
             tips.append(Tip(any_point, direction, n, (), f"中身{n}画素（中身5画素以上は決まりの外）"))
             continue
         if shape == "axis":
-            problems, point = _judge_axis(light, kind, n)
+            problems, point = _judge_axis(light, {f(*p) for p in root}, kind, n)
         else:
             problems, point = _judge_diagonal(light, kind)
         tips.append(Tip(back[point], direction, n, tuple(problems)))
