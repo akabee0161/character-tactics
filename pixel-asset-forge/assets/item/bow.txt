@@ -7,7 +7,7 @@
 # map: u=water_hi v=water_base y=water_shadow
 # map: a=stone_hi b=stone_base c=stone_shadow
 ................
-..oooo.....ooo..
+..oooo.....oooo.
 .owwhhoo..oaabo.
 ..ojwwwho..obco.
 ...ojoowwoosoco.
