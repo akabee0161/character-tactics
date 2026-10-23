@@ -57,6 +57,23 @@ class TipCheckTest(unittest.TestCase):
         code, out = self.fx.run(main)
         self.assertEqual(code, 0, out)
 
+    def test_a_part_file_used_by_several_frames_is_reported_once(self):
+        # 同じ部品のファイルを2つのコマで使っても、FAIL は1行だけ（最終レビュー Minor 2）
+        self.fx.frames["down_base"]["sword"].update(WIDE_CAP)
+        path = self.fx.write()
+        compose_path = self.fx.root / "compose/t.json"
+        spec = json.loads(compose_path.read_text(encoding="utf-8"))
+        base = next(l["part"] for l in spec["frames"]["down_base"]["layers"] if "sword_down_base" in l["part"])
+        for layer in spec["frames"]["down_walk_a"]["layers"]:
+            if "sword_down_walk_a" in layer["part"]:
+                layer["part"] = base
+        compose_path.write_text(json.dumps(spec), encoding="utf-8")
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(out):
+            code = main([str(path), "--root", str(self.fx.root)])
+        self.assertEqual(code, 1, out.getvalue())
+        self.assertEqual(out.getvalue().count("FAIL sword_down_base:"), 1, out.getvalue())
+
     def test_skipped_tips_are_noted_but_pass(self):
         # 中身5画素以上は決まりの外。落とさず NOTE で出す
         sword = self.fx.frames["down_base"]["sword"]
@@ -104,6 +121,14 @@ class ItemTipCheckTest(unittest.TestCase):
     def test_characters_not_listed_as_blade_are_ignored(self):
         code, out = self.run_items({"tip_item_no_corner.txt": {"blade": "h"}})
         self.assertEqual(code, 0, out)
+
+    def test_the_items_option_can_be_written_with_an_equals_sign(self):
+        config = self.root / "items.json"
+        config.write_text(json.dumps({"items": {"tip_item_ok.txt": {"blade": "ijk"}}}), encoding="utf-8")
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(out):
+            code = main([f"--items={config}", "--root", str(self.root)])
+        self.assertEqual(code, 0, out.getvalue())
 
     def test_an_unknown_character_is_a_config_error(self):
         code, out = self.run_items({"tip_item_ok.txt": {"blade": "Z"}})

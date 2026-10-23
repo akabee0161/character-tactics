@@ -47,6 +47,17 @@ class UnitRulesTest(unittest.TestCase):
             self.assertIn(f"ok   {name}", out)
         self.assertIn("--   weapon_check: 設定に無いので走らせない", out)
 
+    def test_skipped_tips_are_counted_and_listed(self):
+        # tip_check の NOTE（対象外）は終了コードを変えないが、ok の行に件数を添えて場所も出す（最終レビュー Important 1）
+        sword = self.fx.frames["down_base"]["sword"]
+        for y in range(6, 13):
+            for x in range(20, 25):
+                sword[(x, y)] = "i"
+            sword[(19, y)] = sword[(25, y)] = "o"
+        code, out = self.run_written(self.fx.write())
+        self.assertIn("ok   tip_check（対象外 1 件）", out)
+        self.assertIn("       NOTE sword_down_base: sword の先端", out)
+
     def test_failures_not_in_exceptions_exit_1_and_are_listed(self):
         self.make_tall()
         code, out = self.fx.run(main)

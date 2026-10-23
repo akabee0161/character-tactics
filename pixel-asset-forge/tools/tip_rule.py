@@ -65,22 +65,22 @@ def _centre(points) -> tuple[float, float]:
     return sum(x for x, _ in points) / len(points), sum(y for _, y in points) / len(points)
 
 
-def _direction(group: set[Point], root: set[Point], hilt: set[Point]) -> str | None:
-    """根元の重心からまとまりの重心への向き。刃が1行だけで両者が重なるときは、刃に上下左右で接する柄の
-    画素（hilt）の重心から刃の重心への向き（ガウの短剣の atk_wind）。"""
+def _direction(group: set[Point], root: set[Point], hilt: set[Point]) -> tuple[str | None, str]:
+    """(向き, 決まらないときの理由)。根元の重心からまとまりの重心への向き。刃が1行だけで両者が重なるときは、
+    刃に上下左右で接する柄の画素（hilt）の重心から刃の重心への向き（ガウの短剣の atk_wind）。"""
     cx, cy = _centre(group)
     rx, ry = _centre(root)
-    if math.hypot(cx - rx, cy - ry) < 1e-9:
-        if not hilt:
-            return None
+    if math.hypot(cx - rx, cy - ry) < 1e-9 and hilt:
         rx, ry = _centre(hilt)
     dx, dy = cx - rx, cy - ry
     if math.hypot(dx, dy) < 1e-9:
-        return None
+        return None, "向きが決まらない（根元と刃の重心が重なり、上下左右で接する柄も無い）"
     angle = math.degrees(math.atan2(-dy, dx)) % 360
     name = min(ANGLES, key=lambda k: min(abs(angle - ANGLES[k]), 360 - abs(angle - ANGLES[k])))
     off = min(abs(angle - ANGLES[name]), 360 - abs(angle - ANGLES[name]))
-    return name if off <= MAX_ANGLE_OFF else None
+    if off > MAX_ANGLE_OFF:
+        return None, f"45°以外の斜め（向きが8方位から {off:.0f}° 外れる）"
+    return name, ""
 
 
 def _run(xs: list[int]) -> bool:
@@ -133,21 +133,25 @@ def _judge_axis(light: set[Point], root: set[Point], kind, n: int) -> tuple[list
     y = top
     while y in rows:
         xs = rows[y]
-        if any((x, y) in root for x in xs):
-            break
         if not _run(xs):
             rule1 = True
             break
         cur = sil(y, xs)
-        width = cur[1] - cur[0] + 1
-        if prev[1] - prev[0] + 1 < full:
-            if cur != (prev[0] - 1, prev[1] + 1):
-                rule1 = True
-        elif cur != prev:
-            rule1 = True
+        growing = prev[1] - prev[0] + 1 < full
+        want = (prev[0] - 1, prev[1] + 1) if growing else prev
+        width = min(want[1] - want[0] + 1, full)
         if prev_w is not None and width == full and prev_w < n and len(xs) != prev_w + 2:
             rule4 = True
-        if xs[0] + xs[-1] != centre or cur[0] + cur[1] != centre:
+        if xs[0] + xs[-1] != centre:
+            sym = True
+        if any((x, y) in root for x in xs):
+            # 根元の行（柄に接する）は、柄の黒で外形が広がってよい。期待より狭い（片側の黒が無い）ときだけ落とす
+            if cur[0] > want[0] or cur[1] < want[1]:
+                rule1 = True
+            break
+        if cur != want:
+            rule1 = True
+        if cur[0] + cur[1] != centre:
             sym = True
         if len(xs) == n and width == full:
             break
@@ -201,9 +205,9 @@ def find_tips(rows: list[str], blade: frozenset[str], outline: frozenset[str],
             continue
         hilt = {(x + dx, y + dy) for x, y in group for dx, dy in ((0, -1), (0, 1), (-1, 0), (1, 0))
                 if other((x + dx, y + dy))}
-        direction = _direction(group, root, hilt)
+        direction, why = _direction(group, root, hilt)
         if direction is None:
-            tips.append(Tip(any_point, "", 0, (), "45°以外の斜め（向きが8方位から外れる）"))
+            tips.append(Tip(any_point, "", 0, (), why))
             continue
         f, shape = TRANSFORMS[direction]
         back = {}

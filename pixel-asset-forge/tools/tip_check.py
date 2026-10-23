@@ -101,7 +101,7 @@ def check_items(config: Path, root: Path) -> tuple[list[tuple[str, str]], list[t
 
 def main(argv: list[str] | None = None) -> int:
     args = sys.argv[1:] if argv is None else argv
-    if "--items" not in args:
+    if not any(a == "--items" or a.startswith("--items=") for a in args):
         return run_check(argv, __doc__, check, "先端: ok", notes=skipped)
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--items", type=Path, required=True, help="checks/items.json（item のアイコンと刃の文字）")

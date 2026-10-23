@@ -182,6 +182,27 @@ class TipRuleTest(unittest.TestCase):
         self.assert_one_pass(rows, "down", 2)
         self.assert_rule(rows[:3] + ["..ooo..."] + rows[4:], "決まり1")
 
+    def test_a_root_row_narrower_than_expected_fails(self):
+        # 根元の行でも、外形が期待より狭い（片側の黒が無い）形は落とす。柄の黒で広がるのはよい（最終レビュー Important 2）
+        one_row = ["......", "..oo..", "..ijo.", ".owwo.", "......"]
+        self.assert_rule(one_row, "決まり1")
+        three = [".......", "...o...", "..ojo..", "..ijjo.", ".owwwo.", "......."]
+        self.assert_rule(three, "決まり1")
+
+    def test_diagonal_tips_pointing_down_are_judged(self):
+        down_right = diagonal(3, 1)[::-1]
+        tip = self.assert_one_pass(down_right, "down_right", 3)
+        self.assertEqual(tip.point, (13, 13))
+        tip = self.assert_one_pass(mirror(down_right), "down_left", 3)
+        self.assertEqual(tip.point, (2, 13))
+        self.assert_rule(diagonal(3, 1, fill=False)[::-1], "決まり5")
+
+    def test_an_undetermined_direction_is_reported_as_such(self):
+        # 刃の1画素に柄が斜めにしか接していないと、向きが決まらない。「45°以外」と取り違えない
+        found = tips(["...", ".j.", "h.."])
+        self.assertEqual(len(found), 1)
+        self.assertIn("向きが決まらない", found[0].skipped or "")
+
     def test_non_blade_characters_are_ignored(self):
         self.assertEqual(tips(["...", ".o.", "oho", "oho", "..."]), [])
 
