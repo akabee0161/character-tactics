@@ -60,11 +60,20 @@ def _clusters(blade_pixels: set[Point]) -> list[set[Point]]:
     return out
 
 
-def _direction(group: set[Point], root: set[Point]) -> str | None:
-    rx = sum(x for x, _ in root) / len(root)
-    ry = sum(y for _, y in root) / len(root)
-    cx = sum(x for x, _ in group) / len(group)
-    cy = sum(y for _, y in group) / len(group)
+def _centre(points) -> tuple[float, float]:
+    points = list(points)
+    return sum(x for x, _ in points) / len(points), sum(y for _, y in points) / len(points)
+
+
+def _direction(group: set[Point], root: set[Point], hilt: set[Point]) -> str | None:
+    """根元の重心からまとまりの重心への向き。刃が1行だけで両者が重なるときは、刃に上下左右で接する柄の
+    画素（hilt）の重心から刃の重心への向き（ガウの短剣の atk_wind）。"""
+    cx, cy = _centre(group)
+    rx, ry = _centre(root)
+    if math.hypot(cx - rx, cy - ry) < 1e-9:
+        if not hilt:
+            return None
+        rx, ry = _centre(hilt)
     dx, dy = cx - rx, cy - ry
     if math.hypot(dx, dy) < 1e-9:
         return None
@@ -185,7 +194,9 @@ def find_tips(rows: list[str], blade: frozenset[str], outline: frozenset[str],
         if not root:
             tips.append(Tip(any_point, "", 0, (), "根元（柄・軸）が無い"))
             continue
-        direction = _direction(group, root)
+        hilt = {(x + dx, y + dy) for x, y in group for dx, dy in ((0, -1), (0, 1), (-1, 0), (1, 0))
+                if other((x + dx, y + dy))}
+        direction = _direction(group, root, hilt)
         if direction is None:
             tips.append(Tip(any_point, "", 0, (), "45°以外の斜め（向きが8方位から外れる）"))
             continue

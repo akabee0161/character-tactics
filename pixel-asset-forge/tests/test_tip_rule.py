@@ -159,6 +159,19 @@ class TipRuleTest(unittest.TestCase):
         self.assert_one_pass(rows[2:], "up", 2)  # 蓋の黒が y=0、グリッドの外は背景
         self.assert_rule(rows[3:], "決まり3")  # 刃の色が y=0 で、蓋が無い
 
+    def test_a_one_row_blade_gets_its_direction_from_the_hilt(self):
+        # 刃が1行しかないと、刃の画素がすべて根元になり、重心どうしで向きが決まらない（ガウの短剣の atk_wind）。
+        # そのときは、刃に上下左右で接する柄の画素から刃へ向かう向きにする
+        rows = ["........",
+                ".ohmmho.",
+                "..oijo..",
+                "...oo...",
+                "........"]
+        tip = self.assert_one_pass(rows, "down", 2)
+        self.assertEqual(tip.point, (4, 2))  # 向きをそろえた後の行の左端 = 下向きでは元の右端
+        wide_cap = rows[:3] + ["...ooo.."] + rows[4:]
+        self.assert_rule(wide_cap, "決まり1")
+
     def test_non_blade_characters_are_ignored(self):
         self.assertEqual(tips(["...", ".o.", "oho", "oho", "..."]), [])
 
