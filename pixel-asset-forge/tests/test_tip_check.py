@@ -1,7 +1,12 @@
 """Checks for tools/tip_check.py（6 刃・鏃の先端の決まり1〜5。判定は tools/tip_rule.py）."""
 from __future__ import annotations
 
+import contextlib
+import io
+import json
+import shutil
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -63,6 +68,47 @@ class TipCheckTest(unittest.TestCase):
         self.assertEqual(code, 0, out)
         self.assertIn("NOTE sword_down_base: sword の先端", out)
         self.assertIn("対象外", out)
+
+
+FIXTURES = Path(__file__).resolve().parent / "fixtures"
+
+
+class ItemTipCheckTest(unittest.TestCase):
+    """--items checks/items.json: item のアイコンを、設定に書いた刃の文字で判定する。"""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.root = Path(self.tmp.name)
+        for name in ("tip_item_ok", "tip_item_no_corner"):
+            shutil.copy(FIXTURES / f"{name}.txt", self.root / f"{name}.txt")
+
+    def run_items(self, items: dict) -> tuple[int, str]:
+        config = self.root / "items.json"
+        config.write_text(json.dumps({"items": items}), encoding="utf-8")
+        out, err = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            code = main(["--items", str(config), "--root", str(self.root)])
+        return code, out.getvalue() + err.getvalue()
+
+    def test_items_that_follow_the_rule_pass(self):
+        code, out = self.run_items({"tip_item_ok.txt": {"blade": "ijk"}})
+        self.assertEqual(code, 0, out)
+        self.assertIn("先端: ok", out)
+
+    def test_an_item_without_the_corner_fails(self):
+        code, out = self.run_items({"tip_item_no_corner.txt": {"blade": "ijk"}})
+        self.assertEqual(code, 1, out)
+        self.assertIn("FAIL tip_item_no_corner: 刃 の先端 up_right (13,2): 決まり5", out)
+
+    def test_characters_not_listed_as_blade_are_ignored(self):
+        code, out = self.run_items({"tip_item_no_corner.txt": {"blade": "h"}})
+        self.assertEqual(code, 0, out)
+
+    def test_an_unknown_character_is_a_config_error(self):
+        code, out = self.run_items({"tip_item_ok.txt": {"blade": "Z"}})
+        self.assertEqual(code, 2, out)
+        self.assertIn("error:", out)
 
 
 if __name__ == "__main__":
