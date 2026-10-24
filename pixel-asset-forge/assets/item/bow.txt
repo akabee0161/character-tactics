@@ -5,11 +5,12 @@
 # map: o=outline i=stone_hi j=stone_base k=stone_shadow
 # map: h=wood_hi w=wood_base s=wood_shadow
 # map: u=water_hi v=water_base y=water_shadow
+# map: a=stone_hi b=stone_base c=stone_shadow
 ................
-..oooo.....ooo..
-.owwhhoo..oiijo.
-..ojwwwho..ojko.
-...ojoowwoosoko.
+..oooo.....oooo.
+.owwhhoo..oaabo.
+..ojwwwho..obco.
+...ojoowwoosoco.
 ....ojoowwso.o..
 .....ojooswo....
 ......ojsoswo...

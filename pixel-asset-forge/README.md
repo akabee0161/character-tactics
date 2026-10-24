@@ -250,10 +250,12 @@ cat sheets/roran.txt
 ```
 
 - 設定ファイル `checks/<ユニット>.json` に、素体の型（男性・女性）・芯に描いた髪とかぶり物の文字・承認された重なり順・部品の役割（武器と刃の文字・拳・動いてよい部品・動かない盾）・目の位置・`weapon_check.py` の指定・例外を書く（形は `tools/unit_config.py` の docstring）
-- 今ある道具（`validate.py`・`compose.py --check`・`body_check.py`・`hand_mirror.py`・`unit_check.py`・`weapon_check.py`）と、方針の確認（重なり順・切っ先の高さ・動かない所と盾・背丈・刃と鏃の1画素の先端・部品の文字・目・部品が閉じている・拳の大きさと握り）を順に走らせ、確認ごとに1行「ok／NG」を出す
+- 今ある道具（`validate.py`・`compose.py --check`・`body_check.py`・`hand_mirror.py`・`unit_check.py`・`weapon_check.py`）と、方針の確認（重なり順・切っ先の高さ・動かない所と盾・背丈・刃と鏃の先端（決まり1〜5）・部品の文字・目・部品が閉じている・拳の大きさと握り）を順に走らせ、確認ごとに1行「ok／NG」を出す
 - 例外に書いていない失敗が1つでもあれば終了コード 1、設定の誤り（知らないキー・無い部品・無いコマ・パレットに無い色名）は 2。例外は基本的に作らず、正しい絵が落ちたら道具の判定を直す
 - `unit_check.py` の「増えた切れ目」は報告だけ（歩きの足先のようにわざと切れているものもあるので、1件ずつ目で確かめる）。`weapon_check.py` の `--arm` は使わない（体＋拳の方針、2026-10-16）
 - 確認はそれぞれ単独でも走らせられる（`tools/order_check.py checks/gau.json` など）
+- 刃・鏃の先端の確認（`tip_check.py`）は、中身5画素以上・45°以外の斜め・向きの決まらない刃を落とさず「対象外」とし、ok の行に件数を添えて場所を出す。
+  item のアイコンは `tools/tip_check.py --items checks/items.json` で同じ確認をかける（刃・鏃の文字は `checks/items.json` に書く。決まりは `types/item/SPEC.md`）
 
 髪・かぶり物・武器を素体抜きの部品として描いたユニットは、`tools/compose.py` で素体と重ねてコマにする。
 
