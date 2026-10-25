@@ -41,6 +41,7 @@ def sword(dy: int = 0) -> dict:
     pixels = box(21, 5 + dy, 23, 16 + dy, "k")
     for y in range(6 + dy, 13 + dy):
         pixels[(22, y)] = "i"  # 刃は y=6〜12、柄は y=13〜15
+    del pixels[(21, 5 + dy)], pixels[(23, 5 + dy)]  # 先端は中身1の決まりの形（蓋の黒は1画素。tip_rule.py）
     return pixels
 
 

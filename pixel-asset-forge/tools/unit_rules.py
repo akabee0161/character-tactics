@@ -153,7 +153,10 @@ def main(argv: list[str] | None = None) -> int:
                 passed += 1
             else:
                 left.append(line)
+        noted = [line for line in text.splitlines() if line.startswith("NOTE ")]  # tip_check の対象外（終了コードは変えない）
         note = f"（例外で通した {passed} 件）" if passed else ""
+        if noted:
+            note += f"（対象外 {len(noted)} 件）"
         if left:
             print(f"NG   {name}: 落ちた {len(left)} 件{note}")
             for line in left:
@@ -161,6 +164,8 @@ def main(argv: list[str] | None = None) -> int:
             worst = max(worst, 1)
         else:
             print(f"ok   {name}{note}")
+        for line in noted:
+            print(f"       {line}")
     for i, exception in enumerate(cfg.exceptions):
         if not used[i]:
             print(f"使われなかった例外: {exception['check']} {','.join(exception['frames'])} 「{exception['what']}」")

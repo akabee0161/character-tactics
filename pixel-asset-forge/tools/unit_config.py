@@ -315,8 +315,9 @@ def load_unit_config(path: Path, root: Path = REPO_ROOT) -> UnitConfig:
                       weapon_check, data["exceptions"], frames, root)
 
 
-def run_check(argv: list[str] | None, description: str, check, ok_message: str) -> int:
-    """確認の道具の共通の main。check(cfg) -> [(名前, 文言)]。FAIL を1行ずつ出し、あれば終了コード 1。"""
+def run_check(argv: list[str] | None, description: str, check, ok_message: str, notes=None) -> int:
+    """確認の道具の共通の main。check(cfg) -> [(名前, 文言)]。FAIL を1行ずつ出し、あれば終了コード 1。
+    notes(cfg) -> [(名前, 文言)] を渡すと、FAIL の前に NOTE を1行ずつ出す（終了コードは変えない）。"""
     parser =argparse.ArgumentParser(description=description, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("config", type=Path, help="checks/<ユニット>.json")
     parser.add_argument("--root", type=Path, default=REPO_ROOT, help="設定のパスの基準（既定はリポジトリの直下）")
@@ -324,9 +325,12 @@ def run_check(argv: list[str] | None, description: str, check, ok_message: str) 
     try:
         cfg = load_unit_config(args.config, args.root)
         failures = check(cfg)
+        noted = notes(cfg) if notes else []
     except UnitConfigError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
+    for name, message in noted:
+        print(f"NOTE {name}: {message}")
     for name, message in failures:
         print(f"FAIL {name}: {message}")
     if failures:

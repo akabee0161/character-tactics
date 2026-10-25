@@ -1,0 +1,6 @@
+{
+  "items": {
+    "assets/item/sword.txt": {"blade": "ijk"},
+    "assets/item/bow.txt": {"blade": "abc"}
+  }
+}
