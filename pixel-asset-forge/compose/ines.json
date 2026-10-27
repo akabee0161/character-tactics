@@ -634,6 +634,23 @@
       "body": "assets/part/body/ines/core_left_base.txt",
       "layers": [
         {
+          "part": "assets/part/fist/ines/bow_hand_left_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "water_base",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/part/equip/bow/bow_left_base.txt",
+          "z": "back"
+        },
+        {
           "part": "assets/part/fist/ines/arrow_hand_left_base.txt",
           "z": "back",
           "hand": true,
@@ -649,14 +666,15 @@
         {
           "part": "assets/part/equip/arrow/arrow_left_base.txt",
           "z": "back"
-        },
+        }
+      ]
+    },
+    "left_idle2": {
+      "body": "assets/part/body/ines/core_left_idle2.txt",
+      "layers": [
         {
-          "part": "assets/part/equip/bow/bow_left_base.txt",
-          "z": "back"
-        },
-        {
-          "part": "assets/part/fist/ines/bow_hand_left_base.txt",
-          "z": "front",
+          "part": "assets/part/fist/ines/bow_hand_left_idle2.txt",
+          "z": "back",
           "hand": true,
           "keep": [
             "stone_base",
@@ -666,12 +684,11 @@
             "wood_hi",
             "wood_shadow"
           ]
-        }
-      ]
-    },
-    "left_idle2": {
-      "body": "assets/part/body/ines/core_left_idle2.txt",
-      "layers": [
+        },
+        {
+          "part": "assets/part/equip/bow/bow_left_idle2.txt",
+          "z": "back"
+        },
         {
           "part": "assets/part/fist/ines/arrow_hand_left_idle2.txt",
           "z": "back",
@@ -688,23 +705,6 @@
         {
           "part": "assets/part/equip/arrow/arrow_left_idle2.txt",
           "z": "back"
-        },
-        {
-          "part": "assets/part/equip/bow/bow_left_idle2.txt",
-          "z": "back"
-        },
-        {
-          "part": "assets/part/fist/ines/bow_hand_left_idle2.txt",
-          "z": "front",
-          "hand": true,
-          "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
-          ]
         }
       ]
     },
@@ -712,6 +712,23 @@
       "body": "assets/part/body/ines/core_left_walk_a.txt",
       "layers": [
         {
+          "part": "assets/part/fist/ines/bow_hand_left_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "water_base",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/part/equip/bow/bow_left_base.txt",
+          "z": "back"
+        },
+        {
           "part": "assets/part/fist/ines/arrow_hand_left_base.txt",
           "z": "back",
           "hand": true,
@@ -727,23 +744,6 @@
         {
           "part": "assets/part/equip/arrow/arrow_left_base.txt",
           "z": "back"
-        },
-        {
-          "part": "assets/part/equip/bow/bow_left_base.txt",
-          "z": "back"
-        },
-        {
-          "part": "assets/part/fist/ines/bow_hand_left_base.txt",
-          "z": "front",
-          "hand": true,
-          "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
-          ]
         }
       ]
     },
@@ -751,6 +751,23 @@
       "body": "assets/part/body/ines/core_left_walk_b.txt",
       "layers": [
         {
+          "part": "assets/part/fist/ines/bow_hand_left_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "stone_base",
+            "stone_hi",
+            "water_base",
+            "wood_base",
+            "wood_hi",
+            "wood_shadow"
+          ]
+        },
+        {
+          "part": "assets/part/equip/bow/bow_left_base.txt",
+          "z": "back"
+        },
+        {
           "part": "assets/part/fist/ines/arrow_hand_left_base.txt",
           "z": "back",
           "hand": true,
@@ -766,14 +783,15 @@
         {
           "part": "assets/part/equip/arrow/arrow_left_base.txt",
           "z": "back"
-        },
+        }
+      ]
+    },
+    "left_atk_wind": {
+      "body": "assets/part/body/ines/core_left_atk_wind.txt",
+      "layers": [
         {
-          "part": "assets/part/equip/bow/bow_left_base.txt",
-          "z": "back"
-        },
-        {
-          "part": "assets/part/fist/ines/bow_hand_left_base.txt",
-          "z": "front",
+          "part": "assets/part/fist/ines/bow_hand_left_atk_wind.txt",
+          "z": "back",
           "hand": true,
           "keep": [
             "stone_base",
@@ -783,12 +801,11 @@
             "wood_hi",
             "wood_shadow"
           ]
-        }
-      ]
-    },
-    "left_atk_wind": {
-      "body": "assets/part/body/ines/core_left_atk_wind.txt",
-      "layers": [
+        },
+        {
+          "part": "assets/part/equip/bow/bow_left_atk_wind.txt",
+          "z": "back"
+        },
         {
           "part": "assets/part/fist/ines/arrow_hand_left_atk_wind.txt",
           "z": "back",
@@ -805,14 +822,15 @@
         {
           "part": "assets/part/equip/arrow/arrow_left_atk_wind.txt",
           "z": "back"
-        },
+        }
+      ]
+    },
+    "left_atk_draw": {
+      "body": "assets/part/body/ines/core_left_atk_draw.txt",
+      "layers": [
         {
-          "part": "assets/part/equip/bow/bow_left_atk_wind.txt",
-          "z": "back"
-        },
-        {
-          "part": "assets/part/fist/ines/bow_hand_left_atk_wind.txt",
-          "z": "front",
+          "part": "assets/part/fist/ines/bow_hand_left_atk_draw.txt",
+          "z": "back",
           "hand": true,
           "keep": [
             "stone_base",
@@ -822,12 +840,11 @@
             "wood_hi",
             "wood_shadow"
           ]
-        }
-      ]
-    },
-    "left_atk_draw": {
-      "body": "assets/part/body/ines/core_left_atk_draw.txt",
-      "layers": [
+        },
+        {
+          "part": "assets/part/equip/bow/bow_left_atk_draw.txt",
+          "z": "back"
+        },
         {
           "part": "assets/part/fist/ines/arrow_hand_left_atk_draw.txt",
           "z": "back",
@@ -844,14 +861,15 @@
         {
           "part": "assets/part/equip/arrow/arrow_left_atk_draw.txt",
           "z": "back"
-        },
+        }
+      ]
+    },
+    "left_atk_hit": {
+      "body": "assets/part/body/ines/core_left_atk_hit.txt",
+      "layers": [
         {
-          "part": "assets/part/equip/bow/bow_left_atk_draw.txt",
-          "z": "back"
-        },
-        {
-          "part": "assets/part/fist/ines/bow_hand_left_atk_draw.txt",
-          "z": "front",
+          "part": "assets/part/fist/ines/bow_hand_left_atk_hit.txt",
+          "z": "back",
           "hand": true,
           "keep": [
             "stone_base",
@@ -861,12 +879,11 @@
             "wood_hi",
             "wood_shadow"
           ]
-        }
-      ]
-    },
-    "left_atk_hit": {
-      "body": "assets/part/body/ines/core_left_atk_hit.txt",
-      "layers": [
+        },
+        {
+          "part": "assets/part/equip/bow/bow_left_atk_hit.txt",
+          "z": "back"
+        },
         {
           "part": "assets/part/fist/ines/arrow_hand_left_atk_hit.txt",
           "z": "back",
@@ -883,14 +900,15 @@
         {
           "part": "assets/part/equip/arrow/arrow_left_atk_hit.txt",
           "z": "back"
-        },
+        }
+      ]
+    },
+    "left_atk_release": {
+      "body": "assets/part/body/ines/core_left_atk_release.txt",
+      "layers": [
         {
-          "part": "assets/part/equip/bow/bow_left_atk_hit.txt",
-          "z": "back"
-        },
-        {
-          "part": "assets/part/fist/ines/bow_hand_left_atk_hit.txt",
-          "z": "front",
+          "part": "assets/part/fist/ines/bow_hand_left_atk_release.txt",
+          "z": "back",
           "hand": true,
           "keep": [
             "stone_base",
@@ -900,12 +918,11 @@
             "wood_hi",
             "wood_shadow"
           ]
-        }
-      ]
-    },
-    "left_atk_release": {
-      "body": "assets/part/body/ines/core_left_atk_release.txt",
-      "layers": [
+        },
+        {
+          "part": "assets/part/equip/bow/bow_left_atk_release.txt",
+          "z": "back"
+        },
         {
           "part": "assets/part/fist/ines/arrow_hand_left_atk_release.txt",
           "z": "back",
@@ -922,23 +939,6 @@
         {
           "part": "assets/part/equip/arrow/arrow_left_atk_release.txt",
           "z": "back"
-        },
-        {
-          "part": "assets/part/equip/bow/bow_left_atk_release.txt",
-          "z": "back"
-        },
-        {
-          "part": "assets/part/fist/ines/bow_hand_left_atk_release.txt",
-          "z": "front",
-          "hand": true,
-          "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
-          ]
         }
       ]
     },
