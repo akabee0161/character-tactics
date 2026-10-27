@@ -43,7 +43,7 @@ class UnitRulesTest(unittest.TestCase):
         self.assertEqual(code, 0, out)
         for name in ("validate", "compose", "body_check", "hand_mirror", "unit_check", "order_check",
                      "blade_height", "still_check", "height_check", "tip_check", "part_chars", "eye_check",
-                     "part_outline", "fist_check"):
+                     "part_outline", "fist_check", "weapon_mirror"):
             self.assertIn(f"ok   {name}", out)
         self.assertIn("--   weapon_check: 設定に無いので走らせない", out)
 

@@ -7,7 +7,7 @@
 
 1. validate.py（コマ・芯・部品のグリッド）  2. compose.py --check（部品から再現できるか）
 3. body_check.py（芯）・hand_mirror.py・unit_check.py・weapon_check.py（設定の weapon_check が null なら走らせない）
-4. order_check・blade_height・still_check・height_check・tip_check・part_chars・eye_check・part_outline・fist_check
+4. order_check・blade_height・still_check・height_check・tip_check・part_chars・eye_check・part_outline・fist_check・weapon_mirror
 
 確認ごとに1行「ok／NG 落ちた件数（例外で通した件数）」を出し、例外で通らなかった失敗の行を続ける。
 失敗の行は、道具が出す「FAIL 」（compose.py は「差あり 」）で始まる行。設定ファイルの exceptions の1件は、
@@ -39,7 +39,7 @@ from gridfile import REPO_ROOT  # noqa: E402
 from unit_config import UnitConfig, UnitConfigError, load_unit_config  # noqa: E402
 
 NEW_CHECKS = ("order_check", "blade_height", "still_check", "height_check", "tip_check", "part_chars",
-              "eye_check", "part_outline", "fist_check")
+              "eye_check", "part_outline", "fist_check", "weapon_mirror")
 NAME_RE = re.compile(r"[A-Za-z0-9_]+")
 # body_check の「はみ出し」を掛ける体。胴がまっすぐな男性の体だけ（2026-10-17 依頼者）。袖の名残を見つけるためのもので、
 # D で敵の袖を消し終えたら () にしてやめる（ISSUES.md。body_check.py のコードは古いコマを確かめ直すときのために残す）
