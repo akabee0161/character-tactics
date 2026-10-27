@@ -57,8 +57,15 @@ def check(cfg: UnitConfig) -> list[tuple[str, str]]:
     return failures
 
 
+def notes(cfg: UnitConfig) -> list[tuple[str, str]]:
+    """weapon の部品で、どの拳の grips にも無いもの（grips の書き忘れで、何も比べずに ok になるのを見えるように）。"""
+    gripped = {role.get("grips") for role in cfg.parts.values() if role.get("fist")}
+    return [(key, "weapon だが、どの拳の grips にも無いので left と right を比べない")
+            for key, role in sorted(cfg.parts.items()) if role.get("weapon") and key not in gripped]
+
+
 def main(argv: list[str] | None = None) -> int:
-    return run_check(argv, __doc__, check, "武器の位置（left と right）: ok")
+    return run_check(argv, __doc__, check, "武器の位置（left と right）: ok", notes)
 
 
 if __name__ == "__main__":

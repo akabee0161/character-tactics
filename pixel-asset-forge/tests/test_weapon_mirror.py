@@ -97,6 +97,17 @@ class WeaponMirrorTest(unittest.TestCase):
         code, out = self.fx.run(main)
         self.assertEqual(code, 0, out)
 
+    def test_a_weapon_no_fist_grips_is_noted(self):
+        # grips を書き忘れると何も比べずに ok になるので、weapon の部品で握られていないものを NOTE に出す（最終レビュー 2026-10-27）
+        self.fx.checks["parts"]["sword_hand"].pop("grips")
+        code, out = self.fx.run(main)
+        self.assertEqual(code, 0, out)
+        self.assertIn("NOTE sword: weapon だが、どの拳の grips にも無いので left と right を比べない", out)
+
+    def test_gripped_weapons_are_not_noted(self):
+        code, out = self.fx.run(main)
+        self.assertNotIn("NOTE", out)
+
     def test_down_and_up_are_not_compared(self):
         down = {name: layers for name, layers in default_frames().items() if name.startswith("down_")}
         self.fx.frames.update(down)
