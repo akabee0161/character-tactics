@@ -4,15 +4,19 @@
 """
 from __future__ import annotations
 
+import contextlib
+import io
+import json
 import string
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "tools"))
 
-from palette_migrate import MigrateError, migrate_text  # noqa: E402
+from palette_migrate import MigrateError, main, migrate_text  # noqa: E402
 
 EQUIP = "assets/part/equip/dagger/a.txt"
 RULES = [
@@ -86,6 +90,90 @@ class MigrateTextTest(unittest.TestCase):
     def test_derived_file_without_map_is_left_alone(self) -> None:
         text = "# from: a.txt\n# transform: mirror_x\n"
         self.assertEqual(migrate_text(EQUIP, text, RULES, []), text)
+
+
+    def test_point_on_trailing_whitespace_is_not_a_pixel(self) -> None:
+        text = grid("# map: b=skin_base\n", ["bbb. ", "...."])
+        pixels = [{"file": EQUIP, "points": [[4, 0]], "to": "hair_x"}]
+        with self.assertRaises(MigrateError):
+            migrate_text(EQUIP, text, RULES, pixels)
+
+    def test_double_override_is_an_error(self) -> None:
+        text = grid("# map: b=skin_base\n", ["bbb.", "...."])
+        pixels = [
+            {"file": EQUIP, "points": [[0, 0]], "to": "hair_x"},
+            {"file": EQUIP, "points": [[0, 0]], "to": "hair_y"},
+        ]
+        with self.assertRaises(MigrateError):
+            migrate_text(EQUIP, text, RULES, pixels)
+
+
+class MainTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self.root = Path(self._tmp.name)
+        self.grid = self.root / "a.txt"
+        self.src = grid("# map: o=outline b=skin_base\n", ["ob..", "...."])
+        self.grid.write_text(self.src, encoding="utf-8")
+
+    def run_main(self, rules: list[dict], pixels: list[dict] | None = None, *flags: str) -> tuple[int, str]:
+        mapping = self.root / "m.json"
+        mapping.write_text(json.dumps({"rules": rules, "pixels": pixels or []}), encoding="utf-8")
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            code = main([str(mapping), *flags, str(self.grid)])
+        return code, out.getvalue()
+
+    ALL = [{"glob": "*", "from": "outline", "to": "line"}, {"glob": "*", "from": "skin_base", "to": "skin_use"}]
+
+    def test_dry_run_writes_nothing(self) -> None:
+        code, out = self.run_main(self.ALL)
+        self.assertEqual(code, 0)
+        self.assertEqual(self.grid.read_text(encoding="utf-8"), self.src)
+        self.assertNotIn("WRITE", out)
+
+    def test_write_rewrites_and_reports_only_changed(self) -> None:
+        code, out = self.run_main(self.ALL, None, "--write")
+        self.assertEqual(code, 0)
+        self.assertIn("o=line b=skin_use", self.grid.read_text(encoding="utf-8"))
+        self.assertIn("WRITE", out)
+
+    def test_unmapped_name_exits_1_and_writes_nothing(self) -> None:
+        code, out = self.run_main(self.ALL[:1], None, "--write")
+        self.assertEqual(code, 1)
+        self.assertEqual(self.grid.read_text(encoding="utf-8"), self.src)
+        self.assertNotIn("WRITE", out)
+        self.assertIn("skin_base (1)", out)
+
+    def test_pixels_file_matching_no_target_exits_1(self) -> None:
+        pixels = [{"file": "assets/typo.txt", "points": [[0, 0]], "to": "hair_x"}]
+        code, out = self.run_main(self.ALL, pixels, "--write")
+        self.assertEqual(code, 1)
+        self.assertEqual(self.grid.read_text(encoding="utf-8"), self.src)
+        self.assertIn("typo.txt", out)
+
+    def test_double_override_exits_1(self) -> None:
+        path = self.grid.resolve().as_posix()
+        pixels = [
+            {"file": path, "points": [[1, 0]], "to": "hair_x"},
+            {"file": path, "points": [[1, 0]], "to": "hair_y"},
+        ]
+        code, _ = self.run_main(self.ALL, pixels, "--write")
+        self.assertEqual(code, 1)
+        self.assertEqual(self.grid.read_text(encoding="utf-8"), self.src)
+
+    def test_unused_rule_is_reported_but_not_a_failure(self) -> None:
+        rules = self.ALL + [{"glob": "*", "from": "nothing", "to": "x"}]
+        code, out = self.run_main(rules)
+        self.assertEqual(code, 0)
+        self.assertIn("当たらなかった規則", out)
+
+    def test_unreadable_file_is_reported(self) -> None:
+        self.grid.write_bytes(b"\xff\xfe# map")
+        code, out = self.run_main(self.ALL)
+        self.assertEqual(code, 1)
+        self.assertIn("a.txt", out)
 
 
 if __name__ == "__main__":

@@ -51,7 +51,7 @@ class MigrateError(Exception):
 class Result:
     text: str
     renamed: int = 0
-    unmapped: list[str] = field(default_factory=list)
+    matched_rules: set[int] = field(default_factory=set)
 
 
 def _split_eol(line: str) -> tuple[str, str]:
@@ -59,10 +59,10 @@ def _split_eol(line: str) -> tuple[str, str]:
     return body, line[len(body):]
 
 
-def _find_rule(path: str, name: str, rules: list[dict]) -> str | None:
-    for rule in rules:
+def _find_rule(path: str, name: str, rules: list[dict]) -> tuple[str, int] | None:
+    for k, rule in enumerate(rules):
         if rule["from"] == name and fnmatch.fnmatchcase(path, rule["glob"]):
-            return rule["to"]
+            return rule["to"], k
     return None
 
 
@@ -91,6 +91,7 @@ def migrate(path: str, text: str, rules: list[dict], pixels: list[dict]) -> Resu
     keys: set[str] = set()
     unmapped: list[str] = []
     renamed = 0
+    matched: set[int] = set()
     for i in map_idx:
         m = MAP_LINE_RE.match(_split_eol(lines[i])[0])
         pairs = []
@@ -100,13 +101,16 @@ def migrate(path: str, text: str, rules: list[dict], pixels: list[dict]) -> Resu
                 raise MigrateError(f"{path}: map の組 {token!r} の形が不正です")
             ch, name = pair.groups()
             keys.add(ch)
-            new = _find_rule(path, name, rules)
-            if new is None:
+            found = _find_rule(path, name, rules)
+            if found is None:
                 if name not in unmapped:
                     unmapped.append(name)
                 new = name
-            elif new != name:
-                renamed += 1
+            else:
+                new, k = found
+                matched.add(k)
+                if new != name:
+                    renamed += 1
             pairs.append((ch, new))
         entries_by_line[i] = pairs
     if unmapped:
@@ -115,9 +119,10 @@ def migrate(path: str, text: str, rules: list[dict], pixels: list[dict]) -> Resu
         )
 
     # Pixel overrides: each distinct "to" gets one unused character.
-    rows = {i: list(_split_eol(lines[i])[0]) for i in row_idx}
+    rows = {i: list(_split_eol(lines[i])[0].rstrip()) for i in row_idx}  # trailing blanks are not pixels
     used = keys | {ch for chars in rows.values() for ch in chars}
     new_chars: dict[str, str] = {}
+    seen_points: set[tuple[int, int]] = set()
     added: list[tuple[str, str]] = []
     for override in overrides:
         to = override["to"]
@@ -125,6 +130,9 @@ def migrate(path: str, text: str, rules: list[dict], pixels: list[dict]) -> Resu
             if not (0 <= y < len(row_idx)) or not (0 <= x < len(rows[row_idx[y]])):
                 raise MigrateError(f"{path}: 点 [{x}, {y}] が絵の外です")
             chars = rows[row_idx[y]]
+            if (x, y) in seen_points:
+                raise MigrateError(f"{path}: 点 [{x}, {y}] が二重に指定されています")
+            seen_points.add((x, y))
             if chars[x] == BACKGROUND:
                 raise MigrateError(f"{path}: 点 [{x}, {y}] は背景（.）で、画素がありません")
             if to not in new_chars:
@@ -160,7 +168,7 @@ def migrate(path: str, text: str, rules: list[dict], pixels: list[dict]) -> Resu
                 out.append("# map: " + fmt(group) + (eol or "\n"))
         else:
             out.append(line)
-    return Result("".join(out), renamed)
+    return Result("".join(out), renamed, matched)
 
 
 def migrate_text(path: str, text: str, rules: list[dict], pixels: list[dict]) -> str:
@@ -200,28 +208,58 @@ def main(argv: list[str] | None = None) -> int:
     grids = collect([t for t in targets if t.exists()] if not args.targets else targets)
 
     failed = False
-    changes: list[tuple[Path, str]] = []
+    changes: list[tuple[Path, str, str, int]] = []
+    seen: set[str] = set()
+    matched: set[int] = set()
+    unmapped: dict[str, set[str]] = {}
     for grid in grids:
         rel = display(grid).as_posix()
-        with open(grid, encoding="utf-8", newline="") as fh:
-            text = fh.read()
+        seen.add(rel)
         try:
+            with open(grid, encoding="utf-8", newline="") as fh:
+                text = fh.read()
             result = migrate(rel, text, rules, pixels)
         except MigrateError as exc:
             failed = True
             print(f"NG   {exc}")
+            for name in exc.names:
+                unmapped.setdefault(name, set()).add(rel)
             continue
+        except (OSError, UnicodeDecodeError) as exc:
+            failed = True
+            print(f"NG   {grid}: 読めません: {exc}")
+            continue
+        matched |= result.matched_rules
         if result.text != text:
-            changes.append((grid, result.text))
-        print(f"{'WRITE' if args.write else 'ok   '} {rel}: 書き換える名前 {result.renamed}")
+            changes.append((grid, rel, result.text, result.renamed))
+        print(f"ok   {rel}: 書き換える名前 {result.renamed}")
 
-    if args.write and not failed:
-        for grid, new_text in changes:
-            with open(grid, "w", encoding="utf-8", newline="") as fh:
-                fh.write(new_text)
-    elif args.write:
-        print("規則の無い名前などがあるため、何も書き換えませんでした")
-    return 1 if failed else 0
+    for entry in pixels:
+        if entry["file"] not in seen:
+            failed = True
+            print(f"NG   pixels の file が対象の中にありません: {entry['file']}")
+    for k, rule in enumerate(rules):
+        if k not in matched:
+            print(f"注意 どのファイルにも当たらなかった規則: rules[{k}] {rule['glob']} {rule['from']} -> {rule['to']}")
+    if unmapped:
+        print("規則の無い名前（ファイル数）:")
+        for name in sorted(unmapped):
+            print(f"  {name} ({len(unmapped[name])})")
+
+    if failed:
+        if args.write:
+            print("失敗があるため、何も書き換えませんでした")
+        return 1
+    if args.write:
+        for grid, rel, new_text, renamed in changes:
+            try:
+                with open(grid, "w", encoding="utf-8", newline="") as fh:
+                    fh.write(new_text)
+            except OSError as exc:
+                print(f"NG   {grid}: 書けません: {exc}")
+                return 1
+            print(f"WRITE {rel}: 書き換えた名前 {renamed}")
+    return 0
 
 
 if __name__ == "__main__":
