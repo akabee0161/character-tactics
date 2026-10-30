@@ -126,7 +126,7 @@
 - [ ] **Step 1: 前の出力を取っておく。** scratchpad の新しいフォルダ `before/` に、`render.py -o before/render`、`sheet.py` の3体、`enemy_build.py --all`（`build/sheets` を写す）、`contact_sheet.py`、`sets.py`、`tilemap.py --layout layouts/*.txt` の PNG と、`export.py` で scratchpad へ書き出したゲーム用の PNG（README 2.10 の対応表すべて）を集める。あわせて `unit_rules.py checks/{roran,ines,gau}.json` の出力を `before/rules_<unit>.txt` に保存する
 - [ ] **Step 2: 色替えの失敗するテストを書く。** `test_recolor_to_swatch`: 一時フォルダのパレット（用途の色 `cloth_main_base` → 色見本 `cloak_dark_base`）で、レシピの `recolor` が `{"cloth_main_base": "floor_shadow"}` のとき、書き出したシートのその画素が `floor_shadow` の値になる。`recolor` の値が色見本に無ければ `EnemyError`
 - [ ] **Step 3: 落ちることを確かめる** Run: `.venv/bin/python -m unittest tests.test_enemy_build -v` → Expected: FAIL
-- [ ] **Step 4: 道具を新しいパレットへ切り替える。** `gridfile.load_palette()` と `load_colours()` を `palette.load()` から作る（`PALETTE_PATH` は `PALETTE_DIR` に）。`enemy_build.py` は `recolor` の値を色見本として検査し、シートは `load_colours()` で描く。`probe_colors.py` は用途の色と色見本の両方の名前と `#rrggbb` を受ける
+- [ ] **Step 4: 道具を新しいパレットへ切り替える。** `gridfile.load_palette()` と `load_colours()` を `palette.load()` から作る（`PALETTE_PATH` は `PALETTE_DIR` に）。`enemy_build.py` は `recolor` の値を色見本として検査し、シートは `load_colours()` で描く。「色替えで色が減った」の警告は、色の名前ではなく色の値で数える（別の用途の色が同じ色見本を指すことがあるため。10-30 依頼者と追加。テスト `test_recolor_merge_warning_counts_values` を Step 2 で足す）。`probe_colors.py` は用途の色と色見本の両方の名前と `#rrggbb` を受ける
 - [ ] **Step 5: 書き換える。** Run: `.venv/bin/python tools/palette_migrate.py palette/migration.json --write`。`enemy/*.json` の `recolor` のキーを用途の色の名前に（値は今の名前＝色見本の名前のまま）、`compose/*.json` の `hand_colours`・`keep`、`checks/*.json` の `weapon_check` の `blade`・`weapon`・`hand` を、`migration.json` の対応どおりの名前に書き換える（この3つは Task 6 で種類に置き換える。ここでは名前だけ）
 - [ ] **Step 6: テストを直す。** `tests/test_*.py` の色の名前の文字列を、対応表どおりの用途の色の名前に替える。Run: `.venv/bin/python -m unittest discover -s tests` → Expected: OK
 - [ ] **Step 7: 見た目が変わらないことを確かめる。** Step 1 と同じ出力を `after/` に作り、Run: `cmp -r` 相当の比較（scratchpad のスクリプトでファイルごとに `filecmp.cmp(shallow=False)`）→ Expected: 差 0 件、ファイル数も同じ
@@ -147,12 +147,12 @@
 - Produces: `validate.palette_rules(path: Path, grid: Grid, pal: Palette) -> list[str]`（失敗の文の並び）。`validate.unused(pal: Palette, used: set[str]) -> tuple[set[str], set[str]]`（使われていない用途の色・色見本）
 
 決まり（設計書）:
-1. `map` の名前が、そのグリッドの `# type:` の `allowed(type)` にある
+1. `map` の名前が、そのグリッドの `# type:` の `allowed(type)` にある。`# type:` を持たない派生ファイル（`# from:`、13枚。`assets/tile/bridge_v.txt` など）は、由来元の型を引き継いで判定する（10-30 依頼者と追加）
 2. `assets/part/equip/<物>/` のうち `shield` 以外は、輪郭と種類 `blade`・`weapon` だけ。`shield` は輪郭と `shield` だけ
 3. `assets/part/` のうち `equip` 以外と `types/unit/base/` は、種類 `blade`・`weapon`・`shield` を使わない（`assets/unit/` の組んだコマは対象外）
 4. 使われていない用途の色・色見本は、最後に `note:` の行で報告する（終了コードは変えない）
 
-- [ ] **Step 1: 失敗するテストを書く**（一時フォルダのパレットとグリッド。パスは `assets/part/...` の形の相対パスを作って渡す）: `test_name_from_other_type_fails`、`test_weapon_part_with_headgear_colour_fails`、`test_shield_part_with_blade_colour_fails`、`test_head_part_with_blade_colour_fails`、`test_composed_unit_frame_may_use_weapon`、`test_unused_are_reported`
+- [ ] **Step 1: 失敗するテストを書く**（一時フォルダのパレットとグリッド。パスは `assets/part/...` の形の相対パスを作って渡す）: `test_name_from_other_type_fails`、`test_weapon_part_with_headgear_colour_fails`、`test_shield_part_with_blade_colour_fails`、`test_head_part_with_blade_colour_fails`、`test_composed_unit_frame_may_use_weapon`、`test_unused_are_reported`、`test_derived_file_takes_type_from_origin`
 - [ ] **Step 2: 落ちることを確かめる** Run: `.venv/bin/python -m unittest tests.test_validate -v` → FAIL
 - [ ] **Step 3: 書く**（`main` で `palette.load()` を1回読み、各グリッドに `palette_rules` を掛ける）
 - [ ] **Step 4: 通ることを確かめる** → OK
