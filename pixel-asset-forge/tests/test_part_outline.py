@@ -1,6 +1,9 @@
 """Checks for tools/part_outline.py (33 拳以外の部品が輪郭で閉じている)."""
 from __future__ import annotations
 
+import contextlib
+import io
+import json
 import sys
 import unittest
 from pathlib import Path
@@ -9,7 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tools"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from part_outline import main  # noqa: E402
-from unit_fixture import UnitFixture  # noqa: E402
+from unit_fixture import UnitFixture, box  # noqa: E402
 
 
 class PartOutlineTest(unittest.TestCase):
@@ -45,6 +48,61 @@ class PartOutlineTest(unittest.TestCase):
         self.fx.frames["down_base"]["sword_hand"][(30, 30)] = "o"  # 拳は見ない（compose.py が見る）
         code, out = self.fx.run(main)
         self.assertEqual(code, 0, out)
+
+    def add_edge_part(self, key: str, fill: str, map_text: str, role: dict | None = None, core_top: int = 5):
+        """体の頭の上に載る部品: 輪郭の箱 (12,2)-(19,8) の下の行 y=8 だけ輪郭でなく fill。芯の上端は core_top。"""
+        pixels = box(12, 2, 19, 8, fill)
+        for x in range(13, 19):
+            pixels[(x, 8)] = fill
+        for layers in self.fx.frames.values():
+            layers[key] = dict(pixels)
+        self.fx.maps[key] = map_text
+        self.fx.checks["parts"][key] = role or {}
+        self.fx.checks["orders"]["down"].append(key)
+        self.fx.checks["orders"]["up"].append(key)
+        for name in ("down_base", "up_base"):
+            self.fx.frames[name]["core"] = box(12, core_top, 19, 30, "c")
+
+    def test_hair_edge_over_core_passes(self):
+        self.add_edge_part("hair", "h", "o=contour h=hair_red_base")  # 下の縁 y=8 は芯 (y>=5) の上
+        code, out = self.fx.run(main)
+        self.assertEqual(code, 0, out)
+
+    def test_hair_edge_outside_core_fails(self):
+        self.add_edge_part("hair", "h", "o=contour h=hair_red_base", core_top=12)  # 縁の下 y=9 は芯の外
+        code, out = self.fx.run(main)
+        self.assertEqual(code, 1, out)
+        self.assertIn("FAIL hair_down_base: 輪郭で閉じていない画素 6 件", out)
+
+    def test_ornament_edge_over_core_passes(self):
+        self.add_edge_part("pin", "p", "o=contour p=patch_base")
+        code, out = self.fx.run(main)
+        self.assertEqual(code, 0, out)
+
+    def test_headgear_edge_over_core_fails(self):
+        self.add_edge_part("helm", "h", "o=contour h=helmet_steel_base")  # 兜は体の上でも輪郭で閉じる
+        code, out = self.fx.run(main)
+        self.assertEqual(code, 1, out)
+        self.assertIn("FAIL helm_down_base: 輪郭で閉じていない画素 6 件", out)
+
+    def test_edge_over_core_in_only_some_frames_fails(self):
+        self.add_edge_part("hair", "h", "o=contour h=hair_red_base")
+        path = self.fx.write(build=False)
+        compose_path = self.fx.root / "compose/t.json"
+        data = json.loads(compose_path.read_text(encoding="utf-8"))
+        shared = next(layer["part"] for layer in data["frames"]["down_base"]["layers"] if "hair_" in layer["part"])
+        for layer in data["frames"]["down_walk_a"]["layers"]:
+            if "hair_" in layer["part"]:
+                layer["part"] = shared  # 歩きのコマも同じ髪の絵を使う
+        compose_path.write_text(json.dumps(data), encoding="utf-8")
+        walk = self.fx.root / "assets/part/body/t/core_down_walk_a.txt"
+        lines = walk.read_text(encoding="utf-8").splitlines()
+        walk.write_text("\n".join(l if l.startswith("#") else l.replace("c", ".") for l in lines) + "\n", encoding="utf-8")  # 歩きの芯は髪の下に無い
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(out):
+            code = main([str(path), "--root", str(self.fx.root)])
+        self.assertEqual(code, 1, out.getvalue())
+        self.assertIn("FAIL hair_down_base: 輪郭で閉じていない画素", out.getvalue())
 
 
 if __name__ == "__main__":
