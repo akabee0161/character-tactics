@@ -147,6 +147,35 @@ class LoadTest(unittest.TestCase):
         self.assertEqual(cfg.eyes["down"], frozenset({(14, 11), (14, 12), (17, 11), (17, 12)}))
         self.assertIsNone(cfg.eyes["up"])
 
+    def use_eye_part(self) -> None:
+        self.fx.maps["eye"] = "o=contour"
+        self.fx.frames["down_base"]["eye"] = {(14, 10): "o"}
+        self.fx.checks["parts"]["eye"] = {"eye": True}
+
+    def test_eyes_key_with_eye_part_rejected(self):
+        # 目の部品があれば目は部品から読むので、設定に目の位置を書かない（2026-10-30）
+        self.use_eye_part()
+        self.assertConfigError("目の部品（parts の eye）があるので eyes は書けない")
+
+    def test_eye_part_without_eyes_key_loads(self):
+        self.use_eye_part()
+        del self.fx.checks["eyes"]
+        self.assertIsNone(self.load().eyes)
+
+    def test_eye_is_true_or_false_and_not_with_head(self):
+        self.use_eye_part()
+        del self.fx.checks["eyes"]
+        self.fx.checks["parts"]["eye"] = {"eye": "yes"}
+        self.assertConfigError("parts.eye.eye: true か false")
+        self.fx.checks["parts"]["eye"] = {"eye": True, "head": True}
+        self.assertConfigError("eye（目）は head・weapon・fist と一緒に書けない")
+
+    def test_eye_part_cannot_use_keep(self):
+        self.use_eye_part()
+        del self.fx.checks["eyes"]
+        self.fx.keep["eye"] = ["skin"]
+        self.assertConfigError("eye の部品に compose の keep は使えない")
+
     def test_eyes_must_be_columns_and_two_rows(self):
         for value, text in (([11, 12], "オブジェクトでない"), ({"x": [14], "y": [12, 11]}, "eyes.down.y"),
                             ({"x": [], "y": [11, 12]}, "eyes.down.x"), ({"x": [32], "y": [11, 12]}, "eyes.down.x"),

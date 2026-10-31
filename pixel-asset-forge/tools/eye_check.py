@@ -4,6 +4,11 @@
     .venv/bin/python tools/eye_check.py checks/gau.json
 
 目と輪郭は同じ outline の色なので、設定ファイルの eyes に向きごとの目の画素（x の列と [上の行, 下の行]、目の無い向きは null）を書く。
+目の部品（設定の parts で eye。assets/part/eye/）があるユニットは eyes を書かず、コマごとに目の部品の背景でない画素を目として読む
+（2026-10-30。斜めの目のように列と行の四角で書けない形も読める）。目の部品より手前に積んだ部品のうち、head の部品の画素か、
+種類が被り物・装飾品（headgear・ornament）の色の画素が目の画素に重なれば「覆われた」とする。目の画素がすべて覆われたコマは
+目なしとして通し（knight のバイザー、メガネなど）、一部だけ覆われたコマは「目の一部が被り物に隠れている」で落とす。
+覆われていないコマに下の判定を掛ける。目の上端の行は同じ状態のコマの向きどうしで比べ、目がすべて隠れた向きを除く。
 
 - 目の画素の左右の隣（目の画素どうしは除く）が、probe_colors.py の判定で目（outline）と見分けられない色
   （WARN・HARD。check_colors.py と同じ基準）のもの
@@ -25,24 +30,61 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import palette  # noqa: E402
 from gridfile import load_palette  # noqa: E402
 from probe_colors import verdict  # noqa: E402
-from unit_config import CORE, OUTLINE, Frame, UnitConfig, points, run_check  # noqa: E402
+from unit_config import CORE, DIRECTIONS, OUTLINE, Frame, UnitConfig, points, run_check  # noqa: E402
+
+
+COVER_KINDS = ("headgear", "ornament")  # head でない部品も、この種類の色の画素なら目を覆う（メガネなど）
 
 
 def head_pixels(cfg: UnitConfig, frame: Frame) -> dict[tuple[int, int], str]:
-    """芯に、髪・かぶり物の部品（parts の head）だけを重ね順どおりに重ねた画素。"""
+    """芯に、髪・かぶり物の部品（parts の head）と目の部品（parts の eye）だけを重ね順どおりに重ねた画素。"""
     pixels: dict[tuple[int, int], str] = {}
     for key in frame.order:  # 奥→手前。手前の部品が上書きする
         if key == CORE:
             pixels.update(frame.core_pixels())
-        elif cfg.role(key, "head"):
+        elif cfg.role(key, "head") or cfg.role(key, "eye"):
             pixels.update(frame.parts[key].pixels())
     return pixels
 
 
-def check(cfg: UnitConfig) -> list[tuple[str, str]]:
-    palette = load_palette()
+def part_eyes(cfg: UnitConfig, frame: Frame, pal: palette.Palette) -> tuple[frozenset, frozenset]:
+    """(目の画素, そのうち手前の被り物・装飾品に覆われた画素)。目の画素は目の部品の背景でない画素（dx・dy でずらした後）。
+    覆うのは、目の部品より手前に積んだ部品のうち、head の部品の画素か、種類が被り物・装飾品の色の画素。"""
+    eyes: set = set()
+    covered: set = set()
+    for i, key in enumerate(frame.order):
+        if key == CORE or not cfg.role(key, "eye"):
+            continue
+        mine = set(frame.parts[key].pixels())
+        eyes |= mine
+        for front in frame.order[i + 1:]:
+            if front == CORE or cfg.role(front, "eye"):
+                continue
+            head = cfg.role(front, "head")
+            covered |= {p for p, use in frame.parts[front].pixels().items()
+                        if p in mine and (head or pal.kind_of(use) in COVER_KINDS)}
+    return frozenset(eyes), frozenset(covered)
+
+
+def look(name: str, eyes: frozenset, pixels: dict, colours) -> list[tuple[str, str]]:
+    """目の画素が輪郭の色か、左右の隣が目と見分けられるか。"""
+    failures = []
+    missing = {p for p in eyes if pixels.get(p) != OUTLINE}
+    if missing:
+        failures.append((name, f"目の画素が輪郭の色でない {len(missing)} 件: {points(missing)}"))
+    blurred = {(x + dx, y) for x, y in eyes - missing for dx in (-1, 1)
+               if (x + dx, y) not in eyes and (x + dx, y) in pixels
+               and not verdict(OUTLINE, pixels[(x + dx, y)], colours)[0].startswith("OK")}
+    if blurred:
+        failures.append((name, f"目の左右の隣が目と見分けられない色 {len(blurred)} 件: {points(blurred)}"))
+    return failures
+
+
+def check_config_eyes(cfg: UnitConfig, colours) -> list[tuple[str, str]]:
+    """目を芯に描いたユニット（ロラン・イネス・ガウ）。目の位置は設定の eyes に書く。"""
     failures = []
     # 目の位置は設定に書くので、上端の行は設定どうしを1回だけ比べる（名前は設定のキー eyes）
     tops = {d: min(y for _x, y in eyes) for d, eyes in cfg.eyes.items() if eyes}
@@ -51,18 +93,42 @@ def check(cfg: UnitConfig) -> list[tuple[str, str]]:
         failures.append(("eyes", f"目の上端の行が向きでそろわない: {detail}"))
     for name, frame in cfg.frames.items():
         eyes = cfg.eyes[frame.direction]
-        if eyes is None:
-            continue
-        pixels = head_pixels(cfg, frame)
-        missing = {p for p in eyes if pixels.get(p) != OUTLINE}
-        if missing:
-            failures.append((name, f"目の画素が輪郭の色でない {len(missing)} 件: {points(missing)}"))
-        blurred = {(x + dx, y) for x, y in eyes - missing for dx in (-1, 1)
-                   if (x + dx, y) not in eyes and (x + dx, y) in pixels
-                   and not verdict(OUTLINE, pixels[(x + dx, y)], palette)[0].startswith("OK")}
-        if blurred:
-            failures.append((name, f"目の左右の隣が目と見分けられない色 {len(blurred)} 件: {points(blurred)}"))
+        if eyes is not None:
+            failures += look(name, eyes, head_pixels(cfg, frame), colours)
     return failures
+
+
+def check_part_eyes(cfg: UnitConfig, colours) -> list[tuple[str, str]]:
+    """目の部品があるユニット。目はコマごとに目の部品の画素から読む（2026-10-30）。"""
+    pal = palette.load()
+    failures = []
+    tops: dict[str, dict[str, int]] = {}  # 状態 → 向き → 目の上端の行（目がすべて隠れた向きは除く）
+    for name, frame in cfg.frames.items():
+        eyes, covered = part_eyes(cfg, frame, pal)
+        if not eyes or covered == eyes:  # 目の無い向き・被り物に目がすべて隠れた向き（バイザーなど）
+            continue
+        if covered:
+            failures.append((name, f"目の一部が被り物に隠れている {len(covered)} 件: {points(covered)}"))
+            continue
+        tops.setdefault(frame.state, {})[frame.direction] = min(y for _x, y in eyes)
+        failures += look(name, eyes, head_pixels(cfg, frame), colours)
+    # 目の高さは同じ状態の向きどうしで比べる（歩きで頭が上下しても、向きの間ではそろう）。同じ食い違いは1回だけ出す
+    uneven: dict[str, list[str]] = {}
+    for state, by_direction in tops.items():
+        if len(set(by_direction.values())) > 1:
+            detail = " ".join(f"{d}={y}" for d, y in sorted(by_direction.items(), key=lambda i: DIRECTIONS.index(i[0])))
+            uneven.setdefault(detail, []).append(state)
+    rows = [("eyes", f"目の上端の行が向きでそろわない: {detail}"
+                     + ("" if len(states) == len(tops) else f"（{' '.join(states)}）"))
+            for detail, states in uneven.items()]
+    return rows + failures
+
+
+def check(cfg: UnitConfig) -> list[tuple[str, str]]:
+    colours = load_palette()
+    if cfg.eyes is None:
+        return check_part_eyes(cfg, colours)
+    return check_config_eyes(cfg, colours)
 
 
 def main(argv: list[str] | None = None) -> int:

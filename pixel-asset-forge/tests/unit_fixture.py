@@ -101,6 +101,7 @@ class UnitFixture:
         self.maps = dict(MAPS)
         self.back: set[str] = set()
         self.keep: dict[str, list[str]] = {}  # 部品の名前 → compose の keep（種類の並び）
+        self.shift: dict[str, tuple[int, int]] = {}  # 部品の名前 → compose の (dx, dy)
 
     def close(self) -> None:
         self.ws.close()
@@ -120,6 +121,8 @@ class UnitFixture:
                 layer = {"part": str(path), "z": "back" if key in self.back else "front"}
                 if key in self.keep:
                     layer["keep"] = self.keep[key]
+                if key in self.shift:
+                    layer["dx"], layer["dy"] = self.shift[key]
                 if key.endswith("_hand"):
                     layer["hand"] = True
                 parts.append(layer)

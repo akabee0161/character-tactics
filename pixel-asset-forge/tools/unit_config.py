@@ -24,7 +24,8 @@ body は素体の型（male・female）。female の体には body_check.py の�
 head_chars は芯に描いた髪・かぶり物の文字（body_check.py が胴のはみ出しと中心から外す。芯に髪・かぶり物を
 含めて組んだロラン・イネス・ガウのため。2026-10-16 から髪・かぶり物は別の部品にする）。色でなく文字で書くのは、
 ガウの頭巾と胴の服が同じ cloak_dark_* で、文字だけが違う（頭巾 f g h、胴 p q r）ため。
-eyes は向きごとの目の画素（x の列と、[上の行, 下の行]）。目の無い向きは null。
+eyes は向きごとの目の画素（x の列と、[上の行, 下の行]）。目の無い向きは null。目を芯に描いたユニット（ロラン・イネス・ガウ）
+だけが書く。目の部品（parts の eye）があるユニットは書かない（書けば UnitConfigError。目は部品の画素から読む。2026-10-30）。
 知らないキー・無い部品・compose にあるのに parts に無い部品・無いコマ・パレットに無い色名・部品のファイルに無い文字は
 UnitConfigError（道具は終了コード 2）。parts の役割:
 
@@ -33,6 +34,7 @@ UnitConfigError（道具は終了コード 2）。parts の役割:
 - moves: 待機の2コマ目に base から動いてよい。fixed: どのコマでも動かない。3・4
 - open_chars: 体の上で輪郭を付けない文字（弓の弦）。33
 - head: 髪・かぶり物の部品（ミストから芯と分ける。2026-10-16）。eye_check.py が芯に重ねて目の隣を見る
+- eye: 目の部品（assets/part/eye/。2026-10-30）。eye_check.py が背景でない画素を目として読む。head・weapon・fist と一緒に書けない
 
 部品の名前は、部品のファイル名の「_<向き>_」より前（dagger_hand_down_base.txt → dagger_hand）。芯は CORE。
 exceptions の check は CHECKS の名前（道具のモジュール名）。
@@ -61,7 +63,7 @@ CONFIG_KEYS = {"unit", "compose", "body", "head_chars", "items", "parts", "order
                "exceptions"}
 BODIES = ("male", "female")
 EYE_KEYS = {"x", "y"}
-PART_KEYS = {"weapon", "blade", "fist", "grips", "fist_sizes", "moves", "fixed", "open_chars", "head"}
+PART_KEYS = {"weapon", "blade", "fist", "grips", "fist_sizes", "moves", "fixed", "open_chars", "head", "eye"}
 WEAPON_CHECK_KEYS = {"hidden", "depth", "partial"}
 WEAPON_CHECK_COLOUR_KEYS = ("blade", "weapon", "hand")  # 2026-10-30 にやめた。色はパレットの種類から読む
 EXCEPTION_KEYS = {"check", "frames", "what", "why", "approved"}
@@ -116,7 +118,7 @@ class UnitConfig:
     items: str
     parts: dict[str, dict]
     orders: dict[str, list[str]]
-    eyes: dict[str, frozenset[Point] | None]  # 向き → 目の画素
+    eyes: dict[str, frozenset[Point] | None] | None  # 向き → 目の画素。目の部品があるユニットは None
     weapon_check: dict[str, list[str]] | None
     exceptions: list[dict]
     frames: dict[str, Frame]
@@ -179,7 +181,8 @@ def load_unit_config(path: Path, root: Path = REPO_ROOT) -> UnitConfig:
     except json.JSONDecodeError as exc:
         raise UnitConfigError(f"{path}: JSON として読めない: {exc}") from None
     _keys(data, CONFIG_KEYS, str(path))
-    missing = sorted(CONFIG_KEYS - set(data))
+    # eyes は目の部品（parts の eye）が無いときだけ要る。あるときは書けない（下の parts の後で確かめる）
+    missing = sorted(CONFIG_KEYS - {"eyes"} - set(data))
     if missing:
         raise UnitConfigError(f"{path}: キーが無い {', '.join(missing)}")
     if not isinstance(data["unit"], str) or not isinstance(data["compose"], str):
@@ -219,7 +222,7 @@ def load_unit_config(path: Path, root: Path = REPO_ROOT) -> UnitConfig:
     for key, role in data["parts"].items():
         where = f"{path.name} の parts.{key}"
         _keys(role, PART_KEYS, where)
-        for flag in ("weapon", "fist", "moves", "fixed", "head"):
+        for flag in ("weapon", "fist", "moves", "fixed", "head", "eye"):
             if not isinstance(role.get(flag, False), bool):
                 raise UnitConfigError(f"{where}.{flag}: true か false")
         for text_key in ("blade", "open_chars"):
@@ -242,9 +245,13 @@ def load_unit_config(path: Path, root: Path = REPO_ROOT) -> UnitConfig:
             raise UnitConfigError(f"{where}: grips・fist_sizes は fist の部品にだけ書ける")
         if role.get("head") and (role.get("weapon") or role.get("fist")):
             raise UnitConfigError(f"{where}: head（髪・かぶり物）は weapon・fist と一緒に書けない")
+        if role.get("eye") and (role.get("head") or role.get("weapon") or role.get("fist")):
+            raise UnitConfigError(f"{where}: eye（目）は head・weapon・fist と一緒に書けない")
         # eye_check は手前の部品で上書きして重ねるので、compose の keep（輪郭の下の色を見せる）を真似ない
-        if role.get("head") and any(frame.parts[key].layer.keep for frame in frames.values() if key in frame.parts):
-            raise UnitConfigError(f"{where}: head の部品に compose の keep は使えない（eye_check が組んだ絵と違う画素を見る）")
+        for flag in ("head", "eye"):
+            if role.get(flag) and any(frame.parts[key].layer.keep for frame in frames.values() if key in frame.parts):
+                raise UnitConfigError(
+                    f"{where}: {flag} の部品に compose の keep は使えない（eye_check が組んだ絵と違う画素を見る）")
 
     directions = {frame.direction for frame in frames.values()}
     _keys(data["orders"], set(directions), f"{path.name} の orders")
@@ -256,9 +263,16 @@ def load_unit_config(path: Path, root: Path = REPO_ROOT) -> UnitConfig:
             raise UnitConfigError(f"{path.name} の orders.{direction}: 無い部品 {', '.join(absent)}")
         orders[direction] = order
 
-    _keys(data["eyes"], set(directions), f"{path.name} の eyes")
-    eyes = {}
-    for direction in sorted(directions):
+    eye_parts = sorted(key for key, role in data["parts"].items() if role.get("eye"))
+    if eye_parts and "eyes" in data:
+        raise UnitConfigError(f"{path.name}: 目の部品（parts の eye）があるので eyes は書けない"
+                              f"（目は部品 {', '.join(eye_parts)} の画素から読む）")
+    if not eye_parts and "eyes" not in data:
+        raise UnitConfigError(f"{path}: キーが無い eyes（目の部品が無いユニットは目の位置を書く）")
+    eyes: dict[str, frozenset[Point] | None] | None = None if eye_parts else {}  # None は目を部品から読む
+    if not eye_parts:
+        _keys(data["eyes"], set(directions), f"{path.name} の eyes")
+    for direction in ([] if eye_parts else sorted(directions)):
         if direction not in data["eyes"]:  # 書き忘れた向きの目を黙って見ないままにしない
             raise UnitConfigError(f"{path.name} の eyes.{direction} が無い（目の無い向きは null と書く）")
         value = data["eyes"][direction]
