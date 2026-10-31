@@ -13,11 +13,13 @@
 
 部品には次も書ける（2026-10-10 依頼者と決めた。部品は完全な形で描き、重ねるだけで組む）:
 
-- "keep": ["weapon_shaft_base", ...] この部品の輪郭（contour）の画素は、すぐ下の画素が keep の色なら、そちらを見せる。
-  拳の輪郭を、握る柄の上には描かないために使う（柄が拳の上下で途切れるため。2026-10-09 依頼者が選択）。
-  拳の肌や袖は柄の下に潜らせない。見るのは「その画素のすぐ下の1枚」だけ（間に別の部品が挟まると効かない）
-- "hand": true 拳の部品。組み立てる前に、手の色（設定の最上位の "hand_colours": ["skin_ruddy_hi", ...]）の画素が
-  四方とも輪郭で囲われているかを確かめ、閉じていなければ1枚も書かずに止まる
+- "keep": ["blade", "weapon"] この部品の輪郭（contour）の画素は、すぐ下の画素の色の種類（palette/kinds.json）が
+  keep のどれかなら、そちらを見せる。拳の輪郭を、握る柄の上には描かないために使う（柄が拳の上下で途切れるため。
+  2026-10-09 依頼者が選択）。拳の肌や袖は柄の下に潜らせない。見るのは「その画素のすぐ下の1枚」だけ（間に別の部品が
+  挟まると効かない）。色の名前でなく種類で書く（2026-10-30。柄と同じ色見本のベルトやズボンは種類が違うので見せない）
+- "hand": true 拳の部品。組み立てる前に、手の色（パレットの種類 skin の、unit と common の用途の色）の画素が
+  四方とも輪郭で囲われているかを確かめ、閉じていなければ1枚も書かずに止まる。設定に手の色は書かない
+  （最上位の "hand_colours" は 2026-10-30 にやめた。書いてあれば止まる）
 
 重なりは、奥→手前の積み上げで決める（stack_order）。素体の上に front は手前へ、back は一番奥へ積む。
 
@@ -31,6 +33,7 @@ types/unit/SPEC.md の「描く手順」を参照。パスは forge の直下か
 from __future__ import annotations
 
 import argparse
+import functools
 import json
 import sys
 from dataclasses import dataclass, field
@@ -38,10 +41,13 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import palette as palette_mod  # noqa: E402
 from gridfile import BACKGROUND, REPO_ROOT, Grid, GridError, parse  # noqa: E402
 
 Z_ORDERS = ("front", "back")
-CONFIG_KEYS = {"unit", "frames", "hand_colours"}
+CONFIG_KEYS = {"unit", "frames"}
+HAND_KIND = "skin"  # 手の肌の色の種類
+TYPE = "unit"
 FRAME_KEYS = {"body", "layers"}
 LAYER_KEYS = {"part", "z", "dx", "dy", "keep", "hand"}
 COPIED_HEADERS = ("type", "size", "light", "bg")
@@ -57,8 +63,23 @@ class Layer:
     z: str
     dx: int = 0
     dy: int = 0
-    keep: frozenset[str] = frozenset()
+    keep: frozenset[str] = frozenset()  # 色の種類（palette/kinds.json）
     hand: bool = False
+
+
+@functools.cache
+def _palette() -> palette_mod.Palette:
+    return palette_mod.load()
+
+
+def hand_colours() -> frozenset[str]:
+    """手の肌の色。パレットの種類 skin の、unit と common の用途の色。"""
+    return _palette().names_of_kind(HAND_KIND, type=TYPE)
+
+
+def keep_colours(kinds: frozenset[str]) -> frozenset[str]:
+    """keep の種類に当たる用途の色（unit と common）。"""
+    return _palette().names_of_kind(*kinds, type=TYPE) if kinds else frozenset()
 
 
 @dataclass
@@ -90,6 +111,8 @@ def load_config(path: Path, root: Path = REPO_ROOT) -> tuple[str, dict[str, Fram
     except json.JSONDecodeError as exc:
         raise ComposeError(f"{path}: JSON として読めない: {exc}") from None
 
+    if "hand_colours" in data:
+        raise ComposeError(f"{path}: hand_colours は書けない（手の色はパレットの種類 {HAND_KIND} から読む。2026-10-30）")
     _keys(data, CONFIG_KEYS, str(path))
     unit = data.get("unit")
     if not isinstance(unit, str) or not unit:
@@ -98,10 +121,8 @@ def load_config(path: Path, root: Path = REPO_ROOT) -> tuple[str, dict[str, Fram
     if not isinstance(frames_data, dict) or not frames_data:
         raise ComposeError(f"{path}: frames が無いか空")
 
-    hand_data = data.get("hand_colours", [])
-    if not isinstance(hand_data, list) or not all(isinstance(c, str) for c in hand_data):
-        raise ComposeError(f"{path}: hand_colours は色名の配列でなければならない: {hand_data!r}")
-    hand_colours = frozenset(hand_data)
+    kinds = _palette().kinds
+    hands = hand_colours()
 
     frames: dict[str, FrameSpec] = {}
     for name, spec in frames_data.items():
@@ -123,15 +144,19 @@ def load_config(path: Path, root: Path = REPO_ROOT) -> tuple[str, dict[str, Fram
                 raise ComposeError(f"{lwhere}: z は front か back（{z!r} だった）")
             keep = layer.get("keep", [])
             if not isinstance(keep, list) or not all(isinstance(c, str) for c in keep):
-                raise ComposeError(f"{lwhere}: keep は色名の配列でなければならない: {keep!r}")
+                raise ComposeError(f"{lwhere}: keep は色の種類の配列でなければならない: {keep!r}")
+            unknown = [k for k in keep if k not in kinds]
+            if unknown:
+                raise ComposeError(f"{lwhere}: keep に色の種類でない名前 {', '.join(unknown)}"
+                                   "（keep は種類の並び。例 [\"blade\", \"weapon\"]）")
             hand = layer.get("hand", False)
             if not isinstance(hand, bool):
                 raise ComposeError(f"{lwhere}: hand は true か false: {hand!r}")
-            if hand and not hand_colours:
-                raise ComposeError(f"{lwhere}: hand の部品があるのに、設定の最上位に hand_colours（手の肌の色名）が無い")
+            if hand and not hands:
+                raise ComposeError(f"{lwhere}: hand の部品があるのに、パレットに種類 {HAND_KIND} の色が無い")
             layers.append(Layer(root / layer["part"], z, _int(layer.get("dx", 0), lwhere),
                                 _int(layer.get("dy", 0), lwhere), frozenset(keep), hand))
-        frames[name] = FrameSpec(root / spec["body"], layers, hand_colours)
+        frames[name] = FrameSpec(root / spec["body"], layers, hands)
     return unit, frames
 
 
@@ -187,12 +212,13 @@ def _compose(body: Grid, layers: list[tuple[Grid, Layer]]):
     for index in reversed(stack_order([layer for _, layer in layers])):
         for pos, ch in planes[index][1].items():
             stacks.setdefault(pos, []).append((index, ch))
+    keeps = {i: keep_colours(layer.keep) for i, (_, layer) in enumerate(layers)}
     for (x, y), stack in stacks.items():
         pick = 0
         index, ch = stack[0]
-        # keep: この部品の輪郭は、すぐ下が keep の色（握る武器）ならそちらを見せる
-        if index >= 0 and layers[index][1].keep and charmap[ch] == "contour" and len(stack) > 1 \
-                and charmap[stack[1][1]] in layers[index][1].keep:
+        # keep: この部品の輪郭は、すぐ下が keep の種類の色（握る武器）ならそちらを見せる
+        if index >= 0 and keeps[index] and charmap[ch] == "contour" and len(stack) > 1 \
+                and charmap[stack[1][1]] in keeps[index]:
             pick = 1
         index, ch = stack[pick]
         canvas[y][x] = ch

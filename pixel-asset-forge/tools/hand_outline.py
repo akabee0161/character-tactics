@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """拳の部品のファイル（assets/part/fist/<ユニット>/ の拳）で、手の輪郭が切れている所を閉じる。
 
-    tools/hand_outline.py assets/part/fist/roran/sword_hand_down_base.txt \\
-        --hand skin_ruddy_hi,skin_ruddy_base,skin_ruddy_shadow          # 直す所を出すだけ
-    tools/hand_outline.py ... --write                                # 書き換える
+    tools/hand_outline.py assets/part/fist/roran/sword_hand_down_base.txt   # 直す所を出すだけ
+    tools/hand_outline.py ... --write                                       # 書き換える
+
+--hand を省くと、手の色はパレットの種類 skin の、unit と common の用途の色（compose.py と同じ。2026-10-30）。
 
 拳は部品として完全な形で描き、四方とも輪郭（黒）で囲う（2026-10-10 依頼者と決めた）。手（--hand の色の塊のうち、
 HAND_MAX 画素以下の小さいもの）の上下左右の隣が、透明でも袖でも輪郭にする。--keep の色の上には描かない
@@ -19,6 +20,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import palette as palette_mod  # noqa: E402
 from enemy_build import EnemyError, read_frame  # noqa: E402
 from gridfile import GridError, parse  # noqa: E402
 
@@ -98,7 +100,7 @@ def _names(text: str) -> set[str]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("paths", nargs="+", type=Path, help="拳の部品のファイル（かディレクトリ）")
-    parser.add_argument("--hand", required=True, help="手の肌の色名（カンマ区切り）")
+    parser.add_argument("--hand", help="手の肌の色名（カンマ区切り）。省くとパレットの種類 skin の色")
     parser.add_argument("--keep", default="", help="この色の上には輪郭を描かない色名（カンマ区切り）")
     parser.add_argument("--write", action="store_true", help="ファイルを書き換える（無ければ直す所を出すだけ）")
     args = parser.parse_args(argv)
@@ -113,8 +115,9 @@ def main(argv: list[str] | None = None) -> int:
             return 2
     total = 0
     try:
+        hand = _names(args.hand) if args.hand else palette_mod.load().names_of_kind("skin", type="unit")
         for path in files:
-            changed = fix_file(path, _names(args.hand), _names(args.keep), args.write)
+            changed = fix_file(path, hand, _names(args.keep), args.write)
             if changed:
                 total += len(changed)
                 where = " ".join(f"({x},{y})" for x, y in changed)

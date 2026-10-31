@@ -17,9 +17,6 @@
   },
   "eyes": {"down": {"x": [14, 17], "y": [11, 12]}, "up": null, "left": {"x": [14], "y": [11, 12]}, "right": null},
   "weapon_check": {
-    "blade": ["blade_hi", "collar_white", "blade_base"],
-    "weapon": ["weapon_shaft_hi", "weapon_shaft_base", "legwear_brown", "weapon_shaft_shadow"],
-    "hand": ["skin_ruddy_hi", "skin_ruddy_base", "skin_ruddy_shadow"],
     "hidden": ["left_atk_wind", "up_atk_wind", "up_atk_hit"],
     "depth": ["down"]
   },

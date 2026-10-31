@@ -48,10 +48,9 @@ class PartsExportTest(unittest.TestCase):
             parts=(PartDef("弓", "bow", frozenset("m"), dir="equip/bow"),
                    PartDef("矢", "arrow", frozenset("w"), dir="equip/arrow"),
                    PartDef("弓の拳", "bow_hand", frozenset("b"), {("down", "base"): (21, 15, 21, 16)},
-                           hand=True, keep=("weapon_shaft_shadow",), dir="fist/t"),
+                           hand=True, keep=("weapon",), dir="fist/t"),
                    PartDef("矢の拳", "arrow_hand", frozenset("b"), {("down", "base"): NONE}, hand=True, dir="fist/t")),
-            orders={"down": ("矢の拳", "弓", CORE, "矢", "弓の拳")},
-            hand_colours=("skin_fair_base",))
+            orders={"down": ("矢の拳", "弓", CORE, "矢", "弓の拳")})
 
     def tearDown(self):
         self.tmp.cleanup()
@@ -92,10 +91,10 @@ class PartsExportTest(unittest.TestCase):
 
     def test_hand_parts_carry_hand_and_keep(self):
         config = self.run_export()
-        self.assertEqual(config["hand_colours"], ["skin_fair_base"])
+        self.assertNotIn("hand_colours", config)  # 手の色は compose.py がパレットの種類 skin から読む
         by_name = {Path(entry["part"]).name: entry for entry in config["frames"]["down_base"]["layers"]}
         self.assertEqual(by_name["bow_hand_down_base.txt"], {"part": "assets/part/fist/t/bow_hand_down_base.txt",
-                                                            "z": "front", "hand": True, "keep": ["weapon_shaft_shadow"]})
+                                                            "z": "front", "hand": True, "keep": ["weapon"]})
         self.assertNotIn("keep", by_name["arrow_hand_down_base.txt"])
 
     def test_empty_part_is_written_with_the_outline_map(self):

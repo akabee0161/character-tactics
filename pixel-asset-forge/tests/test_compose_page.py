@@ -52,7 +52,7 @@ class ComposePageTest(unittest.TestCase):
 
     def test_open_hand_part_still_makes_the_page(self):
         part = self.ws.write("open.txt", grid_text({(10, 12): "b"}, BODY_MAP))
-        path = self.config({"part": str(part), "z": "front", "hand": True}, hand_colours=["skin_fair_base"])
+        path = self.config({"part": str(part), "z": "front", "hand": True})
         code, _ = self.run_main(path)
         self.assertEqual(code, 0)
         page = self.out.read_text(encoding="utf-8")

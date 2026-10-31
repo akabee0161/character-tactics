@@ -6,7 +6,8 @@
 設定ファイル checks/<ユニット>.json（tools/unit_config.py）から引数を組み立て、次の順に各道具の main(argv) を呼ぶ:
 
 1. validate.py（コマ・芯・部品のグリッド）  2. compose.py --check（部品から再現できるか）
-3. body_check.py（芯）・hand_mirror.py・unit_check.py・weapon_check.py（設定の weapon_check が null なら走らせない）
+3. body_check.py（芯）・hand_mirror.py・unit_check.py・weapon_check.py（設定の weapon_check が null なら走らせない。
+   刃・柄・手の色は、パレットの種類 blade・weapon・skin の、unit と common の用途の色を渡す。2026-10-30）
 4. order_check・blade_height・still_check・height_check・tip_check・part_chars・eye_check・part_outline・fist_check・weapon_mirror
 
 確認ごとに1行「ok／NG 落ちた件数（例外で通した件数）」を出し、例外で通らなかった失敗の行を続ける。
@@ -35,6 +36,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import palette as palette_mod  # noqa: E402
 from gridfile import REPO_ROOT  # noqa: E402
 from unit_config import UnitConfig, UnitConfigError, load_unit_config  # noqa: E402
 
@@ -46,8 +48,14 @@ NAME_RE = re.compile(r"[A-Za-z0-9_]+")
 PROTRUSION_BODIES = ("male",)
 
 
-def plan(cfg: UnitConfig, config: Path, root: Path) -> list[tuple[str, list[str] | None]]:
-    """(確認の名前 = 道具のモジュール名, main に渡す引数。None なら走らせない) の並び。"""
+# weapon_check の引数 → 色の種類（palette/kinds.json）。unit と common の用途の色を渡す（2026-10-30）
+WEAPON_CHECK_KINDS = (("blade", "blade"), ("weapon", "weapon"), ("hand", "skin"))
+
+
+def plan(cfg: UnitConfig, config: Path, root: Path,
+         pal: palette_mod.Palette | None = None) -> list[tuple[str, list[str] | None]]:
+    """(確認の名前 = 道具のモジュール名, main に渡す引数。None なら走らせない) の並び。
+    pal は weapon_check の色を読むパレット（省略時は palette/）。"""
     grids = sorted({str(frame.core.path) for frame in cfg.frames.values()}
                    | {str(part.grid.path) for frame in cfg.frames.values() for part in frame.parts.values()})
     cores = {frame.core.path.parent for frame in cfg.frames.values()}
@@ -70,8 +78,15 @@ def plan(cfg: UnitConfig, config: Path, root: Path) -> list[tuple[str, list[str]
     if wc is None:
         steps.append(("weapon_check", None))
     else:
+        pal = pal or palette_mod.load()
         args = [str(cfg.unit_dir)]
-        for key in ("blade", "weapon", "hand", "hidden", "depth", "partial"):
+        for key, kind in WEAPON_CHECK_KINDS:
+            names = sorted(pal.names_of_kind(kind, type="unit"))
+            if not names and key != "weapon":  # 柄の無い武器はあってよいが、刃と手は要る
+                raise UnitConfigError(f"weapon_check: パレットに種類 {kind} の色（unit・common）が無い")
+            if names:
+                args += [f"--{key}", ",".join(names)]
+        for key in ("hidden", "depth", "partial"):
             if wc.get(key):
                 args += [f"--{key}", ",".join(wc[key])]
         # 武器を握る拳の大きさを fist_check が部品の形で見るなら、組んだコマの見える幅では見ない（2026-10-18）。

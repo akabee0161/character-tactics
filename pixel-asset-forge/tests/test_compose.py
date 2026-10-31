@@ -15,6 +15,7 @@ sys.path.insert(0, str(REPO_ROOT / "tools"))
 from compose import (  # noqa: E402
     ComposeError, Layer, compose_frame, compose_labels, load_config, main, open_hand_pixels, render_text,
     stack_order)
+import palette  # noqa: E402
 from gridfile import parse  # noqa: E402
 
 
@@ -278,7 +279,7 @@ class GripAndHandTest(unittest.TestCase):
         return compose_frame(self.body, layers)[0]
 
     def test_fist_outline_is_not_drawn_over_the_gripped_shaft(self):
-        rows = self.rows({"weapon_shaft_base"})
+        rows = self.rows({"weapon"})
         self.assertEqual(rows[8][10], "w")
         self.assertEqual(rows[11][10], "w")
         self.assertEqual(rows[9][10], "b")   # 拳の肌は柄の上に描く
@@ -288,12 +289,12 @@ class GripAndHandTest(unittest.TestCase):
         self.assertEqual(self.rows(set())[8][10], "o")
 
     def test_keep_only_looks_at_the_colour_right_below(self):
-        rows = self.rows({"tree_leaf_base"})
+        rows = self.rows({"blade"})
         self.assertEqual(rows[8][10], "o")
 
     def test_labels_follow_keep(self):
         layers = [(self.shaft, Layer(self.shaft.path, "front")),
-                  (self.fist, Layer(self.fist.path, "front", keep=frozenset({"weapon_shaft_base"})))]
+                  (self.fist, Layer(self.fist.path, "front", keep=frozenset({"weapon"})))]
         labels = compose_labels(self.body, layers)
         self.assertEqual(labels[8][10], "shaft.txt")
         self.assertEqual(labels[9][9], "fist.txt")
@@ -324,7 +325,7 @@ class GripAndHandTest(unittest.TestCase):
 
     def test_main_stops_on_an_open_hand_part(self):
         part = self.ws.write("open.txt", grid_text({(10, 10): "b"}, BODY_MAP))
-        path = self.config({"part": str(part), "z": "front", "hand": True}, hand_colours=["skin_fair_base"])
+        path = self.config({"part": str(part), "z": "front", "hand": True})
         code, err = self.run_main(path)
         self.assertEqual(code, 2)
         self.assertIn("open.txt: 拳が四方とも輪郭で閉じていない", err)
@@ -333,24 +334,44 @@ class GripAndHandTest(unittest.TestCase):
 
     def test_main_composes_a_closed_hand_part(self):
         part = self.ws.write("closed.txt", self.fist.path.read_text(encoding="utf-8"))
-        path = self.config({"part": str(part), "z": "front", "hand": True}, hand_colours=["skin_fair_base"])
+        path = self.config({"part": str(part), "z": "front", "hand": True})
         self.assertEqual(self.run_main(path)[0], 0)
 
-    def test_hand_without_hand_colours_is_an_error(self):
-        path = self.config({"part": "p.txt", "z": "front", "hand": True})
+    def test_hand_colours_rejected(self):
+        # 手の色はパレットの種類 skin から読む（2026-10-30）。古い形の設定を黙って読まない
+        path = self.config({"part": "p.txt", "z": "front", "hand": True}, hand_colours=["skin_fair_base"])
         with self.assertRaisesRegex(ComposeError, "hand_colours"):
             load_config(path, self.ws.root)
 
-    def test_keep_and_hand_are_read(self):
-        path = self.config({"part": "p.txt", "z": "front", "hand": True, "keep": ["weapon_shaft_base"]},
-                           hand_colours=["skin_fair_base"])
+    def test_hand_colours_are_the_skin_kind(self):
+        path = self.config({"part": "p.txt", "z": "front", "hand": True})
+        _, frames = load_config(path, self.ws.root)
+        self.assertEqual(frames["down_base"].hand_colours, palette.load().names_of_kind("skin", type="unit"))
+        self.assertIn("skin_fair_base", frames["down_base"].hand_colours)
+
+    def test_keep_lists_kinds(self):
+        path = self.config({"part": "p.txt", "z": "front", "hand": True, "keep": ["blade", "weapon"]})
         _, frames = load_config(path, self.ws.root)
         layer = frames["down_base"].layers[0]
-        self.assertEqual((layer.keep, layer.hand), (frozenset({"weapon_shaft_base"}), True))
-        self.assertEqual(frames["down_base"].hand_colours, frozenset({"skin_fair_base"}))
+        self.assertEqual((layer.keep, layer.hand), (frozenset({"blade", "weapon"}), True))
+        # 色の名前（古い形）や、無い種類は止める
+        for keep in (["weapon_shaft_base"], ["blade", "sword"]):
+            with self.subTest(keep):
+                path = self.config({"part": "p.txt", "z": "front", "keep": keep})
+                with self.assertRaisesRegex(ComposeError, "種類"):
+                    load_config(path, self.ws.root)
+
+    def test_keep_by_kind_shows_any_colour_of_the_kind_but_not_another_kind(self):
+        # keep: ["weapon"] は種類 weapon のどの色の柄の上にも拳の輪郭を描かない。同じ色見本でも種類の違う帯
+        # （belt_strap、種類 ornament）の上には描く
+        self.assertEqual(self.rows({"weapon"})[8][10], "w")
+        belt = self.ws.grid("belt.txt", {(10, y): "w" for y in range(5, 15)}, "o=contour w=belt_strap")
+        layers = [(belt, Layer(belt.path, "front")),
+                  (self.fist, Layer(self.fist.path, "front", keep=frozenset({"weapon"})))]
+        self.assertEqual(compose_frame(self.body, layers)[0][8][10], "o")
 
     def test_keep_must_be_a_list_of_strings(self):
-        path = self.config({"part": "p.txt", "z": "front", "keep": "weapon_shaft_base"})
+        path = self.config({"part": "p.txt", "z": "front", "keep": "weapon"})
         with self.assertRaisesRegex(ComposeError, "keep"):
             load_config(path, self.ws.root)
 

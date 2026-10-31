@@ -24,7 +24,6 @@ MAPS = {
     "sword_hand": "o=contour a=skin_fair_hi",
     "shield": "o=contour m=shield_hi",
 }
-HAND_COLOURS = ["skin_fair_hi"]
 
 
 def box(x0: int, y0: int, x1: int, y1: int, fill: str) -> dict[tuple[int, int], str]:
@@ -101,7 +100,7 @@ class UnitFixture:
         self.checks = default_checks()
         self.maps = dict(MAPS)
         self.back: set[str] = set()
-        self.keep: dict[str, list[str]] = {}  # 部品の名前 → compose の keep
+        self.keep: dict[str, list[str]] = {}  # 部品の名前 → compose の keep（種類の並び）
 
     def close(self) -> None:
         self.ws.close()
@@ -126,7 +125,7 @@ class UnitFixture:
                 parts.append(layer)
             frames[name] = {"body": str(body), "layers": parts}
         compose_path = self.ws.write("compose/t.json", json.dumps(
-            {"unit": "t", "hand_colours": HAND_COLOURS, "frames": frames}))
+            {"unit": "t", "frames": frames}))
         if build:
             with contextlib.redirect_stdout(io.StringIO()):
                 code = compose_main([str(compose_path), "--out", str(self.root / "assets/unit/t"), "--force"])

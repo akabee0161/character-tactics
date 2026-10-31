@@ -43,7 +43,7 @@ class HandMirrorTest(unittest.TestCase):
 
     def run_check(self):
         path = self.ws.write("compose/t.json", json.dumps(
-            {"unit": "t", "hand_colours": ["skin_fair_base"], "frames": self.frames}))
+            {"unit": "t", "frames": self.frames}))
         out = io.StringIO()
         with contextlib.redirect_stdout(out), contextlib.redirect_stderr(out):
             code = main([str(path), "--root", str(self.ws.root)])

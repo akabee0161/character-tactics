@@ -7,10 +7,12 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "tools"))
 
+import palette  # noqa: E402
 from hand_outline import HandOutlineError, close_hands, fix_file, main  # noqa: E402
 
 HAND = {"skin_fair_base", "skin_fair_shadow"}
@@ -162,6 +164,16 @@ class MainTest(unittest.TestCase):
             with contextlib.redirect_stdout(io.StringIO()):
                 main([tmp, "--hand", "skin_fair_base,skin_fair_shadow", "--write"])
             self.assertEqual(path.read_text(encoding="utf-8")[len(GRID_HEAD):].splitlines()[20][19], "o")
+
+    def test_hand_defaults_to_the_skin_kind(self):
+        # --hand を省くと、パレットの種類 skin の色（unit と common）を手の色にする（2026-10-30）
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "down_base.txt"
+            path.write_text(grid_text(scene()), encoding="utf-8")
+            with mock.patch("hand_outline.fix_file", return_value=[]) as fix:
+                with contextlib.redirect_stdout(io.StringIO()):
+                    self.assertEqual(main([tmp]), 0)
+            self.assertEqual(fix.call_args.args[1], palette.load().names_of_kind("skin", type="unit"))
 
 
 if __name__ == "__main__":

@@ -245,6 +245,26 @@ class WeaponDetectionTest(unittest.TestCase):
             put(f, x, 22, "weapon_shaft_base")
         self.assertNotIn((15, 22), analyse(f).weapon)
 
+    def test_ornament_of_grip_colour_is_not_the_grip(self):
+        # 柄（weapon_shaft_base）と同じ色見本の帯（belt_strap、種類 ornament）が短剣のすぐ下にある。
+        # 武器の色を色の名前で並べた頃は帯の名前も --weapon に入り、帯を柄と読んで拳がずれたと出た（ロランのベルト）。
+        # unit_rules.py は --weapon に種類 weapon の名前だけを渡すので、帯は柄にならない（2026-10-30）
+        f = blank()
+        body(f)
+        for i in range(7):  # 縦の短剣。刃 y10〜12、柄 y13〜16（拳が覆う）
+            put(f, 9, 10 + i, "blade_hi" if i < 3 else "weapon_shaft_base")
+            put(f, 8, 10 + i, "contour")
+            put(f, 10, 10 + i, "contour")
+        put(f, 9, 9, "contour")
+        fist(f, 9, 14)
+        for x in range(4, 15):
+            put(f, x, 17, "belt_strap")
+        grip_only = check_frame("down_base", Analysis(f, BLADE, HANDLE, SKIN), set(), set())
+        self.assertFalse(any("拳が柄の真ん中に無い" in s for s in grip_only), grip_only)
+        # 帯の名前も柄として渡すと、このコマは落ちる（テストが帯の形を再現していることの確かめ）
+        with_belt = check_frame("down_base", Analysis(f, BLADE, HANDLE | {"belt_strap"}, SKIN), set(), set())
+        self.assertTrue(any("拳が柄の真ん中に無い" in s for s in with_belt), with_belt)
+
     def test_shaft_behind_the_body_is_part_of_the_weapon(self):
         f = blank()
         spear_h(f, 17, 1, 25)

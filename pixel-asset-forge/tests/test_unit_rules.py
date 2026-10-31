@@ -12,11 +12,23 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tools"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import unit_rules  # noqa: E402
-from unit_config import load_unit_config  # noqa: E402
+from unit_config import UnitConfigError, load_unit_config  # noqa: E402
 from unit_fixture import UnitFixture, core  # noqa: E402
+from palette import Palette, Use  # noqa: E402
 from unit_rules import covered_by, main, plan  # noqa: E402
 
 TALL = 4  # 芯の上端 y=4 → 背丈 27px（height_check が全コマで落ちる）
+
+
+def small_palette() -> Palette:
+    """刃 2つ・柄 1つ・肌 2つ（unit）と、ほかの型・ほかの種類の色を持つ一時パレット。"""
+    uses = {}
+    for name, kind, type_ in (("b_one", "blade", "unit"), ("b_two", "blade", "unit"), ("w_one", "weapon", "unit"),
+                              ("s_one", "skin", "unit"), ("s_two", "skin", "common"), ("s_tile", "skin", "tile"),
+                              ("belt", "ornament", "unit")):
+        uses[name] = Use(name, "sw", kind, name, type_)
+    kinds = {k: k for k in ("blade", "weapon", "skin", "ornament")}
+    return Palette({"sw": (0, 0, 0)}, {"sw": "sw"}, kinds, uses)
 
 
 def exception(check="height_check", frames=("down_base",), what="背丈 27px"):
@@ -141,35 +153,55 @@ class UnitRulesTest(unittest.TestCase):
         self.assertIn("知らないキー spear", out)
 
     def test_weapon_check_arguments_come_from_the_config(self):
-        self.fx.checks["weapon_check"] = {"blade": ["blade_hi"], "weapon": ["weapon_shaft_base"], "hand": ["skin_fair_hi"],
-                                          "hidden": ["down_atk_hit", "up_atk_hit"], "depth": ["down"]}
+        self.fx.checks["weapon_check"] = {"hidden": ["down_atk_hit", "up_atk_hit"], "depth": ["down"]}
         path = self.fx.write()
-        steps = dict(plan(load_unit_config(path, self.fx.root), path, self.fx.root))
+        steps = dict(plan(load_unit_config(path, self.fx.root), path, self.fx.root, small_palette()))
         self.assertEqual(steps["weapon_check"], [
-            str(self.fx.root / "assets/unit/t"), "--blade", "blade_hi", "--weapon", "weapon_shaft_base", "--hand", "skin_fair_hi",
+            str(self.fx.root / "assets/unit/t"), "--blade", "b_one,b_two", "--weapon", "w_one", "--hand", "s_one,s_two",
             "--hidden", "down_atk_hit,up_atk_hit", "--depth", "down", "--no-hand-width"])
+
+    def test_weapon_check_colours_come_from_kinds(self):
+        # 刃・柄・手の色は設定に書かず、パレットの種類 blade・weapon・skin（unit と common の用途の色）から読む（2026-10-30）
+        self.fx.checks["weapon_check"] = {}
+        path = self.fx.write(build=False)
+        args = dict(plan(load_unit_config(path, self.fx.root), path, self.fx.root, small_palette()))["weapon_check"]
+        value = {args[i]: set(args[i + 1].split(",")) for i in range(1, len(args) - 1) if args[i].startswith("--")}
+        self.assertEqual(value["--blade"], {"b_one", "b_two"})
+        self.assertEqual(value["--weapon"], {"w_one"})
+        self.assertEqual(value["--hand"], {"s_one", "s_two"})
+
+    def test_a_palette_without_blade_or_skin_colours_is_a_config_error(self):
+        self.fx.checks["weapon_check"] = {}
+        path = self.fx.write(build=False)
+        for kind in ("blade", "skin"):
+            with self.subTest(kind):
+                pal = small_palette()
+                uses = {n: u for n, u in pal.uses.items() if u.kind != kind}
+                with self.assertRaisesRegex(UnitConfigError, kind):
+                    plan(load_unit_config(path, self.fx.root), path, self.fx.root,
+                         Palette(pal.swatches, pal.swatch_notes, pal.kinds, uses))
 
     def test_weapon_check_measures_the_hand_width_when_a_gripping_fist_has_no_sizes(self):
         # 手の幅は、武器を握る拳の部品に fist_sizes があれば fist_check が部品の形で見る（2026-10-18）。
         # 無ければ fist_check は大きさを見ないので、weapon_check が組んだコマで見る
-        self.fx.checks["weapon_check"] = {"blade": ["blade_hi"], "hand": ["skin_fair_hi"]}
+        self.fx.checks["weapon_check"] = {}
         del self.fx.checks["parts"]["sword_hand"]["fist_sizes"]
         self.assertNotIn("--no-hand-width", self.steps()["weapon_check"])
 
     def test_weapon_check_measures_the_hand_width_when_sizes_are_empty(self):
-        self.fx.checks["weapon_check"] = {"blade": ["blade_hi"], "hand": ["skin_fair_hi"]}
+        self.fx.checks["weapon_check"] = {}
         self.fx.checks["parts"]["sword_hand"]["fist_sizes"] = []  # fist_check も大きさを見ない
         self.assertNotIn("--no-hand-width", self.steps()["weapon_check"])
 
     def test_weapon_check_measures_the_hand_width_when_a_weapon_has_no_gripping_fist(self):
         # weapon_check は手を色で見つけるので、握る拳の部品が無い武器の手は fist_check が見ない
-        self.fx.checks["weapon_check"] = {"blade": ["blade_hi"], "hand": ["skin_fair_hi"]}
+        self.fx.checks["weapon_check"] = {}
         self.fx.checks["parts"]["sword_hand"] = {"fist": True, "fist_sizes": ["3x2"]}
         self.assertNotIn("--no-hand-width", self.steps()["weapon_check"])
 
     def test_weapon_check_measures_the_hand_width_when_any_fist_has_no_sizes(self):
         # 大きさを持たない拳が1つでもあれば渡さない（weapon_check が色で見つける手がどの拳の部品かは決まらない）
-        self.fx.checks["weapon_check"] = {"blade": ["blade_hi"], "hand": ["skin_fair_hi"]}
+        self.fx.checks["weapon_check"] = {}
         self.fx.checks["parts"]["shield"] = {"fist": True}
         self.assertNotIn("--no-hand-width", self.steps()["weapon_check"])
 

@@ -1,10 +1,5 @@
 {
   "unit": "gau",
-  "hand_colours": [
-    "skin_ruddy_hi",
-    "skin_ruddy_base",
-    "skin_ruddy_shadow"
-  ],
   "frames": {
     "down_base": {
       "body": "assets/part/body/gau/core_down_base.txt",
@@ -18,13 +13,8 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "blade_base",
-            "blade_hi",
-            "collar_white",
-            "weapon_shaft_base",
-            "weapon_shaft_hi",
-            "legwear_brown",
-            "weapon_shaft_shadow"
+            "blade",
+            "weapon"
           ]
         },
         {
@@ -46,13 +36,8 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "blade_base",
-            "blade_hi",
-            "collar_white",
-            "weapon_shaft_base",
-            "weapon_shaft_hi",
-            "legwear_brown",
-            "weapon_shaft_shadow"
+            "blade",
+            "weapon"
           ]
         },
         {
@@ -74,13 +59,8 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "blade_base",
-            "blade_hi",
-            "collar_white",
-            "weapon_shaft_base",
-            "weapon_shaft_hi",
-            "legwear_brown",
-            "weapon_shaft_shadow"
+            "blade",
+            "weapon"
           ]
         },
         {
@@ -102,13 +82,8 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "blade_base",
-            "blade_hi",
-            "collar_white",
-            "weapon_shaft_base",
-            "weapon_shaft_hi",
-            "legwear_brown",
-            "weapon_shaft_shadow"
+            "blade",
+            "weapon"
           ]
         },
         {
@@ -130,13 +105,8 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "blade_base",
-            "blade_hi",
-            "collar_white",
-            "weapon_shaft_base",
-            "weapon_shaft_hi",
-            "legwear_brown",
-            "weapon_shaft_shadow"
+            "blade",
+            "weapon"
           ]
         },
         {
@@ -158,13 +128,8 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "blade_base",
-            "blade_hi",
-            "collar_white",
-            "weapon_shaft_base",
-            "weapon_shaft_hi",
-            "legwear_brown",
-            "weapon_shaft_shadow"
+            "blade",
+            "weapon"
           ]
         },
         {
@@ -187,13 +152,8 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "blade_base",
-            "blade_hi",
-            "collar_white",
-            "weapon_shaft_base",
-            "weapon_shaft_hi",
-            "legwear_brown",
-            "weapon_shaft_shadow"
+            "blade",
+            "weapon"
           ]
         },
         {
@@ -215,13 +175,8 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "blade_base",
-            "blade_hi",
-            "collar_white",
-            "weapon_shaft_base",
-            "weapon_shaft_hi",
-            "legwear_brown",
-            "weapon_shaft_shadow"
+            "blade",
+            "weapon"
           ]
         },
         {
@@ -243,13 +198,8 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "blade_base",
-            "blade_hi",
-            "collar_white",
-            "weapon_shaft_base",
-            "weapon_shaft_hi",
-            "legwear_brown",
-            "weapon_shaft_shadow"
+            "blade",
+            "weapon"
           ]
         },
         {
@@ -271,13 +221,8 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "blade_base",
-            "blade_hi",
-            "collar_white",
-            "weapon_shaft_base",
-            "weapon_shaft_hi",
-            "legwear_brown",
-            "weapon_shaft_shadow"
+            "blade",
+            "weapon"
           ]
         },
         {
@@ -299,13 +244,8 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "blade_base",
-            "blade_hi",
-            "collar_white",
-            "weapon_shaft_base",
-            "weapon_shaft_hi",
-            "legwear_brown",
-            "weapon_shaft_shadow"
+            "blade",
+            "weapon"
           ]
         },
         {
@@ -327,13 +267,8 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "blade_base",
-            "blade_hi",
-            "collar_white",
-            "weapon_shaft_base",
-            "weapon_shaft_hi",
-            "legwear_brown",
-            "weapon_shaft_shadow"
+            "blade",
+            "weapon"
           ]
         },
         {
@@ -350,13 +285,8 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "blade_base",
-            "blade_hi",
-            "collar_white",
-            "weapon_shaft_base",
-            "weapon_shaft_hi",
-            "legwear_brown",
-            "weapon_shaft_shadow"
+            "blade",
+            "weapon"
           ]
         },
         {
@@ -378,13 +308,8 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "blade_base",
-            "blade_hi",
-            "collar_white",
-            "weapon_shaft_base",
-            "weapon_shaft_hi",
-            "legwear_brown",
-            "weapon_shaft_shadow"
+            "blade",
+            "weapon"
           ]
         },
         {
@@ -406,13 +331,8 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "blade_base",
-            "blade_hi",
-            "collar_white",
-            "weapon_shaft_base",
-            "weapon_shaft_hi",
-            "legwear_brown",
-            "weapon_shaft_shadow"
+            "blade",
+            "weapon"
           ]
         },
         {
@@ -434,13 +354,8 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "blade_base",
-            "blade_hi",
-            "collar_white",
-            "weapon_shaft_base",
-            "weapon_shaft_hi",
-            "legwear_brown",
-            "weapon_shaft_shadow"
+            "blade",
+            "weapon"
           ]
         },
         {
@@ -462,13 +377,8 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "blade_base",
-            "blade_hi",
-            "collar_white",
-            "weapon_shaft_base",
-            "weapon_shaft_hi",
-            "legwear_brown",
-            "weapon_shaft_shadow"
+            "blade",
+            "weapon"
           ]
         },
         {
@@ -490,13 +400,8 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "blade_base",
-            "blade_hi",
-            "collar_white",
-            "weapon_shaft_base",
-            "weapon_shaft_hi",
-            "legwear_brown",
-            "weapon_shaft_shadow"
+            "blade",
+            "weapon"
           ]
         },
         {
@@ -527,13 +432,8 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "blade_base",
-            "blade_hi",
-            "collar_white",
-            "weapon_shaft_base",
-            "weapon_shaft_hi",
-            "legwear_brown",
-            "weapon_shaft_shadow"
+            "blade",
+            "weapon"
           ]
         }
       ]
@@ -555,13 +455,8 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "blade_base",
-            "blade_hi",
-            "collar_white",
-            "weapon_shaft_base",
-            "weapon_shaft_hi",
-            "legwear_brown",
-            "weapon_shaft_shadow"
+            "blade",
+            "weapon"
           ]
         }
       ]
@@ -583,13 +478,8 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "blade_base",
-            "blade_hi",
-            "collar_white",
-            "weapon_shaft_base",
-            "weapon_shaft_hi",
-            "legwear_brown",
-            "weapon_shaft_shadow"
+            "blade",
+            "weapon"
           ]
         }
       ]
@@ -611,13 +501,8 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "blade_base",
-            "blade_hi",
-            "collar_white",
-            "weapon_shaft_base",
-            "weapon_shaft_hi",
-            "legwear_brown",
-            "weapon_shaft_shadow"
+            "blade",
+            "weapon"
           ]
         }
       ]
@@ -639,13 +524,8 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "blade_base",
-            "blade_hi",
-            "collar_white",
-            "weapon_shaft_base",
-            "weapon_shaft_hi",
-            "legwear_brown",
-            "weapon_shaft_shadow"
+            "blade",
+            "weapon"
           ]
         }
       ]
@@ -667,13 +547,8 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "blade_base",
-            "blade_hi",
-            "collar_white",
-            "weapon_shaft_base",
-            "weapon_shaft_hi",
-            "legwear_brown",
-            "weapon_shaft_shadow"
+            "blade",
+            "weapon"
           ]
         }
       ]

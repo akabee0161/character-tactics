@@ -12,11 +12,14 @@ docs/superpowers/specs/2026-10-16-policy-check-tools-design.md の「ユニッ�
       "parts": {"dagger": {"weapon": true, "blade": "st", "moves": true}, ...},
       "orders": {"down": ["CORE", "dagger", ...], ...},
       "eyes": {"down": {"x": [14, 17], "y": [11, 12]}, "up": null, ...},
-      "weapon_check": {"blade": [...], "weapon": [...], "hand": [...], "hidden": [...], "depth": [...], "partial": [...]},
+      "weapon_check": {"hidden": [...], "depth": [...], "partial": [...]},
       "exceptions": [{"check": "...", "frames": [...], "what": "...", "why": "...", "approved": "2026-10-16 依頼者"}]
     }
 
-手の肌の色は compose の設定の hand_colours を使う（同じ色を2か所に書かない）。
+手の肌の色（UnitConfig.hand）はパレットの種類 skin の、unit と common の用途の色（compose.py と同じ）。
+weapon_check の刃・柄・手の色も設定に書かず、tools/unit_rules.py がパレットの種類 blade・weapon・skin から読む
+（2026-10-30。色の名前で並べると、柄と同じ色見本のベルトやズボンの名前も並べることになり、武器と読んでいた）。
+weapon_check に blade・weapon・hand が書いてあれば UnitConfigError。
 body は素体の型（male・female）。female の体には body_check.py の「はみ出し」を掛けない（2026-10-17 依頼者）。
 head_chars は芯に描いた髪・かぶり物の文字（body_check.py が胴のはみ出しと中心から外す。芯に髪・かぶり物を
 含めて組んだロラン・イネス・ガウのため。2026-10-16 から髪・かぶり物は別の部品にする）。色でなく文字で書くのは、
@@ -46,7 +49,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from compose import ComposeError, FrameSpec, Layer, load_config, stack_order  # noqa: E402
-from gridfile import BACKGROUND, REPO_ROOT, Grid, GridError, load_palette, parse  # noqa: E402
+from gridfile import BACKGROUND, REPO_ROOT, Grid, GridError, parse  # noqa: E402
 
 CORE = "CORE"
 OUTLINE = "contour"
@@ -59,7 +62,8 @@ CONFIG_KEYS = {"unit", "compose", "body", "head_chars", "items", "parts", "order
 BODIES = ("male", "female")
 EYE_KEYS = {"x", "y"}
 PART_KEYS = {"weapon", "blade", "fist", "grips", "fist_sizes", "moves", "fixed", "open_chars", "head"}
-WEAPON_CHECK_KEYS = {"blade", "weapon", "hand", "hidden", "depth", "partial"}
+WEAPON_CHECK_KEYS = {"hidden", "depth", "partial"}
+WEAPON_CHECK_COLOUR_KEYS = ("blade", "weapon", "hand")  # 2026-10-30 にやめた。色はパレットの種類から読む
 EXCEPTION_KEYS = {"check", "frames", "what", "why", "approved"}
 SIZE_RE = re.compile(r"^(\d+)x(\d+)$")
 
@@ -151,14 +155,6 @@ def _coord(value) -> bool:
     return isinstance(value, int) and not isinstance(value, bool) and 0 <= value < 32
 
 
-def _colours(value, palette, where: str) -> frozenset[str]:
-    names = _names(value, where)
-    missing = [n for n in names if n not in palette]
-    if missing:
-        raise UnitConfigError(f"{where}: パレットに無い色名 {', '.join(missing)}")
-    return frozenset(names)
-
-
 def build_frame(name: str, spec: FrameSpec) -> Frame:
     direction, _, state = name.partition("_")
     if direction not in DIRECTIONS or not state:
@@ -190,7 +186,6 @@ def load_unit_config(path: Path, root: Path = REPO_ROOT) -> UnitConfig:
         raise UnitConfigError(f"{path}: unit と compose は文字列")
 
     try:
-        palette = load_palette()
         compose_path = root / data["compose"]
         unit, specs = load_config(compose_path, root)
         if unit != data["unit"]:
@@ -282,13 +277,12 @@ def load_unit_config(path: Path, root: Path = REPO_ROOT) -> UnitConfig:
     weapon_check = data["weapon_check"]
     if weapon_check is not None:
         where = f"{path.name} の weapon_check"
+        old = [key for key in WEAPON_CHECK_COLOUR_KEYS if isinstance(weapon_check, dict) and key in weapon_check]
+        if old:
+            raise UnitConfigError(f"{where}: {', '.join(old)} は書けない（色はパレットの種類から読む。"
+                                  "刃は blade、柄は weapon、手は skin）")
         _keys(weapon_check, WEAPON_CHECK_KEYS, where)
         weapon_check = {key: _names(value, f"{where}.{key}") for key, value in weapon_check.items()}
-        for key in ("blade", "weapon", "hand"):
-            _colours(weapon_check.get(key, []), palette, f"{where}.{key}")
-        for key in ("blade", "hand"):
-            if not weapon_check.get(key):
-                raise UnitConfigError(f"{where}.{key}: 空にできない")
         for key in ("hidden", "partial"):
             absent = sorted(set(weapon_check.get(key, [])) - set(frames))
             if absent:

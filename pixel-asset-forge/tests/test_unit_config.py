@@ -8,6 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tools"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import palette  # noqa: E402
 from unit_config import UnitConfigError, load_unit_config, run_check  # noqa: E402
 from unit_fixture import UnitFixture  # noqa: E402
 
@@ -32,7 +33,7 @@ class LoadTest(unittest.TestCase):
         frame = cfg.frames["down_idle2"]
         self.assertEqual((frame.direction, frame.state), ("down", "idle2"))
         self.assertEqual(list(frame.parts), ["sword", "sword_hand", "shield"])
-        self.assertEqual(cfg.hand, frozenset({"skin_fair_hi"}))  # compose の hand_colours
+        self.assertEqual(cfg.hand, palette.load().names_of_kind("skin", type="unit"))  # 手の色はパレットの種類 skin
         self.assertEqual(cfg.unit_dir, self.fx.root / "assets" / "unit" / "t")
 
     def test_the_stack_order_names_parts_by_the_file_name_before_the_direction(self):
@@ -74,7 +75,7 @@ class LoadTest(unittest.TestCase):
     def test_head_part_cannot_use_keep(self):
         # eye_check は手前の部品で上書きして重ねるので、keep を使うと組んだ絵と違う画素を見る
         self.fx.checks["parts"]["shield"] = {"head": True}
-        self.fx.keep["shield"] = ["skin_fair_base"]
+        self.fx.keep["shield"] = ["skin"]
         self.assertConfigError("head の部品に compose の keep は使えない")
 
     def test_blade_char_not_in_the_part_files(self):
@@ -115,9 +116,12 @@ class LoadTest(unittest.TestCase):
         del self.fx.checks["orders"]["up"]
         self.assertConfigError("orders.up")
 
-    def test_colour_not_in_the_palette(self):
-        self.fx.checks["weapon_check"] = {"blade": ["blade_hi"], "hand": ["skin_bse"]}
-        self.assertConfigError("パレットに無い色名 skin_bse")
+    def test_old_weapon_check_colour_keys_rejected(self):
+        # 刃・柄・手の色はパレットの種類から読む（2026-10-30）。古い形の設定を黙って無視しない
+        for key in ("blade", "weapon", "hand"):
+            with self.subTest(key):
+                self.fx.checks["weapon_check"] = {key: ["blade_hi"]}
+                self.assertConfigError("色はパレットの種類から読む")
 
     def test_the_colours_key_is_gone(self):
         # 目の確認は色の見分けで測り、髪・かぶり物は文字で指定する（2026-10-16）
@@ -152,11 +156,9 @@ class LoadTest(unittest.TestCase):
                 self.assertConfigError(text)
 
     def test_weapon_check_colour_and_frame_names_are_checked(self):
-        base = {"blade": ["blade_hi"], "hand": ["skin_fair_hi"]}
-        for extra, text in (({"weapon": ["wood_bse"]}, "wood_bse"), ({"hidden": ["down_atk_wind"]}, "down_atk_wind"),
-                            ({"depth": ["side"]}, "side")):
+        for extra, text in (({"hidden": ["down_atk_wind"]}, "down_atk_wind"), ({"depth": ["side"]}, "side")):
             with self.subTest(text):
-                self.fx.checks["weapon_check"] = {**base, **extra}
+                self.fx.checks["weapon_check"] = extra
                 self.assertConfigError(text)
 
     def test_exception_with_an_unknown_check(self):
