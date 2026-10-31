@@ -1,0 +1,322 @@
+{
+  "bandana_hi": {
+    "swatch": "carpet_hi",
+    "kind": "headgear",
+    "note": "赤いバンダナ（明）"
+  },
+  "bandana_base": {
+    "swatch": "carpet_base",
+    "kind": "headgear",
+    "note": "赤いバンダナ（中）"
+  },
+  "bandana_shadow": {
+    "swatch": "carpet_shadow",
+    "kind": "headgear",
+    "note": "赤いバンダナ（暗）"
+  },
+  "skin_ruddy_hi": {
+    "swatch": "skin_rose_hi",
+    "kind": "skin",
+    "note": "赤みの肌・拳（ロラン・ガウ・敵）（明）"
+  },
+  "skin_ruddy_base": {
+    "swatch": "skin_rose_base",
+    "kind": "skin",
+    "note": "赤みの肌・拳（ロラン・ガウ・敵）（中）"
+  },
+  "skin_ruddy_shadow": {
+    "swatch": "skin_rose_shadow",
+    "kind": "skin",
+    "note": "赤みの肌・拳（ロラン・ガウ・敵）（暗）"
+  },
+  "eyepatch": {
+    "swatch": "outline",
+    "kind": "ornament",
+    "note": "眼帯（目の部品 E5 の 2x2 の塊）"
+  },
+  "blade_hi": {
+    "swatch": "stone_hi",
+    "kind": "blade",
+    "note": "武器の刃・穂先（剣・短剣・斧・槍）（明）"
+  },
+  "blade_base": {
+    "swatch": "stone_base",
+    "kind": "blade",
+    "note": "武器の刃・穂先（剣・短剣・斧・槍）（中）"
+  },
+  "weapon_shaft_hi": {
+    "swatch": "wood_hi",
+    "kind": "weapon",
+    "note": "武器の柄・握り・鍔・弓の本体・矢柄（明）"
+  },
+  "weapon_shaft_base": {
+    "swatch": "wood_base",
+    "kind": "weapon",
+    "note": "武器の柄・握り・鍔・弓の本体・矢柄（中）"
+  },
+  "weapon_shaft_shadow": {
+    "swatch": "wood_shadow",
+    "kind": "weapon",
+    "note": "武器の柄・握り・鍔・弓の本体・矢柄（暗）"
+  },
+  "clothes_dark_hi": {
+    "swatch": "cloak_dark_hi",
+    "kind": "cloth",
+    "note": "暗い紺の服（ロラン・ガウ・敵）（明）"
+  },
+  "clothes_dark_base": {
+    "swatch": "cloak_dark_base",
+    "kind": "cloth",
+    "note": "暗い紺の服（ロラン・ガウ・敵）（中）"
+  },
+  "clothes_dark_shadow": {
+    "swatch": "cloak_dark_shadow",
+    "kind": "cloth",
+    "note": "暗い紺の服（ロラン・ガウ・敵）（暗）"
+  },
+  "patch_hi": {
+    "swatch": "wood_hi",
+    "kind": "ornament",
+    "note": "ぼろ布の当て布（明）"
+  },
+  "patch_base": {
+    "swatch": "wood_base",
+    "kind": "ornament",
+    "note": "ぼろ布の当て布（中）"
+  },
+  "belt_strap": {
+    "swatch": "wood_base",
+    "kind": "ornament",
+    "note": "ベルトの帯"
+  },
+  "belt_buckle": {
+    "swatch": "metal_hi",
+    "kind": "ornament",
+    "note": "ベルトの留め金"
+  },
+  "legwear_brown": {
+    "swatch": "wood_shadow",
+    "kind": "cloth",
+    "note": "茶色のズボン・靴"
+  },
+  "hood_teal_hi": {
+    "swatch": "cloak_teal_hi",
+    "kind": "headgear",
+    "note": "ガウの頭巾の青緑の明"
+  },
+  "hood_hi": {
+    "swatch": "cloak_dark_hi",
+    "kind": "headgear",
+    "note": "ガウの頭巾（明）"
+  },
+  "hood_base": {
+    "swatch": "cloak_dark_base",
+    "kind": "headgear",
+    "note": "ガウの頭巾（中）"
+  },
+  "hair_red_hi": {
+    "swatch": "roof_hi",
+    "kind": "hair",
+    "note": "ガウの赤い髪（明）"
+  },
+  "hair_red_base": {
+    "swatch": "roof_base",
+    "kind": "hair",
+    "note": "ガウの赤い髪（中）"
+  },
+  "hair_red_shadow": {
+    "swatch": "roof_shadow",
+    "kind": "hair",
+    "note": "ガウの赤い髪（暗）"
+  },
+  "collar_white": {
+    "swatch": "stone_hi",
+    "kind": "cloth",
+    "note": "ガウの白い襟"
+  },
+  "hood_shadow": {
+    "swatch": "cloak_dark_shadow",
+    "kind": "headgear",
+    "note": "ガウの頭巾（暗）"
+  },
+  "helmet_plume_hi": {
+    "swatch": "carpet_hi",
+    "kind": "headgear",
+    "note": "フルフェイスの兜の赤い飾り（明）"
+  },
+  "helmet_plume_base": {
+    "swatch": "carpet_base",
+    "kind": "headgear",
+    "note": "フルフェイスの兜の赤い飾り（中）"
+  },
+  "helmet_steel_hi": {
+    "swatch": "stone_hi",
+    "kind": "headgear",
+    "note": "鋼の兜（フルフェイス・角付き）（明）"
+  },
+  "helmet_steel_base": {
+    "swatch": "stone_base",
+    "kind": "headgear",
+    "note": "鋼の兜（フルフェイス・角付き）（中）"
+  },
+  "helmet_steel_shadow": {
+    "swatch": "stone_shadow",
+    "kind": "headgear",
+    "note": "鋼の兜（フルフェイス・角付き）（暗）"
+  },
+  "helmet_steel_dark": {
+    "swatch": "stone_dark",
+    "kind": "headgear",
+    "note": "鋼の兜（フルフェイス・角付き）（最暗）"
+  },
+  "helmet_horn_hi": {
+    "swatch": "floor_hi",
+    "kind": "headgear",
+    "note": "角付きの兜の角（明）"
+  },
+  "helmet_horn_base": {
+    "swatch": "floor_base",
+    "kind": "headgear",
+    "note": "角付きの兜の角（中）"
+  },
+  "hair_ashblue_hi": {
+    "swatch": "hair_slate_hi",
+    "kind": "hair",
+    "note": "灰青の髪（ロラン・敵の髪の部品・素の髪）（明）"
+  },
+  "hair_ashblue_base": {
+    "swatch": "hair_slate_base",
+    "kind": "hair",
+    "note": "灰青の髪（ロラン・敵の髪の部品・素の髪）（中）"
+  },
+  "hair_ashblue_shadow": {
+    "swatch": "hair_slate_shadow",
+    "kind": "hair",
+    "note": "灰青の髪（ロラン・敵の髪の部品・素の髪）（暗）"
+  },
+  "hair_tie": {
+    "swatch": "carpet_base",
+    "kind": "ornament",
+    "note": "長い髪 C の結び目"
+  },
+  "skin_fair_hi": {
+    "swatch": "skin_hi",
+    "kind": "skin",
+    "note": "明るい肌・拳（イネス・素体・女性の素体）（明）"
+  },
+  "skin_fair_base": {
+    "swatch": "skin_base",
+    "kind": "skin",
+    "note": "明るい肌・拳（イネス・素体・女性の素体）（中）"
+  },
+  "skin_fair_shadow": {
+    "swatch": "skin_shadow",
+    "kind": "skin",
+    "note": "明るい肌・拳（イネス・素体・女性の素体）（暗）"
+  },
+  "clothes_blue_hi": {
+    "swatch": "cloth_hi",
+    "kind": "cloth",
+    "note": "青い服（素体）（明）"
+  },
+  "clothes_blue_base": {
+    "swatch": "cloth_base",
+    "kind": "cloth",
+    "note": "青い服（素体）（中）"
+  },
+  "clothes_blue_shadow": {
+    "swatch": "cloth_shadow",
+    "kind": "cloth",
+    "note": "青い服（素体）（暗）"
+  },
+  "hair_violet_hi": {
+    "swatch": "orchid_hi",
+    "kind": "hair",
+    "note": "イネスの紫の髪（明）"
+  },
+  "hair_violet_base": {
+    "swatch": "orchid_base",
+    "kind": "hair",
+    "note": "イネスの紫の髪（中）"
+  },
+  "hair_violet_shadow": {
+    "swatch": "orchid_shadow",
+    "kind": "hair",
+    "note": "イネスの紫の髪（暗）"
+  },
+  "earring_base": {
+    "swatch": "flame_base",
+    "kind": "ornament",
+    "note": "イネスのピアス（中）"
+  },
+  "earring_deep": {
+    "swatch": "flame_deep",
+    "kind": "ornament",
+    "note": "イネスのピアス（濃）"
+  },
+  "hair_violet_dark": {
+    "swatch": "orchid_dark",
+    "kind": "hair",
+    "note": "イネスの紫の髪（最暗）"
+  },
+  "clothes_gold_hi": {
+    "swatch": "metal_hi",
+    "kind": "cloth",
+    "note": "イネスの金色の服（明）"
+  },
+  "clothes_gold_base": {
+    "swatch": "metal_base",
+    "kind": "cloth",
+    "note": "イネスの金色の服（中）"
+  },
+  "clothes_gold_shadow": {
+    "swatch": "metal_shadow",
+    "kind": "cloth",
+    "note": "イネスの金色の服（暗）"
+  },
+  "hair_ashblue_dark": {
+    "swatch": "hair_slate_dark",
+    "kind": "hair",
+    "note": "灰青の髪（ロラン・敵の髪の部品・素の髪）（最暗）"
+  },
+  "skin_ruddy_deep": {
+    "swatch": "skin_rose_deep",
+    "kind": "skin",
+    "note": "赤みの肌・拳（ロラン・ガウ・敵）（濃）"
+  },
+  "fletching": {
+    "swatch": "water_base",
+    "kind": "weapon",
+    "note": "矢羽"
+  },
+  "arrowhead": {
+    "swatch": "stone_base",
+    "kind": "blade",
+    "note": "矢の鏃"
+  },
+  "bowstring": {
+    "swatch": "stone_hi",
+    "kind": "weapon",
+    "note": "弓の弦"
+  },
+  "shield_hi": {
+    "swatch": "metal_hi",
+    "kind": "shield",
+    "note": "ロランの盾（明）"
+  },
+  "shield_base": {
+    "swatch": "metal_base",
+    "kind": "shield",
+    "note": "ロランの盾（中）"
+  },
+  "shield_shadow": {
+    "swatch": "metal_shadow",
+    "kind": "shield",
+    "note": "ロランの盾（暗）"
+  },
+  "weapon_pommel": {
+    "swatch": "roof_base",
+    "kind": "weapon",
+    "note": "剣の柄頭"
+  }
+}

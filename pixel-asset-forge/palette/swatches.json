@@ -1,0 +1,282 @@
+{
+  "outline": {
+    "hex": "#1a1228",
+    "note": "輪郭の紫がかった黒"
+  },
+  "hair_hi": {
+    "hex": "#7a8fd0",
+    "note": "青紫の髪色の明"
+  },
+  "hair_base": {
+    "hex": "#48558f",
+    "note": "青紫の髪色の中"
+  },
+  "hair_shadow": {
+    "hex": "#333c66",
+    "note": "青紫の髪色の暗"
+  },
+  "hair_dark": {
+    "hex": "#232842",
+    "note": "青紫の髪色の最暗"
+  },
+  "hair_slate_hi": {
+    "hex": "#6e7a98",
+    "note": "灰青の明"
+  },
+  "hair_slate_base": {
+    "hex": "#4f5674",
+    "note": "灰青の中"
+  },
+  "hair_slate_shadow": {
+    "hex": "#3a3c56",
+    "note": "灰青の暗"
+  },
+  "hair_slate_dark": {
+    "hex": "#28263a",
+    "note": "灰青の最暗"
+  },
+  "skin_hi": {
+    "hex": "#ffe0c0",
+    "note": "明るい肌色の明"
+  },
+  "skin_base": {
+    "hex": "#f0c49a",
+    "note": "明るい肌色の中"
+  },
+  "skin_shadow": {
+    "hex": "#c98f6a",
+    "note": "明るい肌色の暗"
+  },
+  "skin_deep": {
+    "hex": "#96604a",
+    "note": "明るい肌色の濃"
+  },
+  "skin_rose_hi": {
+    "hex": "#f0d4d0",
+    "note": "赤みの肌色の明"
+  },
+  "skin_rose_base": {
+    "hex": "#dcb2b0",
+    "note": "赤みの肌色の中"
+  },
+  "skin_rose_shadow": {
+    "hex": "#b8858c",
+    "note": "赤みの肌色の暗"
+  },
+  "skin_rose_deep": {
+    "hex": "#8a5a68",
+    "note": "赤みの肌色の濃"
+  },
+  "eye_white": {
+    "hex": "#f8f0e8",
+    "note": "白目の白"
+  },
+  "iris": {
+    "hex": "#5a7ac0",
+    "note": "瞳の青"
+  },
+  "pupil": {
+    "hex": "#1a1228",
+    "note": "瞳孔の黒（輪郭と同じ値）"
+  },
+  "mouth": {
+    "hex": "#a85f52",
+    "note": "口の赤茶"
+  },
+  "iris_slate": {
+    "hex": "#5a74b8",
+    "note": "灰青の瞳（どの用途の色からも使われていない）"
+  },
+  "iris_slate_dark": {
+    "hex": "#232c52",
+    "note": "灰青の瞳の最暗（どの用途の色からも使われていない）"
+  },
+  "cloth_hi": {
+    "hex": "#7a8fd0",
+    "note": "青い布の明"
+  },
+  "cloth_base": {
+    "hex": "#4a5588",
+    "note": "青い布の中"
+  },
+  "cloth_shadow": {
+    "hex": "#2e3557",
+    "note": "青い布の暗"
+  },
+  "cloak_dark_hi": {
+    "hex": "#6c8c9a",
+    "note": "暗い紺の明"
+  },
+  "cloak_dark_base": {
+    "hex": "#474b68",
+    "note": "暗い紺の中"
+  },
+  "cloak_dark_shadow": {
+    "hex": "#2e2940",
+    "note": "暗い紺の暗"
+  },
+  "cloak_teal_hi": {
+    "hex": "#90bfb4",
+    "note": "青緑の明"
+  },
+  "wood_hi": {
+    "hex": "#c08b52",
+    "note": "木の茶の明"
+  },
+  "wood_base": {
+    "hex": "#8a5a30",
+    "note": "木の茶の中"
+  },
+  "wood_shadow": {
+    "hex": "#6a4324",
+    "note": "木の茶の暗"
+  },
+  "wood_dark": {
+    "hex": "#4a2e18",
+    "note": "木の茶の最暗"
+  },
+  "metal_hi": {
+    "hex": "#f0d878",
+    "note": "金色の明"
+  },
+  "metal_base": {
+    "hex": "#c09030",
+    "note": "金色の中"
+  },
+  "metal_shadow": {
+    "hex": "#806018",
+    "note": "金色の暗"
+  },
+  "grass_hi": {
+    "hex": "#7ab04a",
+    "note": "草の緑の明"
+  },
+  "grass_base": {
+    "hex": "#4f8c36",
+    "note": "草の緑の中"
+  },
+  "grass_shadow": {
+    "hex": "#356b28",
+    "note": "草の緑の暗"
+  },
+  "leaf_hi": {
+    "hex": "#2e8055",
+    "note": "深い緑の明"
+  },
+  "leaf_base": {
+    "hex": "#1f5c40",
+    "note": "深い緑の中"
+  },
+  "leaf_shadow": {
+    "hex": "#133d2b",
+    "note": "深い緑の暗"
+  },
+  "dirt_hi": {
+    "hex": "#b59a70",
+    "note": "土の茶の明"
+  },
+  "dirt_base": {
+    "hex": "#8d7450",
+    "note": "土の茶の中"
+  },
+  "dirt_shadow": {
+    "hex": "#63502f",
+    "note": "土の茶の暗"
+  },
+  "stone_hi": {
+    "hex": "#dfe3ea",
+    "note": "冷たい灰の明"
+  },
+  "stone_base": {
+    "hex": "#9fa8b4",
+    "note": "冷たい灰の中"
+  },
+  "stone_shadow": {
+    "hex": "#6b7380",
+    "note": "冷たい灰の暗"
+  },
+  "stone_dark": {
+    "hex": "#424854",
+    "note": "冷たい灰の最暗"
+  },
+  "floor_hi": {
+    "hex": "#c2b49a",
+    "note": "暖かい灰の明"
+  },
+  "floor_base": {
+    "hex": "#94897a",
+    "note": "暖かい灰の中"
+  },
+  "floor_shadow": {
+    "hex": "#625a4e",
+    "note": "暖かい灰の暗"
+  },
+  "floor_dark": {
+    "hex": "#413b34",
+    "note": "暖かい灰の最暗"
+  },
+  "roof_hi": {
+    "hex": "#c85a4a",
+    "note": "瓦の赤の明"
+  },
+  "roof_base": {
+    "hex": "#9c3a32",
+    "note": "瓦の赤の中"
+  },
+  "roof_shadow": {
+    "hex": "#6b241f",
+    "note": "瓦の赤の暗"
+  },
+  "carpet_hi": {
+    "hex": "#b8424e",
+    "note": "深紅の明"
+  },
+  "carpet_base": {
+    "hex": "#8b2637",
+    "note": "深紅の中"
+  },
+  "carpet_shadow": {
+    "hex": "#4e1220",
+    "note": "深紅の暗"
+  },
+  "water_hi": {
+    "hex": "#8fd4ea",
+    "note": "水の青の明"
+  },
+  "water_base": {
+    "hex": "#3f93c8",
+    "note": "水の青の中"
+  },
+  "water_shadow": {
+    "hex": "#2a6a9c",
+    "note": "水の青の暗"
+  },
+  "flame_hi": {
+    "hex": "#ffe9a8",
+    "note": "炎の橙の明"
+  },
+  "flame_base": {
+    "hex": "#f5a83c",
+    "note": "炎の橙の中"
+  },
+  "flame_deep": {
+    "hex": "#cf5028",
+    "note": "炎の橙の濃"
+  },
+  "orchid_hi": {
+    "hex": "#f492e4",
+    "note": "紫の明"
+  },
+  "orchid_base": {
+    "hex": "#c059c0",
+    "note": "紫の中"
+  },
+  "orchid_shadow": {
+    "hex": "#7f2783",
+    "note": "紫の暗"
+  },
+  "orchid_dark": {
+    "hex": "#571562",
+    "note": "紫の最暗"
+  }
+}

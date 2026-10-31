@@ -1,0 +1,77 @@
+{
+  "face_hair_base": {
+    "swatch": "hair_base",
+    "kind": "hair",
+    "note": "顔の髪（中）"
+  },
+  "face_hair_hi": {
+    "swatch": "hair_hi",
+    "kind": "hair",
+    "note": "顔の髪（明）"
+  },
+  "face_hair_shadow": {
+    "swatch": "hair_shadow",
+    "kind": "hair",
+    "note": "顔の髪（暗）"
+  },
+  "face_hair_dark": {
+    "swatch": "hair_dark",
+    "kind": "hair",
+    "note": "顔の髪（最暗）"
+  },
+  "face_skin_hi": {
+    "swatch": "skin_hi",
+    "kind": "skin",
+    "note": "顔の肌（明）"
+  },
+  "face_skin_base": {
+    "swatch": "skin_base",
+    "kind": "skin",
+    "note": "顔の肌（中）"
+  },
+  "face_skin_shadow": {
+    "swatch": "skin_shadow",
+    "kind": "skin",
+    "note": "顔の肌（暗）"
+  },
+  "face_eye_white": {
+    "swatch": "eye_white",
+    "kind": "eye",
+    "note": "白目"
+  },
+  "face_iris": {
+    "swatch": "iris",
+    "kind": "eye",
+    "note": "瞳の色"
+  },
+  "face_pupil": {
+    "swatch": "pupil",
+    "kind": "eye",
+    "note": "瞳孔"
+  },
+  "face_skin_deep": {
+    "swatch": "skin_deep",
+    "kind": "skin",
+    "note": "顔の肌（濃）"
+  },
+  "face_mouth": {
+    "swatch": "mouth",
+    "kind": "mouth",
+    "note": "口"
+  },
+  "face_clothes_base": {
+    "swatch": "cloth_base",
+    "kind": "cloth",
+    "note": "顔の絵の服（中）"
+  },
+  "face_clothes_hi": {
+    "swatch": "cloth_hi",
+    "kind": "cloth",
+    "note": "顔の絵の服（明）"
+  },
+  "face_clothes_shadow": {
+    "swatch": "cloth_shadow",
+    "kind": "cloth",
+    "note": "顔の絵の服（暗）"
+  }
+}
