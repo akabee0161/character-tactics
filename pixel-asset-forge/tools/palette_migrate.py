@@ -12,7 +12,9 @@ MAPPING.json::
 holds ``tools/``). The first rule whose glob matches and whose ``from`` equals
 the name is used. ``pixels`` gives individual pixels (``[x, y]``) a different
 use than their character's rule would: they get a fresh character, and
-``<char>=<to>`` is added to ``map``.
+``<char>=<to>`` is added to ``map``. The fresh character is one no target file
+uses, and the same ``to`` gets the same character in every file (compose.py
+needs a character to mean one name across the parts it stacks).
 
 Without ``--write`` nothing is changed: it prints how many names each file
 would rewrite and the names that have no rule (exit code 1 if there are any).
@@ -66,8 +68,29 @@ def _find_rule(path: str, name: str, rules: list[dict]) -> tuple[str, int] | Non
     return None
 
 
-def migrate(path: str, text: str, rules: list[dict], pixels: list[dict]) -> Result:
-    """Rewrite one file. ``path`` is relative to the forge root, with ``/``."""
+def used_chars(text: str) -> set[str]:
+    """Every character a grid text uses: ``map`` keys and pixel characters."""
+    used: set[str] = set()
+    for line in text.splitlines():
+        body = line.rstrip()
+        if body.startswith("#"):
+            header = HEADER_RE.match(body)
+            if header and header.group(1) == "map":
+                used |= {t.split("=", 1)[0] for t in header.group(2).split() if "=" in t}
+        elif body:
+            used |= set(body) - {BACKGROUND}
+    return used
+
+
+def migrate(path: str, text: str, rules: list[dict], pixels: list[dict],
+            shared: dict[str, str] | None = None, reserved: set[str] | frozenset[str] = frozenset()) -> Result:
+    """Rewrite one file. ``path`` is relative to the forge root, with ``/``.
+
+    With ``shared`` (``to -> char``, filled in as it goes), every file gives the
+    same override target the same character, chosen outside ``reserved`` (the
+    characters any target uses). compose.py stacks parts and needs a character
+    to mean the same name in every part of a frame.
+    """
     lines = text.splitlines(keepends=True)
     map_idx: list[int] = []
     row_idx: list[int] = []
@@ -136,9 +159,15 @@ def migrate(path: str, text: str, rules: list[dict], pixels: list[dict]) -> Resu
             if chars[x] == BACKGROUND:
                 raise MigrateError(f"{path}: 点 [{x}, {y}] は背景（.）で、画素がありません")
             if to not in new_chars:
-                free = next((c for c in NEW_CHARS if c not in used), None)
+                if shared is not None and to in shared and shared[to] not in used:
+                    free = shared[to]
+                else:
+                    taken = used | set(reserved) | (set(shared.values()) if shared is not None else set())
+                    free = next((c for c in NEW_CHARS if c not in taken), None)
                 if free is None:
                     raise MigrateError(f"{path}: {to} に割り当てる未使用の文字がありません")
+                if shared is not None:
+                    shared.setdefault(to, free)
                 used.add(free)
                 new_chars[to] = free
                 added.append((free, to))
@@ -212,13 +241,23 @@ def main(argv: list[str] | None = None) -> int:
     seen: set[str] = set()
     matched: set[int] = set()
     unmapped: dict[str, set[str]] = {}
+    texts: dict[Path, str | Exception] = {}
+    for grid in grids:
+        try:
+            with open(grid, encoding="utf-8", newline="") as fh:
+                texts[grid] = fh.read()
+        except (OSError, UnicodeDecodeError) as exc:
+            texts[grid] = exc
+    reserved = set().union(*(used_chars(t) for t in texts.values() if isinstance(t, str)))
+    shared: dict[str, str] = {}
     for grid in grids:
         rel = display(grid).as_posix()
         seen.add(rel)
         try:
-            with open(grid, encoding="utf-8", newline="") as fh:
-                text = fh.read()
-            result = migrate(rel, text, rules, pixels)
+            text = texts[grid]
+            if isinstance(text, Exception):
+                raise text
+            result = migrate(rel, text, rules, pixels, shared, reserved)
         except MigrateError as exc:
             failed = True
             print(f"NG   {exc}")

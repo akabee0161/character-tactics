@@ -163,6 +163,28 @@ class MainTest(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertEqual(self.grid.read_text(encoding="utf-8"), self.src)
 
+    def test_override_chars_are_shared_and_used_by_no_target(self) -> None:
+        """compose.py は重ねる部品どうしで同じ文字が同じ名前であることを求める。上書きの新しい文字は、
+        対象のどのファイルも使っていない文字にし、同じ行き先にはどのファイルでも同じ文字を使う（2026-10-31）。"""
+        other = self.root / "b.txt"
+        other.write_text(grid("# map: a=outline c=skin_base\n", ["ac..", "...."]), encoding="utf-8")
+        a, b = self.grid.resolve().as_posix(), other.resolve().as_posix()
+        pixels = [
+            {"file": a, "points": [[1, 0]], "to": "hair_x"},
+            {"file": b, "points": [[1, 0]], "to": "hair_y"},
+            {"file": b, "points": [[0, 0]], "to": "hair_x"},
+        ]
+        mapping = self.root / "m.json"
+        mapping.write_text(json.dumps({"rules": self.ALL, "pixels": pixels}), encoding="utf-8")
+        with contextlib.redirect_stdout(io.StringIO()):
+            code = main([str(mapping), "--write", str(self.grid), str(other)])
+        self.assertEqual(code, 0)
+        # 'a'・'b'・'c'・'o' はどこかのファイルが使っているので、使わない
+        self.assertEqual(self.grid.read_text(encoding="utf-8"),
+                         grid("# map: o=line b=skin_use d=hair_x\n", ["od..", "...."]))
+        self.assertEqual(other.read_text(encoding="utf-8"),
+                         grid("# map: a=line c=skin_use e=hair_y d=hair_x\n", ["de..", "...."]))
+
     def test_unused_rule_is_reported_but_not_a_failure(self) -> None:
         rules = self.ALL + [{"glob": "*", "from": "nothing", "to": "x"}]
         code, out = self.run_main(rules)
