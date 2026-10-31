@@ -19,8 +19,15 @@ from check_colors import (  # noqa: E402
     has_lightness_edge,
     inspect,
     rgb_to_lab,
+    swatch_view,
 )
-from gridfile import load_palette, parse  # noqa: E402
+import palette as palette_mod  # noqa: E402
+from gridfile import parse  # noqa: E402
+
+
+def live_swatches():
+    """現役のパレットを色見本の段で（check_colors.py の main と同じ）。"""
+    return swatch_view(palette_mod.load())
 
 
 def write(text: str) -> Path:
@@ -97,9 +104,18 @@ class InspectTest(unittest.TestCase):
         self.assertEqual(warn, [])
 
     def test_a_shading_ramp_step_is_not_reported(self):
-        palette = load_palette()
-        grid = grid_of(["ab", "ab"], "a=skin_base b=skin_shadow")
-        self.assertEqual(inspect(grid, palette), ([], []))
+        swatches, swatch_of = live_swatches()
+        grid = grid_of(["ab", "ab"], "a=skin_fair_base b=skin_fair_shadow")
+        self.assertEqual(inspect(grid, swatches, swatch_of), ([], []))
+
+    def test_two_uses_of_one_swatch_touching_are_not_a_pair(self):
+        """用途の色が違っても色見本が同じなら同じ色（輪郭と眼帯など）。色見本の段で測る（2026-10-31）。"""
+        swatches = {"outline": (26, 18, 40), "pupil": (26, 18, 40)}
+        swatch_of = {"contour": "outline", "eyepatch": "outline", "face_pupil": "pupil"}
+        self.assertEqual(inspect(grid_of(["ce", "ce"], "c=contour e=eyepatch"), swatches, swatch_of), ([], []))
+        hard, _ = inspect(grid_of(["cp", "cp"], "c=contour p=face_pupil"), swatches, swatch_of)
+        self.assertEqual(len(hard), 1)
+        self.assertIn("outline / pupil", hard[0])
 
     def test_outline_gets_the_stricter_floor(self):
         """The identical dE passes between two fills and fails against an
@@ -124,11 +140,11 @@ class RepositoryTest(unittest.TestCase):
     palette moved, and the spec in docs/ needs revisiting.
 
     入力は tests/fixtures/ の写し（2026-10-16 に assets/ から写した。絵を描き直しても、このテストは落ちない）。
-    パレットは現役の palette/master.json を読むので、パレットが動いたら気付ける。"""
+    パレットは現役の palette/ を（色見本の段で）読むので、パレットが動いたら気付ける。"""
 
     def assert_report(self, relative: str, hard: int, warn: int):
         grid = parse(REPO_ROOT / relative)
-        found_hard, found_warn = inspect(grid, load_palette())
+        found_hard, found_warn = inspect(grid, *live_swatches())
         self.assertEqual(len(found_hard), hard, f"{relative} hard: {found_hard}")
         self.assertEqual(len(found_warn), warn, f"{relative} warn: {found_warn}")
 
@@ -149,7 +165,7 @@ class RepositoryTest(unittest.TestCase):
         the eye outline. Fixing it means choosing a colour, which is still open
         (HANDOFF 3). Update this test when it is chosen."""
         grid = parse(REPO_ROOT / "types/face/reference/knight.txt")
-        hard, _ = inspect(grid, load_palette())
+        hard, _ = inspect(grid, *live_swatches())
         self.assertEqual(len(hard), 1)
         self.assertIn("outline / pupil", hard[0])
 

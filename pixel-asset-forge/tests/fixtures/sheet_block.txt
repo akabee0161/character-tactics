@@ -1,7 +1,7 @@
 # type: unit
 # size: 4x4
 # bg: transparent
-# map: o=outline
+# map: o=contour
 oooo
 oooo
 oooo

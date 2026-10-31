@@ -31,7 +31,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from gridfile import BACKGROUND, GridError, parse  # noqa: E402
 
-OUTLINE_NAME = "outline"
+OUTLINE_NAME = "contour"
 FRONT_BACK = ("down", "up")
 NEIGHBOURS = ((1, 0), (-1, 0), (0, 1), (0, -1))
 DEFAULT_BANDS = {"head": (3, 14), "trunk": (15, 24), "legs": (25, 31)}

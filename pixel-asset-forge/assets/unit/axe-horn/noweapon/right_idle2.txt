@@ -3,10 +3,10 @@
 # size: 32x32
 # light: upper-left
 # bg: transparent
-# map: o=outline a=floor_hi b=stone_hi c=stone_base
-# map: d=floor_base e=stone_shadow f=skin_rose_hi g=skin_rose_base
-# map: h=skin_rose_shadow i=cloak_dark_hi j=cloak_dark_base k=cloak_dark_shadow
-# map: l=wood_hi m=wood_base n=wood_shadow
+# map: o=contour a=helmet_horn_hi b=helmet_steel_hi c=helmet_steel_base
+# map: d=helmet_horn_base e=helmet_steel_shadow f=skin_ruddy_hi g=skin_ruddy_base
+# map: h=skin_ruddy_shadow i=clothes_dark_hi j=clothes_dark_base k=clothes_dark_shadow
+# map: l=patch_hi m=patch_base n=legwear_brown
 ................................
 ................................
 ..........o.....................

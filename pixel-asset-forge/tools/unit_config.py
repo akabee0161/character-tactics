@@ -49,7 +49,7 @@ from compose import ComposeError, FrameSpec, Layer, load_config, stack_order  # 
 from gridfile import BACKGROUND, REPO_ROOT, Grid, GridError, load_palette, parse  # noqa: E402
 
 CORE = "CORE"
-OUTLINE = "outline"
+OUTLINE = "contour"
 DIRECTIONS = ("down", "up", "left", "right")
 CHECKS = ("validate", "compose", "body_check", "hand_mirror", "unit_check", "weapon_check",
           "order_check", "blade_height", "still_check", "height_check", "tip_check", "part_chars", "eye_check",

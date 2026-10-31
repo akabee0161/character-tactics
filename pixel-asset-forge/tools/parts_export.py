@@ -60,7 +60,7 @@ def unit_charmap(paths: list[Path]) -> dict[str, str]:
 
 
 def _outline_char(charmap: dict[str, str]) -> str:
-    chars = sorted(ch for ch, colour in charmap.items() if colour == "outline")
+    chars = sorted(ch for ch, colour in charmap.items() if colour == "contour")
     if not chars:
         raise ExportError("outline の文字が無い")
     return chars[0]
@@ -68,16 +68,16 @@ def _outline_char(charmap: dict[str, str]) -> str:
 
 def cut_chars(rows: list[str], charmap: dict[str, str], parts: list[Part]) -> dict[str, list[str]]:
     """層の名前 → 32行の文字列（透明は "."）。Part.colors には文字を入れる。"""
-    outline = {ch for ch, colour in charmap.items() if colour == "outline"}
-    frame = [[None if ch == "." else "outline" if ch in outline else ch for ch in row] for row in rows]
+    outline = {ch for ch, colour in charmap.items() if colour == "contour"}
+    frame = [[None if ch == "." else "contour" if ch in outline else ch for ch in row] for row in rows]
     out_ch = _outline_char(charmap)
-    return {name: ["".join("." if v is None else out_ch if v == "outline" else v for v in row) for row in layer.frame]
+    return {name: ["".join("." if v is None else out_ch if v == "contour" else v for v in row) for row in layer.frame]
             for name, layer in cut(frame, parts).items()}
 
 
 def grid_text(rows: list[str], charmap: dict[str, str], note: str) -> str:
     used = {ch for row in rows for ch in row if ch != "."}
-    chars = sorted(used, key=lambda ch: (charmap[ch] != "outline", ch)) or [_outline_char(charmap)]
+    chars = sorted(used, key=lambda ch: (charmap[ch] != "contour", ch)) or [_outline_char(charmap)]
     entries = [f"{ch}={charmap[ch]}" for ch in chars]
     lines = [f"# {note}", "# type: unit", "# size: 32x32", "# light: upper-left", "# bg: transparent"]
     lines += ["# map: " + " ".join(entries[i:i + MAP_PER_LINE]) for i in range(0, len(entries), MAP_PER_LINE)]

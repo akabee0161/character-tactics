@@ -2,7 +2,7 @@
   "unit": "gau",
   "compose": "compose/gau.json",
   "body": "male",
-  "head_chars": "efgh",
+  "head_chars": "efMN",
   "items": "stlmn",
   "parts": {
     "dagger": {"weapon": true, "blade": "st", "moves": true},
@@ -17,9 +17,9 @@
   },
   "eyes": {"down": {"x": [14, 17], "y": [11, 12]}, "up": null, "left": {"x": [14], "y": [11, 12]}, "right": null},
   "weapon_check": {
-    "blade": ["stone_hi", "stone_base"],
-    "weapon": ["wood_hi", "wood_base", "wood_shadow"],
-    "hand": ["skin_rose_hi", "skin_rose_base", "skin_rose_shadow"],
+    "blade": ["blade_hi", "collar_white", "blade_base"],
+    "weapon": ["weapon_shaft_hi", "weapon_shaft_base", "legwear_brown", "weapon_shaft_shadow"],
+    "hand": ["skin_ruddy_hi", "skin_ruddy_base", "skin_ruddy_shadow"],
     "hidden": ["left_atk_wind", "up_atk_wind", "up_atk_hit"],
     "depth": ["down"]
   },

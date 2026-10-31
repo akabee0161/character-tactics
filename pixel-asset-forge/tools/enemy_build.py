@@ -20,12 +20,15 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import palette as palette_mod  # noqa: E402
 import sheet  # noqa: E402
-from gridfile import BACKGROUND, REPO_ROOT, GridError, display, load_palette, parse  # noqa: E402
+from gridfile import BACKGROUND, REPO_ROOT, GridError, display, parse  # noqa: E402
+from palette import Palette  # noqa: E402
 
 Frame = list[list["str | None"]]
 
-# 'o' は輪郭に使うので割り当てから外す
+# 'o' は輪郭（用途の色 contour）に使うので割り当てから外す
+OUTLINE_USE = "contour"
 LETTERS = "abcdefghijklmnpqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 MAP_ENTRIES_PER_LINE = 4
 
@@ -64,7 +67,7 @@ def serialize_frame(frame: Frame, note: str) -> str:
             if c is not None and c not in names:
                 names.append(c)
     letters = iter(LETTERS)
-    chars = {name: "o" if name == "outline" else next(letters) for name in names}
+    chars = {name: "o" if name == OUTLINE_USE else next(letters) for name in names}
     entries = [f"{chars[name]}={name}" for name in names]
     lines = [
         f"# {note}",
@@ -105,7 +108,7 @@ class Recipe:
     frames: str | None = None
 
 
-def load_recipe(path: Path, palette: dict) -> Recipe:
+def load_recipe(path: Path, pal: Palette) -> Recipe:
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
     except OSError as exc:
@@ -131,10 +134,15 @@ def load_recipe(path: Path, palette: dict) -> Recipe:
         raise EnemyError(f"{where}: body は {', '.join(BODIES)} のどちらか（{data['body']!r} だった）")
     recolor = data.get("recolor", {})
     if not isinstance(recolor, dict) or not all(isinstance(k, str) and isinstance(v, str) for k, v in recolor.items()):
-        raise EnemyError(f"{where}: recolor は 色名 → 色名 のオブジェクトにする")
-    bad = sorted({name for pair in recolor.items() for name in pair if name not in palette})
-    if bad:
-        raise EnemyError(f"{where}: recolor にパレットに無い色名 {', '.join(bad)}")
+        raise EnemyError(f"{where}: recolor は 用途の色の名前 → 色見本の名前 のオブジェクトにする")
+    bad_keys = sorted(name for name in recolor if name not in pal.uses)
+    if bad_keys:
+        raise EnemyError(f"{where}: recolor のキーに用途の色に無い名前 {', '.join(bad_keys)}"
+                         "（キーは palette/uses の名前）")
+    bad_values = sorted({name for name in recolor.values() if name not in pal.swatches})
+    if bad_values:
+        raise EnemyError(f"{where}: recolor の値に色見本に無い名前 {', '.join(bad_values)}"
+                         "（値は palette/swatches.json の名前）")
     frames = data.get("frames")
     if frames is not None:
         if not isinstance(frames, str) or not frames:
@@ -189,11 +197,17 @@ def source_colours(source_dir: Path, sheet_def: Path) -> set[str]:
     return _used(read_frame(source_dir / f"{name}.txt") for name in names)
 
 
-def build(recipe: Recipe, source_dir: Path, sheet_def: Path, palette: dict,
+def colours_of(pal: Palette) -> dict[str, tuple[int, int, int]]:
+    """色替えしたコマを描く色: 用途の色と色見本の両方（gridfile.load_colours と同じ中身）。"""
+    return {**pal.swatches, **{name: pal.rgb(name) for name in pal.uses}}
+
+
+def build(recipe: Recipe, source_dir: Path, sheet_def: Path, pal: Palette,
           build_root: Path = BUILD_ROOT, sheet_dir: Path = SHEET_DIR) -> Path:
     rows = _sheet_rows(sheet_def)
     names = _frame_names(rows)
     frames = {name: read_frame(source_dir / f"{name}.txt") for name in names}
+    colours = colours_of(pal)
 
     used = _used(frames.values())
     unused = sorted(set(recipe.recolor) - used)
@@ -201,10 +215,12 @@ def build(recipe: Recipe, source_dir: Path, sheet_def: Path, palette: dict,
         raise EnemyError(
             f"{recipe.id}: recolor の {', '.join(unused)} は、{display(source_dir)} のどのコマでも使われていない（綴りの間違い？）"
         )
-    after = {recipe.recolor.get(c, c) for c in used}
-    if len(after) < len(used):
-        print(f"warning: {recipe.id}: 色替えで {len(used)} 色が {len(after)} 色に減った（別々の色が同じ色になっている）",
-              file=sys.stderr)
+    # 別の用途の色が同じ色見本を指すことがあるので、名前でなく色の値で数える（2026-10-30）
+    before_values = {colours.get(c, c) for c in used}
+    after_values = {colours.get(recipe.recolor.get(c, c), c) for c in used}
+    if len(after_values) < len(before_values):
+        print(f"warning: {recipe.id}: 色替えで {len(before_values)} 色が {len(after_values)} 色に減った"
+              "（別々の色が同じ色になっている）", file=sys.stderr)
 
     out = build_root / recipe.id
     shutil.rmtree(out, ignore_errors=True)
@@ -213,7 +229,7 @@ def build(recipe: Recipe, source_dir: Path, sheet_def: Path, palette: dict,
         note = f"{name} は enemy_build.py が {recipe.id} のレシピで作った（手で編集しない）"
         (out / f"{name}.txt").write_text(serialize_frame(recolor_frame(frame, recipe.recolor), note), encoding="utf-8")
 
-    loaded = sheet.load_frames(rows, palette, out)
+    loaded = sheet.load_frames(rows, colours, out)
     canvas = sheet.compose_sheet(rows, loaded)
     sheet_dir.mkdir(parents=True, exist_ok=True)
     png = sheet_dir / f"{recipe.id}.png"
@@ -254,8 +270,8 @@ def main(argv: list[str] | None = None) -> int:
         paths = sorted(ENEMY_DIR.glob("*.json")) if args.all else args.recipes
         if not paths:
             raise EnemyError("作るレシピが無い（enemy/<id>.json を渡すか --all）")
-        palette = load_palette()
-        recipes = [load_recipe(path, palette) for path in paths]
+        pal = palette_mod.load()
+        recipes = [load_recipe(path, pal) for path in paths]
         seen: dict[str, Path] = {}
         for recipe in recipes:
             if recipe.id in seen:
@@ -263,7 +279,7 @@ def main(argv: list[str] | None = None) -> int:
             seen[recipe.id] = recipe.path
         for recipe in recipes:
             source_dir, sheet_def = source_paths(recipe)
-            png = build(recipe, source_dir, sheet_def, palette)
+            png = build(recipe, source_dir, sheet_def, pal)
             print(f"ok   {display(png)}  {recipe.name}")
     except (EnemyError, GridError) as exc:
         print(f"error: {exc}", file=sys.stderr)

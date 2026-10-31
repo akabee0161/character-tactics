@@ -22,8 +22,8 @@ class PartCharsTest(unittest.TestCase):
         self.assertEqual(code, 0, out)
 
     def test_a_part_using_a_core_char_fails(self):
-        # 芯のベルトと剣の柄が同じ文字 k（同じ wood_base）。ロランの鍔とベルトの H・J と同じ形
-        self.fx.maps["core"] = "o=outline b=skin_base c=cloak_dark_base k=wood_base"
+        # 芯のベルトと剣の柄が同じ文字 k（同じ weapon_shaft_base）。ロランの鍔とベルトの H・J と同じ形
+        self.fx.maps["core"] = "o=contour b=skin_fair_base c=clothes_dark_base k=weapon_shaft_base"
         for layers in self.fx.frames.values():
             layers["core"][(13, 24)] = "k"
         code, out = self.fx.run(main)
@@ -33,13 +33,13 @@ class PartCharsTest(unittest.TestCase):
 
     def test_the_fist_skin_may_share_the_core_char(self):
         # 拳の手の肌（hand_colours）は芯の肌と同じ文字でよい
-        self.fx.maps["core"] = "o=outline b=skin_base c=cloak_dark_base a=skin_hi"
+        self.fx.maps["core"] = "o=contour b=skin_fair_base c=clothes_dark_base a=skin_fair_hi"
         self.fx.frames["down_base"]["core"][(13, 20)] = "a"
         code, out = self.fx.run(main)
         self.assertEqual(code, 0, out)
 
     def test_the_fist_with_a_non_skin_core_char_fails(self):
-        self.fx.maps["sword_hand"] = "o=outline a=skin_hi c=cloak_dark_base"
+        self.fx.maps["sword_hand"] = "o=contour a=skin_fair_hi c=clothes_dark_base"
         self.fx.frames["down_base"]["sword_hand"][(26, 14)] = "c"  # 拳の外の袖の名残
         code, out = self.fx.run(main)
         self.assertEqual(code, 1)

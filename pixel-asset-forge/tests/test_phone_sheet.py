@@ -79,7 +79,7 @@ class PhoneSheetTest(unittest.TestCase):
 
     def test_diff_broken_candidate_is_an_error_not_a_traceback(self):
         cases = {
-            "unknown colour": grid_text({(10, 10): "b"}, "o=outline b=no_such_colour"),
+            "unknown colour": grid_text({(10, 10): "b"}, "o=contour b=no_such_colour"),
             "long row": grid_text({(10, 10): "b"}, BODY_MAP).replace("." * 32, "." * 33, 1),
             "other size": grid_text({(10, 10): "b"}, BODY_MAP, size=34),
         }
@@ -126,7 +126,7 @@ class PhoneSheetTest(unittest.TestCase):
 
     def test_order_part_with_an_unknown_colour_is_an_error(self):
         config = self.order_config({(11, 10): "h"})
-        self.ws.write("part.txt", grid_text({(11, 10): "h"}, "o=outline h=no_such_colour"))
+        self.ws.write("part.txt", grid_text({(11, 10): "h"}, "o=contour h=no_such_colour"))
         code, _, err = self.run_main("order", config, self.root / "out", "--against", self.root / "now")
         self.assertEqual(code, 2)
         self.assertIn("part.txt", err)

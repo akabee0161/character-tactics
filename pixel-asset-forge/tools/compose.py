@@ -13,10 +13,10 @@
 
 部品には次も書ける（2026-10-10 依頼者と決めた。部品は完全な形で描き、重ねるだけで組む）:
 
-- "keep": ["wood_base", ...] この部品の輪郭（outline）の画素は、すぐ下の画素が keep の色なら、そちらを見せる。
+- "keep": ["weapon_shaft_base", ...] この部品の輪郭（contour）の画素は、すぐ下の画素が keep の色なら、そちらを見せる。
   拳の輪郭を、握る柄の上には描かないために使う（柄が拳の上下で途切れるため。2026-10-09 依頼者が選択）。
   拳の肌や袖は柄の下に潜らせない。見るのは「その画素のすぐ下の1枚」だけ（間に別の部品が挟まると効かない）
-- "hand": true 拳の部品。組み立てる前に、手の色（設定の最上位の "hand_colours": ["skin_rose_hi", ...]）の画素が
+- "hand": true 拳の部品。組み立てる前に、手の色（設定の最上位の "hand_colours": ["skin_ruddy_hi", ...]）の画素が
   四方とも輪郭で囲われているかを確かめ、閉じていなければ1枚も書かずに止まる
 
 重なりは、奥→手前の積み上げで決める（stack_order）。素体の上に front は手前へ、back は一番奥へ積む。
@@ -191,7 +191,7 @@ def _compose(body: Grid, layers: list[tuple[Grid, Layer]]):
         pick = 0
         index, ch = stack[0]
         # keep: この部品の輪郭は、すぐ下が keep の色（握る武器）ならそちらを見せる
-        if index >= 0 and layers[index][1].keep and charmap[ch] == "outline" and len(stack) > 1 \
+        if index >= 0 and layers[index][1].keep and charmap[ch] == "contour" and len(stack) > 1 \
                 and charmap[stack[1][1]] in layers[index][1].keep:
             pick = 1
         index, ch = stack[pick]
@@ -229,7 +229,7 @@ def open_hand_pixels(part: Grid, hand_colours: set[str] | frozenset[str]) -> lis
                 continue
             for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
                 near = colour(x + dx, y + dy)
-                if near not in hand_colours and near != "outline":
+                if near not in hand_colours and near != "contour":
                     found.append((x, y))
                     break
     return found

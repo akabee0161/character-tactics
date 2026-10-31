@@ -3,9 +3,9 @@
 # size: 32x32
 # light: upper-left
 # bg: transparent
-# map: o=outline b=skin_base c=skin_shadow e=orchid_hi f=orchid_base g=orchid_shadow h=orchid_dark i=flame_deep j=flame_base p=metal_hi q=metal_base r=metal_shadow y=wood_shadow
-# map: l=wood_base s=stone_hi
-# map: t=stone_base w=wood_shadow
+# map: o=contour b=skin_fair_base c=skin_fair_shadow e=hair_violet_hi f=hair_violet_base g=hair_violet_shadow h=hair_violet_dark i=earring_deep j=earring_base p=clothes_gold_hi q=clothes_gold_base r=clothes_gold_shadow y=legwear_brown
+# map: l=weapon_shaft_base s=bowstring
+# map: t=arrowhead w=weapon_shaft_shadow
 ................................
 ................................
 ................................

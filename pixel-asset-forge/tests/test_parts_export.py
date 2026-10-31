@@ -11,7 +11,7 @@ from cut_layers import CORE, Part  # noqa: E402
 from gridfile import parse  # noqa: E402
 from parts_export import NONE, ExportError, PartDef, UnitDef, cut_chars, export, grid_text, unit_charmap  # noqa: E402
 
-MAP = {"o": "outline", "b": "skin_base", "m": "wood_shadow", "w": "wood_shadow", "q": "metal_base"}
+MAP = {"o": "contour", "b": "skin_fair_base", "m": "weapon_shaft_shadow", "w": "weapon_shaft_shadow", "q": "shield_base"}
 HEAD = "# type: unit\n# size: 32x32\n# light: upper-left\n# bg: transparent\n# map: " + \
        " ".join(f"{k}={v}" for k, v in MAP.items()) + "\n"
 
@@ -28,7 +28,7 @@ def grids(spec):
     return parse(spec.body), [(parse(layer.part), layer) for layer in spec.layers]
 
 
-# 体（q）・弓（m）・矢（w）・拳（b、輪郭 o）。弓と矢は同じ wood_shadow
+# 体（q）・弓（m）・矢（w）・拳（b、輪郭 o）。弓と矢は同じ weapon_shaft_shadow
 BODY = {(x, y): "q" for x in range(12, 15) for y in range(12, 20)}
 BOW = {(20, y): "m" for y in range(10, 20)}
 ARROW = {(x, 15): "w" for x in range(16, 20)}
@@ -48,10 +48,10 @@ class PartsExportTest(unittest.TestCase):
             parts=(PartDef("弓", "bow", frozenset("m"), dir="equip/bow"),
                    PartDef("矢", "arrow", frozenset("w"), dir="equip/arrow"),
                    PartDef("弓の拳", "bow_hand", frozenset("b"), {("down", "base"): (21, 15, 21, 16)},
-                           hand=True, keep=("wood_shadow",), dir="fist/t"),
+                           hand=True, keep=("weapon_shaft_shadow",), dir="fist/t"),
                    PartDef("矢の拳", "arrow_hand", frozenset("b"), {("down", "base"): NONE}, hand=True, dir="fist/t")),
             orders={"down": ("矢の拳", "弓", CORE, "矢", "弓の拳")},
-            hand_colours=("skin_base",))
+            hand_colours=("skin_fair_base",))
 
     def tearDown(self):
         self.tmp.cleanup()
@@ -92,16 +92,16 @@ class PartsExportTest(unittest.TestCase):
 
     def test_hand_parts_carry_hand_and_keep(self):
         config = self.run_export()
-        self.assertEqual(config["hand_colours"], ["skin_base"])
+        self.assertEqual(config["hand_colours"], ["skin_fair_base"])
         by_name = {Path(entry["part"]).name: entry for entry in config["frames"]["down_base"]["layers"]}
         self.assertEqual(by_name["bow_hand_down_base.txt"], {"part": "assets/part/fist/t/bow_hand_down_base.txt",
-                                                            "z": "front", "hand": True, "keep": ["wood_shadow"]})
+                                                            "z": "front", "hand": True, "keep": ["weapon_shaft_shadow"]})
         self.assertNotIn("keep", by_name["arrow_hand_down_base.txt"])
 
     def test_empty_part_is_written_with_the_outline_map(self):
         self.run_export()
         grid = parse(self.root / "assets/part/fist/t/arrow_hand_down_base.txt")
-        self.assertEqual(grid.charmap, {"o": "outline"})
+        self.assertEqual(grid.charmap, {"o": "contour"})
         self.assertTrue(all(set(row) == {"."} for row in grid.rows))
 
     def test_missing_box_for_a_state_stops(self):
@@ -196,14 +196,14 @@ class PartsExportTest(unittest.TestCase):
 
     def test_conflicting_charmaps_stop(self):
         bad = self.root / "bad.txt"
-        bad.write_text(frame({}).replace("m=wood_shadow", "m=wood_base"), encoding="utf-8")
+        bad.write_text(frame({}).replace("m=weapon_shaft_shadow", "m=weapon_shaft_base"), encoding="utf-8")
         with self.assertRaisesRegex(ExportError, "'m'"):
             unit_charmap([self.src / "down_base.txt", bad])
 
     def test_grid_text_lists_only_used_chars_outline_first(self):
         rows = ["." * 32] * 31 + ["bo" + "." * 30]
         text = grid_text(rows, MAP, "note")
-        self.assertIn("# map: o=outline b=skin_base\n", text)
+        self.assertIn("# map: o=contour b=skin_fair_base\n", text)
         self.assertTrue(text.startswith("# note\n"))
 
 

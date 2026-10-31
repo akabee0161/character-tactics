@@ -1,8 +1,8 @@
 # type: tile
 # size: 16x16
 # light: upper-left
-# map: g=grass_base a=grass_hi s=grass_shadow
-# map: h=water_hi w=water_base d=water_shadow
+# map: g=ground_grass_base a=ground_grass_hi s=ground_grass_shadow
+# map: h=water_surface_hi w=water_surface_base d=water_surface_shadow
 #
 # The first version of river_v after the seam bug was fixed, kept as the
 # counterpart to river_v_seam_bug.txt.

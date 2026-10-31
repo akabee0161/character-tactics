@@ -1,9 +1,9 @@
 {
   "unit": "gau",
   "hand_colours": [
-    "skin_rose_hi",
-    "skin_rose_base",
-    "skin_rose_shadow"
+    "skin_ruddy_hi",
+    "skin_ruddy_base",
+    "skin_ruddy_shadow"
   ],
   "frames": {
     "down_base": {
@@ -18,11 +18,13 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade_base",
+            "blade_hi",
+            "collar_white",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -44,11 +46,13 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade_base",
+            "blade_hi",
+            "collar_white",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -70,11 +74,13 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade_base",
+            "blade_hi",
+            "collar_white",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -96,11 +102,13 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade_base",
+            "blade_hi",
+            "collar_white",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -122,11 +130,13 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade_base",
+            "blade_hi",
+            "collar_white",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -148,11 +158,13 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade_base",
+            "blade_hi",
+            "collar_white",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -175,11 +187,13 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade_base",
+            "blade_hi",
+            "collar_white",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -201,11 +215,13 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade_base",
+            "blade_hi",
+            "collar_white",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -227,11 +243,13 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade_base",
+            "blade_hi",
+            "collar_white",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -253,11 +271,13 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade_base",
+            "blade_hi",
+            "collar_white",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -279,11 +299,13 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade_base",
+            "blade_hi",
+            "collar_white",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -305,11 +327,13 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade_base",
+            "blade_hi",
+            "collar_white",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -326,11 +350,13 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade_base",
+            "blade_hi",
+            "collar_white",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -352,11 +378,13 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade_base",
+            "blade_hi",
+            "collar_white",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -378,11 +406,13 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade_base",
+            "blade_hi",
+            "collar_white",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -404,11 +434,13 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade_base",
+            "blade_hi",
+            "collar_white",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -430,11 +462,13 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade_base",
+            "blade_hi",
+            "collar_white",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -456,11 +490,13 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade_base",
+            "blade_hi",
+            "collar_white",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -491,11 +527,13 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade_base",
+            "blade_hi",
+            "collar_white",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         }
       ]
@@ -517,11 +555,13 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade_base",
+            "blade_hi",
+            "collar_white",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         }
       ]
@@ -543,11 +583,13 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade_base",
+            "blade_hi",
+            "collar_white",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         }
       ]
@@ -569,11 +611,13 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade_base",
+            "blade_hi",
+            "collar_white",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         }
       ]
@@ -595,11 +639,13 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade_base",
+            "blade_hi",
+            "collar_white",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         }
       ]
@@ -621,11 +667,13 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade_base",
+            "blade_hi",
+            "collar_white",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         }
       ]

@@ -2,9 +2,9 @@
 # size: 16x16
 # light: upper-left
 # bg: transparent
-# map: o=outline i=stone_hi j=stone_base k=stone_shadow
-# map: h=wood_hi w=wood_base s=wood_shadow
-# map: r=roof_hi q=roof_base t=roof_shadow
+# map: o=contour i=item_blade_hi j=item_blade_base k=item_blade_shadow
+# map: h=item_shaft_hi w=item_shaft_base s=item_shaft_shadow
+# map: r=item_pommel_hi q=item_pommel_base t=item_pommel_shadow
 ................
 ............ooo.
 ...........oijo.

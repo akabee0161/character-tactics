@@ -5,8 +5,8 @@
 # tuft layout and only adds blooms, so the two mix without the texture shifting
 # at the join. The flower colours are borrowed rather than new - metal_hi for
 # yellow and stone_hi for white.
-# map: g=grass_base a=grass_hi s=grass_shadow
-# map: l=metal_hi t=stone_hi
+# map: g=ground_grass_base a=ground_grass_hi s=ground_grass_shadow
+# map: l=flower_yellow t=flower_white
 ggaagggggggggggg
 gggggggggggllggg
 gggggggggssggggg

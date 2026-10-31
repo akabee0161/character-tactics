@@ -4,9 +4,9 @@
 # A closed double door in a stone frame, for one tile of a wall_face run. Each
 # leaf is lit on its left edge and shaded on its right, so the pair of dark and
 # light columns in the middle reads as the seam where they meet.
-# map: n=stone_base t=stone_hi m=stone_shadow d=stone_dark
-# map: w=wood_base v=wood_hi b=wood_shadow x=wood_dark
-# map: y=metal_base l=metal_hi z=metal_shadow
+# map: n=building_stone_base t=building_stone_hi m=building_stone_shadow d=building_stone_dark
+# map: w=building_wood_base v=building_wood_hi b=building_wood_shadow x=building_wood_dark
+# map: y=building_metal_base l=building_metal_hi z=building_metal_shadow
 dddddddddddddddd
 dnttttttttttttnn
 dmtvwwwbvwwwbtmm

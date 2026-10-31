@@ -15,8 +15,8 @@ from body_check import (  # noqa: E402
     band_center, centre_failures, hanging_pixels, holes, main, open_edges, protrusions, without)
 
 BANDS = {"head": (0, 3), "trunk": (4, 7), "legs": (8, 9)}
-CHARMAP = {"o": "outline", "b": "cloak_dark_base"}
-HAIR_MAP = {**CHARMAP, "h": "hair_slate_base"}
+CHARMAP = {"o": "contour", "b": "clothes_dark_base"}
+HAIR_MAP = {**CHARMAP, "h": "hair_ashblue_base"}
 
 
 def box(x0: int, x1: int, y0: int, y1: int) -> dict[tuple[int, int], str]:
@@ -52,7 +52,7 @@ def hanging_hair() -> dict[tuple[int, int], str]:
 def write_core(directory: Path, name: str, pixels: dict[tuple[int, int], str]) -> Path:
     path = directory / name
     rows = rows_of(pixels)
-    header = ["# type: unit", "# size: 12x12", "# light: upper-left", "# bg: transparent", "# map: o=outline b=cloak_dark_base h=hair_slate_base"]
+    header = ["# type: unit", "# size: 12x12", "# light: upper-left", "# bg: transparent", "# map: o=contour b=clothes_dark_base h=hair_ashblue_base"]
     path.write_text("\n".join(header + rows) + "\n", encoding="utf-8")
     return path
 

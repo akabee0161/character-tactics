@@ -2,7 +2,7 @@
 """拳の部品のファイル（assets/part/fist/<ユニット>/ の拳）で、手の輪郭が切れている所を閉じる。
 
     tools/hand_outline.py assets/part/fist/roran/sword_hand_down_base.txt \\
-        --hand skin_rose_hi,skin_rose_base,skin_rose_shadow           # 直す所を出すだけ
+        --hand skin_ruddy_hi,skin_ruddy_base,skin_ruddy_shadow          # 直す所を出すだけ
     tools/hand_outline.py ... --write                                # 書き換える
 
 拳は部品として完全な形で描き、四方とも輪郭（黒）で囲う（2026-10-10 依頼者と決めた）。手（--hand の色の塊のうち、
@@ -64,9 +64,9 @@ def close_hands(frame, hand: set[str], keep=frozenset()) -> tuple[list[list[str 
                 if not (0 <= qx < w and 0 <= qy < h):
                     continue
                 name = out[qy][qx]
-                if name in hand or name == "outline" or name in keep:
+                if name in hand or name == "contour" or name in keep:
                     continue
-                out[qy][qx] = "outline"
+                out[qy][qx] = "contour"
                 changed.append((qx, qy))
     return out, changed
 
@@ -75,9 +75,9 @@ def fix_file(path: Path, hand: set[str], keep: set[str], write: bool) -> list[Po
     grid = parse(path)
     if not grid.rows or "# from:" in path.read_text(encoding="utf-8"):
         raise HandOutlineError(f"{path}: 派生ファイル（# from:）は直せない。由来元を直す")
-    letters = [ch for ch, name in grid.charmap.items() if name == "outline"]
+    letters = [ch for ch, name in grid.charmap.items() if name == "contour"]
     if not letters:
-        raise HandOutlineError(f"{path}: map に outline の文字が無い")
+        raise HandOutlineError(f"{path}: map に輪郭（contour）の文字が無い")
     fixed, changed = close_hands(read_frame(path), hand, keep)
     if write and changed:
         lines = path.read_text(encoding="utf-8").splitlines()

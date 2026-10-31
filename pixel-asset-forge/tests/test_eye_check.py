@@ -11,7 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from eye_check import main  # noqa: E402
 from unit_fixture import UnitFixture  # noqa: E402
 
-CORE_MAP = "o=outline b=skin_base c=cloak_dark_base u=pupil"
+CORE_MAP = "o=contour b=skin_fair_base c=clothes_dark_base u=face_pupil"
 
 
 def face(core: dict, eyes: list[int], top: int = 10) -> dict:
@@ -50,7 +50,7 @@ class EyeCheckTest(unittest.TestCase):
         self.assertIn("FAIL down_base: 目の左右の隣が目と見分けられない色 1 件: (18,10)", out)
 
     def test_a_colour_as_dark_as_the_outline_fails(self):
-        self.fx.frames["down_base"]["core"][(13, 11)] = "u"  # pupil は outline と同じ #1a1228
+        self.fx.frames["down_base"]["core"][(13, 11)] = "u"  # face_pupil は contour と同じ #1a1228
         code, out = self.fx.run(main)
         self.assertEqual(code, 1)
         self.assertIn("(13,11)", out)
@@ -80,7 +80,7 @@ class EyeCheckTest(unittest.TestCase):
 
     def add_hair(self, pixels: dict, head: bool = True) -> None:
         """down_base に髪の部品を芯の手前に重ねる（ミストから髪・かぶり物を別の部品にする。2026-10-16）。"""
-        self.fx.maps["hair"] = "o=outline h=hair_base"
+        self.fx.maps["hair"] = "o=contour h=face_hair_base"
         self.fx.frames["down_base"]["hair"] = pixels
         self.fx.checks["parts"]["hair"] = {"head": True} if head else {}
         self.fx.checks["orders"]["down"] = self.fx.checks["orders"]["down"] + ["hair"]

@@ -1,9 +1,9 @@
 {
   "unit": "roran",
   "hand_colours": [
-    "skin_rose_hi",
-    "skin_rose_base",
-    "skin_rose_shadow"
+    "skin_ruddy_hi",
+    "skin_ruddy_base",
+    "skin_ruddy_shadow"
   ],
   "frames": {
     "down_base": {
@@ -26,13 +26,14 @@
           "part": "assets/part/fist/roran/sword_hand_down_base.txt",
           "z": "front",
           "keep": [
-            "roof_base",
-            "stone_base",
-            "stone_hi",
-            "stone_shadow",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "weapon_pommel",
+            "blade_base",
+            "blade_hi",
+            "belt_strap",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ],
           "hand": true
         }
@@ -58,13 +59,14 @@
           "part": "assets/part/fist/roran/sword_hand_down_idle2.txt",
           "z": "front",
           "keep": [
-            "roof_base",
-            "stone_base",
-            "stone_hi",
-            "stone_shadow",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "weapon_pommel",
+            "blade_base",
+            "blade_hi",
+            "belt_strap",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ],
           "hand": true
         }
@@ -90,13 +92,14 @@
           "part": "assets/part/fist/roran/sword_hand_down_base.txt",
           "z": "front",
           "keep": [
-            "roof_base",
-            "stone_base",
-            "stone_hi",
-            "stone_shadow",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "weapon_pommel",
+            "blade_base",
+            "blade_hi",
+            "belt_strap",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ],
           "hand": true
         }
@@ -122,13 +125,14 @@
           "part": "assets/part/fist/roran/sword_hand_down_base.txt",
           "z": "front",
           "keep": [
-            "roof_base",
-            "stone_base",
-            "stone_hi",
-            "stone_shadow",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "weapon_pommel",
+            "blade_base",
+            "blade_hi",
+            "belt_strap",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ],
           "hand": true
         }
@@ -154,13 +158,14 @@
           "part": "assets/part/fist/roran/sword_hand_down_atk_wind.txt",
           "z": "front",
           "keep": [
-            "roof_base",
-            "stone_base",
-            "stone_hi",
-            "stone_shadow",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "weapon_pommel",
+            "blade_base",
+            "blade_hi",
+            "belt_strap",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ],
           "hand": true
         }
@@ -186,13 +191,14 @@
           "part": "assets/part/fist/roran/sword_hand_down_atk_hit.txt",
           "z": "front",
           "keep": [
-            "roof_base",
-            "stone_base",
-            "stone_hi",
-            "stone_shadow",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "weapon_pommel",
+            "blade_base",
+            "blade_hi",
+            "belt_strap",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ],
           "hand": true
         }
@@ -210,13 +216,14 @@
           "part": "assets/part/fist/roran/sword_hand_up_base.txt",
           "z": "back",
           "keep": [
-            "roof_base",
-            "stone_base",
-            "stone_hi",
-            "stone_shadow",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "weapon_pommel",
+            "blade_base",
+            "blade_hi",
+            "belt_strap",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ],
           "hand": true
         },
@@ -242,13 +249,14 @@
           "part": "assets/part/fist/roran/sword_hand_up_idle2.txt",
           "z": "back",
           "keep": [
-            "roof_base",
-            "stone_base",
-            "stone_hi",
-            "stone_shadow",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "weapon_pommel",
+            "blade_base",
+            "blade_hi",
+            "belt_strap",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ],
           "hand": true
         },
@@ -274,13 +282,14 @@
           "part": "assets/part/fist/roran/sword_hand_up_base.txt",
           "z": "back",
           "keep": [
-            "roof_base",
-            "stone_base",
-            "stone_hi",
-            "stone_shadow",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "weapon_pommel",
+            "blade_base",
+            "blade_hi",
+            "belt_strap",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ],
           "hand": true
         },
@@ -306,13 +315,14 @@
           "part": "assets/part/fist/roran/sword_hand_up_base.txt",
           "z": "back",
           "keep": [
-            "roof_base",
-            "stone_base",
-            "stone_hi",
-            "stone_shadow",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "weapon_pommel",
+            "blade_base",
+            "blade_hi",
+            "belt_strap",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ],
           "hand": true
         },
@@ -338,13 +348,14 @@
           "part": "assets/part/fist/roran/sword_hand_up_atk_wind.txt",
           "z": "back",
           "keep": [
-            "roof_base",
-            "stone_base",
-            "stone_hi",
-            "stone_shadow",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "weapon_pommel",
+            "blade_base",
+            "blade_hi",
+            "belt_strap",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ],
           "hand": true
         },
@@ -370,13 +381,14 @@
           "part": "assets/part/fist/roran/sword_hand_up_atk_hit.txt",
           "z": "back",
           "keep": [
-            "roof_base",
-            "stone_base",
-            "stone_hi",
-            "stone_shadow",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "weapon_pommel",
+            "blade_base",
+            "blade_hi",
+            "belt_strap",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ],
           "hand": true
         },
@@ -397,13 +409,14 @@
           "part": "assets/part/fist/roran/sword_hand_left_base.txt",
           "z": "back",
           "keep": [
-            "roof_base",
-            "stone_base",
-            "stone_hi",
-            "stone_shadow",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "weapon_pommel",
+            "blade_base",
+            "blade_hi",
+            "belt_strap",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ],
           "hand": true
         },
@@ -429,13 +442,14 @@
           "part": "assets/part/fist/roran/sword_hand_left_idle2.txt",
           "z": "back",
           "keep": [
-            "roof_base",
-            "stone_base",
-            "stone_hi",
-            "stone_shadow",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "weapon_pommel",
+            "blade_base",
+            "blade_hi",
+            "belt_strap",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ],
           "hand": true
         },
@@ -461,13 +475,14 @@
           "part": "assets/part/fist/roran/sword_hand_left_base.txt",
           "z": "back",
           "keep": [
-            "roof_base",
-            "stone_base",
-            "stone_hi",
-            "stone_shadow",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "weapon_pommel",
+            "blade_base",
+            "blade_hi",
+            "belt_strap",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ],
           "hand": true
         },
@@ -493,13 +508,14 @@
           "part": "assets/part/fist/roran/sword_hand_left_base.txt",
           "z": "back",
           "keep": [
-            "roof_base",
-            "stone_base",
-            "stone_hi",
-            "stone_shadow",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "weapon_pommel",
+            "blade_base",
+            "blade_hi",
+            "belt_strap",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ],
           "hand": true
         },
@@ -525,13 +541,14 @@
           "part": "assets/part/fist/roran/sword_hand_left_atk_wind.txt",
           "z": "back",
           "keep": [
-            "roof_base",
-            "stone_base",
-            "stone_hi",
-            "stone_shadow",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "weapon_pommel",
+            "blade_base",
+            "blade_hi",
+            "belt_strap",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ],
           "hand": true
         },
@@ -557,13 +574,14 @@
           "part": "assets/part/fist/roran/sword_hand_left_atk_hit.txt",
           "z": "back",
           "keep": [
-            "roof_base",
-            "stone_base",
-            "stone_hi",
-            "stone_shadow",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "weapon_pommel",
+            "blade_base",
+            "blade_hi",
+            "belt_strap",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ],
           "hand": true
         },
@@ -602,13 +620,14 @@
           "part": "assets/part/fist/roran/sword_hand_right_base.txt",
           "z": "front",
           "keep": [
-            "roof_base",
-            "stone_base",
-            "stone_hi",
-            "stone_shadow",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "weapon_pommel",
+            "blade_base",
+            "blade_hi",
+            "belt_strap",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ],
           "hand": true
         }
@@ -634,13 +653,14 @@
           "part": "assets/part/fist/roran/sword_hand_right_idle2.txt",
           "z": "front",
           "keep": [
-            "roof_base",
-            "stone_base",
-            "stone_hi",
-            "stone_shadow",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "weapon_pommel",
+            "blade_base",
+            "blade_hi",
+            "belt_strap",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ],
           "hand": true
         }
@@ -666,13 +686,14 @@
           "part": "assets/part/fist/roran/sword_hand_right_base.txt",
           "z": "front",
           "keep": [
-            "roof_base",
-            "stone_base",
-            "stone_hi",
-            "stone_shadow",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "weapon_pommel",
+            "blade_base",
+            "blade_hi",
+            "belt_strap",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ],
           "hand": true
         }
@@ -698,13 +719,14 @@
           "part": "assets/part/fist/roran/sword_hand_right_base.txt",
           "z": "front",
           "keep": [
-            "roof_base",
-            "stone_base",
-            "stone_hi",
-            "stone_shadow",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "weapon_pommel",
+            "blade_base",
+            "blade_hi",
+            "belt_strap",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ],
           "hand": true
         }
@@ -730,13 +752,14 @@
           "part": "assets/part/fist/roran/sword_hand_right_atk_wind.txt",
           "z": "front",
           "keep": [
-            "roof_base",
-            "stone_base",
-            "stone_hi",
-            "stone_shadow",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "weapon_pommel",
+            "blade_base",
+            "blade_hi",
+            "belt_strap",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ],
           "hand": true
         }
@@ -762,13 +785,14 @@
           "part": "assets/part/fist/roran/sword_hand_right_atk_hit.txt",
           "z": "front",
           "keep": [
-            "roof_base",
-            "stone_base",
-            "stone_hi",
-            "stone_shadow",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "weapon_pommel",
+            "blade_base",
+            "blade_hi",
+            "belt_strap",
+            "weapon_shaft_base",
+            "weapon_shaft_hi",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ],
           "hand": true
         }

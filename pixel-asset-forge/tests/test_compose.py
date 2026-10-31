@@ -46,8 +46,8 @@ class Workspace:
         self._tmp.cleanup()
 
 
-BODY_MAP = "o=outline b=skin_base"
-PART_MAP = "o=outline h=leaf_base"
+BODY_MAP = "o=contour b=skin_fair_base"
+PART_MAP = "o=contour h=tree_leaf_base"
 
 
 class ComposeFrameTest(unittest.TestCase):
@@ -70,7 +70,7 @@ class ComposeFrameTest(unittest.TestCase):
 
     def test_back_layer_is_hidden_by_an_earlier_front_part(self):
         front = self.ws.grid("front.txt", {(12, 10): "h"}, PART_MAP)
-        back = self.ws.grid("back.txt", {(12, 10): "k"}, "k=wood_base")
+        back = self.ws.grid("back.txt", {(12, 10): "k"}, "k=weapon_shaft_base")
         rows, _ = compose_frame(self.body, [(front, Layer(front.path, "front")),
                                             (back, Layer(back.path, "back"))])
         self.assertEqual(rows[10][12], "h")
@@ -87,7 +87,7 @@ class ComposeFrameTest(unittest.TestCase):
             compose_frame(self.body, [(part, Layer(part.path, "front", dx=1))])
 
     def test_letter_mapped_to_two_colours_is_an_error(self):
-        part = self.ws.grid("part.txt", {(5, 5): "b"}, "b=leaf_base")
+        part = self.ws.grid("part.txt", {(5, 5): "b"}, "b=tree_leaf_base")
         with self.assertRaisesRegex(ComposeError, "'b'"):
             compose_frame(self.body, [(part, Layer(part.path, "front"))])
 
@@ -97,9 +97,9 @@ class ComposeFrameTest(unittest.TestCase):
             compose_frame(self.body, [(part, Layer(part.path, "front"))])
 
     def test_map_groups_keep_only_used_letters_in_source_order(self):
-        part = self.ws.grid("part.txt", {(20, 20): "h"}, "o=outline h=leaf_base u=water_base")
+        part = self.ws.grid("part.txt", {(20, 20): "h"}, "o=contour h=tree_leaf_base u=fletching")
         _, groups = compose_frame(self.body, [(part, Layer(part.path, "front"))])
-        self.assertEqual(groups, [[("o", "outline"), ("b", "skin_base")], [("h", "leaf_base")]])
+        self.assertEqual(groups, [[("o", "contour"), ("b", "skin_fair_base")], [("h", "tree_leaf_base")]])
 
 
 class StackTest(unittest.TestCase):
@@ -139,7 +139,7 @@ class RenderTextTest(unittest.TestCase):
             text = render_text(body, rows, groups, "gau.json の down_base から compose.py で組み立てた")
             again = parse(ws.write("out.txt", text))
             self.assertEqual(again.rows, rows)
-            self.assertEqual(again.charmap, {"b": "skin_base", "h": "leaf_base"})  # 使っていない o は落ちる
+            self.assertEqual(again.charmap, {"b": "skin_fair_base", "h": "tree_leaf_base"})  # 使っていない o は落ちる
             self.assertEqual(again.type, "unit")
         finally:
             ws.close()
@@ -149,7 +149,7 @@ class RenderTextTest(unittest.TestCase):
         try:
             body = ws.grid("body.txt", {(10, 10): "b"}, BODY_MAP)
             with self.assertRaises(ComposeError):
-                render_text(body, body.rows, [[("b", "skin_base")]], "note: bad")
+                render_text(body, body.rows, [[("b", "skin_fair_base")]], "note: bad")
         finally:
             ws.close()
 
@@ -264,7 +264,7 @@ class GripAndHandTest(unittest.TestCase):
         self.ws = Workspace()
         self.body = self.ws.grid("body.txt", {(0, 0): "o"}, BODY_MAP)
         # 縦の柄（w）を、輪郭（o）で囲った拳（b）が握る
-        self.shaft = self.ws.grid("shaft.txt", {(10, y): "w" for y in range(5, 15)}, "o=outline w=wood_base")
+        self.shaft = self.ws.grid("shaft.txt", {(10, y): "w" for y in range(5, 15)}, "o=contour w=weapon_shaft_base")
         fist = {(10, 9): "b", (10, 10): "b"}
         fist.update({p: "o" for p in [(10, 8), (10, 11), (9, 9), (9, 10), (11, 9), (11, 10)]})
         self.fist = self.ws.grid("fist.txt", fist, BODY_MAP)
@@ -278,7 +278,7 @@ class GripAndHandTest(unittest.TestCase):
         return compose_frame(self.body, layers)[0]
 
     def test_fist_outline_is_not_drawn_over_the_gripped_shaft(self):
-        rows = self.rows({"wood_base"})
+        rows = self.rows({"weapon_shaft_base"})
         self.assertEqual(rows[8][10], "w")
         self.assertEqual(rows[11][10], "w")
         self.assertEqual(rows[9][10], "b")   # 拳の肌は柄の上に描く
@@ -288,27 +288,27 @@ class GripAndHandTest(unittest.TestCase):
         self.assertEqual(self.rows(set())[8][10], "o")
 
     def test_keep_only_looks_at_the_colour_right_below(self):
-        rows = self.rows({"leaf_base"})
+        rows = self.rows({"tree_leaf_base"})
         self.assertEqual(rows[8][10], "o")
 
     def test_labels_follow_keep(self):
         layers = [(self.shaft, Layer(self.shaft.path, "front")),
-                  (self.fist, Layer(self.fist.path, "front", keep=frozenset({"wood_base"})))]
+                  (self.fist, Layer(self.fist.path, "front", keep=frozenset({"weapon_shaft_base"})))]
         labels = compose_labels(self.body, layers)
         self.assertEqual(labels[8][10], "shaft.txt")
         self.assertEqual(labels[9][9], "fist.txt")
 
     def test_open_hand_pixels_finds_a_fist_touching_a_sleeve_or_nothing(self):
         part = self.ws.grid("open.txt", {(10, 10): "b", (11, 10): "b", (9, 10): "q", (10, 9): "o"},
-                            "o=outline b=skin_base q=cloak_dark_base")
-        self.assertEqual(open_hand_pixels(part, {"skin_base"}), [(10, 10), (11, 10)])
+                            "o=contour b=skin_fair_base q=clothes_dark_base")
+        self.assertEqual(open_hand_pixels(part, {"skin_fair_base"}), [(10, 10), (11, 10)])
 
     def test_closed_fist_passes(self):
-        self.assertEqual(open_hand_pixels(self.fist, {"skin_base"}), [])
+        self.assertEqual(open_hand_pixels(self.fist, {"skin_fair_base"}), [])
 
     def test_fist_at_the_frame_edge_is_open(self):
         part = self.ws.grid("edge.txt", {(0, 5): "b", (1, 5): "o", (0, 4): "o", (0, 6): "o"}, BODY_MAP)
-        self.assertEqual(open_hand_pixels(part, {"skin_base"}), [(0, 5)])
+        self.assertEqual(open_hand_pixels(part, {"skin_fair_base"}), [(0, 5)])
 
     def config(self, layer: dict, **top) -> Path:
         self.ws.write("body2.txt", grid_text({(0, 0): "o"}, BODY_MAP))
@@ -324,7 +324,7 @@ class GripAndHandTest(unittest.TestCase):
 
     def test_main_stops_on_an_open_hand_part(self):
         part = self.ws.write("open.txt", grid_text({(10, 10): "b"}, BODY_MAP))
-        path = self.config({"part": str(part), "z": "front", "hand": True}, hand_colours=["skin_base"])
+        path = self.config({"part": str(part), "z": "front", "hand": True}, hand_colours=["skin_fair_base"])
         code, err = self.run_main(path)
         self.assertEqual(code, 2)
         self.assertIn("open.txt: 拳が四方とも輪郭で閉じていない", err)
@@ -333,7 +333,7 @@ class GripAndHandTest(unittest.TestCase):
 
     def test_main_composes_a_closed_hand_part(self):
         part = self.ws.write("closed.txt", self.fist.path.read_text(encoding="utf-8"))
-        path = self.config({"part": str(part), "z": "front", "hand": True}, hand_colours=["skin_base"])
+        path = self.config({"part": str(part), "z": "front", "hand": True}, hand_colours=["skin_fair_base"])
         self.assertEqual(self.run_main(path)[0], 0)
 
     def test_hand_without_hand_colours_is_an_error(self):
@@ -342,15 +342,15 @@ class GripAndHandTest(unittest.TestCase):
             load_config(path, self.ws.root)
 
     def test_keep_and_hand_are_read(self):
-        path = self.config({"part": "p.txt", "z": "front", "hand": True, "keep": ["wood_base"]},
-                           hand_colours=["skin_base"])
+        path = self.config({"part": "p.txt", "z": "front", "hand": True, "keep": ["weapon_shaft_base"]},
+                           hand_colours=["skin_fair_base"])
         _, frames = load_config(path, self.ws.root)
         layer = frames["down_base"].layers[0]
-        self.assertEqual((layer.keep, layer.hand), (frozenset({"wood_base"}), True))
-        self.assertEqual(frames["down_base"].hand_colours, frozenset({"skin_base"}))
+        self.assertEqual((layer.keep, layer.hand), (frozenset({"weapon_shaft_base"}), True))
+        self.assertEqual(frames["down_base"].hand_colours, frozenset({"skin_fair_base"}))
 
     def test_keep_must_be_a_list_of_strings(self):
-        path = self.config({"part": "p.txt", "z": "front", "keep": "wood_base"})
+        path = self.config({"part": "p.txt", "z": "front", "keep": "weapon_shaft_base"})
         with self.assertRaisesRegex(ComposeError, "keep"):
             load_config(path, self.ws.root)
 

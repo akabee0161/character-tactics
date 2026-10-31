@@ -24,8 +24,8 @@ from unit_picker import (  # noqa: E402
 )
 
 DIRS = ("down", "up", "left", "right")
-BODY_MAP = "o=outline b=skin_base"
-PART_MAP = "o=outline h=leaf_base"
+BODY_MAP = "o=contour b=skin_fair_base"
+PART_MAP = "o=contour h=tree_leaf_base"
 
 
 def grid_text(pixels: dict[tuple[int, int], str], maps: str, size: int = 32) -> str:
@@ -47,7 +47,7 @@ class Workspace:
             # 頭の案 H1 は (11,10)、H2 は (12,10)。体の画素 (10,10) にも1画素重ねる
             self.write(f"head1_{d}.txt", grid_text({(11, 10): "h", (10, 10): "h"}, PART_MAP))
             self.write(f"head2_{d}.txt", grid_text({(12, 10): "h"}, PART_MAP))
-            self.write(f"knife_{d}.txt", grid_text({(10, 10): "o", (5, 5): "o"}, "o=outline"))
+            self.write(f"knife_{d}.txt", grid_text({(10, 10): "o", (5, 5): "o"}, "o=contour"))
 
     def write(self, rel: str, text: str) -> Path:
         path = self.root / rel
@@ -174,12 +174,12 @@ class BuildDataTest(unittest.TestCase):
         self.ws.close()
 
     def test_front_part_paints_over_the_body(self):
-        self.assertEqual(pixel(self.data, "H1-D2|down", 10, 10), "#1f5c40")  # leaf_base
+        self.assertEqual(pixel(self.data, "H1-D2|down", 10, 10), "#1f5c40")  # tree_leaf_base
         self.assertEqual(pixel(self.data, "H1-D2|down", 11, 10), "#1f5c40")
 
     def test_back_part_is_hidden_by_the_body(self):
-        self.assertEqual(pixel(self.data, "H2-D3|down", 10, 10), "#f0c49a")  # skin_base
-        self.assertEqual(pixel(self.data, "H2-D3|down", 5, 5), "#1a1228")    # outline, where the body is clear
+        self.assertEqual(pixel(self.data, "H2-D3|down", 10, 10), "#f0c49a")  # skin_fair_base
+        self.assertEqual(pixel(self.data, "H2-D3|down", 5, 5), "#1a1228")    # contour, where the body is clear
 
     def test_z_by_direction_is_used(self):
         self.assertEqual(pixel(self.data, "H2-D1|down", 10, 10), "#1a1228")  # front in down
@@ -199,7 +199,7 @@ class BuildDataTest(unittest.TestCase):
         self.assertIn("ロラン|up", self.data["refs"])
 
     def test_letter_clash_names_the_combination(self):
-        self.ws.write("knife_down.txt", grid_text({(5, 5): "b"}, "b=leaf_base"))
+        self.ws.write("knife_down.txt", grid_text({(5, 5): "b"}, "b=tree_leaf_base"))
         with self.assertRaisesRegex(PickerError, r"H1-D1.*down"):
             build_data(load_picker(self.ws.config(), root=self.ws.root))
 
@@ -251,7 +251,7 @@ class PartsAloneTest(unittest.TestCase):
 
     def two_part_config(self, ear_map: str) -> Path:
         for d in DIRS:
-            self.ws.write(f"hood_{d}.txt", grid_text({(11, 10): "h"}, "h=leaf_base"))
+            self.ws.write(f"hood_{d}.txt", grid_text({(11, 10): "h"}, "h=tree_leaf_base"))
             self.ws.write(f"ear_{d}.txt", grid_text({(12, 10): "h"}, ear_map))
         return self.ws.config(elements={
             "head": {"label": "頭", "variants": {"H1": {"label": "頭巾と耳", "layers": [
@@ -259,16 +259,16 @@ class PartsAloneTest(unittest.TestCase):
             "weapon": {"label": "短剣", "variants": {"D2": {"label": "なし", "layers": []}}}})
 
     def test_two_parts_in_one_variant_are_drawn_together(self):
-        data = build_data(load_picker(self.two_part_config("h=leaf_base"), root=self.ws.root))
+        data = build_data(load_picker(self.two_part_config("h=tree_leaf_base"), root=self.ws.root))
         alone = {"frames": data["parts"], "colours": data["colours"]}
-        self.assertEqual(pixel(alone, "H1|down", 11, 10), "#1f5c40")  # leaf_base
+        self.assertEqual(pixel(alone, "H1|down", 11, 10), "#1f5c40")  # tree_leaf_base
         self.assertEqual(pixel(alone, "H1|down", 12, 10), "#1f5c40")
 
     def test_two_parts_giving_one_letter_two_colours_stop_the_page(self):
         # 部品だけの絵は文字で重ねるので、同じ文字に別の色があると後の部品の色になる。
         # その前に組み合わせの組み立て（compose_frame）が止めることを固定しておく
         with self.assertRaisesRegex(PickerError, r"H1-D2 の down.*'h'"):
-            build_data(load_picker(self.two_part_config("h=skin_base"), root=self.ws.root))
+            build_data(load_picker(self.two_part_config("h=skin_fair_base"), root=self.ws.root))
 
 
 class RefsTest(unittest.TestCase):

@@ -1,9 +1,9 @@
 {
   "unit": "ines",
   "hand_colours": [
-    "skin_hi",
-    "skin_base",
-    "skin_shadow"
+    "skin_fair_hi",
+    "skin_fair_base",
+    "skin_fair_shadow"
   ],
   "frames": {
     "down_base": {
@@ -22,12 +22,12 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -35,12 +35,12 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         }
       ]
@@ -61,12 +61,12 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -74,12 +74,12 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         }
       ]
@@ -100,12 +100,12 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -113,12 +113,12 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         }
       ]
@@ -139,12 +139,12 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -152,12 +152,12 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         }
       ]
@@ -178,12 +178,12 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -191,12 +191,12 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         }
       ]
@@ -217,12 +217,12 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -230,12 +230,12 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         }
       ]
@@ -256,12 +256,12 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -269,12 +269,12 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         }
       ]
@@ -295,12 +295,12 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -308,12 +308,12 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         }
       ]
@@ -326,12 +326,12 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -343,12 +343,12 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -365,12 +365,12 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -382,12 +382,12 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -404,12 +404,12 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -421,12 +421,12 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -443,12 +443,12 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -460,12 +460,12 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -482,12 +482,12 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -499,12 +499,12 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -521,12 +521,12 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -538,12 +538,12 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -560,12 +560,12 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -577,12 +577,12 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -599,12 +599,12 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -616,12 +616,12 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -638,12 +638,12 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -655,12 +655,12 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -677,12 +677,12 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -694,12 +694,12 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -716,12 +716,12 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -733,12 +733,12 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -755,12 +755,12 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -772,12 +772,12 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -794,12 +794,12 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -811,12 +811,12 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -833,12 +833,12 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -850,12 +850,12 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -872,12 +872,12 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -889,12 +889,12 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -911,12 +911,12 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -928,12 +928,12 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -954,12 +954,12 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -971,12 +971,12 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         }
       ]
@@ -993,12 +993,12 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -1010,12 +1010,12 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         }
       ]
@@ -1032,12 +1032,12 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -1049,12 +1049,12 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         }
       ]
@@ -1071,12 +1071,12 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -1088,12 +1088,12 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         }
       ]
@@ -1110,12 +1110,12 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -1127,12 +1127,12 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         }
       ]
@@ -1149,12 +1149,12 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -1166,12 +1166,12 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         }
       ]
@@ -1188,12 +1188,12 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -1205,12 +1205,12 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         }
       ]
@@ -1227,12 +1227,12 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         },
         {
@@ -1244,12 +1244,12 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "water_base",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "arrowhead",
+            "bowstring",
+            "fletching",
+            "weapon_shaft_base",
+            "legwear_brown",
+            "weapon_shaft_shadow"
           ]
         }
       ]

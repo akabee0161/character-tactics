@@ -16,8 +16,9 @@ File format::
 
 Header lines start with ``#`` and may be interleaved with blank lines, but must
 all appear before the first grid row. ``map`` may be repeated. Every non-``.``
-character in the grid must be bound by ``map`` to a key of
-``palette/master.json``. ``.`` is background and is painted per ``bg``.
+character in the grid must be bound by ``map`` to a use colour of
+``palette/uses/*.json`` (see ``tools/palette.py``). ``.`` is background and is
+painted per ``bg``.
 
 A ``#`` line with no colon in it is a comment. One *with* a colon has to be a
 well formed header, so a typo in a key is an error rather than a silent no-op.
@@ -31,14 +32,13 @@ It then carries no rows of its own and inherits every header it does not state.
 """
 from __future__ import annotations
 
-import json
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
 BACKGROUND = "."
 REPO_ROOT = Path(__file__).resolve().parent.parent
-PALETTE_PATH = REPO_ROOT / "palette" / "master.json"
+PALETTE_DIR = REPO_ROOT / "palette"
 
 HEX_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
 SIZE_RE = re.compile(r"^(\d+)x(\d+)$")
@@ -95,25 +95,29 @@ def hex_to_rgb(value: str) -> tuple[int, int, int]:
     return tuple(int(value[i : i + 2], 16) for i in (1, 3, 5))  # type: ignore[return-value]
 
 
-def load_palette(path: Path = PALETTE_PATH) -> dict[str, tuple[int, int, int]]:
-    """Read ``palette/master.json`` into ``name -> (r, g, b)``."""
-    try:
-        raw = json.loads(path.read_text(encoding="utf-8"))
-    except FileNotFoundError:
-        raise GridError(f"palette not found: {path}") from None
-    except json.JSONDecodeError as exc:
-        raise GridError(f"{path}: invalid JSON: {exc}") from None
-    if not isinstance(raw, dict):
-        raise GridError(f"{path}: expected an object of name -> hex colour")
+def load_palette(root: Path = PALETTE_DIR) -> dict[str, tuple[int, int, int]]:
+    """Every use colour (the names a grid's ``map`` refers to) -> its swatch's ``(r, g, b)``.
 
-    palette: dict[str, tuple[int, int, int]] = {}
-    for name, value in raw.items():
-        if not isinstance(value, str) or not HEX_RE.match(value):
-            raise GridError(f"{path}: {name!r} is not a '#rrggbb' string (got {value!r})")
-        palette[name] = hex_to_rgb(value)
-    if not palette:
-        raise GridError(f"{path}: palette is empty")
-    return palette
+    Read through ``palette.load``; the value lives only in ``swatches.json``.
+    """
+    import palette  # palette imports this module, so import it when called
+
+    pal = palette.load(root)
+    if not pal.uses:
+        raise GridError(f"{root}: palette has no use colours (palette/uses/*.json)")
+    return {name: pal.rgb(name) for name in pal.uses}
+
+
+def load_colours(root: Path = PALETTE_DIR) -> dict[str, tuple[int, int, int]]:
+    """Use colours and swatches together, name -> ``(r, g, b)``.
+
+    Only for drawing frames that ``enemy_build.py`` recoloured: its ``recolor``
+    maps a use colour to a swatch, so those frames carry swatch names.
+    """
+    import palette
+
+    pal = palette.load(root)
+    return {**pal.swatches, **{name: pal.rgb(name) for name in pal.uses}}
 
 
 @dataclass(frozen=True)
@@ -325,7 +329,7 @@ def check(grid: Grid, palette: dict[str, tuple[int, int, int]]) -> list[str]:
 
     for name in sorted(set(grid.charmap.values())):
         if name not in palette:
-            errors.append(f"map references {name!r}, which is not in the master palette")
+            errors.append(f"map references {name!r}, which is not a use colour in palette/uses")
 
     unknown: dict[str, int] = {}
     for y, row in enumerate(grid.rows):

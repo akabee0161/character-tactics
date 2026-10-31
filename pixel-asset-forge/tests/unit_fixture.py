@@ -19,12 +19,12 @@ from compose import main as compose_main  # noqa: E402
 from test_compose import Workspace, grid_text  # noqa: E402
 
 MAPS = {
-    "core": "o=outline b=skin_base c=cloak_dark_base",
-    "sword": "o=outline i=stone_hi k=wood_base",
-    "sword_hand": "o=outline a=skin_hi",
-    "shield": "o=outline m=metal_hi",
+    "core": "o=contour b=skin_fair_base c=clothes_dark_base",
+    "sword": "o=contour i=blade_hi k=weapon_shaft_base",
+    "sword_hand": "o=contour a=skin_fair_hi",
+    "shield": "o=contour m=shield_hi",
 }
-HAND_COLOURS = ["skin_hi"]
+HAND_COLOURS = ["skin_fair_hi"]
 
 
 def box(x0: int, y0: int, x1: int, y1: int, fill: str) -> dict[tuple[int, int], str]:

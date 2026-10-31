@@ -3,8 +3,8 @@
 # light: upper-left
 # A boulder. Same stone ramp as the castle and the mountains, lit from the
 # upper left, with the cast shadow on the grass below it.
-# map: g=grass_base a=grass_hi s=grass_shadow o=outline
-# map: n=stone_base t=stone_hi m=stone_shadow
+# map: g=ground_grass_base a=ground_grass_hi s=ground_grass_shadow o=contour
+# map: n=rock_base t=rock_hi m=rock_shadow
 gggggggggggggggg
 ggaagggggggggggg
 gggggggggssggggg

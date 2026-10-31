@@ -32,7 +32,7 @@ class LoadTest(unittest.TestCase):
         frame = cfg.frames["down_idle2"]
         self.assertEqual((frame.direction, frame.state), ("down", "idle2"))
         self.assertEqual(list(frame.parts), ["sword", "sword_hand", "shield"])
-        self.assertEqual(cfg.hand, frozenset({"skin_hi"}))  # compose の hand_colours
+        self.assertEqual(cfg.hand, frozenset({"skin_fair_hi"}))  # compose の hand_colours
         self.assertEqual(cfg.unit_dir, self.fx.root / "assets" / "unit" / "t")
 
     def test_the_stack_order_names_parts_by_the_file_name_before_the_direction(self):
@@ -74,7 +74,7 @@ class LoadTest(unittest.TestCase):
     def test_head_part_cannot_use_keep(self):
         # eye_check は手前の部品で上書きして重ねるので、keep を使うと組んだ絵と違う画素を見る
         self.fx.checks["parts"]["shield"] = {"head": True}
-        self.fx.keep["shield"] = ["skin_base"]
+        self.fx.keep["shield"] = ["skin_fair_base"]
         self.assertConfigError("head の部品に compose の keep は使えない")
 
     def test_blade_char_not_in_the_part_files(self):
@@ -116,12 +116,12 @@ class LoadTest(unittest.TestCase):
         self.assertConfigError("orders.up")
 
     def test_colour_not_in_the_palette(self):
-        self.fx.checks["weapon_check"] = {"blade": ["stone_hi"], "hand": ["skin_bse"]}
+        self.fx.checks["weapon_check"] = {"blade": ["blade_hi"], "hand": ["skin_bse"]}
         self.assertConfigError("パレットに無い色名 skin_bse")
 
     def test_the_colours_key_is_gone(self):
         # 目の確認は色の見分けで測り、髪・かぶり物は文字で指定する（2026-10-16）
-        self.fx.checks["colours"] = {"face": ["skin_base"]}
+        self.fx.checks["colours"] = {"face": ["skin_fair_base"]}
         self.assertConfigError("知らないキー colours")
 
     def test_body_is_male_or_female(self):
@@ -152,7 +152,7 @@ class LoadTest(unittest.TestCase):
                 self.assertConfigError(text)
 
     def test_weapon_check_colour_and_frame_names_are_checked(self):
-        base = {"blade": ["stone_hi"], "hand": ["skin_hi"]}
+        base = {"blade": ["blade_hi"], "hand": ["skin_fair_hi"]}
         for extra, text in (({"weapon": ["wood_bse"]}, "wood_bse"), ({"hidden": ["down_atk_wind"]}, "down_atk_wind"),
                             ({"depth": ["side"]}, "side")):
             with self.subTest(text):

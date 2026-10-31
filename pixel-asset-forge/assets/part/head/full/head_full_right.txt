@@ -3,8 +3,8 @@
 # size: 32x32
 # light: upper-left
 # bg: transparent
-# map: o=outline E=carpet_base D=carpet_hi s=stone_hi
-# map: t=stone_base u=stone_shadow v=stone_dark
+# map: o=contour E=helmet_plume_base D=helmet_plume_hi s=helmet_steel_hi
+# map: t=helmet_steel_base u=helmet_steel_shadow v=helmet_steel_dark
 ................................
 ................................
 ................oo..............

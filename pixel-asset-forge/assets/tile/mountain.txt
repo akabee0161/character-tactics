@@ -7,8 +7,8 @@
 # with mountain_{nw,ne,sw,se} while being made of entirely different colours.
 # This one uses the 2x2 massif's stone ramp and its diagonal, so a lone peak
 # and a range read as the same rock.
-# map: g=grass_base s=grass_shadow
-# map: k=stone_dark m=stone_shadow n=stone_base t=stone_hi
+# map: g=ground_grass_base s=ground_grass_shadow
+# map: k=rock_dark m=rock_shadow n=rock_base t=rock_hi
 gggssggggggggggg
 ggggggggggggssgg
 gggggggkkggggggg

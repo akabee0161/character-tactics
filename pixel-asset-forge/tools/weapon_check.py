@@ -2,10 +2,10 @@
 """ユニットの武器と、それを握る手を、見せる前に機械で確かめる（自己チェック①の道具の1つ）。
 
     tools/weapon_check.py assets/unit/spear-knight \\
-        --blade stone_hi,stone_base --weapon wood_base,wood_shadow \\
-        --hand skin_rose_hi,skin_rose_base,skin_rose_shadow --hidden left_atk_hit,right_atk_hit
+        --blade blade_hi,blade_base --weapon weapon_shaft_base,weapon_shaft_shadow \\
+        --hand skin_ruddy_hi,skin_ruddy_base,skin_ruddy_shadow --hidden left_atk_hit,right_atk_hit
 
-色はファイルごとの文字ではなく、パレットの色名で指定する。
+色はファイルごとの文字ではなく、用途の色の名前（palette/uses）で指定する。
 - 刃（--blade）: 武器の先の色。「穂先」は、手から一番遠い刃の画素とする
 - 武器（--weapon）: 刃以外の武器の色（柄など）。刃と柄が（刃と柄の間は斜めでも）つながった塊を武器とする。
   刃と同じ色の兜、柄と同じ色のベルトや靴を取り違えないため。体に隠されて切れた柄（刃の延長上にある
@@ -264,7 +264,7 @@ def floating(a: Analysis, arm: set[str]) -> bool:
                 name = a.pixels.get(q)
                 if name in arm:
                     return False
-                if name != "outline":
+                if name != "contour":
                     break
     return True
 
@@ -356,7 +356,7 @@ def covered(name: str, final, ref, cover: set[str], hand: set[str], arm: set[str
     - standing（立ち・待機2・歩き）では、体や頭の画素も書き換えてはいけない。ただし、肌と輪郭どうし（素体の手を
       拳に描き直す）と、arm の色どうし（袖を同じ色の服につなぐ）の書き換えは許す。攻撃のコマは、承認済みの絵に
       奥の手を体の前へ出す描き方（当たり・振りかぶりの柄や拳）があるので、cover だけを見る"""
-    hand_like = hand | {"outline"}
+    hand_like = hand | {"contour"}
 
     def allowed(before, after):
         return (before in hand_like and after in hand_like) or (before in arm and after in arm)

@@ -5,8 +5,8 @@
   "body": "male",
   "frames": "assets/unit/dagger-horn",
   "recolor": {
-    "cloak_dark_hi": "leaf_hi",
-    "cloak_dark_base": "leaf_base",
-    "cloak_dark_shadow": "leaf_shadow"
+    "clothes_dark_hi": "leaf_hi",
+    "clothes_dark_base": "leaf_base",
+    "clothes_dark_shadow": "leaf_shadow"
   }
 }

@@ -39,7 +39,7 @@ def rows_of(pixels: dict[tuple[int, int], str], size: int = 32) -> list[str]:
     return ["".join(r) for r in grid]
 
 
-def grid_text(pixels: dict[tuple[int, int], str], maps: str = "o=outline b=skin_base k=wood_base") -> str:
+def grid_text(pixels: dict[tuple[int, int], str], maps: str = "o=contour b=skin_fair_base k=weapon_shaft_base") -> str:
     header = "# type: unit\n# size: 32x32\n# light: upper-left\n# bg: transparent\n"
     return header + f"# map: {maps}\n" + "\n".join(rows_of(pixels)) + "\n"
 

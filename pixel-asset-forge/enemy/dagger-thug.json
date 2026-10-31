@@ -5,8 +5,8 @@
   "body": "male",
   "frames": "assets/unit/dagger-thug",
   "recolor": {
-    "cloak_dark_hi": "orchid_base",
-    "cloak_dark_base": "orchid_shadow",
-    "cloak_dark_shadow": "orchid_dark"
+    "clothes_dark_hi": "orchid_base",
+    "clothes_dark_base": "orchid_shadow",
+    "clothes_dark_shadow": "orchid_dark"
   }
 }

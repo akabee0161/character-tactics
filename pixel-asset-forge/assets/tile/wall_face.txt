@@ -7,7 +7,7 @@
 # sideways and downward if a wall needs to be two faces tall.
 # The window, torch, banner and door tiles keep columns 0-3 and 12-15 identical
 # to this file; that is what lets them sit anywhere in a run of wall.
-# map: n=stone_base m=stone_shadow d=stone_dark
+# map: n=building_stone_base m=building_stone_shadow d=building_stone_dark
 dddddddddddddddd
 dnnnnnnndnnnnnnn
 dmmmmmmmdmmmmmmm

@@ -15,7 +15,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "tools"))
 
 import probe_colors  # noqa: E402
-from gridfile import GridError, load_palette  # noqa: E402
+from gridfile import GridError, load_colours  # noqa: E402
 
 
 def write(text: str) -> Path:
@@ -27,11 +27,16 @@ def write(text: str) -> Path:
 
 class ResolveTest(unittest.TestCase):
     def setUp(self):
-        self.palette = load_palette()
+        self.palette = load_colours()
 
     def test_a_palette_name_resolves(self):
         self.assertEqual(
             probe_colors.resolve("grass_base", self.palette), self.palette["grass_base"]
+        )
+
+    def test_a_use_colour_name_resolves_to_its_swatch(self):
+        self.assertEqual(
+            probe_colors.resolve("ground_grass_base", self.palette), self.palette["grass_base"]
         )
 
     def test_a_literal_resolves_without_being_in_the_palette(self):
@@ -46,7 +51,7 @@ class VerdictTest(unittest.TestCase):
     """The cases that made this tool worth keeping."""
 
     def setUp(self):
-        self.palette = load_palette()
+        self.palette = load_colours()
 
     def test_the_rejected_leaf_colour_is_a_hard_failure(self):
         label, distance = probe_colors.verdict("#3f8a3c", "grass_base", self.palette)

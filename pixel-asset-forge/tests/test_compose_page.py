@@ -23,7 +23,7 @@ class ComposePageTest(unittest.TestCase):
         self.ws.write("body.txt", grid_text({(10, 10): "b"}, BODY_MAP))
         self.ws.write("part.txt", grid_text({(11, 10): "h", (10, 10): "h"}, PART_MAP))
         # 組み立てた絵は (10,10)=素体の色、(11,10)=部品の色。今の絵は (11,10) だけ違う
-        self.ws.write("against/down_base.txt", grid_text({(10, 10): "b", (11, 10): "b"}, "b=skin_base h=leaf_base"))
+        self.ws.write("against/down_base.txt", grid_text({(10, 10): "b", (11, 10): "b"}, "b=skin_fair_base h=tree_leaf_base"))
         self.out = root / "page.html"
 
     def tearDown(self):
@@ -52,7 +52,7 @@ class ComposePageTest(unittest.TestCase):
 
     def test_open_hand_part_still_makes_the_page(self):
         part = self.ws.write("open.txt", grid_text({(10, 12): "b"}, BODY_MAP))
-        path = self.config({"part": str(part), "z": "front", "hand": True}, hand_colours=["skin_base"])
+        path = self.config({"part": str(part), "z": "front", "hand": True}, hand_colours=["skin_fair_base"])
         code, _ = self.run_main(path)
         self.assertEqual(code, 0)
         page = self.out.read_text(encoding="utf-8")
@@ -78,7 +78,7 @@ if __name__ == "__main__":
 
 class GroundTest(unittest.TestCase):
     def test_ground_stands_apart_from_every_palette_colour(self):
-        # 地が薄い灰色だと、白に近い弦（stone_hi）が地に溶けて見えなかった（2026-10-12 依頼者の指摘）
+        # 地が薄い灰色だと、白に近い弦（blade_hi）が地に溶けて見えなかった（2026-10-12 依頼者の指摘）
         from compose_page import GROUND
         from gridfile import load_palette
 

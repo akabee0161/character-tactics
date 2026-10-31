@@ -9,7 +9,7 @@
 # confetti on a dark field - a canopy needs crowns, not marks.
 # There is no outline here. An outline is for an object's silhouette, and this
 # tile has no silhouette; it is a surface.
-# map: e=leaf_hi f=leaf_base j=leaf_shadow
+# map: e=tree_leaf_hi f=tree_leaf_base j=tree_leaf_shadow
 jjffffjjjjffffjj
 jfeeeffjjfeeeffj
 feeeeefffeeeeeff

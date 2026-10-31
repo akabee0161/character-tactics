@@ -4,7 +4,7 @@
 # A flight going down. Same steps and side walls as stairs_up, but the treads
 # darken towards the top and the last two rows are outline, so the flight ends
 # in a hole instead of a landing.
-# map: o=outline n=stone_base t=stone_hi m=stone_shadow d=stone_dark
+# map: o=contour n=building_stone_base t=building_stone_hi m=building_stone_shadow d=building_stone_dark
 oooooooooooooooo
 oooooooooooooooo
 mnddddddddddddmm

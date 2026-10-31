@@ -5,7 +5,7 @@
 # catches the light. Not a mirror of wall_corner_ne, because the light is
 # upper left, so one corner is lit and the other is in shadow. That asymmetry is
 # exactly the case CLAUDE.md warns transforms cannot express.
-# map: n=stone_base t=stone_hi m=stone_shadow d=stone_dark
+# map: n=building_stone_base t=building_stone_hi m=building_stone_shadow d=building_stone_dark
 tndddddddddddddd
 tnnnnnnndnnnnnnn
 tnmmmmmmdmmmmmmm

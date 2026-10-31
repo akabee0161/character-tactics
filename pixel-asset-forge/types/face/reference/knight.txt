@@ -2,10 +2,10 @@
 # size: 32x32
 # light: upper-left
 # bg: gradient:#1c1834->#323256
-# map: o=outline e=hair_hi f=hair_base g=hair_shadow
-# map: h=hair_dark a=skin_hi b=skin_base c=skin_shadow
-# map: d=skin_deep w=eye_white i=iris k=pupil
-# map: m=mouth p=cloth_hi q=cloth_base r=cloth_shadow
+# map: o=contour e=face_hair_hi f=face_hair_base g=face_hair_shadow
+# map: h=face_hair_dark a=face_skin_hi b=face_skin_base c=face_skin_shadow
+# map: d=face_skin_deep w=face_eye_white i=face_iris k=face_pupil
+# map: m=face_mouth p=face_clothes_hi q=face_clothes_base r=face_clothes_shadow
 ................................
 .............oooooo.............
 ...........ofeeeeeffo...........
