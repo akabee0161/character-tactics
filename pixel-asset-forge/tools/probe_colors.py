@@ -34,6 +34,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import palette as palette_mod
 from gridfile import HEX_RE, GridError, hex_to_rgb, load_colours
 
 from check_colors import (
@@ -59,6 +60,14 @@ def resolve(colour: str, palette: dict[str, tuple[int, int, int]]) -> tuple[int,
     raise GridError(f"{colour!r} is neither a palette name nor a '#rrggbb' literal")
 
 
+def is_outline(colour: str) -> bool:
+    """色見本が輪郭（OUTLINE_NAMES）の色か。用途の色は、指す色見本で判定する。"""
+    if colour in OUTLINE_NAMES:
+        return True
+    use = palette_mod.load().uses.get(colour)
+    return use is not None and use.swatch in OUTLINE_NAMES
+
+
 def verdict(one: str, two: str, palette: dict[str, tuple[int, int, int]]) -> tuple[str, float]:
     """Return what check_colors.py would say about this pair, and the distance.
 
@@ -70,9 +79,9 @@ def verdict(one: str, two: str, palette: dict[str, tuple[int, int, int]]) -> tup
     if has_lightness_edge(lab_one, lab_two):
         return "OK(lightness)", distance
 
-    # 輪郭は用途の色 (contour) でも色見本 (outline) でも指せる
-    is_outline = bool({one, two} & (OUTLINE_NAMES | {"contour"}))
-    hard, warn = (OUTLINE_HARD, OUTLINE_WARN) if is_outline else (OTHER_HARD, OTHER_WARN)
+    # 輪郭は色見本 (outline) でも、それを指す用途の色 (contour・eyepatch など) でも指せる
+    outline = is_outline(one) or is_outline(two)
+    hard, warn = (OUTLINE_HARD, OUTLINE_WARN) if outline else (OTHER_HARD, OTHER_WARN)
     if distance >= warn:
         return "OK(dE)", distance
     return ("WARN" if distance >= hard else "HARD"), distance

@@ -77,6 +77,17 @@ class VerdictTest(unittest.TestCase):
         self.assertEqual(distance, 0.0)
 
 
+class IsOutlineTest(unittest.TestCase):
+    def test_a_use_colour_pointing_at_the_outline_swatch_is_an_outline(self):
+        # 輪郭の色見本を指す用途の色は、名前が contour でなくても輪郭（眼帯 eyepatch は色見本 outline）
+        for name in ("outline", "contour", "eyepatch"):
+            self.assertTrue(probe_colors.is_outline(name), name)
+
+    def test_other_colours_and_literals_are_not(self):
+        for name in ("grass_base", "stone_hi", "#101018"):
+            self.assertFalse(probe_colors.is_outline(name), name)
+
+
 class ReadPairsTest(unittest.TestCase):
     def test_it_reads_pairs_and_skips_comments_and_blanks(self):
         path = write("# a note\n\ngrass_base leaf_hi\nstone_hi stone_dark\n")

@@ -83,6 +83,44 @@ class PaletteLoadTest(unittest.TestCase):
         _write(self.root, "uses/unit.json", {})
         self.assertRejects("swatches.json", "bad")
 
+    def test_rejects_hex_with_trailing_newline(self) -> None:
+        # '$' は末尾の改行を通すので、fullmatch で見る
+        _write(self.root, "swatches.json", {"bad": {"hex": "#aabbcc\n", "note": "n"}})
+        _write(self.root, "uses/unit.json", {})
+        self.assertRejects("swatches.json", "bad")
+
+    def test_rejects_missing_swatches_file(self) -> None:
+        (self.root / "swatches.json").unlink()
+        _write(self.root, "uses/unit.json", {})
+        self.assertRejects("swatches.json", "見つかりません")
+
+    def test_rejects_missing_kinds_file(self) -> None:
+        (self.root / "kinds.json").unlink()
+        _write(self.root, "uses/unit.json", {})
+        self.assertRejects("kinds.json", "見つかりません")
+
+    def test_rejects_top_level_that_is_not_an_object(self) -> None:
+        _write(self.root, "swatches.json", [])
+        _write(self.root, "uses/unit.json", {})
+        self.assertRejects("swatches.json", "オブジェクト")
+
+    def test_rejects_swatch_without_note(self) -> None:
+        _write(self.root, "swatches.json", {"a": {"hex": "#000000"}})
+        _write(self.root, "uses/unit.json", {})
+        self.assertRejects("swatches.json", "'a'", "note")
+
+    def test_rejects_kind_without_note(self) -> None:
+        _write(self.root, "kinds.json", {"blade": {}})
+        _write(self.root, "uses/unit.json", {})
+        self.assertRejects("kinds.json", "'blade'", "note")
+
+    def test_rejects_missing_uses_directory(self) -> None:
+        self.assertRejects("uses")
+
+    def test_rejects_empty_uses_directory(self) -> None:
+        (self.root / "uses").mkdir()
+        self.assertRejects("uses")
+
     def test_rejects_duplicate_use_across_files(self) -> None:
         _write(self.root, "uses/unit.json", {"dup": self.use()})
         _write(self.root, "uses/tile.json", {"dup": self.use()})

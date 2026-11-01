@@ -20,7 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import palette  # noqa: E402
 from gridfile import BACKGROUND  # noqa: E402
-from unit_config import OUTLINE, UnitConfig, points, run_check  # noqa: E402
+from unit_config import OUTLINE, UnitConfig, kind_of_use, points, run_check  # noqa: E402
 
 N4 = ((1, 0), (-1, 0), (0, 1), (0, -1))
 
@@ -40,7 +40,7 @@ def check(cfg: UnitConfig) -> list[tuple[str, str]]:
         part = entries[0][0]
         grid = part.grid
         skip = set(cfg.role(part.name, "open_chars") or "")
-        edge_ok = {ch for ch, use in grid.charmap.items() if pal.kind_of(use) in EDGE_KINDS}
+        edge_ok = {ch for ch, use in grid.charmap.items() if kind_of_use(pal, use, part.layer.part) in EDGE_KINDS}
         cores = [(p.layer.dx, p.layer.dy, frame.core) for p, frame in entries]
 
         def at(x: int, y: int) -> str:

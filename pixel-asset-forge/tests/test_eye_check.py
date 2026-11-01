@@ -181,6 +181,15 @@ class EyePartTest(unittest.TestCase):
         code, out = self.fx.run(main)
         self.assertEqual(code, 0, out)
 
+    def test_a_colour_name_missing_from_the_palette_is_a_clear_error(self):
+        self.fx.maps["glasses"] = "p=no_such_colour"
+        glasses = {p: "p" for p in (*LEFT_DIAGONAL, *RIGHT_DIAGONAL)}
+        self.add_part("glasses", glasses, {})
+        code, out = self.fx.run(main)
+        self.assertEqual(code, 2, out)
+        self.assertIn("パレットに無い色名 no_such_colour", out)
+        self.assertIn("glasses_down_base", out)
+
     def test_partly_hidden_eyes_fail(self):
         self.add_part("helm", {(14, 10): "h", (17, 10): "h"}, {"head": True}, frames={"down_base"})
         code, out = self.fx.run(main)

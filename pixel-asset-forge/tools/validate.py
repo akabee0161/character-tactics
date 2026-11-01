@@ -102,6 +102,8 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     failed = 0
+    unreadable = 0
+    outside: list[Path] = []
     used_names: set[str] = set()
     for path in grids:
         rel = display(path)
@@ -110,7 +112,10 @@ def main(argv: list[str] | None = None) -> int:
         except GridError as exc:
             print(f"FAIL {rel}\n       {exc}", file=sys.stderr)
             failed += 1
+            unreadable += 1
             continue
+        if not path.is_relative_to(REPO_ROOT):
+            outside.append(path)
 
         errors = check(grid, palette) + palette_rules(display(path), grid, pal)
         used_names |= set(grid.charmap[c] for c in grid.used_chars() if c in grid.charmap)
@@ -124,12 +129,18 @@ def main(argv: list[str] | None = None) -> int:
             limit = f"/{grid.max_colors}" if grid.max_colors is not None else ""
             print(f"ok   {rel}  {grid.width}x{grid.height}  {used}{limit} colours")
 
-    if not args.targets:
-        unused_uses, unused_swatches = unused(pal, used_names)
-        for n in sorted(unused_uses):
-            print(f"note: use colour {n!r} is not used by any grid")
-        for n in sorted(unused_swatches):
-            print(f"note: swatch {n!r} has no use pointing at it")
+    if outside and not args.quiet:
+        print(f"note: リポジトリの外のグリッドが {len(outside)} 件あります。置き場所の決まり"
+              "（部品・装備・素体に使える種類）はリポジトリの中のパスにだけ掛かるので、これには掛かっていません")
+    if not args.targets and not args.quiet:
+        if unreadable:
+            print(f"note: 読めないグリッドが {unreadable} 件あるので、未使用の色の報告は出しません（不正確になるため）")
+        else:
+            unused_uses, unused_swatches = unused(pal, used_names)
+            for n in sorted(unused_uses):
+                print(f"note: use colour {n!r} is not used by any grid")
+            for n in sorted(unused_swatches):
+                print(f"note: swatch {n!r} has no use pointing at it")
 
     if failed:
         print(f"\n{failed} of {len(grids)} grid(s) failed", file=sys.stderr)

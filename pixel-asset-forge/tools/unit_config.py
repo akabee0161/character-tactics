@@ -23,7 +23,7 @@ weapon_check に blade・weapon・hand が書いてあれば UnitConfigError。
 body は素体の型（male・female）。female の体には body_check.py の「はみ出し」を掛けない（2026-10-17 依頼者）。
 head_chars は芯に描いた髪・かぶり物の文字（body_check.py が胴のはみ出しと中心から外す。芯に髪・かぶり物を
 含めて組んだロラン・イネス・ガウのため。2026-10-16 から髪・かぶり物は別の部品にする）。色でなく文字で書くのは、
-ガウの頭巾と胴の服が同じ cloak_dark_* で、文字だけが違う（頭巾 f g h、胴 p q r）ため。
+ガウは頭巾の用途の色 hood_hi が頭の文字 f と胴の文字 p の両方に使われていて、色では頭と胴を分けられないため。
 eyes は向きごとの目の画素（x の列と、[上の行, 下の行]）。目の無い向きは null。目を芯に描いたユニット（ロラン・イネス・ガウ）
 だけが書く。目の部品（parts の eye）があるユニットは書かない（書けば UnitConfigError。目は部品の画素から読む。2026-10-30）。
 知らないキー・無い部品・compose にあるのに parts に無い部品・無いコマ・パレットに無い色名・部品のファイルに無い文字は
@@ -130,6 +130,14 @@ class UnitConfig:
 
     def role(self, part: str, key: str):
         return self.parts.get(part, {}).get(key)
+
+
+def kind_of_use(pal, name: str, part: Path) -> str:
+    """用途の色の種類。パレットに無い名前は、どの部品のファイルかを添えて UnitConfigError にする。"""
+    use = pal.uses.get(name)
+    if use is None:
+        raise UnitConfigError(f"パレットに無い色名 {name}（{part}）")
+    return use.kind
 
 
 def part_name(path: Path, direction: str) -> str:

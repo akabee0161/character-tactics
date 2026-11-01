@@ -33,7 +33,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import palette  # noqa: E402
 from gridfile import load_palette  # noqa: E402
 from probe_colors import verdict  # noqa: E402
-from unit_config import CORE, DIRECTIONS, OUTLINE, Frame, UnitConfig, points, run_check  # noqa: E402
+from unit_config import CORE, DIRECTIONS, OUTLINE, Frame, UnitConfig, kind_of_use, points, run_check  # noqa: E402
 
 
 COVER_KINDS = ("headgear", "ornament")  # head でない部品も、この種類の色の画素なら目を覆う（メガネなど）
@@ -65,7 +65,7 @@ def part_eyes(cfg: UnitConfig, frame: Frame, pal: palette.Palette) -> tuple[froz
                 continue
             head = cfg.role(front, "head")
             covered |= {p for p, use in frame.parts[front].pixels().items()
-                        if p in mine and (head or pal.kind_of(use) in COVER_KINDS)}
+                        if p in mine and (head or kind_of_use(pal, use, frame.parts[front].layer.part) in COVER_KINDS)}
     return frozenset(eyes), frozenset(covered)
 
 

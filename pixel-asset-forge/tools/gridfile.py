@@ -116,8 +116,7 @@ def load_colours(root: Path = PALETTE_DIR) -> dict[str, tuple[int, int, int]]:
     """
     import palette
 
-    pal = palette.load(root)
-    return {**pal.swatches, **{name: pal.rgb(name) for name in pal.uses}}
+    return palette.load(root).colours()
 
 
 @dataclass(frozen=True)

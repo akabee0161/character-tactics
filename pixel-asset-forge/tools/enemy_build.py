@@ -199,7 +199,7 @@ def source_colours(source_dir: Path, sheet_def: Path) -> set[str]:
 
 def colours_of(pal: Palette) -> dict[str, tuple[int, int, int]]:
     """色替えしたコマを描く色: 用途の色と色見本の両方（gridfile.load_colours と同じ中身）。"""
-    return {**pal.swatches, **{name: pal.rgb(name) for name in pal.uses}}
+    return pal.colours()
 
 
 def build(recipe: Recipe, source_dir: Path, sheet_def: Path, pal: Palette,

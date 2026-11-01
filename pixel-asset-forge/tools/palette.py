@@ -38,6 +38,10 @@ class Palette:
     def rgb(self, name: str) -> tuple[int, int, int]:
         return self.swatches[self.uses[name].swatch]
 
+    def colours(self) -> dict[str, tuple[int, int, int]]:
+        """用途の色と色見本をまとめた 名前 -> rgb。色替えしたコマ（色見本の名前を持つ）を描くときに使う。"""
+        return {**self.swatches, **{name: self.rgb(name) for name in self.uses}}
+
     def kind_of(self, name: str) -> str:
         return self.uses[name].kind
 
@@ -81,7 +85,7 @@ def load(root: Path = PALETTE_DIR) -> Palette:
     path = root / "swatches.json"
     for key, value in _read_object(path).items():
         e = _entry(path, key, value, ("hex", "note"))
-        if not HEX_RE.match(e["hex"]):
+        if not HEX_RE.fullmatch(e["hex"]):
             raise GridError(f"{path.name}: {key!r} の hex が '#rrggbb' ではありません ({e['hex']!r})")
         swatches[key] = hex_to_rgb(e["hex"])
         swatch_notes[key] = e["note"]
@@ -94,6 +98,8 @@ def load(root: Path = PALETTE_DIR) -> Palette:
     uses: dict[str, Use] = {}
     uses_dir = root / "uses"
     files = sorted(uses_dir.glob("*.json")) if uses_dir.is_dir() else []
+    if not files:
+        raise GridError(f"uses/: 用途の色のファイルがありません ({uses_dir}。uses/<型>.json が要ります)")
     for path in files:
         type_ = path.stem
         if type_ not in TYPES:

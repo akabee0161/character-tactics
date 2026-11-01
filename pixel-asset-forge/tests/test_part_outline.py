@@ -97,12 +97,22 @@ class PartOutlineTest(unittest.TestCase):
         compose_path.write_text(json.dumps(data), encoding="utf-8")
         walk = self.fx.root / "assets/part/body/t/core_down_walk_a.txt"
         lines = walk.read_text(encoding="utf-8").splitlines()
+        rows = [l for l in lines if not l.startswith("#")]
+        self.assertTrue(any("c" in l for l in rows), rows)  # 置き換えの前に、芯の文字 c が絵にあると確かめる
         walk.write_text("\n".join(l if l.startswith("#") else l.replace("c", ".") for l in lines) + "\n", encoding="utf-8")  # 歩きの芯は髪の下に無い
         out = io.StringIO()
         with contextlib.redirect_stdout(out), contextlib.redirect_stderr(out):
             code = main([str(path), "--root", str(self.fx.root)])
         self.assertEqual(code, 1, out.getvalue())
         self.assertIn("FAIL hair_down_base: 輪郭で閉じていない画素", out.getvalue())
+
+
+    def test_a_colour_name_missing_from_the_palette_is_a_clear_error(self):
+        self.add_edge_part("hair", "h", "o=contour h=no_such_colour")
+        code, out = self.fx.run(main)
+        self.assertEqual(code, 2, out)
+        self.assertIn("パレットに無い色名 no_such_colour", out)
+        self.assertIn("hair_down_base", out)
 
 
 if __name__ == "__main__":

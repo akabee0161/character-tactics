@@ -15,6 +15,11 @@ sys.path.insert(0, str(REPO_ROOT / "tools"))
 
 import palette  # noqa: E402
 from gridfile import parse  # noqa: E402
+import contextlib  # noqa: E402
+import io  # noqa: E402
+from unittest import mock  # noqa: E402
+
+import validate  # noqa: E402
 from validate import palette_rules, unused  # noqa: E402
 
 
@@ -108,7 +113,71 @@ class PaletteRulesTest(unittest.TestCase):
         d = self.root / "assets/tile/d.txt"
         _write(d, "# from: o.txt\n# transform: mirror_x\n")
         grid = parse(d)
+        self.assertEqual(grid.type, "tile")  # 派生ファイルは由来元の型を引き継ぐ
         self.assertEqual(palette_rules(Path("assets/tile/d.txt"), grid, self.pal), [])
+
+    def test_derived_file_is_held_to_the_origin_type(self) -> None:
+        self.grid("assets/tile/o2.txt", ["contour", "blade_hi"], "tile")  # tile に unit の色
+        d = self.root / "assets/tile/d2.txt"
+        _write(d, "# from: o2.txt\n# transform: mirror_x\n")
+        grid = parse(d)
+        errors = palette_rules(Path("assets/tile/d2.txt"), grid, self.pal)
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("blade_hi", errors[0])
+
+
+class MainReportTest(unittest.TestCase):
+    """validate.main の報告（本物のパレットと、一時のグリッドだけを使う）。"""
+
+    def setUp(self) -> None:
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.root = Path(tmp.name)
+        _write(self.root / "good.txt", "# type: tile\n# size: 1x1\n# map: a=contour\na\n")
+        _write(self.root / "broken.txt", "# type: tile\n# size: 1x1\n# map: a=contour\n")
+
+    def run_main(self, *argv: str, default: Path | None = None) -> tuple[int, str]:
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(out):
+            if default is None:
+                code = validate.main(list(argv))
+            else:
+                with mock.patch.object(validate, "default_targets", return_value=[default]):
+                    code = validate.main(list(argv))
+        return code, out.getvalue()
+
+    def test_unused_report_is_given_when_every_grid_was_read(self) -> None:
+        d = self.root / "ok"
+        _write(d / "good.txt", (self.root / "good.txt").read_text(encoding="utf-8"))
+        code, out = self.run_main(default=d)
+        self.assertEqual(code, 0, out)
+        self.assertIn("is not used by any grid", out)
+
+    def test_unused_report_is_left_out_when_a_grid_could_not_be_read(self) -> None:
+        d = self.root / "bad"
+        _write(d / "good.txt", (self.root / "good.txt").read_text(encoding="utf-8"))
+        _write(d / "broken.txt", (self.root / "broken.txt").read_text(encoding="utf-8"))
+        code, out = self.run_main(default=d)
+        self.assertEqual(code, 1, out)
+        self.assertNotIn("is not used by any grid", out)
+        self.assertIn("未使用の色の報告は出しません", out)
+
+    def test_quiet_hides_notes(self) -> None:
+        d = self.root / "ok"
+        _write(d / "good.txt", (self.root / "good.txt").read_text(encoding="utf-8"))
+        code, out = self.run_main("-q", default=d)
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("note:", out)
+
+    def test_a_path_outside_the_repo_says_placement_rules_do_not_apply(self) -> None:
+        code, out = self.run_main(str(self.root / "good.txt"))
+        self.assertEqual(code, 0, out)
+        self.assertIn("リポジトリの外", out)
+        self.assertIn("置き場所の決まり", out)
+
+    def test_a_path_inside_the_repo_has_no_such_note(self) -> None:
+        code, out = self.run_main(str(REPO_ROOT / "types/unit/base"))
+        self.assertNotIn("リポジトリの外", out)
 
 
 if __name__ == "__main__":

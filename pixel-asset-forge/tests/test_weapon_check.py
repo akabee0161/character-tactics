@@ -261,7 +261,9 @@ class WeaponDetectionTest(unittest.TestCase):
             put(f, x, 17, "belt_strap")
         grip_only = check_frame("down_base", Analysis(f, BLADE, HANDLE, SKIN), set(), set())
         self.assertFalse(any("拳が柄の真ん中に無い" in s for s in grip_only), grip_only)
-        # 帯の名前も柄として渡すと、このコマは落ちる（テストが帯の形を再現していることの確かめ）
+        # 帯の名前も柄として渡すと、このコマは落ちる（このテストの絵が、ベルトの取り違えを再現していることの確かめ）。
+        # この test 自体は「帯を柄に含めない」作りが無くても通る。本当の守りは
+        # test_unit_rules の test_weapon_check_colours_come_from_kinds
         with_belt = check_frame("down_base", Analysis(f, BLADE, HANDLE | {"belt_strap"}, SKIN), set(), set())
         self.assertTrue(any("拳が柄の真ん中に無い" in s for s in with_belt), with_belt)
 
