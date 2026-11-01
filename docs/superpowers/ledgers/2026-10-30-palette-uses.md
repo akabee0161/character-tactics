@@ -79,3 +79,13 @@ Executor: 未選択（依頼者のレビュー待ち）
 - Task 9 に入れること: gen/*.py が古い名前・hand_colours のまま（ISSUES に1行、README:282）、build/enemy の map が色見本の名前（README 2.11）、types/unit/SPEC.md の eye_check の説明（357行付近）と目の部品の役割 eye、forge の CLAUDE.md 64・68行と SPEC 299行の古い色名
 - PNG の比較: scratchpad/task4/collect.sh <dir> → compare_all.sh before <dir>（scratchpad はセッションが変わると消えるおそれ。消えていたら Task 4 の報告を見て作り直す。before は c880d79 で取る）
 - 比べるスクリプトの写し: .superpowers/sdd/2026-10-30-palette-uses/compare/（中のパスは scratchpad を指すので、使う前に確かめる）
+
+## 再開（11-01、依頼者「タスク9から継続」）
+- Task 9: implementer DONE（4a37215）。unittest 693 OK、validate 0、PNG 1035 差0（collect.sh after9）、unit_rules/compose/tip_items 同じ、check_colors は前から終了コード 1
+- Ruling: master.json の記述が残る root HANDOVER.md 82・134行（過去の作業ごとの「決めたこと」の節）と forge docs/2026-09-*.md は当時の記録として直さない — 文書の決まり（ログは遡って更新しない）— 誤りなら HANDOVER の2行を直すだけ
+- Task 9: fix round 1/5 (1 addressed + 1 minor, 0 open — gen/ の落ち方の記述; commits 4a37215..ee428af)
+- Task 9: complete (commits 6b6993a..ee428af, review clean)
+- 最終レビュー（ee428af）: Critical/Important なし、With fixes。Minor 3件＋deferred のうち10行を PR 前に直す（.superpowers/sdd/2026-10-30-palette-uses-plans/final-fixes.md）
+- Ruling: T3 の素材の語が後ろに付く名前と、T8 の高さ比較の2点は対応しない — 依頼者が承認した名前／欠陥でない仕様の性質 — 誤りなら名前の付け替えを別の作業で
+- 最終の修正（7e363ed, 25f14bb）: 12件すべて ADDRESSED。unittest 711 OK、validate 0、unit_rules 3体 0 で出力同じ、敵のシート 32枚 差0
+- 全体の完了（11-01）。PR は依頼者の指示待ち
