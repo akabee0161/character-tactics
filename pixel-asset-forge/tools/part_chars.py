@@ -4,7 +4,7 @@
     .venv/bin/python tools/part_chars.py checks/roran.json
 
 持ち物の部品には専用の文字を割り当てる（types/unit/SPEC.md「立ち絵4方向の規約」）。同じ文字だと、
-# map: 行で片方だけ色を変えられない。輪郭 o と、fist の部品の手の肌（compose の hand_colours）の文字は除く。
+# map: 行で片方だけ色を変えられない。輪郭 o と、fist の部品の手の肌（パレットの種類 skin）の文字は除く。
 """
 from __future__ import annotations
 
