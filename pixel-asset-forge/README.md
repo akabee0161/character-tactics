@@ -55,14 +55,14 @@ WSL なら `explorer.exe build` で Windows のエクスプローラーから画
 ```sh
 cat assets/item/chest.txt
 ```
-# map: o=contour h=chest_wood_hi w=chest_wood_base s=chest_wood_shadow
-# map: d=chest_wood_dark l=chest_metal_hi n=chest_metal_base v=chest_metal_shadow
+
+```
 # type: item
 # size: 16x16
 # light: upper-left
 # bg: transparent
-# map: o=outline h=wood_hi w=wood_base s=wood_shadow
-# map: d=wood_dark l=metal_hi n=metal_base v=metal_shadow
+# map: o=contour h=chest_wood_hi w=chest_wood_base s=chest_wood_shadow
+# map: d=chest_wood_dark l=chest_metal_hi n=chest_metal_base v=chest_metal_shadow
 ................
 ....oooooooo....
 ...ohhhhhwwwo...
