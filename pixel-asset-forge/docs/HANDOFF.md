@@ -113,7 +113,9 @@ T2I や LLM に複数フレームを描かせない。
 pixel-assets/
 ├── CLAUDE.md                    # 常時読まれる規約（短く保つ）
 ├── palette/
-│   └── master.json              # 色名 → RGB
+│   ├── swatches.json            # 色見本 → RGB
+│   ├── kinds.json               # 種類の一覧
+│   └── uses/<型>.json           # 用途の色 → 色見本・種類
 ├── types/
 │   ├── face/
 │   │   ├── SPEC.md              # 寸法・構成要素・機械規約
@@ -148,7 +150,7 @@ pixel-assets/
 （以下32行）
 ```
 
-- `map` の色名は `palette/master.json` のキーを参照する
+- `map` の名前は `palette/uses/<型>.json`（と `common.json`）の用途の色を参照する（2026-10-30 にパレットを色見本と用途の色に分けた）
 - `.` は背景（透過または型ごとの背景処理）
 - 1行＝32文字。`validate.py` が長さを検証する
 
@@ -199,7 +201,7 @@ Claude Code: 該当行を特定して修正 → 再レンダリング
 
 推奨する順序:
 
-1. `tools/` 3本と `palette/master.json` を作る（`face32.py` を分解して流用）
+1. `tools/` 3本と `palette/`（色見本と用途の色）を作る（`face32.py` を分解して流用）
 2. `types/face/` に今回の顔グラを reference として登録
 3. **`item` 型で小物を1点作り、何周で収束するか実測する**
 4. 3の結果を見てから `types/item/SPEC.md` を書く
