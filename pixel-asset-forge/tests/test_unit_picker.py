@@ -25,7 +25,7 @@ from unit_picker import (  # noqa: E402
 
 DIRS = ("down", "up", "left", "right")
 BODY_MAP = "o=contour b=skin_fair_base"
-PART_MAP = "o=contour h=tree_leaf_base"
+PART_MAP = "o=contour h=clothes_blue_base"
 
 
 def grid_text(pixels: dict[tuple[int, int], str], maps: str, size: int = 32) -> str:
@@ -174,8 +174,8 @@ class BuildDataTest(unittest.TestCase):
         self.ws.close()
 
     def test_front_part_paints_over_the_body(self):
-        self.assertEqual(pixel(self.data, "H1-D2|down", 10, 10), "#1f5c40")  # tree_leaf_base
-        self.assertEqual(pixel(self.data, "H1-D2|down", 11, 10), "#1f5c40")
+        self.assertEqual(pixel(self.data, "H1-D2|down", 10, 10), "#4a5588")  # clothes_blue_base
+        self.assertEqual(pixel(self.data, "H1-D2|down", 11, 10), "#4a5588")
 
     def test_back_part_is_hidden_by_the_body(self):
         self.assertEqual(pixel(self.data, "H2-D3|down", 10, 10), "#f0c49a")  # skin_fair_base
@@ -191,7 +191,7 @@ class BuildDataTest(unittest.TestCase):
 
     def test_parts_are_also_shown_alone(self):
         self.assertEqual(pixel({"frames": self.data["parts"], "colours": self.data["colours"]},
-                               "H1|down", 11, 10), "#1f5c40")
+                               "H1|down", 11, 10), "#4a5588")
         self.assertIsNone(pixel({"frames": self.data["parts"], "colours": self.data["colours"]},
                                 "H2|down", 10, 10))
 
@@ -199,7 +199,7 @@ class BuildDataTest(unittest.TestCase):
         self.assertIn("ロラン|up", self.data["refs"])
 
     def test_letter_clash_names_the_combination(self):
-        self.ws.write("knife_down.txt", grid_text({(5, 5): "b"}, "b=tree_leaf_base"))
+        self.ws.write("knife_down.txt", grid_text({(5, 5): "b"}, "b=clothes_blue_base"))
         with self.assertRaisesRegex(PickerError, r"H1-D1.*down"):
             build_data(load_picker(self.ws.config(), root=self.ws.root))
 
@@ -251,7 +251,7 @@ class PartsAloneTest(unittest.TestCase):
 
     def two_part_config(self, ear_map: str) -> Path:
         for d in DIRS:
-            self.ws.write(f"hood_{d}.txt", grid_text({(11, 10): "h"}, "h=tree_leaf_base"))
+            self.ws.write(f"hood_{d}.txt", grid_text({(11, 10): "h"}, "h=clothes_blue_base"))
             self.ws.write(f"ear_{d}.txt", grid_text({(12, 10): "h"}, ear_map))
         return self.ws.config(elements={
             "head": {"label": "頭", "variants": {"H1": {"label": "頭巾と耳", "layers": [
@@ -259,10 +259,10 @@ class PartsAloneTest(unittest.TestCase):
             "weapon": {"label": "短剣", "variants": {"D2": {"label": "なし", "layers": []}}}})
 
     def test_two_parts_in_one_variant_are_drawn_together(self):
-        data = build_data(load_picker(self.two_part_config("h=tree_leaf_base"), root=self.ws.root))
+        data = build_data(load_picker(self.two_part_config("h=clothes_blue_base"), root=self.ws.root))
         alone = {"frames": data["parts"], "colours": data["colours"]}
-        self.assertEqual(pixel(alone, "H1|down", 11, 10), "#1f5c40")  # tree_leaf_base
-        self.assertEqual(pixel(alone, "H1|down", 12, 10), "#1f5c40")
+        self.assertEqual(pixel(alone, "H1|down", 11, 10), "#4a5588")  # clothes_blue_base
+        self.assertEqual(pixel(alone, "H1|down", 12, 10), "#4a5588")
 
     def test_two_parts_giving_one_letter_two_colours_stop_the_page(self):
         # 部品だけの絵は文字で重ねるので、同じ文字に別の色があると後の部品の色になる。

@@ -10,7 +10,7 @@
 | 寸法 | `32x32`（`reference/knight.txt` で実用水準に到達した数字） |
 | 光源 | 左上固定（`# light: upper-left`） |
 | 背景 | 縦グラデーション `gradient:#1c1834->#323256`。透過にしない |
-| 輪郭 | `outline` を全周に1pxで回す |
+| 輪郭 | `contour` を全周に1pxで回す |
 
 ## 構成要素
 

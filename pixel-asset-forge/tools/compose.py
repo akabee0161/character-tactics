@@ -111,6 +111,8 @@ def load_config(path: Path, root: Path = REPO_ROOT) -> tuple[str, dict[str, Fram
     except json.JSONDecodeError as exc:
         raise ComposeError(f"{path}: JSON として読めない: {exc}") from None
 
+    if not isinstance(data, dict):
+        _keys(data, CONFIG_KEYS, str(path))
     if "hand_colours" in data:
         raise ComposeError(f"{path}: hand_colours は書けない（手の色はパレットの種類 {HAND_KIND} から読む。2026-10-30）")
     _keys(data, CONFIG_KEYS, str(path))

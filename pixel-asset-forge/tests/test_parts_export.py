@@ -11,7 +11,7 @@ from cut_layers import CORE, Part  # noqa: E402
 from gridfile import parse  # noqa: E402
 from parts_export import NONE, ExportError, PartDef, UnitDef, cut_chars, export, grid_text, unit_charmap  # noqa: E402
 
-MAP = {"o": "contour", "b": "skin_fair_base", "m": "weapon_shaft_shadow", "w": "weapon_shaft_shadow", "q": "shield_base"}
+MAP = {"o": "contour", "b": "skin_fair_base", "m": "weapon_shaft_shadow", "w": "weapon_shaft_shadow", "q": "clothes_blue_base"}
 HEAD = "# type: unit\n# size: 32x32\n# light: upper-left\n# bg: transparent\n# map: " + \
        " ".join(f"{k}={v}" for k, v in MAP.items()) + "\n"
 
