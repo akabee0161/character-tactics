@@ -300,7 +300,7 @@ cat sheets/roran.txt
 
 部品を持たない完成した絵を部品に分けるときは、`tools/parts_export.py` を使う（文字で切るので、同じ色の別の物も分けられる）。
 ユニットごとの切り方（部品の文字・拳の箱・重なり順）は `gen/<ユニット>/<ユニット>_layers.py` に書いていた（イネスは `gen/ines/ines_layers.py`、ガウは `gen/gau/gau_layers.py`）。
-**`gen/*.py` は今は走らせられない。** 古い色の名前と `UnitDef(hand_colours=…)` を使っていて、import で落ちる（直すまで使えない。`ISSUES.md`「`gen/*.py` が古い色の名前で書かれていて動かない」）。
+**`gen/*.py` は今は使えない。** 古い色の名前のままで、`gen/ines`・`gen/gau` は `UnitDef(hand_colours=…)` を渡すので import の時点で落ち、`gen/roran` は設定の JSON に `hand_colours` を書くので `compose.py` がその設定を読むときに止まり、`gen/enemy` は部品とコマの `map` に古い名前を書くので出力が `validate.py` で落ちる（`ISSUES.md`「`gen/*.py` が古い色の名前で書かれていて動かない」）。
 新しいユニットの部品は、いま動く道具（`tools/parts_export.py` の呼び出しを自分で書く、または `compose.py`）で用途の色に切る。
 書き出しは描き直す前に一度だけ使うもので、部品を描き直した後に走らせると上書きする。
 手順は `types/unit/SPEC.md` の「描く手順」。
