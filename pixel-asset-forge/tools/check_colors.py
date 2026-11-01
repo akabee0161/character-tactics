@@ -29,7 +29,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from gridfile import BACKGROUND, GridError, check, display, load_palette, parse
+import palette as palette_mod
+from gridfile import BACKGROUND, GridError, check, display, parse
 
 from validate import collect, default_targets
 
@@ -45,6 +46,7 @@ OUTLINE_HARD, OUTLINE_WARN = 24.0, 30.0   # an outline exists to be an edge
 # check only speaks up for pairs approaching "literally the same colour".
 OTHER_HARD, OTHER_WARN = 6.0, 10.0
 
+# 輪郭の色見本の名前。check_colors は色見本の段で測る（用途の色 contour・eyepatch などは、この色見本を指す）
 OUTLINE_NAMES = {"outline"}
 
 
@@ -111,10 +113,22 @@ def cell_name_grid(grid) -> list[list[str | None]]:
     ]
 
 
-def inspect(grid, palette: dict[str, tuple[int, int, int]]):
-    """Return (hard failures, warnings) as message lists."""
+def swatch_view(pal) -> tuple[dict[str, tuple[int, int, int]], dict[str, str]]:
+    """(swatch name -> rgb, use name -> swatch name) for ``inspect``."""
+    return dict(pal.swatches), {name: use.swatch for name, use in pal.uses.items()}
+
+
+def inspect(grid, palette: dict[str, tuple[int, int, int]], swatch_of: dict[str, str] | None = None):
+    """Return (hard failures, warnings) as message lists.
+
+    With ``swatch_of`` (use name -> swatch name) the grid's use colours are
+    measured as their swatches, and ``palette`` holds swatches: two uses of one
+    swatch touching are the same colour on purpose, not a pair to tell apart.
+    """
     labs = {name: rgb_to_lab(rgb) for name, rgb in palette.items()}
     cells = cell_name_grid(grid)
+    if swatch_of is not None:
+        cells = [[None if n is None else swatch_of[n] for n in row] for row in cells]
 
     hard: list[str] = []
     warn: list[str] = []
@@ -141,7 +155,9 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     try:
-        palette = load_palette()
+        pal = palette_mod.load()
+        palette = {name: pal.rgb(name) for name in pal.uses}  # what validate.py checks the map against
+        swatches, swatch_of = swatch_view(pal)
     except GridError as exc:
         print(f"FAIL {exc}", file=sys.stderr)
         return 2
@@ -161,7 +177,7 @@ def main(argv: list[str] | None = None) -> int:
             print(f"skip {rel}: does not pass validate.py yet", file=sys.stderr)
             continue
 
-        hard, warn = inspect(grid, palette)
+        hard, warn = inspect(grid, swatches, swatch_of)
         if hard:
             failed += 1
             print(f"FAIL {rel}", file=sys.stderr)

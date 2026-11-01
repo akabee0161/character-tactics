@@ -1,10 +1,5 @@
 {
   "unit": "gau",
-  "hand_colours": [
-    "skin_rose_hi",
-    "skin_rose_base",
-    "skin_rose_shadow"
-  ],
   "frames": {
     "down_base": {
       "body": "assets/part/body/gau/core_down_base.txt",
@@ -18,11 +13,8 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade",
+            "weapon"
           ]
         },
         {
@@ -44,11 +36,8 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade",
+            "weapon"
           ]
         },
         {
@@ -70,11 +59,8 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade",
+            "weapon"
           ]
         },
         {
@@ -96,11 +82,8 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade",
+            "weapon"
           ]
         },
         {
@@ -122,11 +105,8 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade",
+            "weapon"
           ]
         },
         {
@@ -148,11 +128,8 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade",
+            "weapon"
           ]
         },
         {
@@ -175,11 +152,8 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade",
+            "weapon"
           ]
         },
         {
@@ -201,11 +175,8 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade",
+            "weapon"
           ]
         },
         {
@@ -227,11 +198,8 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade",
+            "weapon"
           ]
         },
         {
@@ -253,11 +221,8 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade",
+            "weapon"
           ]
         },
         {
@@ -279,11 +244,8 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade",
+            "weapon"
           ]
         },
         {
@@ -305,11 +267,8 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade",
+            "weapon"
           ]
         },
         {
@@ -326,11 +285,8 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade",
+            "weapon"
           ]
         },
         {
@@ -352,11 +308,8 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade",
+            "weapon"
           ]
         },
         {
@@ -378,11 +331,8 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade",
+            "weapon"
           ]
         },
         {
@@ -404,11 +354,8 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade",
+            "weapon"
           ]
         },
         {
@@ -430,11 +377,8 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade",
+            "weapon"
           ]
         },
         {
@@ -456,11 +400,8 @@
           "z": "back",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade",
+            "weapon"
           ]
         },
         {
@@ -491,11 +432,8 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade",
+            "weapon"
           ]
         }
       ]
@@ -517,11 +455,8 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade",
+            "weapon"
           ]
         }
       ]
@@ -543,11 +478,8 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade",
+            "weapon"
           ]
         }
       ]
@@ -569,11 +501,8 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade",
+            "weapon"
           ]
         }
       ]
@@ -595,11 +524,8 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade",
+            "weapon"
           ]
         }
       ]
@@ -621,11 +547,8 @@
           "z": "front",
           "hand": true,
           "keep": [
-            "stone_base",
-            "stone_hi",
-            "wood_base",
-            "wood_hi",
-            "wood_shadow"
+            "blade",
+            "weapon"
           ]
         }
       ]

@@ -4,7 +4,7 @@
 # Ploughed rows with a crop coming up, for the land around a village. Seamless
 # both ways - the furrows are on a 4px period and the plants of one band sit
 # between the plants of the next.
-# map: d=dirt_base k=dirt_shadow a=grass_hi
+# map: d=ground_dirt_base k=ground_dirt_shadow a=crop_sprout
 kkkkkkkkkkkkkkkk
 dadddadddadddadd
 dadddadddadddadd

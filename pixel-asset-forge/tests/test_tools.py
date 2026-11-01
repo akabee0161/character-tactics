@@ -17,13 +17,13 @@ from gridfile import TRANSFORMS, GridError, check, load_palette, parse, parse_ba
 from render import output_dir, to_image  # noqa: E402
 from validate import collect, default_targets  # noqa: E402
 
-PALETTE = {"outline": (10, 20, 30), "skin_base": (200, 150, 100)}
+PALETTE = {"contour": (10, 20, 30), "skin_fair_base": (200, 150, 100)}
 
 GOOD = """\
 # type: face
 # size: 4x3
 # light: upper-left
-# map: o=outline b=skin_base
+# map: o=contour b=skin_fair_base
 oooo
 obbo
 oooo
@@ -51,13 +51,13 @@ class ParseTest(unittest.TestCase):
         grid = parse(write(GOOD))
         self.assertEqual(grid.type, "face")
         self.assertEqual((grid.width, grid.height), (4, 3))
-        self.assertEqual(grid.charmap, {"o": "outline", "b": "skin_base"})
+        self.assertEqual(grid.charmap, {"o": "contour", "b": "skin_fair_base"})
         self.assertEqual(grid.headers["light"], "upper-left")
         self.assertEqual(len(grid.rows), 3)
 
     def test_map_may_span_several_lines(self):
-        grid = parse(write(GOOD.replace("# map: o=outline b=skin_base", "# map: o=outline\n# map: b=skin_base")))
-        self.assertEqual(grid.charmap, {"o": "outline", "b": "skin_base"})
+        grid = parse(write(GOOD.replace("# map: o=contour b=skin_fair_base", "# map: o=contour\n# map: b=skin_fair_base")))
+        self.assertEqual(grid.charmap, {"o": "contour", "b": "skin_fair_base"})
 
     def test_blank_lines_are_ignored(self):
         grid = parse(write(GOOD.replace("# map:", "\n# map:")))
@@ -73,11 +73,11 @@ class ParseTest(unittest.TestCase):
 
     def test_background_cannot_be_mapped(self):
         with self.assertRaisesRegex(GridError, "background and cannot be mapped"):
-            parse(write(GOOD.replace("o=outline", ".=outline")))
+            parse(write(GOOD.replace("o=contour", ".=contour")))
 
     def test_conflicting_map_entry(self):
         with self.assertRaisesRegex(GridError, "mapped twice"):
-            parse(write(GOOD.replace("b=skin_base", "b=skin_base o=skin_base")))
+            parse(write(GOOD.replace("b=skin_fair_base", "b=skin_fair_base o=skin_fair_base")))
 
     def test_bad_size(self):
         with self.assertRaisesRegex(GridError, "is not 'WxH'"):
@@ -85,7 +85,7 @@ class ParseTest(unittest.TestCase):
 
     def test_no_rows(self):
         with self.assertRaisesRegex(GridError, "no grid rows"):
-            parse(write("# type: face\n# size: 4x3\n# map: o=outline\n"))
+            parse(write("# type: face\n# size: 4x3\n# map: o=contour\n"))
 
 
 class CheckTest(unittest.TestCase):
@@ -104,16 +104,16 @@ class CheckTest(unittest.TestCase):
         errors = check(parse(write(GOOD.replace("obbo", "oxbo"))), PALETTE)
         self.assertIn("row 1: character 'x' is not bound by 'map'", errors)
 
-    def test_colour_outside_master_palette(self):
-        errors = check(parse(write(GOOD.replace("b=skin_base", "b=not_a_colour"))), PALETTE)
-        self.assertIn("map references 'not_a_colour', which is not in the master palette", errors)
+    def test_colour_outside_the_use_palette(self):
+        errors = check(parse(write(GOOD.replace("b=skin_fair_base", "b=not_a_colour"))), PALETTE)
+        self.assertIn("map references 'not_a_colour', which is not a use colour in palette/uses", errors)
 
 
 UNIT = """# type: unit
 # size: 2x2
 # light: upper-left
 # bg: transparent
-# map: o=outline b=skin_base
+# map: o=contour b=skin_fair_base
 ob
 bo
 """
@@ -158,7 +158,7 @@ class UnitMirrorTest(unittest.TestCase):
         self.assertIn("uses 2 colours, over the declared max_colors 1", errors)
 
     def test_max_colors_counts_distinct_rgb_not_entries(self):
-        palette = dict(PALETTE, skin_base=PALETTE["outline"])
+        palette = dict(PALETTE, skin_fair_base=PALETTE["contour"])
         grid = parse(write(GOOD.replace("# map:", "# max_colors: 1\n# map:")))
         self.assertEqual(check(grid, palette), [])
 
@@ -188,8 +188,8 @@ class RenderTest(unittest.TestCase):
         image = to_image(parse(write(GOOD)), PALETTE)
         self.assertEqual(image.size, (4, 3))
         self.assertEqual(image.mode, "RGBA")
-        self.assertEqual(image.getpixel((0, 0)), (*PALETTE["outline"], 255))
-        self.assertEqual(image.getpixel((1, 1)), (*PALETTE["skin_base"], 255))
+        self.assertEqual(image.getpixel((0, 0)), (*PALETTE["contour"], 255))
+        self.assertEqual(image.getpixel((1, 1)), (*PALETTE["skin_fair_base"], 255))
 
     def test_background_cells_are_transparent_by_default(self):
         image = to_image(parse(write(GOOD.replace("obbo", "o..o"))), PALETTE)
@@ -202,7 +202,7 @@ class RenderTest(unittest.TestCase):
     def test_scale_is_nearest_neighbour(self):
         image = to_image(parse(write(GOOD)), PALETTE, scale=8)
         self.assertEqual(image.size, (32, 24))
-        self.assertEqual(image.getpixel((8, 8)), (*PALETTE["skin_base"], 255))
+        self.assertEqual(image.getpixel((8, 8)), (*PALETTE["skin_fair_base"], 255))
 
 
 class TargetPathTest(unittest.TestCase):
@@ -299,7 +299,7 @@ class TransformTest(unittest.TestCase):
 
 
 class DerivedGridTest(unittest.TestCase):
-    SOURCE = "# type: tile\n# size: 2x3\n# light: upper-left\n# map: a=outline b=skin_base\n" "ab\nba\nab\n"
+    SOURCE = "# type: tile\n# size: 2x3\n# light: upper-left\n# map: a=contour b=skin_fair_base\n" "ab\nba\nab\n"
 
     def setUp(self):
         self.directory = Path(tempfile.mkdtemp())
@@ -318,7 +318,7 @@ class DerivedGridTest(unittest.TestCase):
         grid = parse(self.derived("# from: source.txt\n# transform: mirror_x\n"))
         self.assertEqual(grid.type, "tile")
         self.assertEqual((grid.width, grid.height), (2, 3))
-        self.assertEqual(grid.charmap, {"a": "outline", "b": "skin_base"})
+        self.assertEqual(grid.charmap, {"a": "contour", "b": "skin_fair_base"})
         self.assertEqual(grid.headers["light"], "upper-left")
 
     def test_a_stated_header_overrides_the_inherited_one(self):
@@ -401,10 +401,10 @@ class RiverDerivationTest(unittest.TestCase):
                 self.assertTrue(all(line.startswith("#") or not line.strip() for line in text.splitlines()))
 
 
-class MasterPaletteTest(unittest.TestCase):
-    def test_master_palette_loads(self):
+class UsePaletteTest(unittest.TestCase):
+    def test_use_palette_loads(self):
         palette = load_palette()
-        self.assertIn("outline", palette)
+        self.assertIn("contour", palette)
         self.assertTrue(all(len(rgb) == 3 for rgb in palette.values()))
 
     def test_face_reference_passes_its_own_checks(self):

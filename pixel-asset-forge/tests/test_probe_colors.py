@@ -15,7 +15,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "tools"))
 
 import probe_colors  # noqa: E402
-from gridfile import GridError, load_palette  # noqa: E402
+from gridfile import GridError, load_colours  # noqa: E402
 
 
 def write(text: str) -> Path:
@@ -27,11 +27,16 @@ def write(text: str) -> Path:
 
 class ResolveTest(unittest.TestCase):
     def setUp(self):
-        self.palette = load_palette()
+        self.palette = load_colours()
 
     def test_a_palette_name_resolves(self):
         self.assertEqual(
             probe_colors.resolve("grass_base", self.palette), self.palette["grass_base"]
+        )
+
+    def test_a_use_colour_name_resolves_to_its_swatch(self):
+        self.assertEqual(
+            probe_colors.resolve("ground_grass_base", self.palette), self.palette["grass_base"]
         )
 
     def test_a_literal_resolves_without_being_in_the_palette(self):
@@ -46,7 +51,7 @@ class VerdictTest(unittest.TestCase):
     """The cases that made this tool worth keeping."""
 
     def setUp(self):
-        self.palette = load_palette()
+        self.palette = load_colours()
 
     def test_the_rejected_leaf_colour_is_a_hard_failure(self):
         label, distance = probe_colors.verdict("#3f8a3c", "grass_base", self.palette)
@@ -70,6 +75,17 @@ class VerdictTest(unittest.TestCase):
         label, distance = probe_colors.verdict("outline", "pupil", self.palette)
         self.assertEqual(label, "HARD")
         self.assertEqual(distance, 0.0)
+
+
+class IsOutlineTest(unittest.TestCase):
+    def test_a_use_colour_pointing_at_the_outline_swatch_is_an_outline(self):
+        # 輪郭の色見本を指す用途の色は、名前が contour でなくても輪郭（眼帯 eyepatch は色見本 outline）
+        for name in ("outline", "contour", "eyepatch"):
+            self.assertTrue(probe_colors.is_outline(name), name)
+
+    def test_other_colours_and_literals_are_not(self):
+        for name in ("grass_base", "stone_hi", "#101018"):
+            self.assertFalse(probe_colors.is_outline(name), name)
 
 
 class ReadPairsTest(unittest.TestCase):

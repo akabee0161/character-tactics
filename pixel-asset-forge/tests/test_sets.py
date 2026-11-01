@@ -28,10 +28,10 @@ class AssembleTest(unittest.TestCase):
     def test_two_by_two_parts_make_one_32px_image(self):
         image = sets.assemble([[A, B], [B, A]], self.palette, FIXTURES)
         self.assertEqual(image.size, (32, 32))
-        self.assertEqual(image.getpixel((0, 0))[:3], self.palette["grass_base"])
-        self.assertEqual(image.getpixel((17, 1))[:3], self.palette["outline"])
-        self.assertEqual(image.getpixel((1, 17))[:3], self.palette["outline"])
-        self.assertEqual(image.getpixel((31, 31))[:3], self.palette["grass_base"])
+        self.assertEqual(image.getpixel((0, 0))[:3], self.palette["ground_grass_base"])
+        self.assertEqual(image.getpixel((17, 1))[:3], self.palette["contour"])
+        self.assertEqual(image.getpixel((1, 17))[:3], self.palette["contour"])
+        self.assertEqual(image.getpixel((31, 31))[:3], self.palette["ground_grass_base"])
 
     def test_every_pixel_is_opaque(self):
         image = sets.assemble([[A, B], [B, A]], self.palette, FIXTURES)
@@ -44,7 +44,7 @@ class AssembleTest(unittest.TestCase):
     def test_a_derived_part_assembles_like_any_other(self):
         image = sets.assemble([["set_part_b_mirror"]], self.palette, FIXTURES)
         self.assertEqual(image.size, (16, 16))
-        self.assertEqual(image.getpixel((15, 0))[:3], self.palette["grass_base"])
+        self.assertEqual(image.getpixel((15, 0))[:3], self.palette["ground_grass_base"])
 
     def test_an_empty_cell_is_rejected(self):
         with self.assertRaisesRegex(GridError, r"row 0 column 1 is '\.'"):

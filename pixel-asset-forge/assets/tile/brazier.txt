@@ -3,9 +3,9 @@
 # light: upper-left
 # A standing fire bowl. Same flame colours as wall_face_torch, and again no
 # glow painted onto the floor, because a baked-in glow repeats with the tile.
-# map: f=floor_base h=floor_hi s=floor_shadow k=floor_dark o=outline
-# map: y=metal_base l=metal_hi z=metal_shadow
-# map: 1=flame_hi 2=flame_base 3=flame_deep
+# map: f=ground_floor_base h=ground_floor_hi s=ground_floor_shadow k=ground_floor_dark o=contour
+# map: y=furniture_metal_base l=furniture_metal_hi z=furniture_metal_shadow
+# map: 1=fire_hi 2=fire_base 3=fire_deep
 ssssssssssssssss
 shhhhhh22hhhhhhh
 shffff3123ffffff

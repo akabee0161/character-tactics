@@ -20,7 +20,7 @@ def item_text(pixels: set[tuple[int, int]], kind: str = "item", size: str = "16x
     rows = [["."] * width for _ in range(height)]
     for x, y in pixels:
         rows[y][x] = "o"
-    return (f"# type: {kind}\n# size: {size}\n# light: upper-left\n# bg: transparent\n# map: o=outline\n"
+    return (f"# type: {kind}\n# size: {size}\n# light: upper-left\n# bg: transparent\n# map: o=contour\n"
             + "\n".join("".join(r) for r in rows) + "\n")
 
 

@@ -8,7 +8,7 @@
 # the tile is laid next to itself. And the spacing is uneven, because evenly
 # spaced marks line up into rows and columns once the field is laid out. See
 # the README for what the first two attempts looked like.
-# map: g=grass_base a=grass_hi s=grass_shadow
+# map: g=ground_grass_base a=ground_grass_hi s=ground_grass_shadow
 ggaagggggggggggg
 gggggggggggggggg
 gggggggggssggggg

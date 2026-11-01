@@ -3,8 +3,8 @@
 # size: 32x32
 # light: upper-left
 # bg: transparent
-# map: o=outline R=roof_base j=stone_base i=stone_hi H=wood_base G=wood_hi
-# map: J=wood_shadow
+# map: o=contour R=weapon_pommel j=blade_base i=blade_hi H=weapon_shaft_base G=weapon_shaft_hi
+# map: J=weapon_shaft_shadow
 ..........oo....................
 .........oijo...................
 .........oijo...................

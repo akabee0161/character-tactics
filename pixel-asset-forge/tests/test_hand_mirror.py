@@ -15,7 +15,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from hand_mirror import main  # noqa: E402
 from test_compose import BODY_MAP, Workspace, grid_text  # noqa: E402
 
-FIST_MAP = "o=outline b=skin_base"
+FIST_MAP = "o=contour b=skin_fair_base"
 
 
 def fist(x, y):
@@ -43,7 +43,7 @@ class HandMirrorTest(unittest.TestCase):
 
     def run_check(self):
         path = self.ws.write("compose/t.json", json.dumps(
-            {"unit": "t", "hand_colours": ["skin_base"], "frames": self.frames}))
+            {"unit": "t", "frames": self.frames}))
         out = io.StringIO()
         with contextlib.redirect_stdout(out), contextlib.redirect_stderr(out):
             code = main([str(path), "--root", str(self.ws.root)])

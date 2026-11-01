@@ -3,8 +3,8 @@
 # size: 32x32
 # light: upper-left
 # bg: transparent
-# map: o=outline w=hair_slate_hi x=hair_slate_base y=hair_slate_shadow
-# map: E=carpet_base
+# map: o=contour w=hair_ashblue_hi x=hair_ashblue_base y=hair_ashblue_shadow
+# map: E=hair_tie
 ................................
 ................................
 ................................

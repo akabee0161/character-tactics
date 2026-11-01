@@ -7,13 +7,15 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "tools"))
 
+import palette  # noqa: E402
 from hand_outline import HandOutlineError, close_hands, fix_file, main  # noqa: E402
 
-HAND = {"skin_base", "skin_shadow"}
+HAND = {"skin_fair_base", "skin_fair_shadow"}
 
 
 def blank():
@@ -25,73 +27,73 @@ def scene():
     f = blank()
     for y in range(15, 29):
         for x in range(12, 20):
-            f[y][x] = "cloth_base"
+            f[y][x] = "clothes_blue_base"
     for y in range(5, 13):
         for x in range(13, 19):
-            f[y][x] = "skin_base"
+            f[y][x] = "skin_fair_base"
     for y in (20, 21):
         for x in (20, 21):
-            f[y][x] = "skin_base"
-    f[22][20] = f[22][21] = f[19][21] = "outline"
-    f[20][22] = f[21][22] = "outline"
+            f[y][x] = "skin_fair_base"
+    f[22][20] = f[22][21] = f[19][21] = "contour"
+    f[20][22] = f[21][22] = "contour"
     return f
 
 
 class CloseHandsTest(unittest.TestCase):
     def test_side_touching_clothes_becomes_outline(self):
         fixed, changed = close_hands(scene(), HAND)
-        self.assertEqual(fixed[20][19], "outline")
-        self.assertEqual(fixed[21][19], "outline")
+        self.assertEqual(fixed[20][19], "contour")
+        self.assertEqual(fixed[21][19], "contour")
         self.assertIn((19, 20), changed)
 
     def test_gap_to_transparent_gets_outline(self):
         fixed, changed = close_hands(scene(), HAND)
-        self.assertEqual(fixed[19][20], "outline")  # 手の上が透明だった（ガウの down の左手）
+        self.assertEqual(fixed[19][20], "contour")  # 手の上が透明だった（ガウの down の左手）
         self.assertIn((20, 19), changed)
 
     def test_sleeve_cuff_above_is_outlined_too(self):
         # 袖口（手の真上の服）も輪郭にする（依頼者 2026-10-09）
         f = scene()
-        f[19][20] = "cloth_base"
+        f[19][20] = "clothes_blue_base"
         fixed, changed = close_hands(f, HAND)
-        self.assertEqual(fixed[19][20], "outline")
+        self.assertEqual(fixed[19][20], "contour")
         self.assertIn((20, 19), changed)
 
     def test_face_is_left_alone(self):
         fixed, _ = close_hands(scene(), HAND)
-        self.assertEqual(fixed[15][12], "cloth_base")  # 顔（大きな肌の塊）の周りは触らない
+        self.assertEqual(fixed[15][12], "clothes_blue_base")  # 顔（大きな肌の塊）の周りは触らない
         self.assertIsNone(fixed[8][12])
 
     def test_one_pixel_sleeve_becomes_outline(self):
         f = blank()
-        f[17][11] = f[18][11] = "cloth_base"  # 横に伸びる 1px の袖
-        f[17][12] = f[18][12] = "skin_base"  # 拳
+        f[17][11] = f[18][11] = "clothes_blue_base"  # 横に伸びる 1px の袖
+        f[17][12] = f[18][12] = "skin_fair_base"  # 拳
         fixed, _ = close_hands(f, HAND)
-        self.assertEqual(fixed[17][11], "outline")
-        self.assertEqual(fixed[18][11], "outline")
+        self.assertEqual(fixed[17][11], "contour")
+        self.assertEqual(fixed[18][11], "contour")
 
     def test_keep_colours_are_not_overwritten(self):
         f = blank()
         for y in range(10, 20):
-            f[y][15] = "wood_base"  # 縦の柄
-        f[14][15] = f[15][15] = "skin_base"  # 柄の真ん中を握る拳
-        fixed, _ = close_hands(f, HAND, keep={"wood_base"})
-        self.assertEqual(fixed[13][15], "wood_base")
-        self.assertEqual(fixed[16][15], "wood_base")
+            f[y][15] = "weapon_shaft_base"  # 縦の柄
+        f[14][15] = f[15][15] = "skin_fair_base"  # 柄の真ん中を握る拳
+        fixed, _ = close_hands(f, HAND, keep={"weapon_shaft_base"})
+        self.assertEqual(fixed[13][15], "weapon_shaft_base")
+        self.assertEqual(fixed[16][15], "weapon_shaft_base")
 
     def test_hand_at_frame_edge_does_not_crash(self):
         f = blank()
-        f[0][0] = f[0][1] = "skin_base"
-        f[31][31] = "skin_base"
+        f[0][0] = f[0][1] = "skin_fair_base"
+        f[31][31] = "skin_fair_base"
         fixed, changed = close_hands(f, HAND)
-        self.assertEqual(fixed[1][0], "outline")
+        self.assertEqual(fixed[1][0], "contour")
         self.assertIn((2, 0), changed)
 
     def test_already_outlined_hand_is_left_alone(self):
         f = blank()
-        f[10][10] = "skin_base"
+        f[10][10] = "skin_fair_base"
         for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-            f[10 + dy][10 + dx] = "outline"
+            f[10 + dy][10 + dx] = "contour"
         _, changed = close_hands(f, HAND)
         self.assertEqual(changed, [])
 
@@ -106,12 +108,12 @@ class CloseHandsTest(unittest.TestCase):
 
 GRID_HEAD = (
     "# 手で描いたコマ（注記は残る）\n# type: unit\n# size: 32x32\n# light: upper-left\n# bg: transparent\n"
-    "# map: o=outline b=skin_base c=skin_shadow q=cloth_base\n"
+    "# map: o=contour b=skin_fair_base c=skin_fair_shadow q=clothes_blue_base\n"
 )
 
 
 def grid_text(f, head=GRID_HEAD):
-    letters = {None: ".", "outline": "o", "skin_base": "b", "skin_shadow": "c", "cloth_base": "q"}
+    letters = {None: ".", "contour": "o", "skin_fair_base": "b", "skin_fair_shadow": "c", "clothes_blue_base": "q"}
     return head + "\n".join("".join(letters[n] for n in row) for row in f) + "\n"
 
 
@@ -139,12 +141,12 @@ class FixFileTest(unittest.TestCase):
     def test_file_without_an_outline_letter_is_refused(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "down_base.txt"
-            head = GRID_HEAD.replace("o=outline ", "")
+            head = GRID_HEAD.replace("o=contour ", "")
             f = scene()
             for y in range(32):
-                f[y] = [None if n == "outline" else n for n in f[y]]
+                f[y] = [None if n == "contour" else n for n in f[y]]
             path.write_text(grid_text(f, head), encoding="utf-8")
-            with self.assertRaisesRegex(HandOutlineError, "outline"):
+            with self.assertRaisesRegex(HandOutlineError, "contour"):
                 fix_file(path, HAND, frozenset(), write=True)
 
 
@@ -155,13 +157,23 @@ class MainTest(unittest.TestCase):
             path.write_text(grid_text(scene()), encoding="utf-8")
             out = io.StringIO()
             with contextlib.redirect_stdout(out):
-                code = main([tmp, "--hand", "skin_base,skin_shadow"])
+                code = main([tmp, "--hand", "skin_fair_base,skin_fair_shadow"])
             self.assertEqual(code, 0)
             self.assertIn("down_base", out.getvalue())
             self.assertEqual(path.read_text(encoding="utf-8")[len(GRID_HEAD):].splitlines()[20][19], "q")
             with contextlib.redirect_stdout(io.StringIO()):
-                main([tmp, "--hand", "skin_base,skin_shadow", "--write"])
+                main([tmp, "--hand", "skin_fair_base,skin_fair_shadow", "--write"])
             self.assertEqual(path.read_text(encoding="utf-8")[len(GRID_HEAD):].splitlines()[20][19], "o")
+
+    def test_hand_defaults_to_the_skin_kind(self):
+        # --hand を省くと、パレットの種類 skin の色（unit と common）を手の色にする（2026-10-30）
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "down_base.txt"
+            path.write_text(grid_text(scene()), encoding="utf-8")
+            with mock.patch("hand_outline.fix_file", return_value=[]) as fix:
+                with contextlib.redirect_stdout(io.StringIO()):
+                    self.assertEqual(main([tmp]), 0)
+            self.assertEqual(fix.call_args.args[1], palette.load().names_of_kind("skin", type="unit"))
 
 
 if __name__ == "__main__":

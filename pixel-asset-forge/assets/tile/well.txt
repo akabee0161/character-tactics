@@ -4,10 +4,10 @@
 # A well for a village square. The first version was a bare ring with a bar
 # over it and read as a bucket with a handle; the little gabled roof is what
 # says "well" at this size.
-# map: g=grass_base s=grass_shadow o=outline
-# map: r=roof_hi f=roof_base
-# map: n=stone_base t=stone_hi m=stone_shadow k=stone_dark
-# map: w=wood_base b=wood_shadow
+# map: g=ground_grass_base s=ground_grass_shadow o=contour
+# map: r=well_roof_hi f=well_roof_base
+# map: n=well_stone_base t=well_stone_hi m=well_stone_shadow k=well_stone_dark
+# map: w=furniture_wood_base b=furniture_wood_shadow
 ggssgggggggggggg
 gggggggooggggggg
 ggggggorrogggssg

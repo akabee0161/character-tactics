@@ -3,8 +3,8 @@
 # size: 32x32
 # light: upper-left
 # bg: transparent
-# map: o=outline A=skin_rose_hi B=skin_rose_base C=skin_rose_shadow
-# map: f=cloak_dark_hi g=cloak_dark_base h=cloak_dark_shadow n=wood_shadow
+# map: o=contour A=skin_ruddy_hi B=skin_ruddy_base C=skin_ruddy_shadow
+# map: f=clothes_dark_hi g=clothes_dark_base h=clothes_dark_shadow n=legwear_brown
 ................................
 ................................
 ................................

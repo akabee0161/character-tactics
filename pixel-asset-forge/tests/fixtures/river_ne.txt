@@ -5,8 +5,8 @@
 # bank. The east edge has to read bank, bank, shadow, water at rows 2 to 5 and
 # again on the way out at rows 11 to 13, because that is what river_h presents
 # at its west edge.
-# map: g=grass_base a=grass_hi b=dirt_base
-# map: h=water_hi w=water_base d=water_shadow
+# map: g=ground_grass_base a=ground_grass_hi b=ground_dirt_base
+# map: h=water_surface_hi w=water_surface_base d=water_surface_shadow
 ggbbdwwwwwwdbbgg
 ggbbdwwwwwwdbbgg
 ggbbdwhhwwwdbbbb

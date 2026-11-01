@@ -4,7 +4,7 @@
     tools/present.py OUT.png build/cand/hood_A.txt build/cand/hood_B.txt --ref face32.png
 
 上の段: 参考の画像（--ref、任意）と各グリッドを --scale 倍（既定 8）で横に並べ、上に名前を書く。
-下の段: 同じ並びの等倍を草の色（grass_base）の上に置く（ゲームでの大きさの見え方）。
+下の段: 同じ並びの等倍を草の色（ground_grass_base）の上に置く（ゲームでの大きさの見え方）。
 ロランとイネスの作業で2回作った使い捨てを、参考の画像を引数にしてまとめた。
 """
 from __future__ import annotations
@@ -68,7 +68,7 @@ def main(argv: list[str] | None = None) -> int:
     except (GridError, OSError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
-    build_sheet(items, palette["grass_base"], args.scale).save(args.out)
+    build_sheet(items, palette["ground_grass_base"], args.scale).save(args.out)
     print(args.out)
     return 0
 

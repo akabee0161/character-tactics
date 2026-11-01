@@ -8,8 +8,8 @@
 # same reason - those are the rows a neighbouring tile has to match.
 # There is no rim colour along the edge. The river's uniform 1px bank is what
 # makes it read as a canal, so here the irregular edge does that work instead.
-# map: g=grass_base a=grass_hi s=grass_shadow
-# map: d=dirt_base h=dirt_hi k=dirt_shadow
+# map: g=ground_grass_base a=ground_grass_hi s=ground_grass_shadow
+# map: d=ground_dirt_base h=ground_dirt_hi k=ground_dirt_shadow
 gggddddddddddgaa
 gggdddkkdddddggg
 ggdddddddddddggg

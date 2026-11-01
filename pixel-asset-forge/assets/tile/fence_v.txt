@@ -4,8 +4,8 @@
 # A run of fence going north to south. Drawn rather than rotated from fence_h,
 # because the rails read as two lit faces from the side and as one flat top
 # from above; a rotation would carry the wrong one.
-# map: g=grass_base s=grass_shadow
-# map: w=wood_base v=wood_hi b=wood_shadow
+# map: g=ground_grass_base s=ground_grass_shadow
+# map: w=building_wood_base v=building_wood_hi b=building_wood_shadow
 ggggggwggbgggggg
 ggggggwggbgggggg
 ggssggwggbgggggg

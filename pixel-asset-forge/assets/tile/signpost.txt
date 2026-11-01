@@ -6,8 +6,8 @@
 # to 10px and dropping it onto a short post fixes that.
 # The marks on the board are wood_shadow rather than any attempt at letters -
 # at this size letters turn into noise.
-# map: g=grass_base s=grass_shadow o=outline
-# map: w=wood_base v=wood_hi b=wood_shadow
+# map: g=ground_grass_base s=ground_grass_shadow o=contour
+# map: w=furniture_wood_base v=furniture_wood_hi b=furniture_wood_shadow
 gggssggggggggggg
 ggggggggggggssgg
 gggggggggggggggg

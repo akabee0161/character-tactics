@@ -14,7 +14,7 @@
   新しい `unit` は `types/unit/SPEC.md` の「描く手順」（確認ポイント CP0〜CP4）どおりに描く。
 - **目視の前に `tools/validate.py` を通す。** 行長・未定義文字・パレット外参照は
   機械で落とす。目視はそれを通ってからにする。
-- **パレットに色を足すなら、描く前に `tools/probe_colors.py` で測る。**
+- **パレットに色（色見本）を足すなら、描く前に `tools/probe_colors.py` で測る。**
   隣り合わせる**予定**のペアを先に当てて、`has_lightness_edge` か ΔE のどちらかを
   超える色を選んでから描く。描いた後に `check_colors.py` を通しても（実測どおり）
   ほとんど何も拾わないが、描く前に使うと設計の道具になる。草原セットでは樹冠の
@@ -61,16 +61,16 @@
 .venv/bin/python tools/order_check.py checks/gau.json  # 承認された重なり順（ほかに blade_height・still_check・height_check・tip_check・part_chars・eye_check・part_outline・fist_check。どれも同じ引数）
 .venv/bin/python tools/tip_check.py --items checks/items.json  # item のアイコンの刃・鏃の先端が決まり1〜5（types/item/SPEC.md）に合うか。刃の文字は checks/items.json に書く
 .venv/bin/python tools/unit_check.py assets/unit/ines --items klmstuw --core assets/part/body/ines  # unit の脚の中心（芯で測る）と増えた切れ目（unit_rules.py が設定ファイルから走らせる）
-.venv/bin/python tools/weapon_check.py assets/unit/gau --blade stone_hi,stone_base --weapon wood_hi,wood_base,wood_shadow --hand skin_rose_hi,skin_rose_base,skin_rose_shadow --hidden left_atk_wind,up_atk_wind,up_atk_hit --depth down  # 武器と握る手（unit_rules.py が設定ファイルから走らせる。--arm は使わない）
+.venv/bin/python tools/weapon_check.py assets/unit/gau --blade blade_hi,blade_base --weapon weapon_shaft_hi,weapon_shaft_base,weapon_shaft_shadow --hand skin_ruddy_hi,skin_ruddy_base,skin_ruddy_shadow --hidden left_atk_wind,up_atk_wind,up_atk_hit --depth down  # 武器と握る手（unit_rules.py が、刃・武器・手の色をパレットの種類 blade・weapon・skin から読んで走らせる。--arm は使わない）
 .venv/bin/python tools/body_check.py assets/part/body/roran  # 体（core）の部品を単品で見た「当たり前」: 頭・胴・脚の中心、胴からのはみ出し、輪郭の切れ目、穴（--head/--trunk/--legs で行の範囲、--hanging で垂れた髪・かぶり物の文字、--no-protrusion で女性の体）
 .venv/bin/python tools/hand_mirror.py compose/ines.json  # 攻撃以外のコマで、down と up・left と right の拳の位置が左右反転で合っているか
 .venv/bin/python tools/weapon_mirror.py checks/roran.json  # left と right で、拳が握る部品の位置が左右反転で合っているか（攻撃のコマも）
-.venv/bin/python tools/hand_outline.py assets/part/fist/roran/sword_hand_down_base.txt --hand skin_rose_hi,skin_rose_base,skin_rose_shadow  # 拳の部品の輪郭の切れ目を出す（--write で直す）
+.venv/bin/python tools/hand_outline.py assets/part/fist/roran/sword_hand_down_base.txt  # 拳の部品の輪郭の切れ目を出す（--write で直す。手の色は --hand を省くとパレットの種類 skin）
 .venv/bin/python tools/compose.py compose/gau.json --out /tmp/cand   # 素体と部品を重ねて unit のコマを組み立てる（手で直したコマは上書きせず止まる）
 .venv/bin/python tools/compose.py compose/roran.json --check   # ロランは全24コマが部品から再現できる（拳が閉じていないと終了 2）
 .venv/bin/python tools/compose.py compose/ines.json --check    # イネスは全32コマが部品から再現できる
 .venv/bin/python tools/compose.py compose/gau.json --check     # ガウは全24コマが部品から再現できる
-# gen/ines/ines_layers.py --export・gen/gau/gau_layers.py --export は描き直す前の書き出しに一度だけ使った。今走らせると描き直した部品を上書きするので実行しない（gen/roran/roran_layers.py --export も同じ理由で実行しない）（新しいユニットは tools/parts_export.py で同じ形の定義を書く）
+# gen/*_layers.py --export は描き直す前の書き出しに一度だけ使った。古い色の名前のままで今は使えず（落ち方は ISSUES.md）、直しても描き直した部品を上書きするので実行しない（ISSUES.md「gen/*.py が古い色の名前で書かれていて動かない」）（新しいユニットは tools/parts_export.py で同じ形の定義を書く）
 .venv/bin/python tools/compose_page.py --help  # 部品と組んだ結果を層の順に並べる確認ページ（--dirs down,right のようにカンマ区切り）
 .venv/bin/python tools/phone_sheet.py order compose/gau.json build/phone  # スマホで見る PNG（部品を奥→手前。今の絵と案を並べる diff・cmp もある。--help）
 .venv/bin/python tools/anim_compare.py NOW.png CAND.png OUT.html --anim ../assets/units/ines.json --dirs down  # 今と案のシートを並べて再生する確認ページ（コマ数と fps はゲームのユニット設定から読む）
@@ -103,7 +103,8 @@
 （size で宣言した行数ぶん続く）
 ```
 
-- `map` の値は `palette/master.json` のキー。色は必ずここ経由で参照する。
+- `map` の値は `palette/uses/<型>.json` か `common.json` の用途の色の名前。色は必ずここ経由で参照する（用途の色が色見本 `palette/swatches.json` と種類 `palette/kinds.json` を指す。README 2.1）。
+- 用途の色を足すときは、種類と説明を書く。武器の部品は輪郭と刃・武器の種類（盾の部品は輪郭と盾の種類）だけで塗り、それ以外の部品は刃・武器・盾の種類を使わない（`validate.py` が落とす）。
 - `.` は背景。`bg` は `transparent` / `#rrggbb` / `gradient:#rrggbb->#rrggbb`。
 - `# max_colors: N` を書くと使用色数の上限が検査される（任意）。
 - コロンを含まない `#` 行はコメント。コロンを含む行は正しいヘッダでなければ失敗する。
@@ -155,6 +156,6 @@ README は「リポジトリの使い方」を書く場所なので、課題を�
 （`assets/` の下に置くと `validate.py` / `render.py` がグリッドとして読んで落ちる）。
 
 **未確定:** 目指す絵柄、アセットあたりの色数上限（`# max_colors:` は実装済みだが
-どのアセットでも未使用）、マスターパレットの具体的な色、
+どのアセットでも未使用）、色見本の具体的な色、
 `face` / `item` / `tile` / `unit` 以外の型の一覧、未定義の型の解像度、
 `unit` で許す最小の線幅、`tile` をゲームへどう渡すか。必要になったら確認を取る。

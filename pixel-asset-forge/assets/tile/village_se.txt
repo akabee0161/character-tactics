@@ -4,10 +4,10 @@
 # Three small cottages sharing one map cell. The front one is the largest and
 # sits lowest, so the cell reads as a hamlet seen from above rather than one big house.
 # Same colours as the single tile village - stone walls, timber door, metal_hi window.
-# map: g=grass_base a=grass_hi s=grass_shadow o=outline
-# map: r=roof_hi f=roof_base c=roof_shadow
-# map: t=stone_hi n=stone_base
-# map: w=wood_base b=wood_shadow x=wood_dark l=metal_hi
+# map: g=ground_grass_base a=ground_grass_hi s=ground_grass_shadow o=contour
+# map: r=building_roof_hi f=building_roof_base c=building_roof_shadow
+# map: t=building_stone_hi n=building_stone_base
+# map: w=building_wood_base b=building_wood_shadow x=building_wood_dark l=window_light
 ogaagsssssssssgg
 cogggggggggggggg
 fcoggggggssggggg

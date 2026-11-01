@@ -6,7 +6,7 @@
 # upper course and x4/x12 on the lower one. The pattern is anchored to row 0 and
 # column 0 of the tile, so any tile that repeats these rows at its edges lines
 # up with a floor laid next to it.
-# map: f=floor_base h=floor_hi s=floor_shadow
+# map: f=ground_floor_base h=ground_floor_hi s=ground_floor_shadow
 ssssssssssssssss
 shhhhhhhshhhhhhh
 shffffffshffffff

@@ -4,8 +4,8 @@
 # A stone column with a capital and a base, for breaking up a wide hall. The
 # shaft is narrower than either end, and the cast shadow falls to the lower
 # right to agree with the rest of the set.
-# map: f=floor_base h=floor_hi s=floor_shadow k=floor_dark o=outline
-# map: n=stone_base t=stone_hi m=stone_shadow d=stone_dark
+# map: f=ground_floor_base h=ground_floor_hi s=ground_floor_shadow k=ground_floor_dark o=contour
+# map: n=building_stone_base t=building_stone_hi m=building_stone_shadow d=building_stone_dark
 ssssssssssssssss
 shhhoooooooohhhh
 shffotnnnnmoffff

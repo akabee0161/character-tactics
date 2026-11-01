@@ -33,7 +33,7 @@ class PartDef:
     chars: frozenset[str]
     boxes: dict[tuple[str, str], Box] | None = None  # (向き, 部品の状態) → 箱。None は枠全体
     hand: bool = False
-    keep: tuple[str, ...] = ()  # 色名
+    keep: tuple[str, ...] = ()  # 色の種類（compose の keep。2026-10-30 から色名でなく種類）
     dir: str = ""  # 置き場（assets/part/ からの相対。例 equip/bow・fist/ines）
 
 
@@ -46,7 +46,7 @@ class UnitDef:
     shares: dict[str, str]  # 状態 → 部品を使い回す状態（芯は使い回さない）
     parts: tuple[PartDef, ...]
     orders: dict[str, tuple[str, ...]]  # 向き → 奥→手前の層の名前（CORE を1つ含む）
-    hand_colours: tuple[str, ...]
+    # 手の色は書かない。compose.py がパレットの種類 skin から読む（2026-10-30）
 
 
 def unit_charmap(paths: list[Path]) -> dict[str, str]:
@@ -60,7 +60,7 @@ def unit_charmap(paths: list[Path]) -> dict[str, str]:
 
 
 def _outline_char(charmap: dict[str, str]) -> str:
-    chars = sorted(ch for ch, colour in charmap.items() if colour == "outline")
+    chars = sorted(ch for ch, colour in charmap.items() if colour == "contour")
     if not chars:
         raise ExportError("outline の文字が無い")
     return chars[0]
@@ -68,16 +68,16 @@ def _outline_char(charmap: dict[str, str]) -> str:
 
 def cut_chars(rows: list[str], charmap: dict[str, str], parts: list[Part]) -> dict[str, list[str]]:
     """層の名前 → 32行の文字列（透明は "."）。Part.colors には文字を入れる。"""
-    outline = {ch for ch, colour in charmap.items() if colour == "outline"}
-    frame = [[None if ch == "." else "outline" if ch in outline else ch for ch in row] for row in rows]
+    outline = {ch for ch, colour in charmap.items() if colour == "contour"}
+    frame = [[None if ch == "." else "contour" if ch in outline else ch for ch in row] for row in rows]
     out_ch = _outline_char(charmap)
-    return {name: ["".join("." if v is None else out_ch if v == "outline" else v for v in row) for row in layer.frame]
+    return {name: ["".join("." if v is None else out_ch if v == "contour" else v for v in row) for row in layer.frame]
             for name, layer in cut(frame, parts).items()}
 
 
 def grid_text(rows: list[str], charmap: dict[str, str], note: str) -> str:
     used = {ch for row in rows for ch in row if ch != "."}
-    chars = sorted(used, key=lambda ch: (charmap[ch] != "outline", ch)) or [_outline_char(charmap)]
+    chars = sorted(used, key=lambda ch: (charmap[ch] != "contour", ch)) or [_outline_char(charmap)]
     entries = [f"{ch}={charmap[ch]}" for ch in chars]
     lines = [f"# {note}", "# type: unit", "# size: 32x32", "# light: upper-left", "# bg: transparent"]
     lines += ["# map: " + " ".join(entries[i:i + MAP_PER_LINE]) for i in range(0, len(entries), MAP_PER_LINE)]
@@ -181,5 +181,5 @@ def export(unit: UnitDef, part_root: Path, config_path: Path, root: Path) -> Non
                 entries.append(entry)
             frames[f"{d}_{st}"] = {"body": rel(core_path), "layers": entries}
     config_path.parent.mkdir(parents=True, exist_ok=True)
-    config_path.write_text(json.dumps({"unit": unit.unit, "hand_colours": list(unit.hand_colours), "frames": frames},
+    config_path.write_text(json.dumps({"unit": unit.unit, "frames": frames},
                                       ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

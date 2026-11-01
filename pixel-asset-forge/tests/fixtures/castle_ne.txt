@@ -1,10 +1,10 @@
 # type: tile
 # size: 16x16
 # light: upper-left
-# map: o=outline g=grass_base a=grass_hi e=grass_shadow
-# map: t=stone_hi n=stone_base m=stone_shadow k=stone_dark
-# map: r=roof_hi f=roof_base c=roof_shadow
-# map: w=wood_base d=wood_dark l=metal_hi v=metal_shadow
+# map: o=contour g=ground_grass_base a=ground_grass_hi e=ground_grass_shadow
+# map: t=building_stone_hi n=building_stone_base m=building_stone_shadow k=building_stone_dark
+# map: r=building_roof_hi f=building_roof_base c=building_roof_shadow
+# map: w=building_wood_base d=building_wood_dark l=building_metal_hi v=building_metal_shadow
 gggggggggggggggg
 gggggggggggogggg
 ggggggggggofoggg

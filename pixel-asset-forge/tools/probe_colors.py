@@ -23,7 +23,8 @@ the rule about counting false positives before adding a check does not apply.
 It exits non-zero only when a pair it was asked about would be flagged, so it
 can be used as a gate on purpose.
 
-A colour is either a name in palette/master.json or a literal '#rrggbb'.
+A colour is a swatch name (palette/swatches.json), a use colour name
+(palette/uses/*.json) or a literal '#rrggbb'.
 """
 from __future__ import annotations
 
@@ -33,7 +34,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from gridfile import HEX_RE, GridError, hex_to_rgb, load_palette
+import palette as palette_mod
+from gridfile import HEX_RE, GridError, hex_to_rgb, load_colours
 
 from check_colors import (
     OTHER_HARD,
@@ -50,12 +52,20 @@ VERDICTS = ("OK(lightness)", "OK(dE)", "WARN", "HARD")
 
 
 def resolve(colour: str, palette: dict[str, tuple[int, int, int]]) -> tuple[int, int, int]:
-    """A palette key, or a literal '#rrggbb' for a colour not added yet."""
+    """A swatch or use colour name, or a literal '#rrggbb' for a colour not added yet."""
     if HEX_RE.match(colour):
         return hex_to_rgb(colour)
     if colour in palette:
         return palette[colour]
     raise GridError(f"{colour!r} is neither a palette name nor a '#rrggbb' literal")
+
+
+def is_outline(colour: str) -> bool:
+    """色見本が輪郭（OUTLINE_NAMES）の色か。用途の色は、指す色見本で判定する。"""
+    if colour in OUTLINE_NAMES:
+        return True
+    use = palette_mod.load().uses.get(colour)
+    return use is not None and use.swatch in OUTLINE_NAMES
 
 
 def verdict(one: str, two: str, palette: dict[str, tuple[int, int, int]]) -> tuple[str, float]:
@@ -69,8 +79,9 @@ def verdict(one: str, two: str, palette: dict[str, tuple[int, int, int]]) -> tup
     if has_lightness_edge(lab_one, lab_two):
         return "OK(lightness)", distance
 
-    is_outline = bool({one, two} & OUTLINE_NAMES)
-    hard, warn = (OUTLINE_HARD, OUTLINE_WARN) if is_outline else (OTHER_HARD, OTHER_WARN)
+    # 輪郭は色見本 (outline) でも、それを指す用途の色 (contour・eyepatch など) でも指せる
+    outline = is_outline(one) or is_outline(two)
+    hard, warn = (OUTLINE_HARD, OUTLINE_WARN) if outline else (OTHER_HARD, OTHER_WARN)
     if distance >= warn:
         return "OK(dE)", distance
     return ("WARN" if distance >= hard else "HARD"), distance
@@ -124,7 +135,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     try:
-        palette = load_palette()
+        palette = load_colours()
     except GridError as exc:
         print(f"FAIL {exc}", file=sys.stderr)
         return 2

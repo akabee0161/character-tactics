@@ -291,7 +291,7 @@ def build_data(picker: Picker) -> dict:
         "frames": frames,
         "parts": parts,
         "refs": refs,
-        "grass": "#{:02x}{:02x}{:02x}".format(*enc.palette["grass_base"]),
+        "grass": "#{:02x}{:02x}{:02x}".format(*enc.palette["ground_grass_base"]),
     }
 
 

@@ -1,0 +1,357 @@
+{
+  "ground_floor_shadow": {
+    "swatch": "floor_shadow",
+    "kind": "terrain",
+    "note": "室内の床（暗）"
+  },
+  "ground_floor_hi": {
+    "swatch": "floor_hi",
+    "kind": "terrain",
+    "note": "室内の床（明）"
+  },
+  "furniture_wood_hi": {
+    "swatch": "wood_hi",
+    "kind": "object",
+    "note": "本棚・道標・井戸の木（明）"
+  },
+  "furniture_wood_base": {
+    "swatch": "wood_base",
+    "kind": "object",
+    "note": "本棚・道標・井戸の木（中）"
+  },
+  "book_red": {
+    "swatch": "carpet_base",
+    "kind": "object",
+    "note": "本棚の赤い本"
+  },
+  "book_blue": {
+    "swatch": "hair_base",
+    "kind": "object",
+    "note": "本棚の青い本"
+  },
+  "furniture_wood_shadow": {
+    "swatch": "wood_shadow",
+    "kind": "object",
+    "note": "本棚・道標・井戸の木（暗）"
+  },
+  "book_green": {
+    "swatch": "grass_shadow",
+    "kind": "object",
+    "note": "本棚の緑の本"
+  },
+  "book_yellow": {
+    "swatch": "metal_hi",
+    "kind": "object",
+    "note": "本棚の黄色い本"
+  },
+  "ground_floor_base": {
+    "swatch": "floor_base",
+    "kind": "terrain",
+    "note": "室内の床（中）"
+  },
+  "furniture_wood_dark": {
+    "swatch": "wood_dark",
+    "kind": "object",
+    "note": "本棚・道標・井戸の木（最暗）"
+  },
+  "fire_base": {
+    "swatch": "flame_base",
+    "kind": "object",
+    "note": "火鉢・松明の火（中）"
+  },
+  "fire_deep": {
+    "swatch": "flame_deep",
+    "kind": "object",
+    "note": "火鉢・松明の火（濃）"
+  },
+  "fire_hi": {
+    "swatch": "flame_hi",
+    "kind": "object",
+    "note": "火鉢・松明の火（明）"
+  },
+  "furniture_metal_hi": {
+    "swatch": "metal_hi",
+    "kind": "object",
+    "note": "火鉢・松明の台・玉座の金（明）"
+  },
+  "furniture_metal_base": {
+    "swatch": "metal_base",
+    "kind": "object",
+    "note": "火鉢・松明の台・玉座の金（中）"
+  },
+  "furniture_metal_shadow": {
+    "swatch": "metal_shadow",
+    "kind": "object",
+    "note": "火鉢・松明の台・玉座の金（暗）"
+  },
+  "ground_floor_dark": {
+    "swatch": "floor_dark",
+    "kind": "terrain",
+    "note": "室内の床（最暗）"
+  },
+  "ground_grass_base": {
+    "swatch": "grass_base",
+    "kind": "terrain",
+    "note": "草地（中）"
+  },
+  "ground_dirt_base": {
+    "swatch": "dirt_base",
+    "kind": "terrain",
+    "note": "土・道・川岸・畑の土（中）"
+  },
+  "water_surface_shadow": {
+    "swatch": "water_shadow",
+    "kind": "terrain",
+    "note": "川・池の水面（暗）"
+  },
+  "water_surface_base": {
+    "swatch": "water_base",
+    "kind": "terrain",
+    "note": "川・池の水面（中）"
+  },
+  "ground_grass_hi": {
+    "swatch": "grass_hi",
+    "kind": "terrain",
+    "note": "草地（明）"
+  },
+  "water_surface_hi": {
+    "swatch": "water_hi",
+    "kind": "terrain",
+    "note": "川・池の水面（明）"
+  },
+  "building_wood_hi": {
+    "swatch": "wood_hi",
+    "kind": "building",
+    "note": "扉・橋・柵・家の木（明）"
+  },
+  "building_wood_dark": {
+    "swatch": "wood_dark",
+    "kind": "building",
+    "note": "扉・橋・柵・家の木（最暗）"
+  },
+  "building_wood_base": {
+    "swatch": "wood_base",
+    "kind": "building",
+    "note": "扉・橋・柵・家の木（中）"
+  },
+  "building_wood_shadow": {
+    "swatch": "wood_shadow",
+    "kind": "building",
+    "note": "扉・橋・柵・家の木（暗）"
+  },
+  "fabric_red_hi": {
+    "swatch": "carpet_hi",
+    "kind": "object",
+    "note": "絨毯・旗・玉座の赤い布（明）"
+  },
+  "fabric_trim_base": {
+    "swatch": "metal_base",
+    "kind": "object",
+    "note": "絨毯・旗の金の飾り（中）"
+  },
+  "fabric_red_base": {
+    "swatch": "carpet_base",
+    "kind": "object",
+    "note": "絨毯・旗・玉座の赤い布（中）"
+  },
+  "fabric_red_shadow": {
+    "swatch": "carpet_shadow",
+    "kind": "object",
+    "note": "絨毯・旗・玉座の赤い布（暗）"
+  },
+  "fabric_trim_hi": {
+    "swatch": "metal_hi",
+    "kind": "object",
+    "note": "絨毯・旗の金の飾り（明）"
+  },
+  "building_roof_base": {
+    "swatch": "roof_base",
+    "kind": "building",
+    "note": "城・家の屋根（中）"
+  },
+  "building_roof_hi": {
+    "swatch": "roof_hi",
+    "kind": "building",
+    "note": "城・家の屋根（明）"
+  },
+  "building_roof_shadow": {
+    "swatch": "roof_shadow",
+    "kind": "building",
+    "note": "城・家の屋根（暗）"
+  },
+  "building_stone_hi": {
+    "swatch": "stone_hi",
+    "kind": "building",
+    "note": "城・壁・家・柱・階段・扉の枠の石（明）"
+  },
+  "building_stone_shadow": {
+    "swatch": "stone_shadow",
+    "kind": "building",
+    "note": "城・壁・家・柱・階段・扉の枠の石（暗）"
+  },
+  "building_stone_base": {
+    "swatch": "stone_base",
+    "kind": "building",
+    "note": "城・壁・家・柱・階段・扉の枠の石（中）"
+  },
+  "building_stone_dark": {
+    "swatch": "stone_dark",
+    "kind": "building",
+    "note": "城・壁・家・柱・階段・扉の枠の石（最暗）"
+  },
+  "building_metal_hi": {
+    "swatch": "metal_hi",
+    "kind": "building",
+    "note": "扉・城門の金具（明）"
+  },
+  "building_metal_shadow": {
+    "swatch": "metal_shadow",
+    "kind": "building",
+    "note": "扉・城門の金具（暗）"
+  },
+  "ground_grass_shadow": {
+    "swatch": "grass_shadow",
+    "kind": "terrain",
+    "note": "草地（暗）"
+  },
+  "ground_dirt_shadow": {
+    "swatch": "dirt_shadow",
+    "kind": "terrain",
+    "note": "土・道・川岸・畑の土（暗）"
+  },
+  "crop_sprout": {
+    "swatch": "grass_hi",
+    "kind": "plant",
+    "note": "畑の芽"
+  },
+  "ground_dirt_hi": {
+    "swatch": "dirt_hi",
+    "kind": "terrain",
+    "note": "土・道・川岸・畑の土（明）"
+  },
+  "building_metal_base": {
+    "swatch": "metal_base",
+    "kind": "building",
+    "note": "扉・城門の金具（中）"
+  },
+  "tree_leaf_shadow": {
+    "swatch": "leaf_shadow",
+    "kind": "plant",
+    "note": "木・森の葉（暗）"
+  },
+  "tree_leaf_base": {
+    "swatch": "leaf_base",
+    "kind": "plant",
+    "note": "木・森の葉（中）"
+  },
+  "tree_leaf_hi": {
+    "swatch": "leaf_hi",
+    "kind": "plant",
+    "note": "木・森の葉（明）"
+  },
+  "flower_yellow": {
+    "swatch": "metal_hi",
+    "kind": "plant",
+    "note": "草地の黄色い花"
+  },
+  "flower_white": {
+    "swatch": "stone_hi",
+    "kind": "plant",
+    "note": "草地の白い花"
+  },
+  "rock_dark": {
+    "swatch": "stone_dark",
+    "kind": "terrain",
+    "note": "岩・山（最暗）"
+  },
+  "rock_shadow": {
+    "swatch": "stone_shadow",
+    "kind": "terrain",
+    "note": "岩・山（暗）"
+  },
+  "rock_base": {
+    "swatch": "stone_base",
+    "kind": "terrain",
+    "note": "岩・山（中）"
+  },
+  "rock_hi": {
+    "swatch": "stone_hi",
+    "kind": "terrain",
+    "note": "岩・山（明）"
+  },
+  "tree_trunk_base": {
+    "swatch": "wood_base",
+    "kind": "plant",
+    "note": "木の幹・切り株（中）"
+  },
+  "tree_trunk_shadow": {
+    "swatch": "wood_shadow",
+    "kind": "plant",
+    "note": "木の幹・切り株（暗）"
+  },
+  "window_light": {
+    "swatch": "metal_hi",
+    "kind": "building",
+    "note": "家の窓の明かり"
+  },
+  "tree_trunk_hi": {
+    "swatch": "wood_hi",
+    "kind": "plant",
+    "note": "木の幹・切り株（明）"
+  },
+  "tree_trunk_dark": {
+    "swatch": "wood_dark",
+    "kind": "plant",
+    "note": "木の幹・切り株（最暗）"
+  },
+  "fabric_trim_shadow": {
+    "swatch": "metal_shadow",
+    "kind": "object",
+    "note": "絨毯・旗の金の飾り（暗）"
+  },
+  "window_glass_base": {
+    "swatch": "water_base",
+    "kind": "building",
+    "note": "窓のガラス（中）"
+  },
+  "window_glass_hi": {
+    "swatch": "water_hi",
+    "kind": "building",
+    "note": "窓のガラス（明）"
+  },
+  "window_glass_shadow": {
+    "swatch": "water_shadow",
+    "kind": "building",
+    "note": "窓のガラス（暗）"
+  },
+  "well_roof_hi": {
+    "swatch": "roof_hi",
+    "kind": "object",
+    "note": "井戸の屋根（明）"
+  },
+  "well_roof_base": {
+    "swatch": "roof_base",
+    "kind": "object",
+    "note": "井戸の屋根（中）"
+  },
+  "well_stone_hi": {
+    "swatch": "stone_hi",
+    "kind": "object",
+    "note": "井戸の石（明）"
+  },
+  "well_stone_dark": {
+    "swatch": "stone_dark",
+    "kind": "object",
+    "note": "井戸の石（最暗）"
+  },
+  "well_stone_shadow": {
+    "swatch": "stone_shadow",
+    "kind": "object",
+    "note": "井戸の石（暗）"
+  },
+  "well_stone_base": {
+    "swatch": "stone_base",
+    "kind": "object",
+    "note": "井戸の石（中）"
+  }
+}

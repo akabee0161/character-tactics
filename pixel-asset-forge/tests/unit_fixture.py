@@ -19,12 +19,11 @@ from compose import main as compose_main  # noqa: E402
 from test_compose import Workspace, grid_text  # noqa: E402
 
 MAPS = {
-    "core": "o=outline b=skin_base c=cloak_dark_base",
-    "sword": "o=outline i=stone_hi k=wood_base",
-    "sword_hand": "o=outline a=skin_hi",
-    "shield": "o=outline m=metal_hi",
+    "core": "o=contour b=skin_fair_base c=clothes_dark_base",
+    "sword": "o=contour i=blade_hi k=weapon_shaft_base",
+    "sword_hand": "o=contour a=skin_fair_hi",
+    "shield": "o=contour m=shield_hi",
 }
-HAND_COLOURS = ["skin_hi"]
 
 
 def box(x0: int, y0: int, x1: int, y1: int, fill: str) -> dict[tuple[int, int], str]:
@@ -101,7 +100,8 @@ class UnitFixture:
         self.checks = default_checks()
         self.maps = dict(MAPS)
         self.back: set[str] = set()
-        self.keep: dict[str, list[str]] = {}  # 部品の名前 → compose の keep
+        self.keep: dict[str, list[str]] = {}  # 部品の名前 → compose の keep（種類の並び）
+        self.shift: dict[str, tuple[int, int]] = {}  # 部品の名前 → compose の (dx, dy)
 
     def close(self) -> None:
         self.ws.close()
@@ -121,12 +121,14 @@ class UnitFixture:
                 layer = {"part": str(path), "z": "back" if key in self.back else "front"}
                 if key in self.keep:
                     layer["keep"] = self.keep[key]
+                if key in self.shift:
+                    layer["dx"], layer["dy"] = self.shift[key]
                 if key.endswith("_hand"):
                     layer["hand"] = True
                 parts.append(layer)
             frames[name] = {"body": str(body), "layers": parts}
         compose_path = self.ws.write("compose/t.json", json.dumps(
-            {"unit": "t", "hand_colours": HAND_COLOURS, "frames": frames}))
+            {"unit": "t", "frames": frames}))
         if build:
             with contextlib.redirect_stdout(io.StringIO()):
                 code = compose_main([str(compose_path), "--out", str(self.root / "assets/unit/t"), "--force"])

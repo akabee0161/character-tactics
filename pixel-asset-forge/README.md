@@ -61,8 +61,8 @@ cat assets/item/chest.txt
 # size: 16x16
 # light: upper-left
 # bg: transparent
-# map: o=outline h=wood_hi w=wood_base s=wood_shadow
-# map: d=wood_dark l=metal_hi n=metal_base v=metal_shadow
+# map: o=contour h=chest_wood_hi w=chest_wood_base s=chest_wood_shadow
+# map: d=chest_wood_dark l=chest_metal_hi n=chest_metal_base v=chest_metal_shadow
 ................
 ....oooooooo....
 ...ohhhhhwwwo...
@@ -78,19 +78,35 @@ cat assets/item/chest.txt
 | `# size: 16x16` | 幅×高さ。この後に16文字×16行が続く約束 |
 | `# light: upper-left` | 光源の向き。**ツールは使わない。描き手への約束**で、明るい色を左上に置く |
 | `# bg: transparent` | `.` の塗り方。`transparent` / `#rrggbb` / `gradient:#rrggbb->#rrggbb` |
-| `# map: o=outline ...` | **文字 → 色名**の対応。複数行に分けてよい |
+| `# map: o=outline ...` | **文字 → 用途の色の名前**の対応。複数行に分けてよい |
 
 コロンを含まない `#` 行はコメントになる。コロンを含む行は正しいヘッダでなければエラーになる
 （`# 説明: ...` のようなコメントは書けない）。
 
-**色は2段階で決まる。**
+**色は3段階で決まる。**
 
 ```
-グリッドの文字 'h'  →  map で色名 "wood_hi"  →  palette/master.json で "#c08b52"
+グリッドの文字 'h'  →  map で用途の色 "chest_wood_hi"
+                    →  palette/uses/item.json で 色見本 "wood_hi"・種類 "object"
+                    →  palette/swatches.json で "#c08b52"
 ```
 
-ファイルに RGB を直接書かないので、`palette/master.json` を直せばその色を使う全アセットが変わる。
-色を増やしたいときは `master.json` に足す（[2.6](#26-色を検査する) の手順で測ってから）。
+パレットは `palette/` の3種類のファイルでできている。
+
+| ファイル | 持つもの |
+|---|---|
+| `swatches.json` | 色見本。色の値（`#rrggbb`）と説明だけ。値を持つのはここだけ |
+| `kinds.json` | 種類の一覧と説明（輪郭・肌・髪・被り物・装飾品・刃・武器・盾・地形など15種） |
+| `uses/common.json` `unit.json` `tile.json` `face.json` `item.json` | 用途の色。絵の `map` に書く名前で、色見本の名前・種類・説明を持つ。型ごとに1つで、その型のアセットが共有する。`common.json` は全部の型が使う輪郭（`contour`） |
+
+絵の `map` の右側には**用途の色**を書く。同じ色見本でも用途が違えば別の項目にする
+（短剣の刃 `blade_hi` と兜 `helmet_steel_hi` は、どちらも色見本 `stone_hi` だが別の項目）。
+確認の道具は色の名前から物を推測せず、種類（`kinds.json`）を読んで武器・手・髪などを見分ける。
+
+ファイルに RGB を直接書かないので、`swatches.json` の値を直せばその色を使う全アセットが変わる。
+色見本を増やしたいときは `swatches.json` に足す（[2.6](#26-色を検査する) の手順で測ってから）。
+用途の色を足すときは、種類と説明を必ず書く。
+古い色の名前で書かれたグリッド（退避した部品など）を用途の色へ移すには `tools/palette_migrate.py` を使う（名前の対応表で `map` の名前を書き換える）。対応表は `docs/palette-migration.json`。
 
 **グリッド本体**は、そのまま絵として読める。`h`（明るい木）が左、`s`（影の木）が右に寄っているのは
 左上から光が当たっているからで、両端の `n` の縦列が金具の帯である。
@@ -108,8 +124,12 @@ ok   assets/item/chest.txt  16x16  8 colours
 `validate.py` が見るのは**形式だけ**である。
 
 - 行数と各行の長さが `size` と一致するか
-- グリッドの文字がすべて `map` で色名に割り当てられているか
-- `map` の色名が `palette/master.json` にあるか
+- グリッドの文字がすべて `map` で用途の色の名前に割り当てられているか
+- `map` の名前が、その型で使える用途の色（`palette/uses/<型>.json` と `common.json`）にあるか
+- 部品の色の決まり: 武器の部品（`assets/part/equip/<物>/`、盾以外）は輪郭と刃・武器の種類だけ、盾の部品は輪郭と盾の種類だけ、
+  それ以外の部品（`assets/part/` の残りと `types/unit/base/`）は刃・武器・盾の種類を使わない。`assets/unit/` の組んだコマは対象外
+  （派生ファイルは由来元の型で見る）
+- どのグリッドにも使われていない用途の色・指す用途の無い色見本は、`note:` の行で知らせる（失敗にはしない）
 - `# max_colors: N` を書いた場合、使用色数がそれ以下か
 
 **絵として正しいかは判定しない。** 目視の前に、数え間違いのような安い誤りを落とすための関門である。
@@ -201,7 +221,7 @@ tile の目視は次の3通りで行う。**どれも機械チェックが無い
 
 1つ目は `grass_base` と `HARD`（ΔE 5.9、ほぼ同じ色）になり、2つ目は3つとも `OK` になる。
 木の葉の色を決めたときの実例で、地面の緑をそのまま木に使うと地面に沈むことが描く前に分かった。
-候補は `master.json` に足さなくても `#rrggbb` のまま測れる。
+候補は `swatches.json` に足さなくても `#rrggbb` のまま測れる。
 
 計算で分かるのは「2色が見分けられるか」だけで、色が合っているか・絵柄に合うかは判断できない。
 実測では、目視で見つかった欠陥11件のうち `check_colors.py` が拾えたものは0件である。
@@ -249,9 +269,9 @@ cat sheets/roran.txt
 .venv/bin/python tools/unit_rules.py checks/gau.json
 ```
 
-- 設定ファイル `checks/<ユニット>.json` に、素体の型（男性・女性）・芯に描いた髪とかぶり物の文字・承認された重なり順・部品の役割（武器と刃の文字・拳・動いてよい部品・動かない盾）・目の位置・`weapon_check.py` の指定・例外を書く（形は `tools/unit_config.py` の docstring）
+- 設定ファイル `checks/<ユニット>.json` に、素体の型（男性・女性）・芯に描いた髪とかぶり物の文字・承認された重なり順・部品の役割（武器と刃の文字・拳・動いてよい部品・動かない盾）・目の位置（目の部品 `"eye": true` があるユニットは書かない。`types/unit/SPEC.md`）・`weapon_check.py` の指定（隠れるコマ・奥行き。刃・武器・手の色は書かず、パレットの種類 blade・weapon・skin から読む）・例外を書く（形は `tools/unit_config.py` の docstring）
 - 今ある道具（`validate.py`・`compose.py --check`・`body_check.py`・`hand_mirror.py`・`unit_check.py`・`weapon_check.py`）と、方針の確認（重なり順・切っ先の高さ・動かない所と盾・背丈・刃と鏃の先端（決まり1〜5）・部品の文字・目・部品が閉じている・拳の大きさと握り・left と right の武器の位置）を順に走らせ、確認ごとに1行「ok／NG」を出す
-- 例外に書いていない失敗が1つでもあれば終了コード 1、設定の誤り（知らないキー・無い部品・無いコマ・パレットに無い色名）は 2。例外は基本的に作らず、正しい絵が落ちたら道具の判定を直す
+- 例外に書いていない失敗が1つでもあれば終了コード 1、設定の誤り（知らないキー・無い部品・無いコマ・パレットに無い用途の色の名前）は 2。例外は基本的に作らず、正しい絵が落ちたら道具の判定を直す
 - `unit_check.py` の「増えた切れ目」は報告だけ（歩きの足先のようにわざと切れているものもあるので、1件ずつ目で確かめる）。`weapon_check.py` の `--arm` は使わない（体＋拳の方針、2026-10-16）
 - 確認はそれぞれ単独でも走らせられる（`tools/order_check.py checks/gau.json` など）
 - 刃・鏃の先端の確認（`tip_check.py`）は、中身5画素以上・45°以外の斜め・向きの決まらない刃を落とさず「対象外」とし、ok の行に件数を添えて場所を出す。
@@ -279,8 +299,10 @@ cat sheets/roran.txt
 ```
 
 部品を持たない完成した絵を部品に分けるときは、`tools/parts_export.py` を使う（文字で切るので、同じ色の別の物も分けられる）。
-ユニットごとの切り方（部品の文字・拳の箱・重なり順）は `gen/<ユニット>/<ユニット>_layers.py` に書く（イネスは `gen/ines/ines_layers.py`、ガウは `gen/gau/gau_layers.py`。書き出すのは部品と設定だけで、コマは書かない）。
-書き出しは描き直す前に一度だけ使う。部品を描き直した後に走らせると上書きするので、イネス・ガウでは実行しない。
+ユニットごとの切り方（部品の文字・拳の箱・重なり順）は `gen/<ユニット>/<ユニット>_layers.py` に書いていた（イネスは `gen/ines/ines_layers.py`、ガウは `gen/gau/gau_layers.py`）。
+**`gen/*.py` は今は使えない。** 古い色の名前のままで、`gen/ines`・`gen/gau` は `UnitDef(hand_colours=…)` を渡すので import の時点で落ち、`gen/roran` は設定の JSON に `hand_colours` を書くので `compose.py` がその設定を読むときに止まり、`gen/enemy` は部品とコマの `map` に古い名前を書くので出力が `validate.py` で落ちる（`ISSUES.md`「`gen/*.py` が古い色の名前で書かれていて動かない」）。
+新しいユニットの部品は、いま動く道具（`tools/parts_export.py` の呼び出しを自分で書く、または `compose.py`）で用途の色に切る。
+書き出しは描き直す前に一度だけ使うもので、部品を描き直した後に走らせると上書きする。
 手順は `types/unit/SPEC.md` の「描く手順」。
 組み立てた後に手で直したコマは組み立て結果と違うので、`compose.py` は上書きせずに止まる（`--force` を付けたときだけ上書きする）。
 
@@ -354,13 +376,15 @@ forge をゲームリポジトリへコピーして使うときは、ゲーム�
   `gen/enemy/mkweapons.py`（斧・槍の男女の敵。敵の一覧は `gen/enemy/mkframes.py` の `ENEMIES`、女性の8体は
   `mkweapons.py` で足す）。女性の id は `<男性の id>-<髪 a・b・c>-f`（a 前髪ありのロング・b 前髪なしのロング・c ポニーテール）。
   今走らせると、コマはコミット済みのものと違う（`ISSUES.md`「敵の生成スクリプトの出力が、コミット済みのコマと違う」）
-- `recolor` は「元のコマが使うパレット名 → 置き換え後のパレット名」。元のコマが使わない名前は止める
+- `recolor` は「元のコマが使う用途の色 → 置き換え後の**色見本**」。元のコマが使わない名前は止める。
+  そのため `build/enemy/<id>/*.txt`（色替え後のコマ）の `map` は色見本の名前になり、用途の色としては検査されない
+  （`validate.py` は `assets/` などを見るので、ここは対象外。読むのは `gridfile.load_colours()` で、用途の色に色見本を足して引く）
 - 元のコマの絵を直したら `enemy_build.py --all` で作り直す。`build/` は生成物
 
 ### まとめ
 
 ```
-palette/master.json（色名 → RGB）
+palette/uses/<型>.json（用途の色 → 色見本・種類）→ palette/swatches.json（色見本 → RGB）
         ↓ 参照
 assets/**/*.txt（文字グリッド。# from: なら反転・回転で派生）
         ↓
@@ -386,7 +410,9 @@ probe_colors.py ──── 描く前に色の候補を測る
 README.md                  この手引き（人間向け）
 CLAUDE.md                  Claude が守る作業規約（AI 向け）
 ISSUES.md                  見つかっていて直していない課題
-palette/master.json        色名 -> RGB。色は必ずここ経由で参照する
+palette/swatches.json      色見本 -> RGB（値を持つのはここだけ）
+palette/kinds.json         種類の一覧と説明（道具が種類で物を見分ける）
+palette/uses/<型>.json     用途の色 -> 色見本・種類・説明。絵の map はここの名前を書く（common.json は全型の輪郭）
 types/<type>/SPEC.md       型ごとの機械的な規約（寸法・構成・並び方）
 types/<type>/reference/    合格済みのお手本。絵柄はここで揃える（`unit` は `reference/` を持たない。手本は `assets/unit/roran/`（剣と盾）・`assets/unit/ines/`（弓）・`assets/unit/gau/`（短剣）、土台は `types/unit/base/` の素体）
 types/unit/base/           unit の素体（4方向）。新しい unit を複製して作る土台
@@ -457,7 +483,7 @@ unit 型で、敵の兵士を1体。ロランと同じ規約・同じシート�
 依頼すると、Claude はおおむね次の順で進める（`CLAUDE.md` に書いてある手順）。
 
 1. `types/<type>/SPEC.md` と `reference/` を読む（`unit` は手本の3体と `types/unit/base/`。描く順番は `types/unit/SPEC.md` の「描く手順」）
-2. 新しい色が要るなら、`probe_colors.py` で隣り合う色と測ってから `master.json` に足す
+2. 新しい色見本が要るなら、`probe_colors.py` で隣り合う色と測ってから `swatches.json` に足す。用途の色は `palette/uses/<型>.json` に種類と説明を書いて足す
 3. `assets/<type>/<name>.txt` を書く
 4. `validate.py` → `render.py` → `_x8.png` を自分で目視して直す
 5. 型ごとの追加確認
@@ -530,7 +556,7 @@ Claude は自分が何を描いたか知っているので、そう見えてし�
 | **確定** | `unit` は足元 y=30・左右中央・背丈24〜26px。シート定義は `sheets/` に置く（`assets/` 不可） |
 | **未確定** | 目指す絵柄（「SFC世代相当」以上の指定はない） |
 | **未確定** | アセットあたりの色数上限。`# max_colors:` は実装済みだがどのアセットでも未使用 |
-| **未確定** | マスターパレットの具体的な色 |
+| **未確定** | 色見本の具体的な色 |
 | **未確定** | `face` / `item` / `tile` / `unit` 以外の型と、その解像度 |
 | **未確定** | `unit` で許す最小の線幅（0.796倍表示で1pxの刃が消えた。[実測](docs/2026-09-23-findings.md#ゲームに入れて分かったこと)。0.796倍はゲーム側で修正予定の経過的な課題で、いずれ縮小されなくなる） |
 | **未確定** | `tile` をゲームへどう渡すか（1枚ずつの PNG / タイルセット / マップの完成品）。`tilemap.py` は検証用 |

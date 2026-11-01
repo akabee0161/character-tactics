@@ -22,17 +22,17 @@ def box(x0, y0, x1, y1, name):
 
 class ComposeTest(unittest.TestCase):
     def test_front_layer_overwrites_and_labels(self):
-        frame, labels = compose({"胴": box(10, 10, 15, 20, "cloth_base"), "拳": box(14, 14, 16, 15, "skin_base")},
+        frame, labels = compose({"胴": box(10, 10, 15, 20, "clothes_blue_base"), "拳": box(14, 14, 16, 15, "skin_fair_base")},
                                 ["胴", "拳"])
-        self.assertEqual(frame[14][14], "skin_base")
+        self.assertEqual(frame[14][14], "skin_fair_base")
         self.assertEqual(labels[14][14], "拳")
-        self.assertEqual(frame[16][14], "cloth_base")
+        self.assertEqual(frame[16][14], "clothes_blue_base")
         self.assertEqual(labels[16][14], "胴")
         self.assertIsNone(labels[0][0])
 
     def test_far_layer_is_hidden_behind_nearer_layer(self):
         """奥の拳が髪の後ろに入る（試作の動機）: 重なる画素はすべて手前の層になる。"""
-        frame, labels = compose({"奥の拳": box(20, 16, 21, 17, "skin_shadow"), "髪": box(18, 14, 21, 18, "hair")},
+        frame, labels = compose({"奥の拳": box(20, 16, 21, 17, "skin_fair_shadow"), "髪": box(18, 14, 21, 18, "hair")},
                                 ["奥の拳", "髪"])
         self.assertTrue(all(labels[y][x] == "髪" for y in (16, 17) for x in (20, 21)))
 

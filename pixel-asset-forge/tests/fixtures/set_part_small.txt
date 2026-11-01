@@ -1,6 +1,6 @@
 # type: tile
 # size: 8x8
-# map: g=grass_base
+# map: g=ground_grass_base
 gggggggg
 gggggggg
 gggggggg

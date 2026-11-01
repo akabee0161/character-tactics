@@ -6,7 +6,7 @@
 # walls are columns of wall_top on their own.
 # The slabs are deliberately larger than floor_stone's flagstones so a wall
 # reads as a wall and not as grey floor.
-# map: n=stone_base t=stone_hi m=stone_shadow
+# map: n=building_stone_base t=building_stone_hi m=building_stone_shadow
 mmmmmmmmmmmmmmmm
 mttttttttttttttt
 mtnnnnnnnnnnnnnn

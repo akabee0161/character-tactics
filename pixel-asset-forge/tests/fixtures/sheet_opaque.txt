@@ -1,7 +1,7 @@
 # type: unit
 # size: 4x4
 # bg: #000000
-# map: o=outline
+# map: o=contour
 ....
 .o..
 .o..

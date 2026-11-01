@@ -37,18 +37,18 @@ def cut(frame: Frame, parts: list[Part]) -> dict[str, Layer]:
     for y in range(SIZE):
         for x in range(SIZE):
             n = frame[y][x]
-            if n is not None and n != "outline" and (x, y) not in owner:
+            if n is not None and n != "contour" and (x, y) not in owner:
                 owner[(x, y)] = CORE
     layers = {name: Layer(blank()) for name in [p.name for p in parts] + [CORE]}
     for (x, y), name in owner.items():
         layers[name].frame[y][x] = frame[y][x]
     for y in range(SIZE):
         for x in range(SIZE):
-            if frame[y][x] != "outline":
+            if frame[y][x] != "contour":
                 continue
             touching = {owner[(x + dx, y + dy)] for dx, dy in N8 if (x + dx, y + dy) in owner}
             for name in touching or {CORE}:
-                layers[name].frame[y][x] = "outline"
+                layers[name].frame[y][x] = "contour"
     return layers
 
 
@@ -68,8 +68,8 @@ def torn(layers: dict[str, Layer], labels: Frame, parts: list[Part], order: list
                 back = labels[y][x]
                 if own[y][x] is not None or back not in rank or rank[back] >= rank[part.name]:
                     continue
-                if layers[back].frame[y][x] != "outline" and any(
-                        0 <= x + dx < SIZE and 0 <= y + dy < SIZE and own[y + dy][x + dx] not in (None, "outline")
+                if layers[back].frame[y][x] != "contour" and any(
+                        0 <= x + dx < SIZE and 0 <= y + dy < SIZE and own[y + dy][x + dx] not in (None, "contour")
                         for dx, dy in N4):
                     found.append(((x, y), back, part.name))
                     continue

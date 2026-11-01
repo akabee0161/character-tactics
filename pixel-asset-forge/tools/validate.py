@@ -15,7 +15,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from gridfile import REPO_ROOT, GridError, check, display, find_grids, load_palette, parse
+import palette as palette_mod
+from gridfile import REPO_ROOT, Grid, GridError, check, display, find_grids, load_palette, parse
 
 
 def default_targets(root: Path = REPO_ROOT) -> list[Path]:
@@ -43,6 +44,45 @@ def collect(targets: list[Path]) -> list[Path]:
     return grids
 
 
+WEAPON_KINDS = frozenset({"blade", "weapon"})
+EQUIPMENT_KINDS = frozenset({"blade", "weapon", "shield"})
+
+
+def palette_rules(path: Path, grid: Grid, pal: palette_mod.Palette) -> list[str]:
+    """Rules on which use colours a grid may name. ``path`` is repo-relative.
+
+    A derived file (``# from:``) has already inherited its origin's type in ``grid``.
+    """
+    errors: list[str] = []
+    names = sorted({n for n in grid.charmap.values() if n in pal.uses})
+
+    allowed = pal.allowed(grid.type)
+    for n in names:
+        if n not in allowed:
+            errors.append(f"{n!r} is a {pal.uses[n].type} colour, but this grid's type is {grid.type!r}")
+
+    parts = path.parts
+    if parts[:3] == ("assets", "part", "equip") and len(parts) >= 5:
+        permitted = {"outline", "shield"} if parts[3] == "shield" else {"outline", *WEAPON_KINDS}
+        for n in names:
+            if pal.kind_of(n) not in permitted:
+                errors.append(
+                    f"{n!r} (kind {pal.kind_of(n)}) is not allowed in equip/{parts[3]}: "
+                    f"only {', '.join(sorted(permitted))}"
+                )
+    elif parts[:2] == ("assets", "part") or parts[:3] == ("types", "unit", "base"):
+        for n in names:
+            if pal.kind_of(n) in EQUIPMENT_KINDS:
+                errors.append(f"{n!r} (kind {pal.kind_of(n)}) is equipment; a body part or base must not use blade/weapon/shield")
+    return errors
+
+
+def unused(pal: palette_mod.Palette, used: set[str]) -> tuple[set[str], set[str]]:
+    """(use colours no grid names, swatches no use points at)."""
+    pointed = {u.swatch for u in pal.uses.values()}
+    return set(pal.uses) - used, set(pal.swatches) - pointed
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("targets", nargs="*", type=Path, help="grid files or directories (default: assets/, references and bases)")
@@ -51,6 +91,7 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         palette = load_palette()
+        pal = palette_mod.load()
     except GridError as exc:
         print(f"FAIL {exc}", file=sys.stderr)
         return 2
@@ -61,6 +102,9 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     failed = 0
+    unreadable = 0
+    outside: list[Path] = []
+    used_names: set[str] = set()
     for path in grids:
         rel = display(path)
         try:
@@ -68,9 +112,13 @@ def main(argv: list[str] | None = None) -> int:
         except GridError as exc:
             print(f"FAIL {rel}\n       {exc}", file=sys.stderr)
             failed += 1
+            unreadable += 1
             continue
+        if not path.is_relative_to(REPO_ROOT):
+            outside.append(path)
 
-        errors = check(grid, palette)
+        errors = check(grid, palette) + palette_rules(display(path), grid, pal)
+        used_names |= set(grid.charmap[c] for c in grid.used_chars() if c in grid.charmap)
         if errors:
             print(f"FAIL {rel}", file=sys.stderr)
             for error in errors:
@@ -80,6 +128,19 @@ def main(argv: list[str] | None = None) -> int:
             used = len(grid.used_colors(palette))
             limit = f"/{grid.max_colors}" if grid.max_colors is not None else ""
             print(f"ok   {rel}  {grid.width}x{grid.height}  {used}{limit} colours")
+
+    if outside and not args.quiet:
+        print(f"note: リポジトリの外のグリッドが {len(outside)} 件あります。置き場所の決まり"
+              "（部品・装備・素体に使える種類）はリポジトリの中のパスにだけ掛かるので、これには掛かっていません")
+    if not args.targets and not args.quiet:
+        if unreadable:
+            print(f"note: 読めないグリッドが {unreadable} 件あるので、未使用の色の報告は出しません（不正確になるため）")
+        else:
+            unused_uses, unused_swatches = unused(pal, used_names)
+            for n in sorted(unused_uses):
+                print(f"note: use colour {n!r} is not used by any grid")
+            for n in sorted(unused_swatches):
+                print(f"note: swatch {n!r} has no use pointing at it")
 
     if failed:
         print(f"\n{failed} of {len(grids)} grid(s) failed", file=sys.stderr)

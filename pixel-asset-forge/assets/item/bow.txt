@@ -2,14 +2,14 @@
 # size: 16x16
 # light: upper-left
 # bg: transparent
-# map: o=outline i=stone_hi j=stone_base k=stone_shadow
-# map: h=wood_hi w=wood_base s=wood_shadow
-# map: u=water_hi v=water_base y=water_shadow
-# map: a=stone_hi b=stone_base c=stone_shadow
+# map: o=contour i=item_arrowhead_hi j=item_bowstring k=item_arrowhead_shadow
+# map: h=item_shaft_hi w=item_shaft_base s=item_shaft_shadow
+# map: u=item_fletching_hi v=item_fletching_base y=item_fletching_shadow
+# map: a=item_arrowhead_hi b=item_bowstring c=item_arrowhead_shadow K=item_arrowhead_base
 ................
 ..oooo.....oooo.
-.owwhhoo..oaabo.
-..ojwwwho..obco.
+.owwhhoo..oaaKo.
+..ojwwwho..oKco.
 ...ojoowwoosoco.
 ....ojoowwso.o..
 .....ojooswo....

@@ -20,7 +20,7 @@
 | 並び | 12行 = 3状態 × 4方向。行 0-3 `idle` / 4-7 `walk` / 8-11 `attack`、各ブロック内は down, up, left, right。ゲーム側が `row = state_index * 4 + direction_index` で読むので、順番は変えられない |
 | コマ | `idle` 2 / `walk` 4 / `attack` 3（弓のユニットは `attack` 6）。列数は最大コマ数に揃え、余りは透明 |
 | 構成 | `walk` は `[base, walk_a, base, walk_b]`、`attack` は `[atk_wind, atk_hit, base]`。中間と戻りは `base` の流用。弓のユニットの `attack` は `[atk_wind, atk_draw, atk_hit, atk_hit, atk_hit, atk_release]`（下の「弓の持ち方」） |
-| 色 | `palette/master.json` を使う。色を足すときは描く前に `probe_colors.py` で草・道・床の色に対して測る |
+| 色 | `palette/uses/unit.json` と `common.json` の用途の色（色の決まりは下の「色の決まり」）。色見本を足すときは描く前に `probe_colors.py` で草・道・床の色に対して測る |
 
 ## ファイル配置
 
@@ -78,8 +78,8 @@ gen/<unit>/                               1体（または敵だけ）のため�
   横顔の前面は平らにし、鼻を出さない。口は描かない。目の上端の行は4方向で揃える（ロランは y = 11）
 - 奥の装備や手に新しい色を当てるときは、描く前に `probe_colors.py` で体の色と測る
 - **剣は item の剣（`assets/item/sword.txt`）に色を揃える。** 画素は写さず、素材の色を合わせる（issue #23 の4番目、2026-10-02 依頼者の判断）。
-  刃は `stone_hi`/`stone_base` の2px幅、鍔は木（`wood_hi`/`wood_base`/`wood_shadow`。横に4px。左向きの立ち・歩き・待機は端から見た2px、横向きの `atk_hit` は45°の刃に直角な斜めの2〜3画素）、
-  柄頭は赤い宝石（`roof_base` の1画素）。盾は金（`metal_*`）のままなので、剣と盾の色は分かれる。
+  刃は `blade_hi`/`blade_base` の2px幅、鍔は木（`weapon_shaft_hi`/`weapon_shaft_base`/`weapon_shaft_shadow`。横に4px。左向きの立ち・歩き・待機は端から見た2px、横向きの `atk_hit` は45°の刃に直角な斜めの2〜3画素）、
+  柄頭は赤い宝石（`weapon_pommel` の1画素）。盾は金（`shield_*`）なので、剣と盾の色は分かれる。
   ただし `up_atk_hit` は剣ごと体に隠れるので、柄頭を描かない。`left_atk_hit` は部品には柄頭まで描くが、柄頭は盾と体に隠れて見えない（2026-10-27 に剣を描いた）
 - **切っ先は平らな蓋のまま。** 刃の上を輪郭2画素で閉じる。白い刃は長方形でも、上の輪郭で先がある程度尖って見える。
   2px幅では左右対称に尖らせられず、片側の列を1段下げる案も試したが採らなかった（issue #23 の4番目、2026-10-03 依頼者の判断）。
@@ -111,10 +111,10 @@ gen/<unit>/                               1体（または敵だけ）のため�
     本来は弓の構えを踏まえて体の形から設計し直すところを、今不自然な `left` の順だけを直した（`right`・`up`・`down` は今のまま）
 - **弓の木と矢は、単品として全周を輪郭で囲う**（「部品は単品として完全に描く」）。手前にある弓は髪・顔・足先の上にも輪郭が乗り、矢と交わる所では手前の物の輪郭が奥の物を少し隠す（2026-10-12）
 - **弦は体の上を通るところに輪郭を付けない。** 1px の線のまま体の上に描く（輪郭を付けると3px の暗い線になる）。透明な背景の上では輪郭で囲む
-- 色はアイコンの弓（`assets/item/bow.txt`）に揃える: 弓の本体は `wood_*`、弦は `stone_hi`、鏃は `stone_base`、矢の軸は `wood_shadow`、矢羽根は `water_base`。画素は写さない。
+- 色はアイコンの弓（`assets/item/bow.txt`）に揃える: 弓の本体と矢の軸は `weapon_shaft_*`、弦は `bowstring`、鏃は `arrowhead`、矢羽根は `fletching`。画素は写さない。
   イネスの待機では矢羽根は右手の拳に隠れる
 - 専用の文字: 弓 `k` `l` `m`（イネスは `l` だけを使う）、弦 `s`、鏃 `t`、矢の軸 `w`、矢羽根 `u`。
-  矢の軸と弓の暗い面とズボンは同じ `wood_shadow` だが、攻撃のコマで矢だけを扱うために別の文字にする
+  矢の軸と弓の暗い面とズボンは同じ色見本 `wood_shadow` だが（用途の色は矢の軸・弓が `weapon_shaft_shadow`、ズボンが `legwear_brown`）、攻撃のコマで矢だけを扱うために別の文字にする
 - **待機の2コマ目（`idle2`）は、矢を持つ手を引く。** 上下には動かさない（弓は引いて打つので）。弓・左手・頭・胴・脚は `base` のまま。
   イネスは右手の拳と矢を体の側へ2px 引き（矢は長さを変えずに一緒に動く）、弦は矢の尾の行で折れる。
   `down` の拳は x=11〜12（胸の左端の外へ出る）。`up` は見えている矢の先を2px 動かし、体の向こうの右手の拳が体の右から1px のぞく（x=19〜20）。
@@ -142,7 +142,7 @@ gen/<unit>/                               1体（または敵だけ）のため�
 短剣のユニットの標準。手本は `assets/unit/gau/`。決めた経緯は character-tactics の
 `docs/superpowers/specs/2026-10-04-unit-drawing-workflow-results.md`。
 
-- **右手に短剣を順手で持ち、刃を上に立てて構える。左手は空ける**（剣と同じ規約。盾は持たない）。刃は 4px（`stone_hi`/`stone_base` の2px 幅、平らな蓋）、鍔は `wood_*`（横に4px、左向きは端から見た2px）、柄頭は `wood_shadow`
+- **右手に短剣を順手で持ち、刃を上に立てて構える。左手は空ける**（剣と同じ規約。盾は持たない）。刃は 4px（`blade_hi`/`blade_base` の2px 幅、平らな蓋）、鍔は `weapon_shaft_*`（横に4px、左向きは端から見た2px）、柄頭は `weapon_shaft_shadow`
 - ガウは部品から組む（`compose/gau.json`。芯 `assets/part/body/gau/core_<dir>_<状態>`、短剣 `assets/part/equip/dagger/dagger_<dir>_<状態>`、拳 `assets/part/fist/gau/dagger_hand_*`・`free_hand_*`。2026-10-15）。
   重なり順（奥→手前）: `down` 芯・短剣・短剣の拳・空き手の拳、`up` 短剣・短剣の拳・空き手の拳・芯、`left` 短剣・短剣の拳・芯・空き手の拳、`right` 空き手の拳・芯・短剣・短剣の拳。
   短剣の拳は 3×2（`down` の構えと横向きの突きは 2×2）、空き手の拳は 2×2 で、上下左右で位置を合わせる。奥の拳は体の陰に入って一部しか見えない（`left` の短剣の拳は1列、`right` の空き手の拳は輪郭の1列だけ）。
@@ -220,6 +220,19 @@ gen/<unit>/                               1体（または敵だけ）のため�
 | 4. アニメ | CP0 の方針どおりに待機・歩き・攻撃を描く | CP4（動きのページ） |
 | 5. 仕上げ | 書き出し、この SPEC への追記 | PR は依頼者の指示で作る |
 
+### 色の決まり（2026-10-30。パレットを色見本と用途の色に分けた作業の設計）
+
+絵の `map` には `palette/uses/unit.json`（と `common.json`）の用途の色を書く。確認の道具は、用途の色の種類（`palette/kinds.json`）を読んで物を見分ける。
+
+- **武器の部品（`assets/part/equip/<物>/`、盾以外）は、輪郭と、刃（`blade`）・武器（`weapon`）の種類の色だけで塗る。** 刃・鏃・穂先は `blade`、柄・握り・鍔・柄頭・弓の本体・弦・矢柄・矢羽は `weapon`。`weapon_check` は `blade`・`weapon` の画素を武器として読む
+- **盾の部品は、輪郭と盾（`shield`）の種類の色だけで塗る。** `weapon_check` は盾を武器として読まない
+- **それ以外の部品（芯・髪・被り物・拳・服など）と `types/unit/base/` の素体は、`blade`・`weapon`・`shield` の種類を使わない。** ベルトを短剣の柄の色で塗る、のような取り違えを、道具でなく絵の側で防ぐ。`assets/unit/` の組んだコマは対象外（部品が持つ色をそのまま重ねるため）。`validate.py` が落とす
+- **髪（`hair`）と装飾品（`ornament`：ベルト・当て布・ピアス・メガネ・髪の結び目・眼帯）は、体の上にある縁に輪郭が無くてよい。** `part_outline` は、縁の隣の透明が、その部品を使うすべてのコマで芯に覆われているときだけ通す。体の外にはみ出た縁は落とす。装飾品は芯に描かず、部品に分ける
+- **被り物（`headgear`：兜・バンダナ・頭巾。兜の鼻当てを含む）は、縁をすべて輪郭で閉じる**
+- **目は輪郭（`outline`）の種類、用途の色 `contour` で描く。** 目の部品の読み方は「自己チェック」②の `eye_check`
+- **手（`skin`）の色**は、`weapon_check`・`compose.py` の `hand`・`hand_outline.py` が種類 `skin` から読む。`checks/*.json` と `compose/*.json` には書かない。`compose/*.json` の `keep` は色の名前でなく種類（例 `["blade", "weapon"]`）で書く
+- 新しい用途の色は種類と説明を書いて `palette/uses/unit.json` に足す。値が新しい色見本は、描く前に `probe_colors.py` で測ってから `swatches.json` に足す
+
 ### 部品で組む規約（ロラン、2026-10-11）
 
 `compose/<unit>.json` で部品を重ねるときの決まり。依頼者の指摘を全向き・全部品に当てはめた。
@@ -252,7 +265,7 @@ gen/<unit>/                               1体（または敵だけ）のため�
   画素の位置を左右反転で一致させる（体に隠れる画素も。色は比べない）。攻撃のコマも含む（拳と違い、今の絵で武器のずれた3件はどれも直すべきずれだった）。down と up は比べない。
   検査は `tools/weapon_mirror.py checks/<unit>.json`（`unit_rules.py` からも走る）
 - **完成した絵から部品を書き出すときは、文字で切る。** `tools/parts_export.py`（ユニットごとの定義は `gen/<unit>/<unit>_layers.py`。イネスは `gen/ines/ines_layers.py`、ガウは `gen/gau/gau_layers.py`。どちらも描き直す前に一度だけ使った。今走らせると描き直した部品を上書きするので実行しない）。
-  同じ色の別の物（イネスの弓の暗い面・矢の軸・ズボンは `wood_shadow`）を色では分けられない
+  同じ色の別の物（イネスの弓の暗い面・矢の軸・ズボンは、描いた当時は同じ色見本 `wood_shadow` だった。今は用途の色が分かれている）を色では分けられなかった
 - **承認された重なり順を、作業する側が勝手に変えない（2026-10-15 依頼者の指示）。** 奥にある物が手前の物の陰に隠れるのは当然で、問題ではない。
   拳や武器が隠れて細く・小さく見えることを理由に順を変えない。順を変えたほうがよいと考えたときは、変える前に依頼者に聞く
   （ガウの up で、体の輪郭を直すと奥の拳が半分隠れるのを避けようとして、作業する側が拳を体の手前に回した。依頼者が差し戻した）
@@ -296,13 +309,13 @@ gen/<unit>/                               1体（または敵だけ）のため�
 部品で組んだ斧・槍の敵（`assets/unit/`、色替え前のコマ）は次の指定で検査する（2026-10-07 の時点で4体とも通る）:
 
 ```sh
-C="--blade stone_hi,stone_base --weapon wood_base,wood_shadow --hand skin_rose_hi,skin_rose_base,skin_rose_shadow"
+C="--blade blade_hi,blade_base --weapon weapon_shaft_base,weapon_shaft_shadow --hand skin_ruddy_hi,skin_ruddy_base,skin_ruddy_shadow"
 # 斧（axe-bandit・axe-horn）
-tools/weapon_check.py assets/unit/axe-bandit $C --ref assets/unit/axe-bandit/noweapon --far left --far-shade skin_rose_shadow \
+tools/weapon_check.py assets/unit/axe-bandit $C --ref assets/unit/axe-bandit/noweapon --far left --far-shade skin_ruddy_shadow \
     --hidden up_atk_wind,up_atk_hit --depth down,up \
     --partial left_base,left_idle2,left_walk_a,left_walk_b,left_atk_wind
 # 槍（spear-knight・spear-thug）
-tools/weapon_check.py assets/unit/spear-knight $C --ref assets/unit/spear-knight/noweapon --far left --far-shade skin_rose_shadow \
+tools/weapon_check.py assets/unit/spear-knight $C --ref assets/unit/spear-knight/noweapon --far left --far-shade skin_ruddy_shadow \
     --hidden left_atk_hit
 ```
 
@@ -313,7 +326,7 @@ tools/weapon_check.py assets/unit/spear-knight $C --ref assets/unit/spear-knight
 長い髪に隠れるコマを髪の型ごとに例外にする（2026-10-09 依頼者承認の重なり順: left の奥の手と武器、up の武器は髪の後ろ）:
 
 ```sh
-F="--far left --cover hair_slate_hi,hair_slate_base,hair_slate_shadow --far-shade skin_rose_shadow"
+F="--far left --cover hair_ashblue_hi,hair_ashblue_base,hair_ashblue_shadow --far-shade skin_ruddy_shadow"
 UP=up_base,up_idle2,up_walk_a,up_walk_b
 LEFT=left_base,left_idle2,left_walk_a,left_walk_b
 P="--partial left_base,left_idle2,left_walk_a,left_walk_b,left_atk_wind"
@@ -354,8 +367,12 @@ left を左右反転して right を作ると、left で「体の後ろ」だっ
 - 部品の画素が部品の文字で塗られているか（イネスで弓の1画素が脚の色だった。芯と同じ文字を使う部品は ① の `part_chars` が出す）
 - 目（`outline`）の左右の隣が、目と見分けられない色（輪郭と同じ暗さ）になっていないか。横に溶けると目が識別できない（ガウの正面で右目が頭巾の縁と接した、2026-10-04 依頼者の判断）。
   髪・かぶり物でも、輪郭と見分けられる色ならよい（2026-10-17 依頼者の判断。ロランの目の横の髪）。真上が頭巾や前髪の縁の輪郭なのはよい（イネスの正面がそう）。
-  ① の `eye_check` が、設定ファイルの目の位置で `probe_colors.py` と同じ基準で測る。見るのは芯に髪・かぶり物の部品（設定の `parts` で `"head": true`）を重ねた画素で、
-  武器・拳・盾は重ねない（2026-10-18。組んだコマで見ると、イネスの down の攻撃で顔の横を通る弓が目の隣に来て落ちる）
+  ① の `eye_check` が、目の位置で `probe_colors.py` と同じ基準で測る。見るのは芯に髪・かぶり物の部品（設定の `parts` で `"head": true`）を重ねた画素で、
+  武器・拳・盾は重ねない（2026-10-18。組んだコマで見ると、イネスの down の攻撃で顔の横を通る弓が目の隣に来て落ちる）。
+  目の位置は2通りで渡す（2026-10-30）。**目の部品（`assets/part/eye/`。設定の `parts` で `"eye": true`）があるユニットは、`eyes` を書かない。**
+  コマごとに目の部品の背景でない画素を目として読むので、斜めの目も扱える。目の部品を持たないユニット（ロラン・イネス・ガウ）は、今までどおり `eyes` に向きごとの目の画素を書く。
+  目の部品の画素が、手前の head の部品か、被り物・装飾品（種類 `headgear`・`ornament`）の色の画素に**すべて**覆われたコマ（兜のバイザー・メガネなど）は、目なしとして通す。
+  **一部だけ**覆われたコマは「目の一部が被り物に隠れている」で落とす。目の上端の行を向きどうしで比べるのは同じ状態のコマの間だけで、目がすべて隠れたコマは数えない
 - 目の中心が脚の中心（x=15.5）とそろっているか。前髪で目の置き場がずれたら、前髪を削ってそろえる（ガウの正面、2026-10-04）
 - 奇数幅・偶数幅で左右対称が崩れていないか（コマの中心は x=15.5）
 - 刃・鏃の先端が決まり1〜5（`types/item/SPEC.md`）に合うか（① の `tip_check` が部品ごとの形で出す。刃の文字でない先端は目で見る）

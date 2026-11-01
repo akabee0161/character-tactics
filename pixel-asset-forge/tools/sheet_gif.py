@@ -37,7 +37,7 @@ import sheet
 
 DEFAULT_FPS = {"idle": 4.0, "walk": 8.0, "attack": 6.0}
 BACKDROP = sheet.BACKDROP
-GRASS_KEY = "grass_base"
+GRASS_KEY = "ground_grass_base"  # 用途の色（色見本 grass_base）
 PAD = 8
 # GIF の1コマの表示時間は 1/100 秒単位の 16bit（0〜65535）。0 はビューアーによって扱いが変わるので使わない
 MIN_DURATION_MS = 10

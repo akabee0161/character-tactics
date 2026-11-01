@@ -5,8 +5,8 @@
   "body": "male",
   "frames": "assets/unit/dagger-bandit",
   "recolor": {
-    "cloak_dark_hi": "dirt_hi",
-    "cloak_dark_base": "dirt_base",
-    "cloak_dark_shadow": "dirt_shadow"
+    "clothes_dark_hi": "dirt_hi",
+    "clothes_dark_base": "dirt_base",
+    "clothes_dark_shadow": "dirt_shadow"
   }
 }

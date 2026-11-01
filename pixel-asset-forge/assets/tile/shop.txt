@@ -4,10 +4,10 @@
 # The same cottage run as a shop. It used to differ from village by a two-pixel
 # sign and the two were hard to tell apart on a map; now it has a striped
 # awning across the front and a board hanging off the eaves.
-# map: g=grass_base s=grass_shadow o=outline
-# map: r=roof_hi f=roof_base c=roof_shadow
-# map: t=stone_hi n=stone_base
-# map: w=wood_base v=wood_hi b=wood_shadow x=wood_dark l=metal_hi
+# map: g=ground_grass_base s=ground_grass_shadow o=contour
+# map: r=building_roof_hi f=building_roof_base c=building_roof_shadow
+# map: t=building_stone_hi n=building_stone_base
+# map: w=building_wood_base v=building_wood_hi b=building_wood_shadow x=building_wood_dark l=window_light
 ggssggggggggssgg
 gggggggooggggggg
 ggggggorrogggggg

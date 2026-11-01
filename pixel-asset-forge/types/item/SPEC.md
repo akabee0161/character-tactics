@@ -13,24 +13,29 @@
 | 解像度 | 16x16 |
 | 背景 | `bg: transparent` |
 | 光源 | `# light: upper-left`（タイル・ユニットと同じ） |
-| 輪郭 | `outline` を全周1px。輪郭以外の画素の上下左右に透明を置かない（3点とも穴なし） |
+| 輪郭 | `contour` を全周1px。輪郭以外の画素の上下左右に透明を置かない（3点とも穴なし） |
 | 余白 | 外接矩形は x・y とも 1〜14（輪郭込み。3点とも同じ） |
 | 大きさ | 16px いっぱいに大きく描く。ユニットの持ち物の画素の大きさ（ロランの刃2px幅）には合わせない |
-| 色 | `palette/master.json` の既存色。素材ごとの割り当ては下の表 |
+| 色 | `palette/uses/item.json` と `common.json` の用途の色。素材ごとの割り当ては下の表 |
 
-素材ごとの色の割り当て:
+素材ごとの色の割り当て（`palette/uses/item.json` の用途の色。括弧は指す色見本と種類）:
 
-| 素材 | 色 | 使っているアセット |
+| 素材 | 用途の色（色見本、種類） | 使っているアセット |
 |---|---|---|
-| 刃・鏃・弦（白銀の金属） | `stone_hi` / `stone_base` / `stone_shadow` | `sword`・`bow` |
-| 木（鍔・柄・弓本体・矢の軸・箱） | `wood_hi` / `wood_base` / `wood_shadow` | 3点 |
-| 木の最も暗い面 | `wood_dark` | `chest` のみ |
-| 金具（金色の金属） | `metal_hi` / `metal_base` / `metal_shadow` | `chest` |
-| 宝石（赤） | `roof_hi` / `roof_base` / `roof_shadow` | `sword` の柄頭 |
-| 羽根（青） | `water_hi` / `water_base` / `water_shadow` | `bow` の矢羽根 |
+| 刃（剣の刃、白銀の金属） | `item_blade_hi` / `item_blade_base` / `item_blade_shadow`（`stone_*`、`blade`） | `sword` |
+| 鏃（弓の矢の先） | `item_arrowhead_hi` / `item_arrowhead_base` / `item_arrowhead_shadow`（`stone_*`、`blade`） | `bow` |
+| 弦 | `item_bowstring`（`stone_base`、`weapon`） | `bow` |
+| 柄・鍔・弓本体・矢の軸（木） | `item_shaft_hi` / `item_shaft_base` / `item_shaft_shadow`（`wood_*`、`weapon`） | `sword`・`bow` |
+| 宝石（赤。剣の柄頭） | `item_pommel_hi` / `item_pommel_base` / `item_pommel_shadow`（`roof_*`、`weapon`） | `sword` |
+| 羽根（青。矢羽根） | `item_fletching_hi` / `item_fletching_base` / `item_fletching_shadow`（`water_*`、`weapon`） | `bow` |
+| 箱の木 | `chest_wood_hi` / `chest_wood_base` / `chest_wood_shadow`（`wood_*`、`object`） | `chest` |
+| 箱の木の最も暗い面 | `chest_wood_dark`（`wood_dark`、`object`） | `chest` |
+| 箱の金具（金色の金属） | `chest_metal_hi` / `chest_metal_base` / `chest_metal_shadow`（`metal_*`、`object`） | `chest` |
+| 輪郭 | `contour`（`outline`、`outline`） | 3点 |
 
-この割り当ては設計時に依頼者が決めた（ロランのユニットの剣の刃も `stone_*`）。
-`ISSUES.md` の「剣が `stone_*`、盾が `metal_*` で命名と見た目が合っていない」は残っている（整理は character-tactics の `feat/roran-face` のマージ後に、独立した作業として行う。2026-10-02 依頼者の判断）。
+この割り当ては設計時に依頼者が決めた。色見本の値は変えず、用途ごとに名前を分けた（2026-10-30。ロランのユニットの剣の刃 `blade_*` も同じ色見本 `stone_*` を指す）。
+武器の用途の色（`blade`・`weapon`）は item の武器のアイコンだけが使う。箱は `object` で、武器として読まれない。
+色見本の名前（`stone_*` が刃、`metal_*` が金の箱・盾）と見た目の印象が合っていない件は `ISSUES.md` の「剣が `stone_*`、盾が `metal_*` で命名と見た目が合っていない」に残っている。
 
 実測した色数: `chest` 8、`sword` 10、`bow` 10（`outline` を含む）。
 
@@ -43,7 +48,7 @@
   斜めに偶数列の太さの部品（例: 刃を2列）は中心線が画素の境目に来て対称にならないので、奇数列にする（剣の刃は3列）。
   ここでの「列」は軸に平行な斜めの線（`x+y` が一定の線）の本数
 - **軸の上だけにある1列の細い部品は1色で塗る。** 左上・右下の側が無いので明暗を付けない
-  （剣の握り・矢の軸はどちらも `wood_shadow`）
+  （剣の握り・矢の軸はどちらも `item_shaft_shadow`）
 - **刃・鏃の先端は決まり1〜5で描く**（2026-10-22 依頼者と決めた。`item`・`unit` の両方。`tools/tip_check.py` が確かめる）。
   言葉: **刃の色**は刃・鏃の文字の画素（色でなく文字で見分ける。アイコンは `checks/items.json`、ユニットは `checks/<ユニット>.json` の `blade`）、
   **黒**は輪郭、**中身の幅**は刃の本体の横の1行に並ぶ刃の色の画素数（斜めの刃も横の1行で数える）、**外形**は刃の色とそれを囲む黒。
@@ -79,7 +84,7 @@
 設計は character-tactics の `docs/superpowers/specs/2026-10-02-item-icons-sword-bow-design.md`（作成時点のログ）。
 
 - 手本はゲームの役割アイコン `assets/images/role-tate.png`（剣）・`role-yumi.png`（弓）の**構図だけ**を取った。
-  どちらも 32px で、色が master パレットの外なので、色と画素は写していない
+  どちらも 32px で、色が今のパレットの外なので、色と画素は写していない
 - 剣は計画の3案（刃3列・刃2列で長い・溝あり）から、依頼者が「刃2列で長い案の長さ」と「刃3列の案の鍔」を組み合わせ、
   左右の非対称を指摘して刃を3列にした
 - 弓は、矢を対角線いっぱいに置いてもう一つの対角線の弓と交差させる配置を依頼者が指示した。

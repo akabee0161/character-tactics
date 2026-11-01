@@ -14,9 +14,9 @@ sys.path.insert(0, str(REPO_ROOT / "tools"))
 from enemy_build import serialize_frame  # noqa: E402
 from weapon_check import Analysis, check_frame, check_unit, covered, main  # noqa: E402
 
-BLADE = {"stone_hi", "stone_base"}
-HANDLE = {"wood_base"}
-SKIN = {"skin_base"}
+BLADE = {"blade_hi", "blade_base"}
+HANDLE = {"weapon_shaft_base"}
+SKIN = {"skin_fair_base"}
 
 
 def blank():
@@ -33,18 +33,18 @@ def spear_v(f, x, top, length, tip_down=False):
     for i in range(length):
         y = top + i
         tip = i >= length - 3 if tip_down else i < 3
-        put(f, x, y, "stone_hi" if tip else "wood_base")
-        put(f, x - 1, y, "outline")
-        put(f, x + 1, y, "outline")
+        put(f, x, y, "blade_hi" if tip else "weapon_shaft_base")
+        put(f, x - 1, y, "contour")
+        put(f, x + 1, y, "contour")
 
 
 def spear_h(f, y, left, length, tip_left=True):
     for i in range(length):
         x = left + i
         tip = i < 3 if tip_left else i >= length - 3
-        put(f, x, y, "stone_hi" if tip else "wood_base")
-        put(f, x, y - 1, "outline")
-        put(f, x, y + 1, "outline")
+        put(f, x, y, "blade_hi" if tip else "weapon_shaft_base")
+        put(f, x, y - 1, "contour")
+        put(f, x, y + 1, "contour")
 
 
 def fist(f, x0, y0, w=2, h=2, ring=True):
@@ -52,16 +52,16 @@ def fist(f, x0, y0, w=2, h=2, ring=True):
     if ring:
         for y in range(y0 - 1, y0 + h + 1):
             for x in range(x0 - 1, x0 + w + 1):
-                put(f, x, y, "outline")
+                put(f, x, y, "contour")
     for y in range(y0, y0 + h):
         for x in range(x0, x0 + w):
-            put(f, x, y, "skin_base")
+            put(f, x, y, "skin_fair_base")
 
 
 def body(f, x0=14, y0=8, x1=22, y1=30):
     for y in range(y0, y1 + 1):
         for x in range(x0, x1 + 1):
-            put(f, x, y, "outline" if x in (x0, x1) or y in (y0, y1) else "cloak_dark_base")
+            put(f, x, y, "contour" if x in (x0, x1) or y in (y0, y1) else "clothes_dark_base")
 
 
 def analyse(f):
@@ -105,7 +105,7 @@ class HandTest(unittest.TestCase):
         spear_v(f, 9, 6, 25)
         fist(f, 9, 18, ring=False)
         for x, y in ((8, 17), (10, 17), (8, 18), (11, 18), (8, 19), (11, 19), (8, 20), (10, 20)):
-            put(f, x, y, "outline")
+            put(f, x, y, "contour")
         self.assertEqual(check_frame("down_base", analyse(f), set(), set()), [])
 
     def test_one_pixel_hand_fails(self):
@@ -131,7 +131,7 @@ class HandTest(unittest.TestCase):
         fist(f, 9, 18, w=3)  # 輪郭が y17 で柄を切る
         for x in range(12, 20):
             for y in (11, 12):
-                put(f, x, y, "skin_base")
+                put(f, x, y, "skin_fair_base")
         a = analyse(f)
         self.assertIn((10, 18), a.hand)
         self.assertNotIn((12, 11), a.hand)
@@ -164,7 +164,7 @@ class HandTest(unittest.TestCase):
 
 
 class FloatingHandTest(unittest.TestCase):
-    ARM = {"cloak_dark_base"}
+    ARM = {"clothes_dark_base"}
 
     def raised(self, sleeve):
         """体の右上で縦の斧を握る。sleeve なら拳の下から体まで袖がある。"""
@@ -175,7 +175,7 @@ class FloatingHandTest(unittest.TestCase):
         if sleeve:
             for y in (13, 14):
                 for x in range(20, 25):
-                    put(f, x, y, "cloak_dark_base")
+                    put(f, x, y, "clothes_dark_base")
         return f
 
     def test_hand_without_arm_fails(self):
@@ -187,8 +187,8 @@ class FloatingHandTest(unittest.TestCase):
 
     def test_arm_connected_diagonally_passes(self):
         f = self.raised(False)
-        put(f, 22, 12, "outline")
-        put(f, 21, 13, "cloak_dark_base")  # 拳の左下に、斜めに袖が接する
+        put(f, 22, 12, "contour")
+        put(f, 21, 13, "clothes_dark_base")  # 拳の左下に、斜めに袖が接する
         self.assertEqual(check_frame("left_atk_wind", analyse(f), set(), set(), self.ARM), [])
 
     def test_one_pixel_sleeve_turned_outline_does_not_float_the_hand(self):
@@ -197,10 +197,10 @@ class FloatingHandTest(unittest.TestCase):
         spear_v(f, 23, 2, 14)
         fist(f, 23, 10)
         for x in range(20, 23):  # 拳の左から体まで 1px の袖。拳に接する画素は輪郭になっている
-            put(f, x, 10, "cloak_dark_base")
-            put(f, x, 11, "cloak_dark_base")
-        put(f, 22, 10, "outline")
-        put(f, 22, 11, "outline")
+            put(f, x, 10, "clothes_dark_base")
+            put(f, x, 11, "clothes_dark_base")
+        put(f, 22, 10, "contour")
+        put(f, 22, 11, "contour")
         fails = check_frame("left_atk_wind", analyse(f), set(), set(), self.ARM)
         self.assertFalse(any("浮いている" in s for s in fails), fails)
 
@@ -235,15 +235,37 @@ class WeaponDetectionTest(unittest.TestCase):
     def test_helmet_in_blade_colour_is_not_the_weapon(self):
         f = standing()
         for x in range(15, 21):
-            put(f, x, 3, "stone_base")  # 刃と同じ色の兜（柄とつながらない）
+            put(f, x, 3, "blade_base")  # 刃と同じ色の兜（柄とつながらない）
         a = analyse(f)
         self.assertNotIn((15, 3), a.weapon)
 
     def test_belt_in_handle_colour_is_not_the_weapon(self):
         f = standing()
         for x in range(15, 22):
-            put(f, x, 22, "wood_base")
+            put(f, x, 22, "weapon_shaft_base")
         self.assertNotIn((15, 22), analyse(f).weapon)
+
+    def test_ornament_of_grip_colour_is_not_the_grip(self):
+        # 柄（weapon_shaft_base）と同じ色見本の帯（belt_strap、種類 ornament）が短剣のすぐ下にある。
+        # 武器の色を色の名前で並べた頃は帯の名前も --weapon に入り、帯を柄と読んで拳がずれたと出た（ロランのベルト）。
+        # unit_rules.py は --weapon に種類 weapon の名前だけを渡すので、帯は柄にならない（2026-10-30）
+        f = blank()
+        body(f)
+        for i in range(7):  # 縦の短剣。刃 y10〜12、柄 y13〜16（拳が覆う）
+            put(f, 9, 10 + i, "blade_hi" if i < 3 else "weapon_shaft_base")
+            put(f, 8, 10 + i, "contour")
+            put(f, 10, 10 + i, "contour")
+        put(f, 9, 9, "contour")
+        fist(f, 9, 14)
+        for x in range(4, 15):
+            put(f, x, 17, "belt_strap")
+        grip_only = check_frame("down_base", Analysis(f, BLADE, HANDLE, SKIN), set(), set())
+        self.assertFalse(any("拳が柄の真ん中に無い" in s for s in grip_only), grip_only)
+        # 帯の名前も柄として渡すと、このコマは落ちる（このテストの絵が、ベルトの取り違えを再現していることの確かめ）。
+        # この test 自体は「帯を柄に含めない」作りが無くても通る。本当の守りは
+        # test_unit_rules の test_weapon_check_colours_come_from_kinds
+        with_belt = check_frame("down_base", Analysis(f, BLADE, HANDLE | {"belt_strap"}, SKIN), set(), set())
+        self.assertTrue(any("拳が柄の真ん中に無い" in s for s in with_belt), with_belt)
 
     def test_shaft_behind_the_body_is_part_of_the_weapon(self):
         f = blank()
@@ -256,9 +278,9 @@ class WeaponDetectionTest(unittest.TestCase):
     def test_diagonal_handle_is_part_of_the_weapon(self):
         f = blank()
         for x, y in ((6, 6), (7, 6), (6, 7), (7, 7)):
-            put(f, x, y, "stone_hi")
+            put(f, x, y, "blade_hi")
         for i in range(5):  # 階段状の斜めの柄（画素どうしは斜めにだけ接する）
-            put(f, 8 + i, 8 + i, "wood_base")
+            put(f, 8 + i, 8 + i, "weapon_shaft_base")
         fist(f, 13, 13, ring=False)
         a = analyse(f)
         self.assertIn((12, 12), a.weapon)
@@ -268,10 +290,10 @@ class WeaponDetectionTest(unittest.TestCase):
         f = blank()
         for x in range(5, 8):  # 刃を手前に向けた axe head（拳の左）
             for y in range(14, 18):
-                put(f, x, y, "stone_hi")
+                put(f, x, y, "blade_hi")
         fist(f, 8, 15, ring=False)
         for x in range(10, 19):  # 柄（拳の右）。刃とは接しない
-            put(f, x, 16, "wood_base")
+            put(f, x, 16, "weapon_shaft_base")
         a = analyse(f)
         self.assertIn((5, 14), a.weapon)
         self.assertIn((18, 16), a.weapon)
@@ -280,8 +302,8 @@ class WeaponDetectionTest(unittest.TestCase):
         f = blank()
         spear_v(f, 9, 6, 15)
         fist(f, 9, 18)  # 輪郭が y17〜20 の柄を覆う
-        put(f, 9, 21, "wood_base")  # 拳の先にのぞく柄頭
-        put(f, 9, 26, "wood_base")  # 拳から離れた同じ色の1画素（柄頭ではない）
+        put(f, 9, 21, "weapon_shaft_base")  # 拳の先にのぞく柄頭
+        put(f, 9, 26, "weapon_shaft_base")  # 拳から離れた同じ色の1画素（柄頭ではない）
         a = analyse(f)
         self.assertIn((9, 21), a.tiny)
         self.assertIn((9, 21), a.weapon)
@@ -347,12 +369,12 @@ class CoveredTest(unittest.TestCase):
         body(f, 12, 8, 19, 30)
         for y in range(10, 18):  # 背中に垂れた髪
             for x in range(18, 22):
-                put(f, x, y, "hair_slate_base")
+                put(f, x, y, "hair_ashblue_base")
         return f
 
-    HAIR = {"hair_slate_base"}
-    HAND = {"skin_base"}
-    ARM = {"cloak_dark_base", "cloak_dark_hi"}
+    HAIR = {"hair_ashblue_base"}
+    HAND = {"skin_fair_base"}
+    ARM = {"clothes_dark_base", "clothes_dark_hi"}
 
     def check(self, name, final, standing=True):
         return covered(name, final, self.ref(), self.HAIR, self.HAND, self.ARM, standing)
@@ -378,10 +400,10 @@ class CoveredTest(unittest.TestCase):
 
     def test_redrawing_the_hand_and_joining_the_sleeve_pass(self):
         ref = self.ref()
-        ref[20][20], ref[20][19], ref[20][21] = "skin_base", "outline", "outline"  # 素体の 1px の手
+        ref[20][20], ref[20][19], ref[20][21] = "skin_fair_base", "contour", "contour"  # 素体の 1px の手
         final = [row[:] for row in ref]
-        final[20][21], final[20][22] = "skin_base", "outline"  # 輪郭だった画素を肌に変えて 2px の拳に描き直す
-        final[22][15] = "cloak_dark_hi"  # 体の服（cloak_dark_base）の上に同じ服の色の袖
+        final[20][21], final[20][22] = "skin_fair_base", "contour"  # 輪郭だった画素を肌に変えて 2px の拳に描き直す
+        final[22][15] = "clothes_dark_hi"  # 体の服（clothes_dark_base）の上に同じ服の色の袖
         self.assertEqual(covered("left_base", final, ref, self.HAIR, self.HAND, self.ARM, True), [])
 
 
@@ -392,7 +414,7 @@ class MainTest(unittest.TestCase):
             code = main(argv)
         return code, out.getvalue(), err.getvalue()
 
-    ARGS = ["--blade", "stone_hi", "--weapon", "wood_base", "--hand", "skin_base"]
+    ARGS = ["--blade", "blade_hi", "--weapon", "weapon_shaft_base", "--hand", "skin_fair_base"]
 
     def write(self, d: Path, name: str, f) -> None:
         (d / f"{name}.txt").write_text(serialize_frame(f, "test"), encoding="utf-8")
@@ -447,9 +469,9 @@ class MainTest(unittest.TestCase):
             body(plain)
             self.write(Path(ref), "left_base", plain)
             self.write(Path(ref), "left_atk_wind", plain)
-            self.write(Path(tmp), "left_base", standing())  # 拳の肌は skin_base（明るい）
+            self.write(Path(tmp), "left_base", standing())  # 拳の肌は skin_fair_base（明るい）
             self.write(Path(tmp), "left_atk_wind", standing())  # 攻撃のコマは見ない
-            code, _, err = self.run_main([tmp, *self.ARGS, "--ref", ref, "--far", "left", "--far-shade", "skin_shadow"])
+            code, _, err = self.run_main([tmp, *self.ARGS, "--ref", ref, "--far", "left", "--far-shade", "skin_fair_shadow"])
             self.assertEqual(code, 1)
             self.assertIn("left_base: 奥の手が影の色でない", err)
             self.assertNotIn("left_atk_wind: 奥の手が影の色でない", err)

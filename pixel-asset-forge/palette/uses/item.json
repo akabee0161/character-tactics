@@ -1,0 +1,117 @@
+{
+  "item_shaft_base": {
+    "swatch": "wood_base",
+    "kind": "weapon",
+    "note": "item の武器の柄・鍔・弓の本体・矢柄（中）"
+  },
+  "item_shaft_hi": {
+    "swatch": "wood_hi",
+    "kind": "weapon",
+    "note": "item の武器の柄・鍔・弓の本体・矢柄（明）"
+  },
+  "item_arrowhead_hi": {
+    "swatch": "stone_hi",
+    "kind": "blade",
+    "note": "item の弓のアイコンの矢の鏃（明）"
+  },
+  "item_arrowhead_base": {
+    "swatch": "stone_base",
+    "kind": "blade",
+    "note": "item の弓のアイコンの矢の鏃（中）"
+  },
+  "item_bowstring": {
+    "swatch": "stone_base",
+    "kind": "weapon",
+    "note": "item の弓の弦"
+  },
+  "item_arrowhead_shadow": {
+    "swatch": "stone_shadow",
+    "kind": "blade",
+    "note": "item の弓のアイコンの矢の鏃（暗）"
+  },
+  "item_shaft_shadow": {
+    "swatch": "wood_shadow",
+    "kind": "weapon",
+    "note": "item の武器の柄・鍔・弓の本体・矢柄（暗）"
+  },
+  "item_fletching_base": {
+    "swatch": "water_base",
+    "kind": "weapon",
+    "note": "item の矢羽（中）"
+  },
+  "item_fletching_hi": {
+    "swatch": "water_hi",
+    "kind": "weapon",
+    "note": "item の矢羽（明）"
+  },
+  "item_fletching_shadow": {
+    "swatch": "water_shadow",
+    "kind": "weapon",
+    "note": "item の矢羽（暗）"
+  },
+  "chest_wood_hi": {
+    "swatch": "wood_hi",
+    "kind": "object",
+    "note": "宝箱の木（明）"
+  },
+  "chest_wood_base": {
+    "swatch": "wood_base",
+    "kind": "object",
+    "note": "宝箱の木（中）"
+  },
+  "chest_metal_base": {
+    "swatch": "metal_base",
+    "kind": "object",
+    "note": "宝箱の金具（中）"
+  },
+  "chest_wood_shadow": {
+    "swatch": "wood_shadow",
+    "kind": "object",
+    "note": "宝箱の木（暗）"
+  },
+  "chest_wood_dark": {
+    "swatch": "wood_dark",
+    "kind": "object",
+    "note": "宝箱の木（最暗）"
+  },
+  "chest_metal_shadow": {
+    "swatch": "metal_shadow",
+    "kind": "object",
+    "note": "宝箱の金具（暗）"
+  },
+  "chest_metal_hi": {
+    "swatch": "metal_hi",
+    "kind": "object",
+    "note": "宝箱の金具（明）"
+  },
+  "item_blade_hi": {
+    "swatch": "stone_hi",
+    "kind": "blade",
+    "note": "item の剣の刃（明）"
+  },
+  "item_blade_base": {
+    "swatch": "stone_base",
+    "kind": "blade",
+    "note": "item の剣の刃（中）"
+  },
+  "item_blade_shadow": {
+    "swatch": "stone_shadow",
+    "kind": "blade",
+    "note": "item の剣の刃（暗）"
+  },
+  "item_pommel_hi": {
+    "swatch": "roof_hi",
+    "kind": "weapon",
+    "note": "item の剣の柄頭（明）"
+  },
+  "item_pommel_base": {
+    "swatch": "roof_base",
+    "kind": "weapon",
+    "note": "item の剣の柄頭（中）"
+  },
+  "item_pommel_shadow": {
+    "swatch": "roof_shadow",
+    "kind": "weapon",
+    "note": "item の剣の柄頭（暗）"
+  }
+}
