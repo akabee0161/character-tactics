@@ -19,7 +19,8 @@ from string import Template
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from enemy_build import ENEMY_DIR, SHEET_DIR, EnemyError, load_recipe  # noqa: E402
-from gridfile import GridError, load_palette  # noqa: E402
+import palette as palette_mod  # noqa: E402
+from gridfile import GridError  # noqa: E402
 
 CARD = Template(
     '<section class="card" data-sheet="data:image/png;base64,$data">'
@@ -128,9 +129,9 @@ def main(argv: list[str] | None = None) -> int:
             if not png or not Path(png).is_file():
                 raise EnemyError(f"--ref {ref!r}: PNG:名前 の形で、PNG が存在すること")
             entries.append((Path(png).stem, name, Path(png)))
-        palette = load_palette()
+        pal = palette_mod.load()
         for path in sorted(ENEMY_DIR.glob("*.json")):
-            recipe = load_recipe(path, palette)
+            recipe = load_recipe(path, pal)
             png = SHEET_DIR / f"{recipe.id}.png"
             if not png.is_file():
                 raise EnemyError(f"{png} が無い（先に tools/enemy_build.py --all）")
