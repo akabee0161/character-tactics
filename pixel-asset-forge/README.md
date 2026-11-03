@@ -376,7 +376,9 @@ forge をゲームリポジトリへコピーして使うときは、ゲーム�
 - 部品で組んだコマの生成（cwd は forge の直下）: `gen/enemy/mkparts.py`（頭・目・服・長い髪の部品を `assets/part/` に、選ぶページの設定を `gen/enemy/PICKER*.json` に）→
   `gen/enemy/mkweapons.py`（斧・槍の男女の敵。敵の一覧は `gen/enemy/mkframes.py` の `ENEMIES`、女性の8体は
   `mkweapons.py` で足す）。女性の id は `<男性の id>-<髪 a・b・c>-f`（a 前髪ありのロング・b 前髪なしのロング・c ポニーテール）。
-  今走らせると、コマはコミット済みのものと違う（`ISSUES.md`「敵の生成スクリプトの出力が、コミット済みのコマと違う」）
+  今走らせると、コマはコミット済みのものと違う（`ISSUES.md`「敵の生成スクリプトの出力が、コミット済みのコマと違う」）。
+  短剣の4体（`dagger-*`）は、この手順ではなく `compose/dagger-*.json` から組む（2026-11-03）。`mkframes.py` の `ENEMIES` には
+  まだ4体が残っていて、走らせると組み直したコマを古い腕・袖つきの絵で上書きするので、走らせない
 - `recolor` は「元のコマが使う用途の色 → 置き換え後の**色見本**」。元のコマが使わない名前は止める。
   そのため `build/enemy/<id>/*.txt`（色替え後のコマ）の `map` は色見本の名前になり、用途の色としては検査されない
   （`validate.py` は `assets/` などを見るので、ここは対象外。読むのは `gridfile.load_colours()` で、用途の色に色見本を足して引く）
