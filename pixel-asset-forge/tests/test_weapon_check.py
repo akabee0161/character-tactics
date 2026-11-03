@@ -298,6 +298,31 @@ class WeaponDetectionTest(unittest.TestCase):
         self.assertIn((5, 14), a.weapon)
         self.assertIn((18, 16), a.weapon)
 
+    def test_diagonal_shaft_beyond_the_fist_is_part_of_the_weapon(self):
+        # 斜め45°の斧（当たり）。拳の輪郭の先にのぞく斜めの柄は、縦の柄の拳の先と同じく武器の長さに数える
+        f = blank()
+        for x, y in ((6, 6), (7, 6), (6, 7), (7, 7)):
+            put(f, x, y, "blade_hi")
+        for i in range(10):  # (8,8)〜(17,17) の斜めの柄
+            put(f, 8 + i, 8 + i, "weapon_shaft_base")
+        fist(f, 12, 12)  # 輪郭が (11,11)〜(14,14) の柄を覆う
+        a = analyse(f)
+        self.assertIn((16, 16), a.weapon)
+        self.assertIn((17, 17), a.weapon)
+        self.assertNotIn((17, 17), a.tiny)
+
+    def test_diagonal_piece_off_the_shaft_line_is_not_the_weapon(self):
+        f = blank()
+        for x, y in ((6, 6), (7, 6), (6, 7), (7, 7)):
+            put(f, x, y, "blade_hi")
+        for i in range(10):
+            put(f, 8 + i, 8 + i, "weapon_shaft_base")
+        fist(f, 12, 12)
+        put(f, 20, 14, "weapon_shaft_base")  # 柄の斜めの線から外れた、同じ色の斜めの2画素
+        put(f, 21, 15, "weapon_shaft_base")
+        a = analyse(f)
+        self.assertNotIn((20, 14), a.weapon)
+
     def test_one_pixel_pommel_beyond_the_fist_is_tiny(self):
         f = blank()
         spear_v(f, 9, 6, 15)

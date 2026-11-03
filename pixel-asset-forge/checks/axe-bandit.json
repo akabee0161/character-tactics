@@ -1,0 +1,95 @@
+{
+  "unit": "axe-bandit",
+  "compose": "compose/axe-bandit.json",
+  "body": "male",
+  "head_chars": "",
+  "items": "stlmn",
+  "parts": {
+    "axe": {
+      "weapon": true,
+      "blade": "st",
+      "moves": true
+    },
+    "axe_hand": {
+      "fist": true,
+      "grips": "axe",
+      "fist_sizes": [
+        "3x2",
+        "2x2"
+      ],
+      "moves": true
+    },
+    "free_hand": {
+      "fist": true,
+      "fist_sizes": [
+        "2x2"
+      ]
+    },
+    "eye_E5": {
+      "eye": true
+    },
+    "head_bandana": {
+      "head": true
+    },
+    "cloth_belt": {},
+    "cloth_tatter": {}
+  },
+  "orders": {
+    "down": [
+      "CORE",
+      "eye_E5",
+      "cloth_belt",
+      "cloth_tatter",
+      "head_bandana",
+      "axe",
+      "axe_hand",
+      "free_hand"
+    ],
+    "up": [
+      "axe",
+      "axe_hand",
+      "free_hand",
+      "CORE",
+      "eye_E5",
+      "cloth_belt",
+      "cloth_tatter",
+      "head_bandana"
+    ],
+    "left": [
+      "axe",
+      "axe_hand",
+      "CORE",
+      "eye_E5",
+      "cloth_belt",
+      "cloth_tatter",
+      "head_bandana",
+      "free_hand"
+    ],
+    "right": [
+      "free_hand",
+      "CORE",
+      "eye_E5",
+      "cloth_belt",
+      "cloth_tatter",
+      "head_bandana",
+      "axe",
+      "axe_hand"
+    ]
+  },
+  "weapon_check": {
+    "hidden": [
+      "left_atk_wind",
+      "left_atk_hit",
+      "up_atk_wind",
+      "up_atk_hit"
+    ],
+    "partial": [
+      "left_atk_hit",
+      "left_atk_wind"
+    ],
+    "depth": [
+      "down"
+    ]
+  },
+  "exceptions": []
+}

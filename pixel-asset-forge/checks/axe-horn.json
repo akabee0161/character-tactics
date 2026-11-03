@@ -1,0 +1,88 @@
+{
+  "unit": "axe-horn",
+  "compose": "compose/axe-horn.json",
+  "body": "male",
+  "head_chars": "",
+  "items": "stlmn",
+  "parts": {
+    "axe": {
+      "weapon": true,
+      "blade": "st",
+      "moves": true
+    },
+    "axe_hand": {
+      "fist": true,
+      "grips": "axe",
+      "fist_sizes": [
+        "3x2",
+        "2x2"
+      ],
+      "moves": true
+    },
+    "free_hand": {
+      "fist": true,
+      "fist_sizes": [
+        "2x2"
+      ]
+    },
+    "eye_E2": {
+      "eye": true
+    },
+    "head_horn": {
+      "head": true
+    },
+    "cloth_tatter": {}
+  },
+  "orders": {
+    "down": [
+      "CORE",
+      "eye_E2",
+      "cloth_tatter",
+      "head_horn",
+      "axe",
+      "axe_hand",
+      "free_hand"
+    ],
+    "up": [
+      "axe",
+      "axe_hand",
+      "free_hand",
+      "CORE",
+      "eye_E2",
+      "cloth_tatter",
+      "head_horn"
+    ],
+    "left": [
+      "axe",
+      "axe_hand",
+      "CORE",
+      "eye_E2",
+      "cloth_tatter",
+      "head_horn",
+      "free_hand"
+    ],
+    "right": [
+      "free_hand",
+      "CORE",
+      "eye_E2",
+      "cloth_tatter",
+      "head_horn",
+      "axe",
+      "axe_hand"
+    ]
+  },
+  "weapon_check": {
+    "hidden": [
+      "left_atk_hit",
+      "up_atk_wind",
+      "up_atk_hit"
+    ],
+    "partial": [
+      "left_atk_hit"
+    ],
+    "depth": [
+      "down"
+    ]
+  },
+  "exceptions": []
+}
