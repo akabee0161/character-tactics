@@ -74,3 +74,4 @@ Task 4: complete (commits eb73ce2..0623e08, review: 差分は自分で確認。t
 - 最終レビュー: minor (deferred): E5 の left_base・up_base の map に使っていない項目（P=eyepatch）がある。validate は通る。up_base は空の部品で map が無いと validate が落ちる
 - 確認（9830e52）: unittest 716 OK、7体 unit_rules・compose --check 0
 Task 5: complete (commits 0623e08..9830e52, final review clean after 1 fix wave)
+- 11-03: 依頼者と保留2件を決めた。E5 left の使っていない P=eyepatch を消した。2列以上の目の抜け道は直さず ISSUES に1行（まれな件）
