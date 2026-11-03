@@ -291,6 +291,7 @@ cat sheets/roran.txt
 イネスも全32コマを、芯・弓（弦を含む）・矢・弓の拳・矢の拳で組んでいる（`compose/ines.json`、部品は `assets/part/` の `body/ines/`・`equip/bow/`・`equip/arrow/`・`fist/ines/`）。
 ガウも全24コマを、芯・短剣・短剣の拳・空き手の拳で組んでいる（`compose/gau.json`、部品は `assets/part/` の `body/gau/core_*`・`equip/dagger/dagger_<向き>_<状態>`・`fist/gau/`）。
 短剣の敵4体（`compose/dagger-{bandit,knight,horn,thug}.json`）は、敵の男性の芯（`body/enemy_male/core_*`）に、目・服・頭の部品とガウの短剣・拳を重ねて組む。設定は `checks/dagger-*.json`。
+斧の敵7体（`compose/axe-*.json`）は、男性2体が敵の男性の芯、女性5体が敵の女性の芯（`body/enemy_female/core_*`）に、目・服・頭（女性は長い髪 `hair/{A,B,C}/` の前と後ろも）と、斧（`equip/axe/{male,female}/`）・斧を握る拳（`fist/enemy_{male,female}/axe_hand_*`）・空き手の拳（男性はガウの `fist/gau/free_hand_*`、女性は `fist/enemy_female/free_hand_*`）を重ねて組む。設定は `checks/axe-*.json`。
 
 ```sh
 .venv/bin/python tools/compose.py compose/ines.json --check     # 全32コマが部品から再現できる
@@ -377,8 +378,8 @@ forge をゲームリポジトリへコピーして使うときは、ゲーム�
   `gen/enemy/mkweapons.py`（斧・槍の男女の敵。敵の一覧は `gen/enemy/mkframes.py` の `ENEMIES`、女性の8体は
   `mkweapons.py` で足す）。女性の id は `<男性の id>-<髪 a・b・c>-f`（a 前髪ありのロング・b 前髪なしのロング・c ポニーテール）。
   今走らせると、コマはコミット済みのものと違う（`ISSUES.md`「敵の生成スクリプトの出力が、コミット済みのコマと違う」）。
-  短剣の4体（`dagger-*`）は、この手順ではなく `compose/dagger-*.json` から組む（2026-11-03）。`mkframes.py` の `ENEMIES` には
-  まだ4体が残っていて、走らせると組み直したコマを古い腕・袖つきの絵で上書きするので、走らせない
+  短剣の4体（`dagger-*`）と斧の7体（`axe-*`）は、この手順ではなく `compose/<id>.json` から組む（2026-11-03）。`gen/enemy/` には
+  まだこの11体が残っていて、走らせると組み直したコマを古い腕・袖つきの絵で上書きするので、走らせない
 - `recolor` は「元のコマが使う用途の色 → 置き換え後の**色見本**」。元のコマが使わない名前は止める。
   そのため `build/enemy/<id>/*.txt`（色替え後のコマ）の `map` は色見本の名前になり、用途の色としては検査されない
   （`validate.py` は `assets/` などを見るので、ここは対象外。読むのは `gridfile.load_colours()` で、用途の色に色見本を足して引く）
