@@ -66,3 +66,12 @@ Task 6: complete (commits 16d956f..205ac7b, tests: unittest 720 OK、14体 unit_
 - Step 2: enemy_build --all 16体 ok、斧の7体のシートに clothes_dark_* の画素0
 - Step 3: SPEC（斧の部品・重なり順・左右反転・斜めの斧・古い絵と食い違うときの判断）、ISSUES（far-shade・生成スクリプト・体＋拳の3行）、README・CLAUDE.md（斧の7体の compose）
 - Step 4: unittest 720 OK、validate ok（1285。noweapon を消した分減った）、14体 unit_rules・compose --check 0、npm test 776 passed、npm run build ok
+
+## 最終レビュー（9cfea1b..f4f6b6c、Opus のサブエージェント）
+- Critical 0、Important 1、Minor 5
+- Final: fixed I-1 SPEC の斧の古い weapon_check の手順（noweapon を使う）を消し、斧は checks/axe-*.json と unit_rules.py と書いた（槍の部分は残した）。M-5 の「敵のコマに unit_check を使えない」も槍だけに直した
+- Final: fixed M-1 _on_shaft_diagonal の切れ端に拳の近さ（_near）を足した — test_diagonal_piece_on_the_shaft_line_far_from_the_fist_is_not_the_weapon RED→GREEN、suite 721/721、14体 unit_rules 0
+- Final: fixed M-4 ISSUES の far-shade の行に、部品で組むユニットは unit_rules.py が --far-shade を渡さず奥の拳の色を道具で見ていないことを書いた
+- Final: M-3 台帳の訂正: axe-bandit の left_atk_wind を hidden にした理由は、拳が隠れるのではなく、結び目で柄が切れて拳の近くの柄が武器に入らず「手が無い」で落ちるため（奥の拳は影の色で見えている）
+- Final: M-2 台帳の訂正: 女性5体の up_idle2 の hidden は「斧が全部隠れる」ではない。待機2で 2px 上げると斧頭（x=22〜26、y=7〜13）が長い髪の上に出て見え、柄は髪の陰で、刃と拳が 2px より離れて道具が武器を見つけられない。hidden が例外のように働いている。絵を変える直しなので依頼者に聞く（直し方の候補: 女性の up の待機2で斧を上げない／斧頭が出ないように位置を決め直す）
+- Final: minor (deferred): M-2 女性の up_idle2 の斧頭が見えているのに hidden（依頼者に報告）

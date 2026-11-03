@@ -163,7 +163,7 @@ gen/<unit>/                               1体（または敵だけ）のため�
 
 ### 武器を描くときの決まり（斧・槍の敵で合意、2026-10-07）
 
-部品で組んだ敵（`assets/unit/axe-*`・`spear-*`、生成は `gen/enemy/mkweapons.py`）で依頼者と合意した見え方。
+部品で組んだ敵（`assets/unit/axe-*`・`spear-*`。当時の生成は `gen/enemy/mkweapons.py`、斧は 2026-11-03 から `compose/axe-*.json`）で依頼者と合意した見え方。
 斧は物だけを向きごとに描いた見本（`build/axe_views.html`）で決めた。
 
 - **武器の形は、物だけを向きごとに描いた見本で先に合わせてから、攻撃のコマに当てはめる**
@@ -319,36 +319,22 @@ gen/<unit>/                               1体（または敵だけ）のため�
 体と頭は立ち・待機2・歩き）と、奥の拳が影の色か（`--far-shade`）も確かめる（2026-10-08〜09。どれも依頼者に指摘された欠陥、2026-10-07）。
 ロラン・ガウの指定は `checks/<unit>.json` の `weapon_check` にある。
 
-部品で組んだ斧・槍の敵（`assets/unit/`、色替え前のコマ）は次の指定で検査する（2026-10-07 の時点で4体とも通る）:
+斧の敵7体（`axe-*`）は部品から組み直したので、`checks/axe-*.json` を `tools/unit_rules.py` にかけて検査する（D の2回目、2026-11-03。`noweapon` のコマは消した）。
+まだ古い作り方のコマの槍の敵（`assets/unit/spear-*`、色替え前のコマ）は次の指定で検査する:
 
 ```sh
 C="--blade blade_hi,blade_base --weapon weapon_shaft_base,weapon_shaft_shadow --hand skin_ruddy_hi,skin_ruddy_base,skin_ruddy_shadow"
-# 斧（axe-bandit・axe-horn）
-tools/weapon_check.py assets/unit/axe-bandit $C --ref assets/unit/axe-bandit/noweapon --far left --far-shade skin_ruddy_shadow \
-    --hidden up_atk_wind,up_atk_hit --depth down,up \
-    --partial left_base,left_idle2,left_walk_a,left_walk_b,left_atk_wind
 # 槍（spear-knight・spear-thug）
 tools/weapon_check.py assets/unit/spear-knight $C --ref assets/unit/spear-knight/noweapon --far left --far-shade skin_ruddy_shadow \
     --hidden left_atk_hit
 ```
 
-斧の `up` の攻撃は `--hidden`（振りかぶりは axe head が木の棒に隠れ、当たりは体の向こうに隠れる）。
-`down`・`up` は奥行きの表現なので `--depth`。`right` は例外に入れない（下の段落）。
-
-女性の8体（`<男性の id>-<髪 a・b・c>-f`、長い髪あり）は、奥の手の検査（`--far`・`--ref`・`--cover`・`--far-shade`）を足し、
+女性の槍の3体（`spear-thug-<髪 a・b・c>-f`、長い髪あり）は、奥の手の検査（`--far`・`--ref`・`--cover`・`--far-shade`）を足し、
 長い髪に隠れるコマを髪の型ごとに例外にする（2026-10-09 依頼者承認の重なり順: left の奥の手と武器、up の武器は髪の後ろ）:
 
 ```sh
 F="--far left --cover hair_ashblue_hi,hair_ashblue_base,hair_ashblue_shadow --far-shade skin_ruddy_shadow"
 UP=up_base,up_idle2,up_walk_a,up_walk_b
-LEFT=left_base,left_idle2,left_walk_a,left_walk_b
-P="--partial left_base,left_idle2,left_walk_a,left_walk_b,left_atk_wind"
-# 斧 a・b（axe-bandit-a-f・b-f・axe-horn-b-f）: left の奥の手と斧、up の斧が長い髪の陰
-tools/weapon_check.py assets/unit/axe-bandit-a-f $C --ref assets/unit/axe-bandit-a-f/noweapon $F \
-    --hidden up_atk_wind,up_atk_hit,$LEFT,left_atk_wind,$UP --depth down,up $P
-# 斧 c（axe-bandit-c-f・axe-horn-c-f）: up は待機2だけ斧が隠れる
-tools/weapon_check.py assets/unit/axe-bandit-c-f $C --ref assets/unit/axe-bandit-c-f/noweapon $F \
-    --hidden up_atk_wind,up_atk_hit,$LEFT,left_atk_wind,up_idle2 --depth down,up $P
 # 槍 a・b: left の振りかぶりの拳、up の立ち・歩きの槍、up の当たりの腕が長い髪の陰
 tools/weapon_check.py assets/unit/spear-thug-a-f $C --ref assets/unit/spear-thug-a-f/noweapon $F \
     --hidden left_atk_hit,left_atk_wind,up_atk_hit,$UP
@@ -358,9 +344,9 @@ tools/weapon_check.py assets/unit/spear-thug-c-f $C --ref assets/unit/spear-thug
 ```
 
 `spear-thug-a-f`・`b-f` は `left_idle2` の1コマが「手が細い」で落ちる（奥の拳が長い髪に半分隠れ、1px 幅だけのぞく）。
-ほかの女性6体は全項目を通る（2026-10-16、`--arm` を外して測り直した。斧・槍の男性4体も通る）。
+`spear-thug-c-f` は全項目を通る（2026-10-16、`--arm` を外して測り直した。槍の男性2体も通る）。
 
-敵の生成したコマ（`assets/unit/<敵の id>/`）には `unit_check.py` を使えない。`--items` はファイルの中の文字で持ち物を指定するが、
+古い作り方の槍の敵のコマ（`assets/unit/spear-*/`）には `unit_check.py` を使えない（部品から組んだ短剣・斧の敵は `unit_rules.py` が `--core` の芯で走らせる）。`--items` はファイルの中の文字で持ち物を指定するが、
 生成したコマは文字の割り当てがコマごとに違う。脚と足元は、再生ページ（`tools/enemy_gallery.py`）とシートのプレビューの足元ライン（y=30）で確かめる。
 
 弓（イネス）は対象外。ガウ・ロランは全項目を通っていた（2026-10-07）。

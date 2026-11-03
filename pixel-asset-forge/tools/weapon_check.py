@@ -106,7 +106,7 @@ def _orientation(points: set[Point]) -> str:
 
 def _on_shaft_diagonal(comp: set[Point], shaft: set[Point]) -> bool:
     """comp が斜め45°の1画素幅の線で、刃とつながった柄（shaft）の2画素以上と同じ斜めの線の上にあるか。
-    斜めの柄が拳の輪郭に隠れて切れた、拳の先の部分（2026-11-03。斧の敵の当たり）。"""
+    斜めの柄が拳の輪郭に隠れて切れた、拳の先の部分（2026-11-03。斧の敵の当たり）。呼ぶ側が拳の近さも確かめる。"""
     for key in (lambda p: p[0] - p[1], lambda p: p[0] + p[1]):
         line = {key(p) for p in comp}
         if len(line) == 1 and sum(1 for p in shaft if key(p) in line) >= 2:
@@ -121,7 +121,7 @@ def _shaft_piece(comp: set[Point], blade: set[Point], square_ok: bool = False,
     1画素だけの切れ端（拳の先にのぞく柄の端）は、刃とつながった柄（shaft）と同じ列か行にあり、
     拳（skin）から 2px 以内にあるときだけ認める。"""
     xs = {x for x, _ in comp}
-    if len(comp) >= 2 and _on_shaft_diagonal(comp, shaft):
+    if len(comp) >= 2 and _on_shaft_diagonal(comp, shaft) and _near(comp, skin):  # 拳の先にのぞく所だけ
         return True
     if len(comp) < 2:
         x, y = p = next(iter(comp))

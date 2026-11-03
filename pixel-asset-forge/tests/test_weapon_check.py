@@ -323,6 +323,18 @@ class WeaponDetectionTest(unittest.TestCase):
         a = analyse(f)
         self.assertNotIn((20, 14), a.weapon)
 
+    def test_diagonal_piece_on_the_shaft_line_far_from_the_fist_is_not_the_weapon(self):
+        f = blank()
+        for x, y in ((6, 6), (7, 6), (6, 7), (7, 7)):
+            put(f, x, y, "blade_hi")
+        for i in range(10):
+            put(f, 8 + i, 8 + i, "weapon_shaft_base")
+        fist(f, 12, 12)
+        put(f, 24, 24, "weapon_shaft_base")  # 柄の斜めの線の上だが、拳から離れた同じ色の2画素
+        put(f, 25, 25, "weapon_shaft_base")
+        a = analyse(f)
+        self.assertNotIn((24, 24), a.weapon)
+
     def test_one_pixel_pommel_beyond_the_fist_is_tiny(self):
         f = blank()
         spear_v(f, 9, 6, 15)
