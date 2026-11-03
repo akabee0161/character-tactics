@@ -53,7 +53,9 @@ def head_pixels(cfg: UnitConfig, frame: Frame) -> dict[tuple[int, int], str]:
 
 
 def patch_blocks(cover: set) -> set:
-    """被り物・装飾品の色の画素のうち、2x2 の塊に入るもの（E5 の眼帯）。1x2 の目を眼帯の色で塗り間違えた画素は入らない。"""
+    """被り物・装飾品の色の画素のうち、2x2 の塊に入るもの（E5 の眼帯）。
+眼帯の 2x2 に眼帯色の 1x2 の目が横に接すると、重なる 2x2 が検出されて 6 画素すべてが入り、目なしで通る（ISSUES.md）。
+接していない 1x2 の目は入らない。"""
     blocks: set = set()
     for x, y in cover:
         square = {(x, y), (x + 1, y), (x, y + 1), (x + 1, y + 1)}
