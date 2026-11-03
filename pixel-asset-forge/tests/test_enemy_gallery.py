@@ -51,5 +51,33 @@ class GalleryTest(unittest.TestCase):
         self.assertIn('class="frame"', html)
 
 
+class GalleryMainTest(unittest.TestCase):
+    """main() がレシピを読んでページを書く（パレットの作り直しで load_recipe が Palette を受けるようになった。2026-11-03）。"""
+
+    def setUp(self):
+        import enemy_gallery
+
+        self._tmp = tempfile.TemporaryDirectory()
+        tmp = Path(self._tmp.name)
+        (tmp / "enemy").mkdir()
+        (tmp / "sheets").mkdir()
+        (tmp / "enemy" / "test-enemy.json").write_text(
+            '{"id": "test-enemy", "name": "テストの敵", "archetype": "dagger", "body": "male",'
+            ' "recolor": {"clothes_dark_hi": "dirt_hi"}}', encoding="utf-8")
+        Image.new("RGBA", (128, 384)).save(tmp / "sheets" / "test-enemy.png")
+        self.out = tmp / "gallery.html"
+        self.enemy_gallery = enemy_gallery
+        saved = (enemy_gallery.ENEMY_DIR, enemy_gallery.SHEET_DIR)
+        enemy_gallery.ENEMY_DIR, enemy_gallery.SHEET_DIR = tmp / "enemy", tmp / "sheets"
+        self.addCleanup(setattr, enemy_gallery, "ENEMY_DIR", saved[0])
+        self.addCleanup(setattr, enemy_gallery, "SHEET_DIR", saved[1])
+        self.addCleanup(self._tmp.cleanup)
+
+    def test_main_writes_the_page_from_the_recipes(self):
+        code = self.enemy_gallery.main([str(self.out)])
+        self.assertEqual(code, 0)
+        self.assertIn("テストの敵", self.out.read_text(encoding="utf-8"))
+
+
 if __name__ == "__main__":
     unittest.main()

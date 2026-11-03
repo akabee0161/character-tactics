@@ -1,0 +1,85 @@
+{
+  "unit": "dagger-knight",
+  "compose": "compose/dagger-knight.json",
+  "body": "male",
+  "head_chars": "",
+  "items": "stlmn",
+  "parts": {
+    "dagger": {
+      "weapon": true,
+      "blade": "st",
+      "moves": true
+    },
+    "dagger_hand": {
+      "fist": true,
+      "grips": "dagger",
+      "fist_sizes": [
+        "3x2",
+        "2x2"
+      ],
+      "moves": true
+    },
+    "free_hand": {
+      "fist": true,
+      "fist_sizes": [
+        "2x2"
+      ]
+    },
+    "eye_E0": {
+      "eye": true
+    },
+    "head_full": {
+      "head": true
+    },
+    "cloth_belt": {}
+  },
+  "orders": {
+    "down": [
+      "CORE",
+      "eye_E0",
+      "cloth_belt",
+      "head_full",
+      "dagger",
+      "dagger_hand",
+      "free_hand"
+    ],
+    "up": [
+      "dagger",
+      "dagger_hand",
+      "free_hand",
+      "CORE",
+      "eye_E0",
+      "cloth_belt",
+      "head_full"
+    ],
+    "left": [
+      "dagger",
+      "dagger_hand",
+      "CORE",
+      "eye_E0",
+      "cloth_belt",
+      "head_full",
+      "free_hand"
+    ],
+    "right": [
+      "free_hand",
+      "CORE",
+      "eye_E0",
+      "cloth_belt",
+      "head_full",
+      "dagger",
+      "dagger_hand"
+    ]
+  },
+  "weapon_check": {
+    "hidden": [
+      "left_atk_wind",
+      "up_atk_wind",
+      "up_atk_hit"
+    ],
+    "depth": [
+      "down"
+    ]
+  },
+  "exceptions": []
+}

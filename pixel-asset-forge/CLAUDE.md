@@ -70,6 +70,7 @@
 .venv/bin/python tools/compose.py compose/roran.json --check   # ロランは全24コマが部品から再現できる（拳が閉じていないと終了 2）
 .venv/bin/python tools/compose.py compose/ines.json --check    # イネスは全32コマが部品から再現できる
 .venv/bin/python tools/compose.py compose/gau.json --check     # ガウは全24コマが部品から再現できる
+(set -e; for u in bandit knight horn thug; do .venv/bin/python tools/compose.py compose/dagger-$u.json --check; done)  # 短剣の敵4体も全24コマが部品から再現できる
 # gen/*_layers.py --export は描き直す前の書き出しに一度だけ使った。古い色の名前のままで今は使えず（落ち方は ISSUES.md）、直しても描き直した部品を上書きするので実行しない（ISSUES.md「gen/*.py が古い色の名前で書かれていて動かない」）（新しいユニットは tools/parts_export.py で同じ形の定義を書く）
 .venv/bin/python tools/compose_page.py --help  # 部品と組んだ結果を層の順に並べる確認ページ（--dirs down,right のようにカンマ区切り）
 .venv/bin/python tools/phone_sheet.py order compose/gau.json build/phone  # スマホで見る PNG（部品を奥→手前。今の絵と案を並べる diff・cmp もある。--help）

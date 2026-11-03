@@ -1,0 +1,941 @@
+{
+  "unit": "dagger-bandit",
+  "frames": {
+    "down_base": {
+      "body": "assets/part/body/enemy_male/core_down_base.txt",
+      "layers": [
+        {
+          "part": "assets/part/eye/E5/eye_E5_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/belt/cloth_belt_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter/cloth_tatter_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/bandana/head_bandana_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/dagger/dagger_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/gau/dagger_hand_down_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/fist/gau/free_hand_down_base.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "down_idle2": {
+      "body": "assets/part/body/enemy_male/core_down_idle2.txt",
+      "layers": [
+        {
+          "part": "assets/part/eye/E5/eye_E5_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/belt/cloth_belt_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter/cloth_tatter_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/bandana/head_bandana_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/dagger/dagger_down_idle2.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/gau/dagger_hand_down_idle2.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/fist/gau/free_hand_down_idle2.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "down_walk_a": {
+      "body": "assets/part/body/enemy_male/core_down_walk_a.txt",
+      "layers": [
+        {
+          "part": "assets/part/eye/E5/eye_E5_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/belt/cloth_belt_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter/cloth_tatter_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/bandana/head_bandana_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/dagger/dagger_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/gau/dagger_hand_down_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/fist/gau/free_hand_down_base.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "down_walk_b": {
+      "body": "assets/part/body/enemy_male/core_down_walk_b.txt",
+      "layers": [
+        {
+          "part": "assets/part/eye/E5/eye_E5_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/belt/cloth_belt_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter/cloth_tatter_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/bandana/head_bandana_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/dagger/dagger_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/gau/dagger_hand_down_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/fist/gau/free_hand_down_base.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "down_atk_wind": {
+      "body": "assets/part/body/enemy_male/core_down_atk_wind.txt",
+      "layers": [
+        {
+          "part": "assets/part/eye/E5/eye_E5_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/belt/cloth_belt_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter/cloth_tatter_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/bandana/head_bandana_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/dagger/dagger_down_atk_wind.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/gau/dagger_hand_down_atk_wind.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/fist/gau/free_hand_down_atk_wind.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "down_atk_hit": {
+      "body": "assets/part/body/enemy_male/core_down_atk_hit.txt",
+      "layers": [
+        {
+          "part": "assets/part/eye/E5/eye_E5_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/belt/cloth_belt_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter/cloth_tatter_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/bandana/head_bandana_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/dagger/dagger_down_atk_hit.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/gau/dagger_hand_down_atk_hit.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/fist/gau/free_hand_down_atk_hit.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "up_base": {
+      "body": "assets/part/body/enemy_male/core_up_base.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/gau/free_hand_up_base.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/fist/gau/dagger_hand_up_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/dagger/dagger_up_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E5/eye_E5_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/belt/cloth_belt_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter/cloth_tatter_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/bandana/head_bandana_up_base.txt",
+          "z": "front"
+        }
+      ]
+    },
+    "up_idle2": {
+      "body": "assets/part/body/enemy_male/core_up_idle2.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/gau/free_hand_up_idle2.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/fist/gau/dagger_hand_up_idle2.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/dagger/dagger_up_idle2.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E5/eye_E5_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/belt/cloth_belt_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter/cloth_tatter_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/bandana/head_bandana_up_base.txt",
+          "z": "front"
+        }
+      ]
+    },
+    "up_walk_a": {
+      "body": "assets/part/body/enemy_male/core_up_walk_a.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/gau/free_hand_up_base.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/fist/gau/dagger_hand_up_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/dagger/dagger_up_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E5/eye_E5_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/belt/cloth_belt_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter/cloth_tatter_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/bandana/head_bandana_up_base.txt",
+          "z": "front"
+        }
+      ]
+    },
+    "up_walk_b": {
+      "body": "assets/part/body/enemy_male/core_up_walk_b.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/gau/free_hand_up_base.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/fist/gau/dagger_hand_up_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/dagger/dagger_up_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E5/eye_E5_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/belt/cloth_belt_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter/cloth_tatter_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/bandana/head_bandana_up_base.txt",
+          "z": "front"
+        }
+      ]
+    },
+    "up_atk_wind": {
+      "body": "assets/part/body/enemy_male/core_up_atk_wind.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/gau/free_hand_up_atk_wind.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/fist/gau/dagger_hand_up_atk_wind.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/dagger/dagger_up_atk_wind.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E5/eye_E5_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/belt/cloth_belt_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter/cloth_tatter_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/bandana/head_bandana_up_base.txt",
+          "z": "front"
+        }
+      ]
+    },
+    "up_atk_hit": {
+      "body": "assets/part/body/enemy_male/core_up_atk_hit.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/gau/free_hand_up_atk_hit.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/fist/gau/dagger_hand_up_atk_hit.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/dagger/dagger_up_atk_hit.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E5/eye_E5_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/belt/cloth_belt_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter/cloth_tatter_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/bandana/head_bandana_up_base.txt",
+          "z": "front"
+        }
+      ]
+    },
+    "left_base": {
+      "body": "assets/part/body/enemy_male/core_left_base.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/gau/dagger_hand_left_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/dagger/dagger_left_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E5/eye_E5_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/belt/cloth_belt_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter/cloth_tatter_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/bandana/head_bandana_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/gau/free_hand_left_base.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "left_idle2": {
+      "body": "assets/part/body/enemy_male/core_left_idle2.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/gau/dagger_hand_left_idle2.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/dagger/dagger_left_idle2.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E5/eye_E5_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/belt/cloth_belt_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter/cloth_tatter_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/bandana/head_bandana_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/gau/free_hand_left_idle2.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "left_walk_a": {
+      "body": "assets/part/body/enemy_male/core_left_walk_a.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/gau/dagger_hand_left_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/dagger/dagger_left_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E5/eye_E5_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/belt/cloth_belt_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter/cloth_tatter_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/bandana/head_bandana_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/gau/free_hand_left_base.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "left_walk_b": {
+      "body": "assets/part/body/enemy_male/core_left_walk_b.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/gau/dagger_hand_left_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/dagger/dagger_left_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E5/eye_E5_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/belt/cloth_belt_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter/cloth_tatter_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/bandana/head_bandana_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/gau/free_hand_left_base.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "left_atk_wind": {
+      "body": "assets/part/body/enemy_male/core_left_atk_wind.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/gau/dagger_hand_left_atk_wind.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/dagger/dagger_left_atk_wind.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E5/eye_E5_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/belt/cloth_belt_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter/cloth_tatter_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/bandana/head_bandana_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/gau/free_hand_left_atk_wind.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "left_atk_hit": {
+      "body": "assets/part/body/enemy_male/core_left_atk_hit.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/gau/dagger_hand_left_atk_hit.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/dagger/dagger_left_atk_hit.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E5/eye_E5_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/belt/cloth_belt_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter/cloth_tatter_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/bandana/head_bandana_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/gau/free_hand_left_atk_hit.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "right_base": {
+      "body": "assets/part/body/enemy_male/core_right_base.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/gau/free_hand_right_base.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/eye/E5/eye_E5_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/belt/cloth_belt_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter/cloth_tatter_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/bandana/head_bandana_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/dagger/dagger_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/gau/dagger_hand_right_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        }
+      ]
+    },
+    "right_idle2": {
+      "body": "assets/part/body/enemy_male/core_right_idle2.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/gau/free_hand_right_idle2.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/eye/E5/eye_E5_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/belt/cloth_belt_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter/cloth_tatter_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/bandana/head_bandana_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/dagger/dagger_right_idle2.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/gau/dagger_hand_right_idle2.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        }
+      ]
+    },
+    "right_walk_a": {
+      "body": "assets/part/body/enemy_male/core_right_walk_a.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/gau/free_hand_right_base.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/eye/E5/eye_E5_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/belt/cloth_belt_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter/cloth_tatter_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/bandana/head_bandana_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/dagger/dagger_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/gau/dagger_hand_right_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        }
+      ]
+    },
+    "right_walk_b": {
+      "body": "assets/part/body/enemy_male/core_right_walk_b.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/gau/free_hand_right_base.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/eye/E5/eye_E5_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/belt/cloth_belt_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter/cloth_tatter_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/bandana/head_bandana_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/dagger/dagger_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/gau/dagger_hand_right_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        }
+      ]
+    },
+    "right_atk_wind": {
+      "body": "assets/part/body/enemy_male/core_right_atk_wind.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/gau/free_hand_right_atk_wind.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/eye/E5/eye_E5_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/belt/cloth_belt_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter/cloth_tatter_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/bandana/head_bandana_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/dagger/dagger_right_atk_wind.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/gau/dagger_hand_right_atk_wind.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        }
+      ]
+    },
+    "right_atk_hit": {
+      "body": "assets/part/body/enemy_male/core_right_atk_hit.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/gau/free_hand_right_atk_hit.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/eye/E5/eye_E5_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/belt/cloth_belt_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter/cloth_tatter_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/bandana/head_bandana_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/dagger/dagger_right_atk_hit.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/gau/dagger_hand_right_atk_hit.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        }
+      ]
+    }
+  }
+}

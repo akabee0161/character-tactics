@@ -209,6 +209,44 @@ class EyePartTest(unittest.TestCase):
         code, out = self.fx.run(main)
         self.assertEqual(code, 0, out)
 
+    def test_an_eyepatch_in_the_eye_part_is_not_an_eye(self):
+        # E5: 眼帯は目の部品の中に装飾品の色（eyepatch）で描く。目として読まず、見える方の目だけを確かめる（2026-11-03）
+        self.fx.maps["eye"] = "o=contour P=eyepatch"
+        patch = {(x, y): "P" for x in (13, 14) for y in (10, 11)}
+        for name, layers in self.fx.frames.items():
+            if name.startswith("down_"):
+                layers["eye"] = {**patch, **RIGHT_DIAGONAL}
+        code, out = self.fx.run(main)
+        self.assertEqual(code, 0, out)
+        self.assertIn("目: ok", out)
+
+    def test_an_eye_beside_an_eyepatch_still_fails(self):
+        # 眼帯は輪郭と同じ色なので、目の隣に眼帯があれば目は見分けられない
+        self.fx.maps["eye"] = "o=contour P=eyepatch"
+        patch = {(x, y): "P" for x in (12, 13) for y in (10, 11)}
+        self.fx.frames["down_base"]["eye"] = {**patch, (14, 10): "o", (14, 11): "o"}
+        code, out = self.fx.run(main)
+        self.assertEqual(code, 1)
+        self.assertIn("FAIL down_base: 目の左右の隣が目と見分けられない色 2 件: (13,10) (13,11)", out)
+
+    def test_an_eye_drawn_in_the_eyepatch_colour_still_fails(self):
+        # 眼帯として外すのは装飾品の色の 2x2 の塊だけ。1x2 の目を眼帯の色で塗り間違えた絵は、目のまま調べて落とす（最終レビュー 2026-11-03）
+        self.fx.maps["eye"] = "o=contour P=eyepatch"
+        self.fx.frames["down_base"]["eye"] = {(14, 10): "P", (14, 11): "P", **RIGHT_DIAGONAL}
+        code, out = self.fx.run(main)
+        self.assertEqual(code, 1)
+        self.assertIn("FAIL down_base: 目の画素が輪郭の色でない 2 件: (14,10) (14,11)", out)
+
+    def test_a_direction_with_only_an_eyepatch_has_no_eyes(self):
+        # 横顔で眼帯の側だけが見える向き（E5 の right）は、目の無い向きとして通す
+        self.fx.maps["eye"] = "o=contour P=eyepatch"
+        for name, layers in self.fx.frames.items():
+            if name.startswith("down_"):
+                layers["eye"] = {(17, 10): "P", (18, 10): "P", (17, 11): "P", (18, 11): "P"}
+        self.fx.frames["down_base"]["core"][(16, 10)] = "o"  # 目なら隣で落ちる形
+        code, out = self.fx.run(main)
+        self.assertEqual(code, 0, out)
+
     def add_up_eyes(self, top: int) -> None:
         for name, layers in self.fx.frames.items():
             if name.startswith("up_"):
