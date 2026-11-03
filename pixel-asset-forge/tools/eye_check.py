@@ -5,7 +5,8 @@
 
 目と輪郭は同じ outline の色なので、設定ファイルの eyes に向きごとの目の画素（x の列と [上の行, 下の行]、目の無い向きは null）を書く。
 目の部品（設定の parts で eye。assets/part/eye/）があるユニットは eyes を書かず、コマごとに目の部品の背景でない画素を目として読む
-（2026-10-30。斜めの目のように列と行の四角で書けない形も読める）。目の部品より手前に積んだ部品のうち、head の部品の画素か、
+（2026-10-30。斜めの目のように列と行の四角で書けない形も読める）。目の部品の中でも、種類が被り物・装飾品の色の画素（E5 の眼帯）は
+目として読まない（2026-11-03。眼帯の隣の目は、眼帯が輪郭と同じ色なので見分けられない色として落ちる）。目の部品より手前に積んだ部品のうち、head の部品の画素か、
 種類が被り物・装飾品（headgear・ornament）の色の画素が目の画素に重なれば「覆われた」とする。目の画素がすべて覆われたコマは
 目なしとして通し（knight のバイザー、メガネなど）、一部だけ覆われたコマは「目の一部が被り物に隠れている」で落とす。
 覆われていないコマに下の判定を掛ける。目の上端の行は同じ状態のコマの向きどうしで比べ、目がすべて隠れた向きを除く。
@@ -51,14 +52,16 @@ def head_pixels(cfg: UnitConfig, frame: Frame) -> dict[tuple[int, int], str]:
 
 
 def part_eyes(cfg: UnitConfig, frame: Frame, pal: palette.Palette) -> tuple[frozenset, frozenset]:
-    """(目の画素, そのうち手前の被り物・装飾品に覆われた画素)。目の画素は目の部品の背景でない画素（dx・dy でずらした後）。
+    """(目の画素, そのうち手前の被り物・装飾品に覆われた画素)。目の画素は目の部品の背景でない画素（dx・dy でずらした後）のうち、
+    種類が被り物・装飾品でないもの（E5 の眼帯は目の部品の中に装飾品の色で描く。2026-11-03）。
     覆うのは、目の部品より手前に積んだ部品のうち、head の部品の画素か、種類が被り物・装飾品の色の画素。"""
     eyes: set = set()
     covered: set = set()
     for i, key in enumerate(frame.order):
         if key == CORE or not cfg.role(key, "eye"):
             continue
-        mine = set(frame.parts[key].pixels())
+        part = frame.parts[key]
+        mine = {p for p, use in part.pixels().items() if kind_of_use(pal, use, part.layer.part) not in COVER_KINDS}
         eyes |= mine
         for front in frame.order[i + 1:]:
             if front == CORE or cfg.role(front, "eye"):
