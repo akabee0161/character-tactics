@@ -1,0 +1,102 @@
+{
+  "unit": "axe-horn-c-f",
+  "compose": "compose/axe-horn-c-f.json",
+  "body": "female",
+  "head_chars": "",
+  "items": "stlmn",
+  "parts": {
+    "axe": {
+      "weapon": true,
+      "blade": "st",
+      "moves": true
+    },
+    "axe_hand": {
+      "fist": true,
+      "grips": "axe",
+      "fist_sizes": [
+        "3x2",
+        "2x2"
+      ],
+      "moves": true
+    },
+    "free_hand": {
+      "fist": true,
+      "fist_sizes": [
+        "2x2"
+      ]
+    },
+    "eye_E2": {
+      "eye": true
+    },
+    "hair_C": {
+      "head": true
+    },
+    "hair_C_back": {},
+    "head_horn": {
+      "head": true
+    },
+    "cloth_tatter_female": {}
+  },
+  "orders": {
+    "down": [
+      "hair_C_back",
+      "CORE",
+      "eye_E2",
+      "cloth_tatter_female",
+      "hair_C",
+      "head_horn",
+      "axe",
+      "axe_hand",
+      "free_hand"
+    ],
+    "up": [
+      "hair_C_back",
+      "axe",
+      "axe_hand",
+      "free_hand",
+      "CORE",
+      "eye_E2",
+      "cloth_tatter_female",
+      "hair_C",
+      "head_horn"
+    ],
+    "left": [
+      "axe",
+      "axe_hand",
+      "hair_C_back",
+      "CORE",
+      "eye_E2",
+      "cloth_tatter_female",
+      "hair_C",
+      "head_horn",
+      "free_hand"
+    ],
+    "right": [
+      "hair_C_back",
+      "free_hand",
+      "CORE",
+      "eye_E2",
+      "cloth_tatter_female",
+      "hair_C",
+      "head_horn",
+      "axe",
+      "axe_hand"
+    ]
+  },
+  "weapon_check": {
+    "hidden": [
+      "left_idle2",
+      "left_atk_wind",
+      "left_atk_hit",
+      "up_atk_wind",
+      "up_atk_hit"
+    ],
+    "partial": [
+      "left_atk_hit"
+    ],
+    "depth": [
+      "down"
+    ]
+  },
+  "exceptions": []
+}
