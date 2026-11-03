@@ -74,6 +74,41 @@ class PartOutlineTest(unittest.TestCase):
         self.assertEqual(code, 1, out)
         self.assertIn("FAIL hair_down_base: 輪郭で閉じていない画素 6 件", out)
 
+    def add_split_hair(self, back_rows: int = 6):
+        """1本の髪を前（頭の上 y=2〜8、下の縁 y=8 が開く）と後ろ（y=8〜、上の縁 y=8 が開く）の2つの部品に分ける。
+        分け目は芯の外（芯は y>=20）。"""
+        front = box(12, 2, 19, 8, "h")
+        for x in range(13, 19):
+            front[(x, 8)] = "h"
+        back = box(12, 8, 19, 8 + back_rows, "h")
+        for x in range(13, 19):
+            back[(x, 8)] = "h"
+        for layers in self.fx.frames.values():
+            layers["hair"] = dict(front)
+            layers["hair_back"] = dict(back)
+        for key in ("hair", "hair_back"):
+            self.fx.maps[key] = "o=contour h=hair_red_base"
+            self.fx.checks["parts"][key] = {}
+            self.fx.checks["orders"]["down"].append(key)
+            self.fx.checks["orders"]["up"].append(key)
+        for name in ("down_base", "up_base"):
+            self.fx.frames[name]["core"] = box(12, 20, 19, 30, "c")
+
+    def test_split_hair_edges_covered_by_each_other_pass(self):
+        self.add_split_hair()
+        code, out = self.fx.run(main)
+        self.assertEqual(code, 0, out)
+
+    def test_split_hair_edge_left_open_by_the_other_part_fails(self):
+        self.add_split_hair()
+        for layers in self.fx.frames.values():
+            for x in range(13, 19):  # 後ろの髪の上の2行を消す: 前の髪の下の縁の下 y=9 が透明のまま
+                layers["hair_back"].pop((x, 8), None)
+                layers["hair_back"][(x, 9)] = "o"
+        code, out = self.fx.run(main)
+        self.assertEqual(code, 1, out)
+        self.assertIn("FAIL hair_down_base: 輪郭で閉じていない画素 6 件", out)
+
     def test_ornament_edge_over_core_passes(self):
         self.add_edge_part("pin", "p", "o=contour p=patch_base")
         code, out = self.fx.run(main)
