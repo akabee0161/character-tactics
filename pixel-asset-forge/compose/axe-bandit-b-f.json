@@ -25,7 +25,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/bandana/head_bandana_down_base.txt",
+          "part": "assets/part/head/bandana_female/head_bandana_female_down_base.txt",
           "z": "front"
         },
         {
@@ -72,7 +72,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/bandana/head_bandana_down_base.txt",
+          "part": "assets/part/head/bandana_female/head_bandana_female_down_base.txt",
           "z": "front"
         },
         {
@@ -119,7 +119,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/bandana/head_bandana_down_base.txt",
+          "part": "assets/part/head/bandana_female/head_bandana_female_down_base.txt",
           "z": "front"
         },
         {
@@ -166,7 +166,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/bandana/head_bandana_down_base.txt",
+          "part": "assets/part/head/bandana_female/head_bandana_female_down_base.txt",
           "z": "front"
         },
         {
@@ -213,7 +213,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/bandana/head_bandana_down_base.txt",
+          "part": "assets/part/head/bandana_female/head_bandana_female_down_base.txt",
           "z": "front"
         },
         {
@@ -260,7 +260,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/bandana/head_bandana_down_base.txt",
+          "part": "assets/part/head/bandana_female/head_bandana_female_down_base.txt",
           "z": "front"
         },
         {
@@ -325,7 +325,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/bandana/head_bandana_up_base.txt",
+          "part": "assets/part/head/bandana_female/head_bandana_female_up_base.txt",
           "z": "front"
         }
       ]
@@ -372,7 +372,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/bandana/head_bandana_up_base.txt",
+          "part": "assets/part/head/bandana_female/head_bandana_female_up_base.txt",
           "z": "front"
         }
       ]
@@ -419,7 +419,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/bandana/head_bandana_up_base.txt",
+          "part": "assets/part/head/bandana_female/head_bandana_female_up_base.txt",
           "z": "front"
         }
       ]
@@ -466,7 +466,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/bandana/head_bandana_up_base.txt",
+          "part": "assets/part/head/bandana_female/head_bandana_female_up_base.txt",
           "z": "front"
         }
       ]
@@ -513,7 +513,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/bandana/head_bandana_up_base.txt",
+          "part": "assets/part/head/bandana_female/head_bandana_female_up_base.txt",
           "z": "front"
         }
       ]
@@ -560,7 +560,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/bandana/head_bandana_up_base.txt",
+          "part": "assets/part/head/bandana_female/head_bandana_female_up_base.txt",
           "z": "front"
         }
       ]
@@ -602,7 +602,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/bandana/head_bandana_left_base.txt",
+          "part": "assets/part/head/bandana_female/head_bandana_female_left_base.txt",
           "z": "front"
         },
         {
@@ -649,7 +649,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/bandana/head_bandana_left_base.txt",
+          "part": "assets/part/head/bandana_female/head_bandana_female_left_base.txt",
           "z": "front"
         },
         {
@@ -696,7 +696,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/bandana/head_bandana_left_base.txt",
+          "part": "assets/part/head/bandana_female/head_bandana_female_left_base.txt",
           "z": "front"
         },
         {
@@ -743,7 +743,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/bandana/head_bandana_left_base.txt",
+          "part": "assets/part/head/bandana_female/head_bandana_female_left_base.txt",
           "z": "front"
         },
         {
@@ -790,7 +790,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/bandana/head_bandana_left_base.txt",
+          "part": "assets/part/head/bandana_female/head_bandana_female_left_base.txt",
           "z": "front"
         },
         {
@@ -837,7 +837,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/bandana/head_bandana_left_base.txt",
+          "part": "assets/part/head/bandana_female/head_bandana_female_left_base.txt",
           "z": "front"
         },
         {
@@ -876,7 +876,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/bandana/head_bandana_right_base.txt",
+          "part": "assets/part/head/bandana_female/head_bandana_female_right_base.txt",
           "z": "front"
         },
         {
@@ -923,7 +923,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/bandana/head_bandana_right_base.txt",
+          "part": "assets/part/head/bandana_female/head_bandana_female_right_base.txt",
           "z": "front"
         },
         {
@@ -970,7 +970,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/bandana/head_bandana_right_base.txt",
+          "part": "assets/part/head/bandana_female/head_bandana_female_right_base.txt",
           "z": "front"
         },
         {
@@ -1017,7 +1017,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/bandana/head_bandana_right_base.txt",
+          "part": "assets/part/head/bandana_female/head_bandana_female_right_base.txt",
           "z": "front"
         },
         {
@@ -1064,7 +1064,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/bandana/head_bandana_right_base.txt",
+          "part": "assets/part/head/bandana_female/head_bandana_female_right_base.txt",
           "z": "front"
         },
         {
@@ -1111,7 +1111,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/bandana/head_bandana_right_base.txt",
+          "part": "assets/part/head/bandana_female/head_bandana_female_right_base.txt",
           "z": "front"
         },
         {

@@ -21,7 +21,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/horn/head_horn_down_base.txt",
+          "part": "assets/part/head/horn_female/head_horn_female_down_base.txt",
           "z": "front"
         },
         {
@@ -64,7 +64,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/horn/head_horn_down_base.txt",
+          "part": "assets/part/head/horn_female/head_horn_female_down_base.txt",
           "z": "front"
         },
         {
@@ -107,7 +107,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/horn/head_horn_down_base.txt",
+          "part": "assets/part/head/horn_female/head_horn_female_down_base.txt",
           "z": "front"
         },
         {
@@ -150,7 +150,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/horn/head_horn_down_base.txt",
+          "part": "assets/part/head/horn_female/head_horn_female_down_base.txt",
           "z": "front"
         },
         {
@@ -193,7 +193,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/horn/head_horn_down_base.txt",
+          "part": "assets/part/head/horn_female/head_horn_female_down_base.txt",
           "z": "front"
         },
         {
@@ -236,7 +236,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/horn/head_horn_down_base.txt",
+          "part": "assets/part/head/horn_female/head_horn_female_down_base.txt",
           "z": "front"
         },
         {
@@ -297,7 +297,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/horn/head_horn_up_base.txt",
+          "part": "assets/part/head/horn_female/head_horn_female_up_base.txt",
           "z": "front"
         }
       ]
@@ -340,7 +340,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/horn/head_horn_up_base.txt",
+          "part": "assets/part/head/horn_female/head_horn_female_up_base.txt",
           "z": "front"
         }
       ]
@@ -383,7 +383,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/horn/head_horn_up_base.txt",
+          "part": "assets/part/head/horn_female/head_horn_female_up_base.txt",
           "z": "front"
         }
       ]
@@ -426,7 +426,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/horn/head_horn_up_base.txt",
+          "part": "assets/part/head/horn_female/head_horn_female_up_base.txt",
           "z": "front"
         }
       ]
@@ -469,7 +469,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/horn/head_horn_up_base.txt",
+          "part": "assets/part/head/horn_female/head_horn_female_up_base.txt",
           "z": "front"
         }
       ]
@@ -512,7 +512,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/horn/head_horn_up_base.txt",
+          "part": "assets/part/head/horn_female/head_horn_female_up_base.txt",
           "z": "front"
         }
       ]
@@ -550,7 +550,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/horn/head_horn_left_base.txt",
+          "part": "assets/part/head/horn_female/head_horn_female_left_base.txt",
           "z": "front"
         },
         {
@@ -593,7 +593,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/horn/head_horn_left_base.txt",
+          "part": "assets/part/head/horn_female/head_horn_female_left_base.txt",
           "z": "front"
         },
         {
@@ -636,7 +636,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/horn/head_horn_left_base.txt",
+          "part": "assets/part/head/horn_female/head_horn_female_left_base.txt",
           "z": "front"
         },
         {
@@ -679,7 +679,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/horn/head_horn_left_base.txt",
+          "part": "assets/part/head/horn_female/head_horn_female_left_base.txt",
           "z": "front"
         },
         {
@@ -722,7 +722,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/horn/head_horn_left_base.txt",
+          "part": "assets/part/head/horn_female/head_horn_female_left_base.txt",
           "z": "front"
         },
         {
@@ -765,7 +765,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/horn/head_horn_left_base.txt",
+          "part": "assets/part/head/horn_female/head_horn_female_left_base.txt",
           "z": "front"
         },
         {
@@ -800,7 +800,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/horn/head_horn_right_base.txt",
+          "part": "assets/part/head/horn_female/head_horn_female_right_base.txt",
           "z": "front"
         },
         {
@@ -843,7 +843,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/horn/head_horn_right_base.txt",
+          "part": "assets/part/head/horn_female/head_horn_female_right_base.txt",
           "z": "front"
         },
         {
@@ -886,7 +886,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/horn/head_horn_right_base.txt",
+          "part": "assets/part/head/horn_female/head_horn_female_right_base.txt",
           "z": "front"
         },
         {
@@ -929,7 +929,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/horn/head_horn_right_base.txt",
+          "part": "assets/part/head/horn_female/head_horn_female_right_base.txt",
           "z": "front"
         },
         {
@@ -972,7 +972,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/horn/head_horn_right_base.txt",
+          "part": "assets/part/head/horn_female/head_horn_female_right_base.txt",
           "z": "front"
         },
         {
@@ -1015,7 +1015,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/head/horn/head_horn_right_base.txt",
+          "part": "assets/part/head/horn_female/head_horn_female_right_base.txt",
           "z": "front"
         },
         {

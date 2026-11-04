@@ -33,20 +33,30 @@ class HeadCoverCheckTest(unittest.TestCase):
         # 芯の頭（x=12〜19、y>=5）を、y=2〜8 で x=11〜20 の被り物が覆う。縁は y=8
         self.add("helm", box(11, 2, 20, 8, "h"), "o=contour h=helmet_steel_base")
 
-    def test_hair_inside_the_headgear_and_wide_below_the_rim_passes(self):
-        hair = area(11, 3, 20, 8, "r")
-        hair.update(area(9, 9, 22, 12, "r"))  # 縁より下は広がってよい
+    def test_hair_inside_the_headgear_and_wide_below_the_head_passes(self):
+        hair = area(11, 3, 20, 14, "r")  # 頭の高さ（y<=14）は縁の幅（x=11〜20）の中
+        hair.update(area(9, 15, 22, 18, "r"))  # 頭より下（肩）は広がってよい
         self.add("hair", hair, "r=hair_red_base")
         self.add_headgear()
         code, out = self.fx.run(main)
         self.assertEqual(code, 0, out)
+
+    def test_hair_spreading_below_the_rim_within_the_head_fails(self):
+        # 被り物の下から頭の高さで横へ広がる髪（背面で、被り物の下に髪が張り出して見えた。2026-11-04 依頼者）
+        hair = area(11, 3, 20, 8, "r")
+        hair.update(area(10, 9, 21, 14, "r"))
+        self.add("hair", hair, "r=hair_red_base")
+        self.add_headgear()
+        code, out = self.fx.run(main)
+        self.assertEqual(code, 1, out)
+        self.assertIn("頭の高さ（y<=14）で、髪が被り物の外に出る 12 件", out)
 
     def test_hair_wider_than_the_headgear_above_the_rim_fails(self):
         self.add("hair", area(10, 3, 21, 12, "r"), "r=hair_red_base")
         self.add_headgear()
         code, out = self.fx.run(main)
         self.assertEqual(code, 1, out)
-        self.assertIn("FAIL hair_down_base と helm_down_base: 被り物の縁 y=8 より上で、髪が被り物の外に出る 12 件", out)
+        self.assertIn("FAIL hair_down_base と helm_down_base: 頭の高さ（y<=14）で、髪が被り物の外に出る 20 件", out)
 
     def test_hair_above_the_top_of_the_headgear_fails(self):
         hair = area(14, 1, 17, 1, "r")  # 被り物の上端 y=2 より上

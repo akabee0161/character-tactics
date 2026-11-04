@@ -32,7 +32,7 @@
       "head": true
     },
     "hair_B_back": {},
-    "head_horn": {
+    "head_horn_female": {
       "head": true
     },
     "cloth_tatter_female": {}
@@ -44,7 +44,7 @@
       "eye_E2",
       "cloth_tatter_female",
       "hair_B",
-      "head_horn",
+      "head_horn_female",
       "axe",
       "axe_hand",
       "free_hand"
@@ -58,7 +58,7 @@
       "eye_E2",
       "cloth_tatter_female",
       "hair_B",
-      "head_horn"
+      "head_horn_female"
     ],
     "left": [
       "axe",
@@ -68,7 +68,7 @@
       "eye_E2",
       "cloth_tatter_female",
       "hair_B",
-      "head_horn",
+      "head_horn_female",
       "free_hand"
     ],
     "right": [
@@ -78,7 +78,7 @@
       "eye_E2",
       "cloth_tatter_female",
       "hair_B",
-      "head_horn",
+      "head_horn_female",
       "axe",
       "axe_hand"
     ]
