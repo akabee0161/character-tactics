@@ -269,8 +269,8 @@ cat sheets/roran.txt
 .venv/bin/python tools/unit_rules.py checks/gau.json
 ```
 
-- 設定ファイル `checks/<ユニット>.json` に、素体の型（男性・女性）・芯に描いた髪とかぶり物の文字・承認された重なり順・部品の役割（武器と刃の文字・拳・動いてよい部品・動かない盾）・目の位置（目の部品 `"eye": true` があるユニットは書かない。`types/unit/SPEC.md`）・`weapon_check.py` の指定（隠れるコマ・奥行き。刃・武器・手の色は書かず、パレットの種類 blade・weapon・skin から読む）・例外を書く（形は `tools/unit_config.py` の docstring）
-- 今ある道具（`validate.py`・`compose.py --check`・`body_check.py`・`hand_mirror.py`・`unit_check.py`・`weapon_check.py`）と、方針の確認（重なり順・切っ先の高さ・動かない所と盾・背丈・刃と鏃の先端（決まり1〜5）・部品の文字・目・部品が閉じている・拳の大きさと握り・left と right の武器の位置）を順に走らせ、確認ごとに1行「ok／NG」を出す
+- 設定ファイル `checks/<ユニット>.json` に、素体の型（男性・女性）・芯に描いた髪とかぶり物の文字・承認された重なり順・部品の役割（武器と刃の文字・拳・動いてよい部品・動かない盾）・目の位置（目の部品 `"eye": true` があるユニットは書かない。`types/unit/SPEC.md`）・`weapon_check.py` の指定（一部が隠れるコマ `partial`・奥行き `depth`。`hidden` は書けない。刃・武器・手の色は書かず、パレットの種類 blade・weapon・skin から読む）・例外を書く（形は `tools/unit_config.py` の docstring）
+- 今ある道具（`validate.py`・`compose.py --check`・`body_check.py`・`hand_mirror.py`・`unit_check.py`・`weapon_check.py`）と、方針の確認（重なり順・切っ先の高さ・動かない所と盾・背丈・刃と鏃の先端（決まり1〜5）・部品の文字・目・部品が閉じている・拳の大きさと握り・left と right の武器の位置・髪と被り物の重なり `head_cover_check`・体の奥の拳の色 `far_fist_check`）を順に走らせ、確認ごとに1行「ok／NG」を出す
 - 例外に書いていない失敗が1つでもあれば終了コード 1、設定の誤り（知らないキー・無い部品・無いコマ・パレットに無い用途の色の名前）は 2。例外は基本的に作らず、正しい絵が落ちたら道具の判定を直す
 - `unit_check.py` の「増えた切れ目」は報告だけ（歩きの足先のようにわざと切れているものもあるので、1件ずつ目で確かめる）。`weapon_check.py` の `--arm` は使わない（体＋拳の方針、2026-10-16）
 - 確認はそれぞれ単独でも走らせられる（`tools/order_check.py checks/gau.json` など）
