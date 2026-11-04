@@ -119,10 +119,14 @@ def _on_shaft_diagonal(comp: set[Point], shaft: set[Point]) -> bool:
 
 def _shaft_piece(comp: set[Point], blade: set[Point], square_ok: bool = False,
                  shaft: set[Point] = frozenset(), skin: set[Point] = frozenset()) -> bool:
-    """体に隠されて刃と切れた柄の一部か。1行か1列の線で、刃の延長上にあるもの。
-    square_ok: 刃の塊が縦横同じ大きさ（向きが分からない）でも、線が刃の高さ・幅に入っていれば認める。
-    1画素だけの切れ端（拳の先にのぞく柄の端）は、刃とつながった柄（shaft）と同じ列か行にあり、
-    拳（skin）から 2px 以内にあるときだけ認める。"""
+    """Decide whether a nonempty component is a separated shaft fragment.
+
+    A horizontal or vertical fragment can extend the blade; square_ok also
+    accepts one aligned with a square blade. A single pixel must share the
+    shaft's row or column and be within 2 pixels of skin. A fragment of at
+    least two pixels can also lie on the shaft's 45-degree diagonal if it
+    is within 2 pixels of skin.
+    """
     xs = {x for x, _ in comp}
     if len(comp) >= 2 and _on_shaft_diagonal(comp, shaft) and _near(comp, skin):  # 拳の先にのぞく所だけ
         return True
@@ -286,7 +290,11 @@ def floating(a: Analysis, arm: set[str]) -> bool:
 
 def check_frame(name: str, a: Analysis, hidden: set[str], hit_states: set[str],
                 arm: set[str] = frozenset(), hand_width: bool = True, presence: bool = True) -> list[str]:
-    """presence=False なら 1（武器と手が見える）を確かめない。部品で組むユニットでは、武器があることを部品の
+    """Return frame failure messages for weapon and hand checks.
+
+    If no weapon is found, return immediately with a failure unless the frame
+    is in hidden or presence is false. Set hand_width to false to skip the minimum width check.
+    presence=False なら 1（武器と手が見える）を確かめない。部品で組むユニットでは、武器があることを部品の
     ファイルが、握る手が武器に接することを fist_check.py が部品で見るため（2026-11-04 依頼者）。"""
     fails = []
     if not a.weapon:
@@ -342,6 +350,12 @@ def check_unit(frames: dict[str, Analysis], hidden: set[str], hit_states: set[st
                seq: list[str], depth: set[str] = frozenset(),
                arm: set[str] = frozenset(), partial: set[str] = frozenset(),
                hand_width: bool = True, presence: bool = True) -> tuple[list[str], list[str]]:
+    """Return failure messages and grip/length notes for the unit's frames.
+
+    Exclude directions in depth and frames in partial from grip and length
+    comparisons. presence and hand_width control the corresponding frame
+    checks; hidden exempts named frames from missing weapon or hand failures.
+    """
     fails, notes = [], []
     for name, a in frames.items():
         fails += check_frame(name, a, hidden, hit_states, arm, hand_width, presence)
@@ -402,6 +416,12 @@ def _names(text: str) -> set[str]:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Check weapon frames from CLI arguments and print failures and notes.
+
+    Return 0 on success, 1 for check failures, and 2 for invalid input or
+    errors caught while loading frames and references. Argument parsing can
+    raise SystemExit; errors reading frames later for comparison propagate.
+    """
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("directory", type=Path)
     parser.add_argument("--blade", required=True, help="刃の色名（カンマ区切り）")

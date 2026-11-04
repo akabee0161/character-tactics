@@ -21,6 +21,12 @@ from unit_config import CORE, UnitConfig, kind_of_use, run_check  # noqa: E402
 
 
 def check(cfg: UnitConfig) -> list[tuple[str, str]]:
+    """Report non-shadow skin colors in gripping fists behind the core.
+
+    Skip back views and frames without a core in their order. Results group
+    colors by part filename stem across frames. Palette errors propagate as
+    GridError; unknown color names raise UnitConfigError.
+    """
     pal = palette.load()
     found: dict[str, set[str]] = {}
     for frame in cfg.frames.values():
@@ -40,6 +46,10 @@ def check(cfg: UnitConfig) -> list[tuple[str, str]]:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Run the check; return 0 for success, 1 for failures, or 2 for config errors.
+
+    Argument parsing can raise SystemExit, and palette GridError propagates.
+    """
     return run_check(argv, __doc__, check, "体の奥の拳は影の色: ok")
 
 

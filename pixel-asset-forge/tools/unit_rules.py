@@ -55,7 +55,12 @@ WEAPON_CHECK_KINDS = (("blade", "blade"), ("weapon", "weapon"), ("hand", "skin")
 def plan(cfg: UnitConfig, config: Path, root: Path,
          pal: palette_mod.Palette | None = None) -> list[tuple[str, list[str] | None]]:
     """(確認の名前 = 道具のモジュール名, main に渡す引数。None なら走らせない) の並び。
-    pal は weapon_check の色を読むパレット（省略時は palette/）。"""
+    pal は weapon_check の色を読むパレット（省略時は palette/）。
+
+    Enabled weapon checks skip presence checks. Raise UnitConfigError if
+    core parts do not share one directory or required palette kinds are
+    missing. Errors loading the default palette propagate as GridError.
+    """
     grids = sorted({str(frame.core.path) for frame in cfg.frames.values()}
                    | {str(part.grid.path) for frame in cfg.frames.values() for part in frame.parts.values()})
     cores = {frame.core.path.parent for frame in cfg.frames.values()}

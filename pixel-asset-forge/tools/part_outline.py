@@ -30,6 +30,13 @@ EDGE_KINDS = ("hair", "ornament")  # 体の上なら輪郭なしの縁を許す�
 
 
 def check(cfg: UnitConfig) -> list[tuple[str, str]]:
+    """Report non-fist parts with exposed, non-outline pixels.
+
+    Exempt configured open characters and eligible edges over the core in
+    every frame using the part; hair edges can also lie over another hair
+    part. Return failures by part filename stem. Palette errors propagate as
+    GridError; unknown color names raise UnitConfigError.
+    """
     uses = {}  # 部品のファイル → その絵を使うコマでの (key, 部品, 芯)
     for frame in cfg.frames.values():
         for key, part in frame.parts.items():

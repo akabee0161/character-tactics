@@ -26,10 +26,15 @@ HEAD_BOTTOM = DEFAULT_BANDS["head"][1]  # 頭の高さの下端（y=14。15 か�
 
 
 def _kinds(pal, part) -> set[str]:
+    """Return palette kinds used by the part, excluding outline pixels.
+
+    Raise UnitConfigError if a non-outline color is absent from the palette.
+    """
     return {kind_of_use(pal, name, part.layer.part) for name in part.pixels().values() if name != OUTLINE}
 
 
 def _rows(pixels) -> dict[int, tuple[int, int]]:
+    """Return each occupied row's inclusive left and right pixel coordinates."""
     rows: dict[int, list[int]] = {}
     for x, y in pixels:
         rows.setdefault(y, []).append(x)
@@ -37,6 +42,14 @@ def _rows(pixels) -> dict[int, tuple[int, int]]:
 
 
 def check(cfg: UnitConfig) -> list[tuple[str, str]]:
+    """Report hair outside headgear at or above the head's bottom row.
+
+    Compare each hair and headgear part by their row bounds. Below the
+    lowest row where the headgear spans the core, use that row's bounds;
+    skip pairs where no such row exists. Results combine pixel coordinates
+    across frames by part filename stems. Palette errors propagate as
+    GridError; unknown non-outline colors raise UnitConfigError.
+    """
     pal = palette.load()
     found: dict[tuple[str, str], tuple[int, set]] = {}
     for frame in cfg.frames.values():
@@ -67,6 +80,10 @@ def check(cfg: UnitConfig) -> list[tuple[str, str]]:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Run the check; return 0 for success, 1 for failures, or 2 for config errors.
+
+    Argument parsing can raise SystemExit, and palette GridError propagates.
+    """
     return run_check(argv, __doc__, check, "髪が被り物の内側: ok")
 
 

@@ -182,6 +182,12 @@ def build_frame(name: str, spec: FrameSpec) -> Frame:
 
 
 def load_unit_config(path: Path, root: Path = REPO_ROOT) -> UnitConfig:
+    """Load and validate a unit check configuration and its composition.
+
+    Resolve composition paths against root. Raise UnitConfigError for
+    unreadable or invalid JSON, invalid configuration, or composition and
+    grid errors; text decoding errors propagate as UnicodeDecodeError.
+    """
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
     except OSError as exc:
