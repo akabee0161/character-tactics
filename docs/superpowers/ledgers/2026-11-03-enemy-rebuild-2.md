@@ -83,3 +83,7 @@ Task 6: complete (commits 16d956f..205ac7b, tests: unittest 720 OK、14体 unit_
 - roran・gau の checks は手で詰めて書かれていて、json の書き直しで形が崩れたので、git stash（「drop_hidden の書き直しで形が崩れた roran・gau（11-04）」）に退避して元に戻し、hidden の行だけを手で消した
 - 14体 unit_rules 0、unittest 724 OK。M-2（女性の up_idle2 が hidden で例外のように通っていた件）はこれで片付いた
 - 文書: SPEC（部品で組むユニットは --no-presence、hidden は書けない）、forge CLAUDE.md の weapon_check の例
+- 11-04: 依頼者の指摘（女性の被り物が髪より小さく見え、バンダナがベレー帽のよう）→ 試しの確かめ tools/head_cover_check.py（テスト4件 RED→GREEN）。14体に掛けて落ちたのは女性5体だけ（偽陽性0）。髪の前の部品を、被り物の縁から上で被り物の外に出る画素を消して輪郭で閉じた（trim_hair.py）。5体 unit_rules 0・head_cover_check ok、unittest 728 OK。unit_rules への登録は依頼者の判断待ち。ページ https://claude.ai/artifact/NEqMLofo2Hz1hqPDqtyh5V
+- 11-04: 依頼者「背面で被り物の下に髪が張り出して不自然」→ 決まりを頭の高さ（y<=14、縁より下は縁の幅）に広げ（テスト5件）、髪を 2217aaf に戻し、女性用の被り物 head/{bandana,horn}_female を髪が収まるまで広げた（mk_headgear_f.py。外側の輪郭をずらして内側の色で埋める、上へ1行、輪郭で閉じる）。5体 unit_rules・head_cover ok、unittest 729 OK。ページ（Version 2）https://claude.ai/artifact/NEqMLofo2Hz1hqPDqtyh5V
+- 11-04: 依頼者「ポニーテールのために兜が横長。部品は増やしたくない」→ 試し: horn_female を髪 B だけに合わせて作り直し（mk_horn_b.py）、C にもそのまま被せた（未コミット）。B は全確認 ok、C は head_cover_check だけ横向きで落ちる（ポニーテールが兜の後ろから出る、left・right 各 17＋2 件）。ページ https://claude.ai/artifact/QrJp2HsjhrDvp3fxJA7dYx
+- 11-04: 依頼者「兜の後ろにポニーテール用の穴が要る見え方で、背面と横で矛盾する。最初の横幅の広い案を採用」→ horn_female を BC 両方を覆う大きさに戻した（03254d8 と画素まで同じ）。head_cover_check を unit_rules に入れ（test_the_default_unit_passes_every_check RED→GREEN）、SPEC「被り物は髪より大きく描く」・CLAUDE.md に書いた。14体 unit_rules 0、unittest 729 OK

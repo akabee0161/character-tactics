@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""被り物が頭を覆っている高さで、髪が被り物の外に出ていないかを確かめる（2026-11-04 依頼者。試し）。
+"""被り物が頭を覆っている高さで、髪が被り物の外に出ていないかを確かめる（2026-11-04 依頼者）。
 
     .venv/bin/python tools/head_cover_check.py checks/axe-bandit-a-f.json
 
