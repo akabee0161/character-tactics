@@ -17,7 +17,6 @@
   },
   "eyes": {"down": {"x": [14, 17], "y": [11, 12]}, "up": null, "left": {"x": [14], "y": [11, 12]}, "right": null},
   "weapon_check": {
-    "hidden": ["left_atk_wind", "up_atk_wind", "up_atk_hit"],
     "depth": ["down"]
   },
   "exceptions": []

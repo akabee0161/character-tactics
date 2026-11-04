@@ -61,7 +61,7 @@
 .venv/bin/python tools/order_check.py checks/gau.json  # 承認された重なり順（ほかに blade_height・still_check・height_check・tip_check・part_chars・eye_check・part_outline・fist_check。どれも同じ引数）
 .venv/bin/python tools/tip_check.py --items checks/items.json  # item のアイコンの刃・鏃の先端が決まり1〜5（types/item/SPEC.md）に合うか。刃の文字は checks/items.json に書く
 .venv/bin/python tools/unit_check.py assets/unit/ines --items klmstuw --core assets/part/body/ines  # unit の脚の中心（芯で測る）と増えた切れ目（unit_rules.py が設定ファイルから走らせる）
-.venv/bin/python tools/weapon_check.py assets/unit/gau --blade blade_hi,blade_base --weapon weapon_shaft_hi,weapon_shaft_base,weapon_shaft_shadow --hand skin_ruddy_hi,skin_ruddy_base,skin_ruddy_shadow --hidden left_atk_wind,up_atk_wind,up_atk_hit --depth down  # 武器と握る手（unit_rules.py が、刃・武器・手の色をパレットの種類 blade・weapon・skin から読んで走らせる。--arm は使わない）
+.venv/bin/python tools/weapon_check.py assets/unit/gau --blade blade_hi,blade_base --weapon weapon_shaft_hi,weapon_shaft_base,weapon_shaft_shadow --hand skin_ruddy_hi,skin_ruddy_base,skin_ruddy_shadow --depth down --no-presence  # 武器と握る手（unit_rules.py が、刃・武器・手の色をパレットの種類 blade・weapon・skin から読んで走らせる。--arm は使わない）
 .venv/bin/python tools/body_check.py assets/part/body/roran  # 体（core）の部品を単品で見た「当たり前」: 頭・胴・脚の中心、胴からのはみ出し、輪郭の切れ目、穴（--head/--trunk/--legs で行の範囲、--hanging で垂れた髪・かぶり物の文字、--no-protrusion で女性の体）
 .venv/bin/python tools/hand_mirror.py compose/ines.json  # 攻撃以外のコマで、down と up・left と right の拳の位置が左右反転で合っているか
 .venv/bin/python tools/weapon_mirror.py checks/roran.json  # left と right で、拳が握る部品の位置が左右反転で合っているか（攻撃のコマも）

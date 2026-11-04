@@ -75,3 +75,11 @@ Task 6: complete (commits 16d956f..205ac7b, tests: unittest 720 OK、14体 unit_
 - Final: M-3 台帳の訂正: axe-bandit の left_atk_wind を hidden にした理由は、拳が隠れるのではなく、結び目で柄が切れて拳の近くの柄が武器に入らず「手が無い」で落ちるため（奥の拳は影の色で見えている）
 - Final: M-2 台帳の訂正: 女性5体の up_idle2 の hidden は「斧が全部隠れる」ではない。待機2で 2px 上げると斧頭（x=22〜26、y=7〜13）が長い髪の上に出て見え、柄は髪の陰で、刃と拳が 2px より離れて道具が武器を見つけられない。hidden が例外のように働いている。絵を変える直しなので依頼者に聞く（直し方の候補: 女性の up の待機2で斧を上げない／斧頭が出ないように位置を決め直す）
 - Final: minor (deferred): M-2 女性の up_idle2 の斧頭が見えているのに hidden（依頼者に報告）
+- 11-03: PR #42 がマージされた（main 405efef、head 9cfea1b のままマージコミットで入った）。feat/enemy-rebuild-2 は 9cfea1b の上なので載せ直しは不要（main との差は2回目の11コミットだけ）
+
+## 11-04: weapon_check の「武器と手が見える」をやめる（依頼者）
+- 依頼者が女性の背面の待機2（up_idle2）の課題を聞き、weapon_check の決まりの説明を受けて決めた: 部品で組むユニットでは、武器があることを確かめない（部品のファイルが担保）。武器の近くに手があることも、fist_check.py が部品で接しているかを見ているので確かめない（依頼者「別の場所で担保できているなら不要」）。手を見つける仕組みは刃先の向き・握る位置に使うので残す
+- weapon_check に --no-presence（tests: test_missing_weapon_and_hand_pass_when_parts_check_them・test_presence_off_still_checks_the_hand_outline RED→GREEN）、unit_rules.py が常に渡す（test_weapon_check_arguments_come_from_the_config）、unit_config の weapon_check から hidden をやめた（test_hidden_frames_are_no_longer_written_in_the_config）。checks/*.json 13本から hidden を消した
+- roran・gau の checks は手で詰めて書かれていて、json の書き直しで形が崩れたので、git stash（「drop_hidden の書き直しで形が崩れた roran・gau（11-04）」）に退避して元に戻し、hidden の行だけを手で消した
+- 14体 unit_rules 0、unittest 724 OK。M-2（女性の up_idle2 が hidden で例外のように通っていた件）はこれで片付いた
+- 文書: SPEC（部品で組むユニットは --no-presence、hidden は書けない）、forge CLAUDE.md の weapon_check の例

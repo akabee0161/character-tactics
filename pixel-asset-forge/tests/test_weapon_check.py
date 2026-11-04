@@ -87,6 +87,21 @@ class HandTest(unittest.TestCase):
         spear_v(f, 9, 6, 25)
         self.assertIn("手が無い", " ".join(check_frame("down_base", analyse(f), set(), set())))
 
+    def test_missing_weapon_and_hand_pass_when_parts_check_them(self):
+        # 部品で組むユニットは、武器があることを部品のファイルが、手が武器に接することを fist_check が見る（2026-11-04 依頼者）
+        f = blank()
+        body(f)
+        self.assertEqual(check_frame("down_base", analyse(f), set(), set(), presence=False), [])  # 武器が無い
+        spear_v(f, 9, 6, 25)
+        self.assertEqual(check_frame("down_base", analyse(f), set(), set(), presence=False), [])  # 手が無い
+
+    def test_presence_off_still_checks_the_hand_outline(self):
+        f = blank()
+        spear_v(f, 9, 6, 25)
+        fist(f, 9, 18, ring=False)  # 輪郭の無い拳
+        fails = check_frame("down_base", analyse(f), set(), set(), presence=False)
+        self.assertTrue(any("手の輪郭" in s for s in fails), fails)
+
     def test_missing_hand_is_allowed_when_listed_as_hidden(self):
         f = blank()
         body(f)

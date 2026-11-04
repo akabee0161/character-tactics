@@ -72,11 +72,6 @@
     ]
   },
   "weapon_check": {
-    "hidden": [
-      "left_atk_hit",
-      "up_atk_wind",
-      "up_atk_hit"
-    ],
     "partial": [
       "left_atk_hit"
     ],

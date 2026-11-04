@@ -13,7 +13,10 @@
 - 手（--hand）: 柄から 2px 以内にある肌の塊のうち、柄に一番近いもの（もう片方の手や、穂先の横の顔を拾わない）
 
 確かめること（どれか1つでも落ちたら終了コード 1）:
-1. 手と武器が消えない: 武器と、その近くの手がある（--hidden に挙げた、体に隠れるコマは除く）
+1. 手と武器が消えない: 武器と、その近くの手がある（--hidden に挙げた、体に隠れるコマは除く）。
+   --no-presence なら確かめない。部品で組むユニット（unit_rules.py から走らせる）は、武器があることを部品のファイルが、
+   握る手が武器に接することを fist_check.py が部品で見るので、組んだコマでは見ない（2026-11-04 依頼者。承認した重なり順で
+   武器が髪や体の陰に入ると、組んだコマでは刃と柄がつながって見えず落ちていた）
 2. 手の輪郭: 手の画素が、透明・コマの外と上下左右で直に接していない（柄を握るので柄とは接してよい）
 3. 手の幅: 武器を握る手の塊が、縦横とも 2px 以上ある（--no-hand-width で見ない。拳を部品で描いたユニットでは、
    拳の大きさは fist_check.py が部品の形で見る。組んだコマで拳が体に隠れて 1px 幅だけ見えるのは、承認した重なり順の
@@ -282,12 +285,14 @@ def floating(a: Analysis, arm: set[str]) -> bool:
 
 
 def check_frame(name: str, a: Analysis, hidden: set[str], hit_states: set[str],
-                arm: set[str] = frozenset(), hand_width: bool = True) -> list[str]:
+                arm: set[str] = frozenset(), hand_width: bool = True, presence: bool = True) -> list[str]:
+    """presence=False なら 1（武器と手が見える）を確かめない。部品で組むユニットでは、武器があることを部品の
+    ファイルが、握る手が武器に接することを fist_check.py が部品で見るため（2026-11-04 依頼者）。"""
     fails = []
     if not a.weapon:
-        return [] if name in hidden else [f"{name}: 武器が見えない（刃と柄がつながった塊が無い）"]
+        return [] if name in hidden or not presence else [f"{name}: 武器が見えない（刃と柄がつながった塊が無い）"]
     if not a.hand:
-        if name not in hidden:
+        if name not in hidden and presence:
             fails.append(f"{name}: 手が無い（武器から {HAND_REACH}px 以内に肌が無い）")
     else:
         bad = sorted({p for p in a.hand for dx, dy in N4 if (p[0] + dx, p[1] + dy) not in a.pixels},
@@ -336,10 +341,10 @@ def check_frame(name: str, a: Analysis, hidden: set[str], hit_states: set[str],
 def check_unit(frames: dict[str, Analysis], hidden: set[str], hit_states: set[str],
                seq: list[str], depth: set[str] = frozenset(),
                arm: set[str] = frozenset(), partial: set[str] = frozenset(),
-               hand_width: bool = True) -> tuple[list[str], list[str]]:
+               hand_width: bool = True, presence: bool = True) -> tuple[list[str], list[str]]:
     fails, notes = [], []
     for name, a in frames.items():
-        fails += check_frame(name, a, hidden, hit_states, arm, hand_width)
+        fails += check_frame(name, a, hidden, hit_states, arm, hand_width, presence)
     for d in DIRECTIONS:
         if d in depth:
             continue
@@ -416,6 +421,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--far-shade", default="", help="--far の向きの立ち・待機2・歩きで、奥の手に使ってよい肌の色（影の色）")
     parser.add_argument("--no-hand-width", action="store_true",
                         help="3（手の幅）を確かめない。拳を部品で描き、fist_check.py が部品の形で大きさを見るユニット用")
+    parser.add_argument("--no-presence", action="store_true",
+                        help="1（武器と手が見える）を確かめない。部品で組むユニット用（unit_rules.py が渡す。2026-11-04）")
     args = parser.parse_args(argv)
 
     if not args.directory.is_dir():
@@ -439,7 +446,7 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     fails, notes = check_unit(frames, _names(args.hidden), _names(args.hit),
                               [s for s in args.seq.split(",") if s], _names(args.depth), _names(args.arm),
-                              _names(args.partial), not args.no_hand_width)
+                              _names(args.partial), not args.no_hand_width, not args.no_presence)
     attack = (set(s for s in args.seq.split(",") if s) - {"base"}) | _names(args.hit)
     for name, ref in refs.items():
         final = read_frame(args.directory / f"{name}.txt")

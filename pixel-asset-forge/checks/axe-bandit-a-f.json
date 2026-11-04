@@ -89,17 +89,6 @@
     ]
   },
   "weapon_check": {
-    "hidden": [
-      "left_base",
-      "left_idle2",
-      "left_walk_a",
-      "left_walk_b",
-      "left_atk_wind",
-      "left_atk_hit",
-      "up_idle2",
-      "up_atk_wind",
-      "up_atk_hit"
-    ],
     "partial": [
       "left_atk_hit",
       "left_atk_wind"

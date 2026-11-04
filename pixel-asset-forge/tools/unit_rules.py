@@ -86,9 +86,10 @@ def plan(cfg: UnitConfig, config: Path, root: Path,
                 raise UnitConfigError(f"weapon_check: パレットに種類 {kind} の色（unit・common）が無い")
             if names:
                 args += [f"--{key}", ",".join(names)]
-        for key in ("hidden", "depth", "partial"):
+        for key in ("depth", "partial"):
             if wc.get(key):
                 args += [f"--{key}", ",".join(wc[key])]
+        args.append("--no-presence")  # 武器があることは部品のファイル、手が武器に接することは fist_check が見る（2026-11-04）
         # 武器を握る拳の大きさを fist_check が部品の形で見るなら、組んだコマの見える幅では見ない（2026-10-18）。
         # weapon_check は手を色で見つけるので、どの武器にも握る拳の部品があり、拳の部品すべてに fist_sizes があるときだけ
         fists = [role for role in cfg.parts.values() if role.get("fist")]
