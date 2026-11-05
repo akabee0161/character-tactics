@@ -1,0 +1,941 @@
+{
+  "unit": "spear-thug-a-f",
+  "frames": {
+    "down_base": {
+      "body": "assets/part/body/enemy_female/core_down_base.txt",
+      "layers": [
+        {
+          "part": "assets/part/hair/A/hair_A_back_down_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E2/eye_E2_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter_female/cloth_tatter_female_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/A/hair_A_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/spear/female/spear_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/enemy_female/spear_hand_down_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/fist/enemy_female/free_hand_down_base.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "down_idle2": {
+      "body": "assets/part/body/enemy_female/core_down_idle2.txt",
+      "layers": [
+        {
+          "part": "assets/part/hair/A/hair_A_back_down_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E2/eye_E2_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter_female/cloth_tatter_female_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/A/hair_A_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/spear/female/spear_down_idle2.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/enemy_female/spear_hand_down_idle2.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/fist/enemy_female/free_hand_down_idle2.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "down_walk_a": {
+      "body": "assets/part/body/enemy_female/core_down_walk_a.txt",
+      "layers": [
+        {
+          "part": "assets/part/hair/A/hair_A_back_down_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E2/eye_E2_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter_female/cloth_tatter_female_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/A/hair_A_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/spear/female/spear_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/enemy_female/spear_hand_down_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/fist/enemy_female/free_hand_down_base.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "down_walk_b": {
+      "body": "assets/part/body/enemy_female/core_down_walk_b.txt",
+      "layers": [
+        {
+          "part": "assets/part/hair/A/hair_A_back_down_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E2/eye_E2_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter_female/cloth_tatter_female_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/A/hair_A_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/spear/female/spear_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/enemy_female/spear_hand_down_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/fist/enemy_female/free_hand_down_base.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "down_atk_wind": {
+      "body": "assets/part/body/enemy_female/core_down_atk_wind.txt",
+      "layers": [
+        {
+          "part": "assets/part/hair/A/hair_A_back_down_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E2/eye_E2_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter_female/cloth_tatter_female_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/A/hair_A_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/spear/female/spear_down_atk_wind.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/enemy_female/spear_hand_down_atk_wind.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/fist/enemy_female/free_hand_down_atk_wind.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "down_atk_hit": {
+      "body": "assets/part/body/enemy_female/core_down_atk_hit.txt",
+      "layers": [
+        {
+          "part": "assets/part/hair/A/hair_A_back_down_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E2/eye_E2_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter_female/cloth_tatter_female_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/A/hair_A_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/spear/female/spear_down_atk_hit.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/enemy_female/spear_hand_down_atk_hit.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/fist/enemy_female/free_hand_down_atk_hit.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "up_base": {
+      "body": "assets/part/body/enemy_female/core_up_base.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/enemy_female/free_hand_up_base.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/fist/enemy_female/spear_hand_up_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/spear/female/spear_up_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/hair/A/hair_A_back_up_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E2/eye_E2_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter_female/cloth_tatter_female_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/A/hair_A_up_base.txt",
+          "z": "front"
+        }
+      ]
+    },
+    "up_idle2": {
+      "body": "assets/part/body/enemy_female/core_up_idle2.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/enemy_female/free_hand_up_idle2.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/fist/enemy_female/spear_hand_up_idle2.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/spear/female/spear_up_idle2.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/hair/A/hair_A_back_up_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E2/eye_E2_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter_female/cloth_tatter_female_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/A/hair_A_up_base.txt",
+          "z": "front"
+        }
+      ]
+    },
+    "up_walk_a": {
+      "body": "assets/part/body/enemy_female/core_up_walk_a.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/enemy_female/free_hand_up_base.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/fist/enemy_female/spear_hand_up_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/spear/female/spear_up_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/hair/A/hair_A_back_up_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E2/eye_E2_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter_female/cloth_tatter_female_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/A/hair_A_up_base.txt",
+          "z": "front"
+        }
+      ]
+    },
+    "up_walk_b": {
+      "body": "assets/part/body/enemy_female/core_up_walk_b.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/enemy_female/free_hand_up_base.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/fist/enemy_female/spear_hand_up_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/spear/female/spear_up_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/hair/A/hair_A_back_up_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E2/eye_E2_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter_female/cloth_tatter_female_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/A/hair_A_up_base.txt",
+          "z": "front"
+        }
+      ]
+    },
+    "up_atk_wind": {
+      "body": "assets/part/body/enemy_female/core_up_atk_wind.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/enemy_female/free_hand_up_atk_wind.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/fist/enemy_female/spear_hand_up_atk_wind.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/spear/female/spear_up_atk_wind.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/hair/A/hair_A_back_up_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E2/eye_E2_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter_female/cloth_tatter_female_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/A/hair_A_up_base.txt",
+          "z": "front"
+        }
+      ]
+    },
+    "up_atk_hit": {
+      "body": "assets/part/body/enemy_female/core_up_atk_hit.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/enemy_female/free_hand_up_atk_hit.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/fist/enemy_female/spear_hand_up_atk_hit.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/spear/female/spear_up_atk_hit.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/hair/A/hair_A_back_up_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E2/eye_E2_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter_female/cloth_tatter_female_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/A/hair_A_up_base.txt",
+          "z": "front"
+        }
+      ]
+    },
+    "left_base": {
+      "body": "assets/part/body/enemy_female/core_left_base.txt",
+      "layers": [
+        {
+          "part": "assets/part/hair/A/hair_A_back_left_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/fist/enemy_female/spear_hand_left_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/spear/female/spear_left_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E2/eye_E2_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter_female/cloth_tatter_female_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/A/hair_A_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/enemy_female/free_hand_left_base.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "left_idle2": {
+      "body": "assets/part/body/enemy_female/core_left_idle2.txt",
+      "layers": [
+        {
+          "part": "assets/part/hair/A/hair_A_back_left_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/fist/enemy_female/spear_hand_left_idle2.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/spear/female/spear_left_idle2.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E2/eye_E2_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter_female/cloth_tatter_female_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/A/hair_A_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/enemy_female/free_hand_left_idle2.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "left_walk_a": {
+      "body": "assets/part/body/enemy_female/core_left_walk_a.txt",
+      "layers": [
+        {
+          "part": "assets/part/hair/A/hair_A_back_left_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/fist/enemy_female/spear_hand_left_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/spear/female/spear_left_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E2/eye_E2_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter_female/cloth_tatter_female_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/A/hair_A_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/enemy_female/free_hand_left_base.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "left_walk_b": {
+      "body": "assets/part/body/enemy_female/core_left_walk_b.txt",
+      "layers": [
+        {
+          "part": "assets/part/hair/A/hair_A_back_left_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/fist/enemy_female/spear_hand_left_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/spear/female/spear_left_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E2/eye_E2_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter_female/cloth_tatter_female_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/A/hair_A_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/enemy_female/free_hand_left_base.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "left_atk_wind": {
+      "body": "assets/part/body/enemy_female/core_left_atk_wind.txt",
+      "layers": [
+        {
+          "part": "assets/part/hair/A/hair_A_back_left_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/fist/enemy_female/spear_hand_left_atk_wind.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/spear/female/spear_left_atk_wind.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E2/eye_E2_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter_female/cloth_tatter_female_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/A/hair_A_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/enemy_female/free_hand_left_atk_wind.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "left_atk_hit": {
+      "body": "assets/part/body/enemy_female/core_left_atk_hit.txt",
+      "layers": [
+        {
+          "part": "assets/part/hair/A/hair_A_back_left_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/fist/enemy_female/spear_hand_left_atk_hit.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/spear/female/spear_left_atk_hit.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E2/eye_E2_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter_female/cloth_tatter_female_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/A/hair_A_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/enemy_female/free_hand_left_atk_hit.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "right_base": {
+      "body": "assets/part/body/enemy_female/core_right_base.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/enemy_female/free_hand_right_base.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/hair/A/hair_A_back_right_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E2/eye_E2_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter_female/cloth_tatter_female_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/A/hair_A_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/spear/female/spear_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/enemy_female/spear_hand_right_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        }
+      ]
+    },
+    "right_idle2": {
+      "body": "assets/part/body/enemy_female/core_right_idle2.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/enemy_female/free_hand_right_idle2.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/hair/A/hair_A_back_right_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E2/eye_E2_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter_female/cloth_tatter_female_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/A/hair_A_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/spear/female/spear_right_idle2.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/enemy_female/spear_hand_right_idle2.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        }
+      ]
+    },
+    "right_walk_a": {
+      "body": "assets/part/body/enemy_female/core_right_walk_a.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/enemy_female/free_hand_right_base.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/hair/A/hair_A_back_right_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E2/eye_E2_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter_female/cloth_tatter_female_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/A/hair_A_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/spear/female/spear_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/enemy_female/spear_hand_right_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        }
+      ]
+    },
+    "right_walk_b": {
+      "body": "assets/part/body/enemy_female/core_right_walk_b.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/enemy_female/free_hand_right_base.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/hair/A/hair_A_back_right_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E2/eye_E2_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter_female/cloth_tatter_female_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/A/hair_A_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/spear/female/spear_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/enemy_female/spear_hand_right_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        }
+      ]
+    },
+    "right_atk_wind": {
+      "body": "assets/part/body/enemy_female/core_right_atk_wind.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/enemy_female/free_hand_right_atk_wind.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/hair/A/hair_A_back_right_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E2/eye_E2_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter_female/cloth_tatter_female_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/A/hair_A_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/spear/female/spear_right_atk_wind.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/enemy_female/spear_hand_right_atk_wind.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        }
+      ]
+    },
+    "right_atk_hit": {
+      "body": "assets/part/body/enemy_female/core_right_atk_hit.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/enemy_female/free_hand_right_atk_hit.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/hair/A/hair_A_back_right_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E2/eye_E2_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/tatter_female/cloth_tatter_female_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/A/hair_A_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/spear/female/spear_right_atk_hit.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/enemy_female/spear_hand_right_atk_hit.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ]
+        }
+      ]
+    }
+  }
+}
