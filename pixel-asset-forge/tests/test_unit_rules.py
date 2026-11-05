@@ -218,11 +218,12 @@ class UnitRulesTest(unittest.TestCase):
         path = self.fx.write(build=False)
         return dict(plan(load_unit_config(path, self.fx.root), path, self.fx.root))
 
-    def test_body_check_gets_the_hanging_chars_and_skips_protrusion_for_a_female_body(self):
+    def test_body_check_gets_the_hanging_chars_and_skips_protrusion_for_every_body(self):
+        # 「はみ出し」は D の敵の組み直しの後にやめた（2026-11-05。ISSUES.md の決まりどおり、男女どちらにも掛けない）
         core = str(self.fx.root / "assets/part/body/t")
-        self.assertEqual(self.steps()["body_check"], [core])
+        self.assertEqual(self.steps()["body_check"], [core, "--no-protrusion"])
         self.fx.checks["head_chars"] = "c"
-        self.fx.checks["body"] = "female"  # 女性の体には「はみ出し」を掛けない（2026-10-17 依頼者）
+        self.fx.checks["body"] = "female"
         self.assertEqual(self.steps()["body_check"], [core, "--hanging", "c", "--no-protrusion"])
 
     def test_unit_check_measures_the_legs_on_the_core(self):

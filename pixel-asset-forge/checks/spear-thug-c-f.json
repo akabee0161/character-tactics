@@ -1,0 +1,85 @@
+{
+  "unit": "spear-thug-c-f",
+  "compose": "compose/spear-thug-c-f.json",
+  "body": "female",
+  "head_chars": "",
+  "items": "stlmn",
+  "parts": {
+    "spear": {
+      "weapon": true,
+      "blade": "st",
+      "moves": true
+    },
+    "spear_hand": {
+      "fist": true,
+      "grips": "spear",
+      "fist_sizes": [
+        "3x2",
+        "2x3"
+      ],
+      "moves": true
+    },
+    "free_hand": {
+      "fist": true,
+      "fist_sizes": [
+        "2x2"
+      ]
+    },
+    "eye_E2": {
+      "eye": true
+    },
+    "hair_C": {
+      "head": true
+    },
+    "hair_C_back": {},
+    "cloth_tatter_female": {}
+  },
+  "orders": {
+    "down": [
+      "hair_C_back",
+      "CORE",
+      "eye_E2",
+      "cloth_tatter_female",
+      "hair_C",
+      "spear",
+      "spear_hand",
+      "free_hand"
+    ],
+    "up": [
+      "hair_C_back",
+      "spear",
+      "spear_hand",
+      "free_hand",
+      "CORE",
+      "eye_E2",
+      "cloth_tatter_female",
+      "hair_C"
+    ],
+    "left": [
+      "spear",
+      "spear_hand",
+      "hair_C_back",
+      "CORE",
+      "eye_E2",
+      "cloth_tatter_female",
+      "hair_C",
+      "free_hand"
+    ],
+    "right": [
+      "hair_C_back",
+      "free_hand",
+      "CORE",
+      "eye_E2",
+      "cloth_tatter_female",
+      "hair_C",
+      "spear",
+      "spear_hand"
+    ]
+  },
+  "weapon_check": {
+    "depth": [
+      "down"
+    ]
+  },
+  "exceptions": []
+}

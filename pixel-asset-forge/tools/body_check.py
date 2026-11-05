@@ -18,7 +18,7 @@
   その文字の塊のうち胴の行まで垂れているものと、それだけを囲む輪郭を、1（中心）と 2（はみ出し）から外す
   （ガウの頭巾の垂れ。頭の上だけの髪は外さない。外すと頭の中心がずれる）。2026-10-16 から髪・かぶり物は別の部品にする。
 --no-protrusion: 2（はみ出し）を見ない。はみ出しは「胴はまっすぐな筒」が前提で、袖の名残を見つけるためのもの。
-  肩が広く腰がくびれた女性の体には掛けない。D で敵の袖を消し終えたら使わない（2026-10-17 依頼者の判断）。
+  D で敵の袖を消し終えたので、2026-11-05 から男女とも掛けない（unit_rules.py が常に渡す）。
 """
 from __future__ import annotations
 
@@ -181,7 +181,7 @@ def main(argv: list[str] | None = None) -> int:
     for name, (lo, hi) in DEFAULT_BANDS.items():
         parser.add_argument(f"--{name}", type=_band, default=(lo, hi), help=f"{BAND_LABEL[name]}の行の範囲（既定 {lo}-{hi}）")
     parser.add_argument("--hanging", default="", help="芯に描いた髪・かぶり物の文字（胴まで垂れた塊を中心とはみ出しから外す）")
-    parser.add_argument("--no-protrusion", action="store_true", help="はみ出しを見ない（女性の体）")
+    parser.add_argument("--no-protrusion", action="store_true", help="はみ出しを見ない（unit_rules.py は 2026-11-05 から常に渡す）")
     args = parser.parse_args(argv)
     bands = {name: getattr(args, name) for name in DEFAULT_BANDS}
 

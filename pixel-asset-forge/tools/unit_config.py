@@ -20,7 +20,7 @@ docs/superpowers/specs/2026-10-16-policy-check-tools-design.md の「ユニッ�
 weapon_check の刃・柄・手の色も設定に書かず、tools/unit_rules.py がパレットの種類 blade・weapon・skin から読む
 （2026-10-30。色の名前で並べると、柄と同じ色見本のベルトやズボンの名前も並べることになり、武器と読んでいた）。
 weapon_check に blade・weapon・hand が書いてあれば UnitConfigError。
-body は素体の型（male・female）。female の体には body_check.py の「はみ出し」を掛けない（2026-10-17 依頼者）。
+body は素体の型（male・female）。body_check.py の「はみ出し」は、2026-11-05 から男女どちらの体にも掛けない（D の敵の組み直しの後にやめた）。
 head_chars は芯に描いた髪・かぶり物の文字（body_check.py が胴のはみ出しと中心から外す。芯に髪・かぶり物を
 含めて組んだロラン・イネス・ガウのため。2026-10-16 から髪・かぶり物は別の部品にする）。色でなく文字で書くのは、
 ガウは頭巾の用途の色 hood_hi が頭の文字 f と胴の文字 p の両方に使われていて、色では頭と胴を分けられないため。

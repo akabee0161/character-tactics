@@ -62,7 +62,7 @@
 .venv/bin/python tools/tip_check.py --items checks/items.json  # item のアイコンの刃・鏃の先端が決まり1〜5（types/item/SPEC.md）に合うか。刃の文字は checks/items.json に書く
 .venv/bin/python tools/unit_check.py assets/unit/ines --items klmstuw --core assets/part/body/ines  # unit の脚の中心（芯で測る）と増えた切れ目（unit_rules.py が設定ファイルから走らせる）
 .venv/bin/python tools/weapon_check.py assets/unit/gau --blade blade_hi,blade_base --weapon weapon_shaft_hi,weapon_shaft_base,weapon_shaft_shadow --hand skin_ruddy_hi,skin_ruddy_base,skin_ruddy_shadow --depth down --no-presence  # 武器と握る手（unit_rules.py が、刃・武器・手の色をパレットの種類 blade・weapon・skin から読んで走らせる。--arm は使わない）
-.venv/bin/python tools/body_check.py assets/part/body/roran  # 体（core）の部品を単品で見た「当たり前」: 頭・胴・脚の中心、胴からのはみ出し、輪郭の切れ目、穴（--head/--trunk/--legs で行の範囲、--hanging で垂れた髪・かぶり物の文字、--no-protrusion で女性の体）
+.venv/bin/python tools/body_check.py assets/part/body/roran  # 体（core）の部品を単品で見た「当たり前」: 頭・胴・脚の中心、胴からのはみ出し、輪郭の切れ目、穴（--head/--trunk/--legs で行の範囲、--hanging で垂れた髪・かぶり物の文字、--no-protrusion で胴のはみ出しを見ない。unit_rules.py は 2026-11-05 から常に渡す）
 .venv/bin/python tools/hand_mirror.py compose/ines.json  # 攻撃以外のコマで、down と up・left と right の拳の位置が左右反転で合っているか
 .venv/bin/python tools/weapon_mirror.py checks/roran.json  # left と right で、拳が握る部品の位置が左右反転で合っているか（攻撃のコマも）
 .venv/bin/python tools/hand_outline.py assets/part/fist/roran/sword_hand_down_base.txt  # 拳の部品の輪郭の切れ目を出す（--write で直す。手の色は --hand を省くとパレットの種類 skin）
@@ -72,6 +72,7 @@
 .venv/bin/python tools/compose.py compose/gau.json --check     # ガウは全24コマが部品から再現できる
 (set -e; for u in bandit knight horn thug; do .venv/bin/python tools/compose.py compose/dagger-$u.json --check; done)  # 短剣の敵4体も全24コマが部品から再現できる
 (set -e; for u in bandit horn bandit-a-f bandit-b-f bandit-c-f horn-b-f horn-c-f; do .venv/bin/python tools/compose.py compose/axe-$u.json --check; done)  # 斧の敵7体も全24コマが部品から再現できる
+(set -e; for u in knight thug thug-a-f thug-b-f thug-c-f; do .venv/bin/python tools/compose.py compose/spear-$u.json --check; done)  # 槍の敵5体も全24コマが部品から再現できる
 # gen/*_layers.py --export は描き直す前の書き出しに一度だけ使った。古い色の名前のままで今は使えず（落ち方は ISSUES.md）、直しても描き直した部品を上書きするので実行しない（ISSUES.md「gen/*.py が古い色の名前で書かれていて動かない」）（新しいユニットは tools/parts_export.py で同じ形の定義を書く）
 .venv/bin/python tools/compose_page.py --help  # 部品と組んだ結果を層の順に並べる確認ページ（--dirs down,right のようにカンマ区切り）
 .venv/bin/python tools/phone_sheet.py order compose/gau.json build/phone  # スマホで見る PNG（部品を奥→手前。今の絵と案を並べる diff・cmp もある。--help）
@@ -79,7 +80,7 @@
 .venv/bin/python tools/reorder.py compose/ines.json OUT.json left bow,arrow,arrow_hand,CORE,bow_hand  # ある向きの重なり順だけを変えた compose の設定の写し
 .venv/bin/python tools/face_down.py IMG N OUT_PREFIX  # 拡大されたドット絵の顔を N 升に戻す
 .venv/bin/python tools/present.py OUT.png A.txt B.txt --ref face.png  # 案を並べて見せる画像
-.venv/bin/python tools/unit_picker.py gen/enemy/PICKER.json --out build/picker/enemy.html  # unit の部品の案を組み合わせて選ぶページ（CP1 で必須）
+.venv/bin/python tools/unit_picker.py PICKER.json --out build/picker/gau.html  # unit の部品の案を組み合わせて選ぶページ（CP1 で必須。設定の形は tools/unit_picker.py の docstring）
 .venv/bin/python tools/sets.py                # 16px の部品を組んで物を出す（build/sets/）
 .venv/bin/python tools/contact_sheet.py       # build/contact_sheet.png
 .venv/bin/python tools/export.py MAP DEST     # 対応表どおりにゲームへ書き出す（README 2.10）
@@ -137,7 +138,7 @@
 - `ISSUES.md` に記録済みの原因（色が未定の `knight` による `check_colors.py` の失敗など、道具の不具合と依頼者が決める未確定事項）で落ちたときは、絵を変えない。絵の側で依頼者の決めることを決めてしまうため。`ISSUES.md` に記録し、その記録を添えて完成品を見せる。途中で止めて聞かない
 - 道具は常に正しいものとする（2026-11-04 依頼者）。ただし上の `ISSUES.md` に記録済みの原因は例外で、そちらを先に適用する。それ以外で、正しい絵が道具に落ちたように見えても、道具の判定は直さず、絵を直す
 - 承認済みの重なり順（`checks/<ユニット>.json` の `orders`）は、絵を直して通す対象ではない。順そのものを変えたいときは、変える前に依頼者に確認する
-- 古い作り方の絵（`gen/enemy/` など）と食い違っても、部品と道具の側に従う。古い絵は依頼者が全部を見きれていない
+- 古い作り方の絵（2026-11-05 に消した `gen/enemy/` で作った絵など）と食い違っても、部品と道具の側に従う。古い絵は依頼者が全部を見きれていない
 
 ## 新しい機械チェックを思いついたら、まず偽陽性を数える
 
