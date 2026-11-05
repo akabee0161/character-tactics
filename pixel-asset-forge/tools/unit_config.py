@@ -12,7 +12,7 @@ docs/superpowers/specs/2026-10-16-policy-check-tools-design.md の「ユニッ�
       "parts": {"dagger": {"weapon": true, "blade": "st", "moves": true}, ...},
       "orders": {"down": ["CORE", "dagger", ...], ...},
       "eyes": {"down": {"x": [14, 17], "y": [11, 12]}, "up": null, ...},
-      "weapon_check": {"hidden": [...], "depth": [...], "partial": [...]},
+      "weapon_check": {"depth": [...], "partial": [...]},
       "exceptions": [{"check": "...", "frames": [...], "what": "...", "why": "...", "approved": "2026-10-16 依頼者"}]
     }
 
@@ -58,13 +58,13 @@ OUTLINE = "contour"
 DIRECTIONS = ("down", "up", "left", "right")
 CHECKS = ("validate", "compose", "body_check", "hand_mirror", "unit_check", "weapon_check",
           "order_check", "blade_height", "still_check", "height_check", "tip_check", "part_chars", "eye_check",
-          "part_outline", "fist_check", "weapon_mirror")
+          "part_outline", "fist_check", "weapon_mirror", "head_cover_check", "far_fist_check")
 CONFIG_KEYS = {"unit", "compose", "body", "head_chars", "items", "parts", "orders", "eyes", "weapon_check",
                "exceptions"}
 BODIES = ("male", "female")
 EYE_KEYS = {"x", "y"}
 PART_KEYS = {"weapon", "blade", "fist", "grips", "fist_sizes", "moves", "fixed", "open_chars", "head", "eye"}
-WEAPON_CHECK_KEYS = {"hidden", "depth", "partial"}
+WEAPON_CHECK_KEYS = {"depth", "partial"}  # hidden は 2026-11-04 にやめた（武器と手が見えるかを確かめない）
 WEAPON_CHECK_COLOUR_KEYS = ("blade", "weapon", "hand")  # 2026-10-30 にやめた。色はパレットの種類から読む
 EXCEPTION_KEYS = {"check", "frames", "what", "why", "approved"}
 SIZE_RE = re.compile(r"^(\d+)x(\d+)$")
@@ -182,6 +182,12 @@ def build_frame(name: str, spec: FrameSpec) -> Frame:
 
 
 def load_unit_config(path: Path, root: Path = REPO_ROOT) -> UnitConfig:
+    """Load and validate a unit check configuration and its composition.
+
+    Resolve composition paths against root. Raise UnitConfigError for
+    unreadable or invalid JSON, invalid configuration, or composition and
+    grid errors; text decoding errors propagate as UnicodeDecodeError.
+    """
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
     except OSError as exc:
@@ -305,7 +311,7 @@ def load_unit_config(path: Path, root: Path = REPO_ROOT) -> UnitConfig:
                                   "刃は blade、柄は weapon、手は skin）")
         _keys(weapon_check, WEAPON_CHECK_KEYS, where)
         weapon_check = {key: _names(value, f"{where}.{key}") for key, value in weapon_check.items()}
-        for key in ("hidden", "partial"):
+        for key in ("partial",):
             absent = sorted(set(weapon_check.get(key, [])) - set(frames))
             if absent:
                 raise UnitConfigError(f"{where}.{key}: 無いコマ {', '.join(absent)}")

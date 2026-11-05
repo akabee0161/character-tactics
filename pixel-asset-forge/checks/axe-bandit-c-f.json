@@ -1,0 +1,101 @@
+{
+  "unit": "axe-bandit-c-f",
+  "compose": "compose/axe-bandit-c-f.json",
+  "body": "female",
+  "head_chars": "",
+  "items": "stlmn",
+  "parts": {
+    "axe": {
+      "weapon": true,
+      "blade": "st",
+      "moves": true
+    },
+    "axe_hand": {
+      "fist": true,
+      "grips": "axe",
+      "fist_sizes": [
+        "3x2",
+        "2x2"
+      ],
+      "moves": true
+    },
+    "free_hand": {
+      "fist": true,
+      "fist_sizes": [
+        "2x2"
+      ]
+    },
+    "eye_E5": {
+      "eye": true
+    },
+    "hair_C": {
+      "head": true
+    },
+    "hair_C_back": {},
+    "head_bandana_female": {
+      "head": true
+    },
+    "cloth_belt_female": {},
+    "cloth_tatter_female": {}
+  },
+  "orders": {
+    "down": [
+      "hair_C_back",
+      "CORE",
+      "eye_E5",
+      "cloth_belt_female",
+      "cloth_tatter_female",
+      "hair_C",
+      "head_bandana_female",
+      "axe",
+      "axe_hand",
+      "free_hand"
+    ],
+    "up": [
+      "hair_C_back",
+      "axe",
+      "axe_hand",
+      "free_hand",
+      "CORE",
+      "eye_E5",
+      "cloth_belt_female",
+      "cloth_tatter_female",
+      "hair_C",
+      "head_bandana_female"
+    ],
+    "left": [
+      "axe",
+      "axe_hand",
+      "hair_C_back",
+      "CORE",
+      "eye_E5",
+      "cloth_belt_female",
+      "cloth_tatter_female",
+      "hair_C",
+      "head_bandana_female",
+      "free_hand"
+    ],
+    "right": [
+      "hair_C_back",
+      "free_hand",
+      "CORE",
+      "eye_E5",
+      "cloth_belt_female",
+      "cloth_tatter_female",
+      "hair_C",
+      "head_bandana_female",
+      "axe",
+      "axe_hand"
+    ]
+  },
+  "weapon_check": {
+    "partial": [
+      "left_atk_hit",
+      "left_atk_wind"
+    ],
+    "depth": [
+      "down"
+    ]
+  },
+  "exceptions": []
+}

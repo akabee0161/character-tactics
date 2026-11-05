@@ -185,7 +185,7 @@ class LoadTest(unittest.TestCase):
                 self.assertConfigError(text)
 
     def test_weapon_check_colour_and_frame_names_are_checked(self):
-        for extra, text in (({"hidden": ["down_atk_wind"]}, "down_atk_wind"), ({"depth": ["side"]}, "side")):
+        for extra, text in (({"partial": ["down_atk_wind"]}, "down_atk_wind"), ({"depth": ["side"]}, "side")):
             with self.subTest(text):
                 self.fx.checks["weapon_check"] = extra
                 self.assertConfigError(text)

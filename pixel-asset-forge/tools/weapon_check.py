@@ -13,7 +13,10 @@
 - 手（--hand）: 柄から 2px 以内にある肌の塊のうち、柄に一番近いもの（もう片方の手や、穂先の横の顔を拾わない）
 
 確かめること（どれか1つでも落ちたら終了コード 1）:
-1. 手と武器が消えない: 武器と、その近くの手がある（--hidden に挙げた、体に隠れるコマは除く）
+1. 手と武器が消えない: 武器と、その近くの手がある（--hidden に挙げた、体に隠れるコマは除く）。
+   --no-presence なら確かめない。部品で組むユニット（unit_rules.py から走らせる）は、武器があることを部品のファイルが、
+   握る手が武器に接することを fist_check.py が部品で見るので、組んだコマでは見ない（2026-11-04 依頼者。承認した重なり順で
+   武器が髪や体の陰に入ると、組んだコマでは刃と柄がつながって見えず落ちていた）
 2. 手の輪郭: 手の画素が、透明・コマの外と上下左右で直に接していない（柄を握るので柄とは接してよい）
 3. 手の幅: 武器を握る手の塊が、縦横とも 2px 以上ある（--no-hand-width で見ない。拳を部品で描いたユニットでは、
    拳の大きさは fist_check.py が部品の形で見る。組んだコマで拳が体に隠れて 1px 幅だけ見えるのは、承認した重なり順の
@@ -104,13 +107,29 @@ def _orientation(points: set[Point]) -> str:
     return "h" if w > h else "v" if h > w else "any"
 
 
+def _on_shaft_diagonal(comp: set[Point], shaft: set[Point]) -> bool:
+    """comp が斜め45°の1画素幅の線で、刃とつながった柄（shaft）の2画素以上と同じ斜めの線の上にあるか。
+    斜めの柄が拳の輪郭に隠れて切れた、拳の先の部分（2026-11-03。斧の敵の当たり）。呼ぶ側が拳の近さも確かめる。"""
+    for key in (lambda p: p[0] - p[1], lambda p: p[0] + p[1]):
+        line = {key(p) for p in comp}
+        if len(line) == 1 and sum(1 for p in shaft if key(p) in line) >= 2:
+            return True
+    return False
+
+
 def _shaft_piece(comp: set[Point], blade: set[Point], square_ok: bool = False,
                  shaft: set[Point] = frozenset(), skin: set[Point] = frozenset()) -> bool:
-    """体に隠されて刃と切れた柄の一部か。1行か1列の線で、刃の延長上にあるもの。
-    square_ok: 刃の塊が縦横同じ大きさ（向きが分からない）でも、線が刃の高さ・幅に入っていれば認める。
-    1画素だけの切れ端（拳の先にのぞく柄の端）は、刃とつながった柄（shaft）と同じ列か行にあり、
-    拳（skin）から 2px 以内にあるときだけ認める。"""
+    """Decide whether a nonempty component is a separated shaft fragment.
+
+    A horizontal or vertical fragment can extend the blade; square_ok also
+    accepts one aligned with a square blade. A single pixel must share the
+    shaft's row or column and be within 2 pixels of skin. A fragment of at
+    least two pixels can also lie on the shaft's 45-degree diagonal if it
+    is within 2 pixels of skin.
+    """
     xs = {x for x, _ in comp}
+    if len(comp) >= 2 and _on_shaft_diagonal(comp, shaft) and _near(comp, skin):  # 拳の先にのぞく所だけ
+        return True
     if len(comp) < 2:
         x, y = p = next(iter(comp))
         orient = _orientation(blade)
@@ -270,12 +289,18 @@ def floating(a: Analysis, arm: set[str]) -> bool:
 
 
 def check_frame(name: str, a: Analysis, hidden: set[str], hit_states: set[str],
-                arm: set[str] = frozenset(), hand_width: bool = True) -> list[str]:
+                arm: set[str] = frozenset(), hand_width: bool = True, presence: bool = True) -> list[str]:
+    """Return frame failure messages for weapon and hand checks.
+
+    If no weapon is found, return immediately with a failure unless the frame
+    is in hidden or presence is false. Set hand_width to false to skip the minimum width check.
+    presence=False なら 1（武器と手が見える）を確かめない。部品で組むユニットでは、武器があることを部品の
+    ファイルが、握る手が武器に接することを fist_check.py が部品で見るため（2026-11-04 依頼者）。"""
     fails = []
     if not a.weapon:
-        return [] if name in hidden else [f"{name}: 武器が見えない（刃と柄がつながった塊が無い）"]
+        return [] if name in hidden or not presence else [f"{name}: 武器が見えない（刃と柄がつながった塊が無い）"]
     if not a.hand:
-        if name not in hidden:
+        if name not in hidden and presence:
             fails.append(f"{name}: 手が無い（武器から {HAND_REACH}px 以内に肌が無い）")
     else:
         bad = sorted({p for p in a.hand for dx, dy in N4 if (p[0] + dx, p[1] + dy) not in a.pixels},
@@ -324,10 +349,16 @@ def check_frame(name: str, a: Analysis, hidden: set[str], hit_states: set[str],
 def check_unit(frames: dict[str, Analysis], hidden: set[str], hit_states: set[str],
                seq: list[str], depth: set[str] = frozenset(),
                arm: set[str] = frozenset(), partial: set[str] = frozenset(),
-               hand_width: bool = True) -> tuple[list[str], list[str]]:
+               hand_width: bool = True, presence: bool = True) -> tuple[list[str], list[str]]:
+    """Return failure messages and grip/length notes for the unit's frames.
+
+    Exclude directions in depth and frames in partial from grip and length
+    comparisons. presence and hand_width control the corresponding frame
+    checks; hidden exempts named frames from missing weapon or hand failures.
+    """
     fails, notes = [], []
     for name, a in frames.items():
-        fails += check_frame(name, a, hidden, hit_states, arm, hand_width)
+        fails += check_frame(name, a, hidden, hit_states, arm, hand_width, presence)
     for d in DIRECTIONS:
         if d in depth:
             continue
@@ -385,6 +416,12 @@ def _names(text: str) -> set[str]:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Check weapon frames from CLI arguments and print failures and notes.
+
+    Return 0 on success, 1 for check failures, and 2 for invalid input or
+    errors caught while loading frames and references. Argument parsing can
+    raise SystemExit; errors reading frames later for comparison propagate.
+    """
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("directory", type=Path)
     parser.add_argument("--blade", required=True, help="刃の色名（カンマ区切り）")
@@ -404,6 +441,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--far-shade", default="", help="--far の向きの立ち・待機2・歩きで、奥の手に使ってよい肌の色（影の色）")
     parser.add_argument("--no-hand-width", action="store_true",
                         help="3（手の幅）を確かめない。拳を部品で描き、fist_check.py が部品の形で大きさを見るユニット用")
+    parser.add_argument("--no-presence", action="store_true",
+                        help="1（武器と手が見える）を確かめない。部品で組むユニット用（unit_rules.py が渡す。2026-11-04）")
     args = parser.parse_args(argv)
 
     if not args.directory.is_dir():
@@ -427,7 +466,7 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     fails, notes = check_unit(frames, _names(args.hidden), _names(args.hit),
                               [s for s in args.seq.split(",") if s], _names(args.depth), _names(args.arm),
-                              _names(args.partial), not args.no_hand_width)
+                              _names(args.partial), not args.no_hand_width, not args.no_presence)
     attack = (set(s for s in args.seq.split(",") if s) - {"base"}) | _names(args.hit)
     for name, ref in refs.items():
         final = read_frame(args.directory / f"{name}.txt")

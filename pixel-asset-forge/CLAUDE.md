@@ -58,10 +58,10 @@
 .venv/bin/python tools/enemy_build.py --colours dagger           # 男女の元のコマが使う色の差（女性の元のコマができるまで使えない）
 .venv/bin/python tools/enemy_gallery.py build/enemy_gallery.html --ref build/sheets/gau.png:ガウ（味方）  # 敵を並べて動きを再生する確認ページ（依頼者へ渡す）
 .venv/bin/python tools/unit_rules.py checks/gau.json  # unit の方針の確認をまとめて走らせる（自己チェック①。設定は checks/<ユニット>.json、例外に無い失敗で終了 1）
-.venv/bin/python tools/order_check.py checks/gau.json  # 承認された重なり順（ほかに blade_height・still_check・height_check・tip_check・part_chars・eye_check・part_outline・fist_check。どれも同じ引数）
+.venv/bin/python tools/order_check.py checks/gau.json  # 承認された重なり順（ほかに blade_height・still_check・height_check・tip_check・part_chars・eye_check・part_outline・fist_check・head_cover_check・far_fist_check。どれも同じ引数）
 .venv/bin/python tools/tip_check.py --items checks/items.json  # item のアイコンの刃・鏃の先端が決まり1〜5（types/item/SPEC.md）に合うか。刃の文字は checks/items.json に書く
 .venv/bin/python tools/unit_check.py assets/unit/ines --items klmstuw --core assets/part/body/ines  # unit の脚の中心（芯で測る）と増えた切れ目（unit_rules.py が設定ファイルから走らせる）
-.venv/bin/python tools/weapon_check.py assets/unit/gau --blade blade_hi,blade_base --weapon weapon_shaft_hi,weapon_shaft_base,weapon_shaft_shadow --hand skin_ruddy_hi,skin_ruddy_base,skin_ruddy_shadow --hidden left_atk_wind,up_atk_wind,up_atk_hit --depth down  # 武器と握る手（unit_rules.py が、刃・武器・手の色をパレットの種類 blade・weapon・skin から読んで走らせる。--arm は使わない）
+.venv/bin/python tools/weapon_check.py assets/unit/gau --blade blade_hi,blade_base --weapon weapon_shaft_hi,weapon_shaft_base,weapon_shaft_shadow --hand skin_ruddy_hi,skin_ruddy_base,skin_ruddy_shadow --depth down --no-presence  # 武器と握る手（unit_rules.py が、刃・武器・手の色をパレットの種類 blade・weapon・skin から読んで走らせる。--arm は使わない）
 .venv/bin/python tools/body_check.py assets/part/body/roran  # 体（core）の部品を単品で見た「当たり前」: 頭・胴・脚の中心、胴からのはみ出し、輪郭の切れ目、穴（--head/--trunk/--legs で行の範囲、--hanging で垂れた髪・かぶり物の文字、--no-protrusion で女性の体）
 .venv/bin/python tools/hand_mirror.py compose/ines.json  # 攻撃以外のコマで、down と up・left と right の拳の位置が左右反転で合っているか
 .venv/bin/python tools/weapon_mirror.py checks/roran.json  # left と right で、拳が握る部品の位置が左右反転で合っているか（攻撃のコマも）
@@ -71,6 +71,7 @@
 .venv/bin/python tools/compose.py compose/ines.json --check    # イネスは全32コマが部品から再現できる
 .venv/bin/python tools/compose.py compose/gau.json --check     # ガウは全24コマが部品から再現できる
 (set -e; for u in bandit knight horn thug; do .venv/bin/python tools/compose.py compose/dagger-$u.json --check; done)  # 短剣の敵4体も全24コマが部品から再現できる
+(set -e; for u in bandit horn bandit-a-f bandit-b-f bandit-c-f horn-b-f horn-c-f; do .venv/bin/python tools/compose.py compose/axe-$u.json --check; done)  # 斧の敵7体も全24コマが部品から再現できる
 # gen/*_layers.py --export は描き直す前の書き出しに一度だけ使った。古い色の名前のままで今は使えず（落ち方は ISSUES.md）、直しても描き直した部品を上書きするので実行しない（ISSUES.md「gen/*.py が古い色の名前で書かれていて動かない」）（新しいユニットは tools/parts_export.py で同じ形の定義を書く）
 .venv/bin/python tools/compose_page.py --help  # 部品と組んだ結果を層の順に並べる確認ページ（--dirs down,right のようにカンマ区切り）
 .venv/bin/python tools/phone_sheet.py order compose/gau.json build/phone  # スマホで見る PNG（部品を奥→手前。今の絵と案を並べる diff・cmp もある。--help）
@@ -125,6 +126,18 @@
 **変形は光源を一緒に動かす。** 陰影が変形軸について対称なものにしか使えない。
 川は使えるが、顔グラや城には使えない。`unit` にも使わない（`left` と `right` で装備の手前と奥が
 入れ替わる。`types/unit/SPEC.md`）。`unit` の派生は `validate.py` が落とす（2026-10-16）。顔グラや城は機械では検査していない。
+
+## 確認の道具で落ちたら、道具に従って絵を直す（2026-11-03 依頼者）
+
+確認の道具（`checks/<ユニット>.json` と `tools/unit_rules.py` など）は、依頼者が絵を1枚ずつ確かめなくて済むように作っている。
+
+- 道具で落ちたら、道具に従って絵を直して通す。直してよいか、道具の判定を変えてよいかを、途中で依頼者に聞かない
+- 依頼者には、道具に従って直し終えた完成品を見せる。途中の失敗の一覧や直し方の案を見せて止まらない
+- 例外（`exceptions`・`open_chars`）で落ちた絵を通さない
+- `ISSUES.md` に記録済みの原因（色が未定の `knight` による `check_colors.py` の失敗など、道具の不具合と依頼者が決める未確定事項）で落ちたときは、絵を変えない。絵の側で依頼者の決めることを決めてしまうため。`ISSUES.md` に記録し、その記録を添えて完成品を見せる。途中で止めて聞かない
+- 道具は常に正しいものとする（2026-11-04 依頼者）。ただし上の `ISSUES.md` に記録済みの原因は例外で、そちらを先に適用する。それ以外で、正しい絵が道具に落ちたように見えても、道具の判定は直さず、絵を直す
+- 承認済みの重なり順（`checks/<ユニット>.json` の `orders`）は、絵を直して通す対象ではない。順そのものを変えたいときは、変える前に依頼者に確認する
+- 古い作り方の絵（`gen/enemy/` など）と食い違っても、部品と道具の側に従う。古い絵は依頼者が全部を見きれていない
 
 ## 新しい機械チェックを思いついたら、まず偽陽性を数える
 

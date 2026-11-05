@@ -87,6 +87,21 @@ class HandTest(unittest.TestCase):
         spear_v(f, 9, 6, 25)
         self.assertIn("手が無い", " ".join(check_frame("down_base", analyse(f), set(), set())))
 
+    def test_missing_weapon_and_hand_pass_when_parts_check_them(self):
+        # 部品で組むユニットは、武器があることを部品のファイルが、手が武器に接することを fist_check が見る（2026-11-04 依頼者）
+        f = blank()
+        body(f)
+        self.assertEqual(check_frame("down_base", analyse(f), set(), set(), presence=False), [])  # 武器が無い
+        spear_v(f, 9, 6, 25)
+        self.assertEqual(check_frame("down_base", analyse(f), set(), set(), presence=False), [])  # 手が無い
+
+    def test_presence_off_still_checks_the_hand_outline(self):
+        f = blank()
+        spear_v(f, 9, 6, 25)
+        fist(f, 9, 18, ring=False)  # 輪郭の無い拳
+        fails = check_frame("down_base", analyse(f), set(), set(), presence=False)
+        self.assertTrue(any("手の輪郭" in s for s in fails), fails)
+
     def test_missing_hand_is_allowed_when_listed_as_hidden(self):
         f = blank()
         body(f)
@@ -297,6 +312,43 @@ class WeaponDetectionTest(unittest.TestCase):
         a = analyse(f)
         self.assertIn((5, 14), a.weapon)
         self.assertIn((18, 16), a.weapon)
+
+    def test_diagonal_shaft_beyond_the_fist_is_part_of_the_weapon(self):
+        # 斜め45°の斧（当たり）。拳の輪郭の先にのぞく斜めの柄は、縦の柄の拳の先と同じく武器の長さに数える
+        f = blank()
+        for x, y in ((6, 6), (7, 6), (6, 7), (7, 7)):
+            put(f, x, y, "blade_hi")
+        for i in range(10):  # (8,8)〜(17,17) の斜めの柄
+            put(f, 8 + i, 8 + i, "weapon_shaft_base")
+        fist(f, 12, 12)  # 輪郭が (11,11)〜(14,14) の柄を覆う
+        a = analyse(f)
+        self.assertIn((16, 16), a.weapon)
+        self.assertIn((17, 17), a.weapon)
+        self.assertNotIn((17, 17), a.tiny)
+
+    def test_diagonal_piece_off_the_shaft_line_is_not_the_weapon(self):
+        f = blank()
+        for x, y in ((6, 6), (7, 6), (6, 7), (7, 7)):
+            put(f, x, y, "blade_hi")
+        for i in range(10):
+            put(f, 8 + i, 8 + i, "weapon_shaft_base")
+        fist(f, 12, 12)
+        put(f, 20, 14, "weapon_shaft_base")  # 柄の斜めの線から外れた、同じ色の斜めの2画素
+        put(f, 21, 15, "weapon_shaft_base")
+        a = analyse(f)
+        self.assertNotIn((20, 14), a.weapon)
+
+    def test_diagonal_piece_on_the_shaft_line_far_from_the_fist_is_not_the_weapon(self):
+        f = blank()
+        for x, y in ((6, 6), (7, 6), (6, 7), (7, 7)):
+            put(f, x, y, "blade_hi")
+        for i in range(10):
+            put(f, 8 + i, 8 + i, "weapon_shaft_base")
+        fist(f, 12, 12)
+        put(f, 24, 24, "weapon_shaft_base")  # 柄の斜めの線の上だが、拳から離れた同じ色の2画素
+        put(f, 25, 25, "weapon_shaft_base")
+        a = analyse(f)
+        self.assertNotIn((24, 24), a.weapon)
 
     def test_one_pixel_pommel_beyond_the_fist_is_tiny(self):
         f = blank()

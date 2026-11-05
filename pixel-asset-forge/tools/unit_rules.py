@@ -41,7 +41,7 @@ from gridfile import REPO_ROOT  # noqa: E402
 from unit_config import UnitConfig, UnitConfigError, load_unit_config  # noqa: E402
 
 NEW_CHECKS = ("order_check", "blade_height", "still_check", "height_check", "tip_check", "part_chars",
-              "eye_check", "part_outline", "fist_check", "weapon_mirror")
+              "eye_check", "part_outline", "fist_check", "weapon_mirror", "head_cover_check", "far_fist_check")
 NAME_RE = re.compile(r"[A-Za-z0-9_]+")
 # body_check の「はみ出し」を掛ける体。胴がまっすぐな男性の体だけ（2026-10-17 依頼者）。袖の名残を見つけるためのもので、
 # D で敵の袖を消し終えたら () にしてやめる（ISSUES.md。body_check.py のコードは古いコマを確かめ直すときのために残す）
@@ -55,7 +55,12 @@ WEAPON_CHECK_KINDS = (("blade", "blade"), ("weapon", "weapon"), ("hand", "skin")
 def plan(cfg: UnitConfig, config: Path, root: Path,
          pal: palette_mod.Palette | None = None) -> list[tuple[str, list[str] | None]]:
     """(確認の名前 = 道具のモジュール名, main に渡す引数。None なら走らせない) の並び。
-    pal は weapon_check の色を読むパレット（省略時は palette/）。"""
+    pal は weapon_check の色を読むパレット（省略時は palette/）。
+
+    Enabled weapon checks skip presence checks. Raise UnitConfigError if
+    core parts do not share one directory or required palette kinds are
+    missing. Errors loading the default palette propagate as GridError.
+    """
     grids = sorted({str(frame.core.path) for frame in cfg.frames.values()}
                    | {str(part.grid.path) for frame in cfg.frames.values() for part in frame.parts.values()})
     cores = {frame.core.path.parent for frame in cfg.frames.values()}
@@ -86,9 +91,10 @@ def plan(cfg: UnitConfig, config: Path, root: Path,
                 raise UnitConfigError(f"weapon_check: パレットに種類 {kind} の色（unit・common）が無い")
             if names:
                 args += [f"--{key}", ",".join(names)]
-        for key in ("hidden", "depth", "partial"):
+        for key in ("depth", "partial"):
             if wc.get(key):
                 args += [f"--{key}", ",".join(wc[key])]
+        args.append("--no-presence")  # 武器があることは部品のファイル、手が武器に接することは fist_check が見る（2026-11-04）
         # 武器を握る拳の大きさを fist_check が部品の形で見るなら、組んだコマの見える幅では見ない（2026-10-18）。
         # weapon_check は手を色で見つけるので、どの武器にも握る拳の部品があり、拳の部品すべてに fist_sizes があるときだけ
         fists = [role for role in cfg.parts.values() if role.get("fist")]

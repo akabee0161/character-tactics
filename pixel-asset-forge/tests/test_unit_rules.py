@@ -55,7 +55,7 @@ class UnitRulesTest(unittest.TestCase):
         self.assertEqual(code, 0, out)
         for name in ("validate", "compose", "body_check", "hand_mirror", "unit_check", "order_check",
                      "blade_height", "still_check", "height_check", "tip_check", "part_chars", "eye_check",
-                     "part_outline", "fist_check", "weapon_mirror"):
+                     "part_outline", "fist_check", "weapon_mirror", "head_cover_check", "far_fist_check"):
             self.assertIn(f"ok   {name}", out)
         self.assertIn("--   weapon_check: 設定に無いので走らせない", out)
 
@@ -153,12 +153,20 @@ class UnitRulesTest(unittest.TestCase):
         self.assertIn("知らないキー spear", out)
 
     def test_weapon_check_arguments_come_from_the_config(self):
-        self.fx.checks["weapon_check"] = {"hidden": ["down_atk_hit", "up_atk_hit"], "depth": ["down"]}
+        self.fx.checks["weapon_check"] = {"partial": ["down_atk_hit", "up_atk_hit"], "depth": ["down"]}
         path = self.fx.write()
         steps = dict(plan(load_unit_config(path, self.fx.root), path, self.fx.root, small_palette()))
         self.assertEqual(steps["weapon_check"], [
             str(self.fx.root / "assets/unit/t"), "--blade", "b_one,b_two", "--weapon", "w_one", "--hand", "s_one,s_two",
-            "--hidden", "down_atk_hit,up_atk_hit", "--depth", "down", "--no-hand-width"])
+            "--depth", "down", "--partial", "down_atk_hit,up_atk_hit", "--no-presence", "--no-hand-width"])
+
+    def test_hidden_frames_are_no_longer_written_in_the_config(self):
+        # 武器と手が見えるかは確かめないので、隠れるコマを書く項目は無い（2026-11-04 依頼者）
+        self.fx.checks["weapon_check"] = {"hidden": ["down_atk_hit"]}
+        path = self.fx.write()
+        with self.assertRaises(UnitConfigError) as cm:
+            load_unit_config(path, self.fx.root)
+        self.assertIn("hidden", str(cm.exception))
 
     def test_weapon_check_colours_come_from_kinds(self):
         # 刃・柄・手の色は設定に書かず、パレットの種類 blade・weapon・skin（unit と common の用途の色）から読む（2026-10-30）

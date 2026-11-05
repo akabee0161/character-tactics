@@ -126,6 +126,8 @@ URL に `?debug` を付けると、戦闘中だけ次の操作ができる（攻
 
 ドット絵は `pixel-asset-forge/` で作る。pixel-asset-forge（forge）をこのリポジトリへ丸ごとコピーしたもので、このゲームに合わせて自由に直してよい。コピー元の commit と、forge に戻す候補は `pixel-asset-forge/UPSTREAM.md` にある。絵の描き方と規約は `pixel-asset-forge/README.md` と `pixel-asset-forge/types/*/SPEC.md`。
 
+確認の道具（`pixel-asset-forge/tools/unit_rules.py` など）で落ちたら、道具に従って絵を直して通す。直してよいか、道具の判定を変えてよいかを、途中で依頼者に聞かない。依頼者には、直し終えた完成品を見せる。`pixel-asset-forge/ISSUES.md` に記録済みの原因で落ちたときは、絵を変えずに ISSUES.md に記録する。詳しくは `pixel-asset-forge/CLAUDE.md` の「確認の道具で落ちたら、道具に従って絵を直す」。
+
 forge の生成物のうちゲームで使うものは、ルートの `sprites.json`（forge の `build/` からの相対パス → `assets/images/` のファイル名）に書き、次のコマンドで `assets/images/` へ書き出す。書き出した PNG はコミットする（デプロイでは Python を使わない）。
 
 Python は 3.14 を使う（3.10 では forge のテストが落ちる）。venv は [uv](https://docs.astral.sh/uv/) で作る。

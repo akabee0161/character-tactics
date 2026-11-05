@@ -5,8 +5,8 @@
 # bg: transparent
 # map: o=contour q=clothes_dark_base p=clothes_dark_hi r=clothes_dark_shadow f=hair_ashblue_base h=hair_ashblue_dark e=hair_ashblue_hi g=hair_ashblue_shadow b=skin_ruddy_base d=skin_ruddy_deep c=skin_ruddy_shadow u=belt_strap v=legwear_brown
 # map: m=shield_hi s=shield_shadow
-# map: a=skin_ruddy_hi
 # map: R=weapon_pommel j=blade_base i=blade_hi H=weapon_shaft_base G=weapon_shaft_hi J=weapon_shaft_shadow
+# map: a=skin_ruddy_hi
 ................................
 ................................
 ................................

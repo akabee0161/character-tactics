@@ -72,11 +72,6 @@
     ]
   },
   "weapon_check": {
-    "hidden": [
-      "left_atk_wind",
-      "up_atk_wind",
-      "up_atk_hit"
-    ],
     "depth": [
       "down"
     ]

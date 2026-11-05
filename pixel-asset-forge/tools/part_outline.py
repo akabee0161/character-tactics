@@ -8,7 +8,8 @@
 体の上で輪郭を付けない文字（弓の弦など）は、設定ファイルの parts の open_chars に書いて外す。
 髪（hair）と装飾品（ornament）の色の画素は、透明に接する所が、その部品の絵を使うすべてのコマで芯の上
 （芯が透明でない）なら輪郭なしで通す（体の上の縁。open_chars に書かない）。ひとつでも芯の外のコマが
-あれば落とす。かぶり物（headgear。兜・鼻当て・バンダナ・頭巾）は体の上でも全周を輪郭で閉じる（2026-10-30 依頼者）。
+あれば落とす。髪は、前と後ろに分けた1本の髪の分け目（透明に接する所が、すべてのコマでほかの部品の髪の上）も
+輪郭なしで通す（2026-11-03。斧の敵の長い髪。分け目を輪郭で閉じると髪の中に線が出る）。かぶり物（headgear。兜・鼻当て・バンダナ・頭巾）は体の上でも全周を輪郭で閉じる（2026-10-30 依頼者）。
 拳は compose.py の hand: true が、芯は body_check.py が見る。名前は部品のファイル名（拡張子なし）で出す。
 """
 from __future__ import annotations
@@ -29,6 +30,13 @@ EDGE_KINDS = ("hair", "ornament")  # 体の上なら輪郭なしの縁を許す�
 
 
 def check(cfg: UnitConfig) -> list[tuple[str, str]]:
+    """Report non-fist parts with exposed, non-outline pixels.
+
+    Exempt configured open characters and eligible edges over the core in
+    every frame using the part; hair edges can also lie over another hair
+    part. Return failures by part filename stem. Palette errors propagate as
+    GridError; unknown color names raise UnitConfigError.
+    """
     uses = {}  # 部品のファイル → その絵を使うコマでの (key, 部品, 芯)
     for frame in cfg.frames.values():
         for key, part in frame.parts.items():
@@ -41,17 +49,36 @@ def check(cfg: UnitConfig) -> list[tuple[str, str]]:
         grid = part.grid
         skip = set(cfg.role(part.name, "open_chars") or "")
         edge_ok = {ch for ch, use in grid.charmap.items() if kind_of_use(pal, use, part.layer.part) in EDGE_KINDS}
-        cores = [(p.layer.dx, p.layer.dy, frame.core) for p, frame in entries]
 
         def at(x: int, y: int) -> str:
             return grid.rows[y][x] if 0 <= x < grid.width and 0 <= y < grid.height else BACKGROUND
 
-        def over_core(x: int, y: int) -> bool:
-            """(x, y) の透明な所が、この絵を使うすべてのコマで芯の上か。"""
-            for dx, dy, core in cores:
+        is_hair = {ch for ch in edge_ok if kind_of_use(pal, grid.charmap[ch], part.layer.part) == "hair"}
+
+        def other_hair(frame, fx: int, fy: int) -> bool:
+            """コマの (fx, fy) に、ほかの部品の髪の色の画素があるか（前と後ろに分けた1本の髪の分け目）。"""
+            for other in frame.parts.values():
+                if other is part or other.layer.part == part.layer.part:
+                    continue
+                g = other.grid
+                ox, oy = fx - other.layer.dx, fy - other.layer.dy
+                if not (0 <= ox < g.width and 0 <= oy < g.height):
+                    continue
+                ch2 = g.rows[oy][ox]
+                if ch2 != BACKGROUND and kind_of_use(pal, g.charmap[ch2], other.layer.part) == "hair":
+                    return True
+            return False
+
+        def over_core(x: int, y: int, hair: bool = False) -> bool:
+            """(x, y) の透明な所が、この絵を使うすべてのコマで芯の上か。hair なら、ほかの部品の髪の上でもよい。"""
+            for p, frame in entries:
+                dx, dy, core = p.layer.dx, p.layer.dy, frame.core
                 cx, cy = x + dx, y + dy
-                if not (0 <= cx < core.width and 0 <= cy < core.height) or core.rows[cy][cx] == BACKGROUND:
-                    return False
+                if 0 <= cx < core.width and 0 <= cy < core.height and core.rows[cy][cx] != BACKGROUND:
+                    continue
+                if hair and other_hair(frame, cx, cy):
+                    continue
+                return False
             return True
 
         found = set()
@@ -60,7 +87,7 @@ def check(cfg: UnitConfig) -> list[tuple[str, str]]:
                 if ch == BACKGROUND or ch in skip or grid.charmap[ch] == OUTLINE:
                     continue
                 gaps = [(x + dx, y + dy) for dx, dy in N4 if at(x + dx, y + dy) == BACKGROUND]
-                if gaps and not (ch in edge_ok and all(over_core(gx, gy) for gx, gy in gaps)):
+                if gaps and not (ch in edge_ok and all(over_core(gx, gy, ch in is_hair) for gx, gy in gaps)):
                     found.add((x, y))
         if found:
             failures.append((part.layer.part.stem, f"輪郭で閉じていない画素 {len(found)} 件: {points(found)}"))
