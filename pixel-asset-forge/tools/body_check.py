@@ -181,7 +181,7 @@ def main(argv: list[str] | None = None) -> int:
     for name, (lo, hi) in DEFAULT_BANDS.items():
         parser.add_argument(f"--{name}", type=_band, default=(lo, hi), help=f"{BAND_LABEL[name]}の行の範囲（既定 {lo}-{hi}）")
     parser.add_argument("--hanging", default="", help="芯に描いた髪・かぶり物の文字（胴まで垂れた塊を中心とはみ出しから外す）")
-    parser.add_argument("--no-protrusion", action="store_true", help="はみ出しを見ない（女性の体）")
+    parser.add_argument("--no-protrusion", action="store_true", help="はみ出しを見ない（unit_rules.py は 2026-11-05 から常に渡す）")
     args = parser.parse_args(argv)
     bands = {name: getattr(args, name) for name in DEFAULT_BANDS}
 

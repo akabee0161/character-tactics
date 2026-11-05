@@ -302,7 +302,7 @@ cat sheets/roran.txt
 
 部品を持たない完成した絵を部品に分けるときは、`tools/parts_export.py` を使う（文字で切るので、同じ色の別の物も分けられる）。
 ユニットごとの切り方（部品の文字・拳の箱・重なり順）は `gen/<ユニット>/<ユニット>_layers.py` に書いていた（イネスは `gen/ines/ines_layers.py`、ガウは `gen/gau/gau_layers.py`）。
-**`gen/*.py` は今は使えない。** 古い色の名前のままで、`gen/ines`・`gen/gau` は `UnitDef(hand_colours=…)` を渡すので import の時点で落ち、`gen/roran` は設定の JSON に `hand_colours` を書くので `compose.py` がその設定を読むときに止まり、`gen/enemy` は部品とコマの `map` に古い名前を書くので出力が `validate.py` で落ちる（`ISSUES.md`「`gen/*.py` が古い色の名前で書かれていて動かない」）。
+**`gen/*.py` は今は使えない。** 古い色の名前のままで、`gen/ines`・`gen/gau` は `UnitDef(hand_colours=…)` を渡すので import の時点で落ち、`gen/roran` は設定の JSON に `hand_colours` を書くので `compose.py` がその設定を読むときに止まる（`ISSUES.md`「`gen/*.py` が古い色の名前で書かれていて動かない」）。
 新しいユニットの部品は、いま動く道具（`tools/parts_export.py` の呼び出しを自分で書く、または `compose.py`）で用途の色に切る。
 書き出しは描き直す前に一度だけ使うもので、部品を描き直した後に走らせると上書きする。
 手順は `types/unit/SPEC.md` の「描く手順」。
@@ -374,12 +374,10 @@ forge をゲームリポジトリへコピーして使うときは、ゲーム�
   （部品で組んだコマ）を指す。`axe` `spear` では必須。
   書かなければ `dagger` の `male` は `assets/unit/gau/`、`female` は `assets/unit/dagger-female/`
   （`--colours` が比べるのもこの2つ。短剣の女性の元のコマはまだ無いので、今は置き場が無いと言って止まる）
-- 部品で組んだコマの生成（cwd は forge の直下）: `gen/enemy/mkparts.py`（頭・目・服・長い髪の部品を `assets/part/` に、選ぶページの設定を `gen/enemy/PICKER*.json` に）→
-  `gen/enemy/mkweapons.py`（斧・槍の男女の敵。敵の一覧は `gen/enemy/mkframes.py` の `ENEMIES`、女性の8体は
-  `mkweapons.py` で足す）。女性の id は `<男性の id>-<髪 a・b・c>-f`（a 前髪ありのロング・b 前髪なしのロング・c ポニーテール）。
-  今走らせると、コマはコミット済みのものと違う（`ISSUES.md`「敵の生成スクリプトの出力が、コミット済みのコマと違う」）。
-  短剣の4体（`dagger-*`）と斧の7体（`axe-*`）は、この手順ではなく `compose/<id>.json` から組む（2026-11-03）。`gen/enemy/` には
-  まだこの11体が残っていて、走らせると組み直したコマを古い腕・袖つきの絵で上書きするので、走らせない
+- 16体のコマはすべて部品から `compose/<id>.json` で組む（短剣の4体・斧の7体は 2026-11-03、槍の5体は 2026-11-05）。
+  `tools/compose.py compose/<id>.json --force` で組み、`tools/unit_rules.py checks/<id>.json` で確かめる。
+  女性の id は `<男性の id>-<髪 a・b・c>-f`（a 前髪ありのロング・b 前髪なしのロング・c ポニーテール）。
+  前に使っていた生成スクリプト `gen/enemy/` は、腕・袖つきの古い作り方で、2026-11-05 に消した
 - `recolor` は「元のコマが使う用途の色 → 置き換え後の**色見本**」。元のコマが使わない名前は止める。
   そのため `build/enemy/<id>/*.txt`（色替え後のコマ）の `map` は色見本の名前になり、用途の色としては検査されない
   （`validate.py` は `assets/` などを見るので、ここは対象外。読むのは `gridfile.load_colours()` で、用途の色に色見本を足して引く）
@@ -425,7 +423,7 @@ assets/unit/<unit>/        unit のコマ。味方3体と、部品で組んだ�
 assets/part/<種類>/<名前>/  unit の部品。種類は equip・fist・body・head・hair・eye・cloth（`types/unit/SPEC.md`）
 compose/<unit>.json        部品の組み立て方（tools/compose.py が読む）
 enemy/<id>.json            敵のレシピ（tools/enemy_build.py が読む）
-gen/<unit>/                1体（または敵だけ）のためのスクリプト（敵は gen/enemy）。汎用の道具は tools/
+gen/<unit>/                1体のためのスクリプト（roran・ines・gau）。汎用の道具は tools/
 sheets/<unit>.txt          unit のシート定義
 sets/<物>.txt              物のセットの定義（16px の部品をどう組むか）
 layouts/<map>.txt          tilemap.py --layout に渡すマップ
