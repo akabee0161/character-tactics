@@ -54,6 +54,15 @@ class LegCenterTest(unittest.TestCase):
         pixels.update({(24, 26): "k", (25, 26): "k"})
         self.assertEqual(leg_center(rows_of(pixels), {"k"}), 15.5)
 
+    def test_48_leg_center_from_row_37(self):
+        pixels = body(20, 8, 27, 46)
+        pixels[(10, 36)] = "b"  # 脚の上端 y=37 より上なので、脚の中心に入れない
+        self.assertEqual(leg_center(rows_of(pixels, 48), set()), 23.5)
+
+    def test_40_stops(self):
+        with self.assertRaisesRegex(UnitCheckError, "32 か 48"):
+            leg_center(rows_of(body(12, 20, 19, 30), 40), set())
+
     def test_frame_without_legs_is_an_error(self):
         rows = rows_of(body(12, 4, 19, 20))
         with self.assertRaises(UnitCheckError):

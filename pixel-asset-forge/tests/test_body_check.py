@@ -49,10 +49,10 @@ def hanging_hair() -> dict[tuple[int, int], str]:
     return pixels
 
 
-def write_core(directory: Path, name: str, pixels: dict[tuple[int, int], str]) -> Path:
+def write_core(directory: Path, name: str, pixels: dict[tuple[int, int], str], size: int = 12) -> Path:
     path = directory / name
-    rows = rows_of(pixels)
-    header = ["# type: unit", "# size: 12x12", "# light: upper-left", "# bg: transparent", "# map: o=contour b=clothes_dark_base h=hair_ashblue_base"]
+    rows = rows_of(pixels, size)
+    header = ["# type: unit", f"# size: {size}x{size}", "# light: upper-left", "# bg: transparent", "# map: o=contour b=clothes_dark_base h=hair_ashblue_base"]
     path.write_text("\n".join(header + rows) + "\n", encoding="utf-8")
     return path
 
@@ -151,6 +151,39 @@ class BodyCheckTest(unittest.TestCase):
     def test_missing_target_is_an_error(self):
         with contextlib.redirect_stderr(io.StringIO()):
             self.assertEqual(main(["/nonexistent/path"]), 2)
+
+
+def body48() -> dict[tuple[int, int], str]:
+    """48px の体: 頭 y=8〜22（x=20〜27）、胴 y=23〜37（x=18〜29）、脚 y=38〜46（x=20〜27）。中心はどれも 23.5。"""
+    pixels = box(20, 27, 8, 22)
+    pixels.update(box(18, 29, 23, 37))
+    pixels.update(box(20, 27, 38, 46))
+    return pixels
+
+
+class BodyCheck48Test(unittest.TestCase):
+    def run_main(self, pixels, size, *extra):
+        with tempfile.TemporaryDirectory() as tmp:
+            write_core(Path(tmp), "core_down_base.txt", pixels, size)
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out), contextlib.redirect_stderr(out):
+                code = main([tmp, *extra])
+        return code, out.getvalue()
+
+    def test_48_default_bands(self):
+        # 32px の既定（胴 y=15〜24）なら、頭の幅の行が多いので y=23〜24 の胴が「はみ出し」になる
+        code, out = self.run_main(body48(), 48)
+        self.assertEqual(code, 0, out)
+
+    def test_48_explicit_bands_win(self):
+        code, out = self.run_main(body48(), 48, "--trunk", "15-24")
+        self.assertEqual(code, 1, out)
+        self.assertIn("胴からはみ出した画素", out)
+
+    def test_40_stops(self):
+        code, out = self.run_main(whole_body(), 40)
+        self.assertEqual(code, 2, out)
+        self.assertIn("32 か 48", out)
 
 
 if __name__ == "__main__":

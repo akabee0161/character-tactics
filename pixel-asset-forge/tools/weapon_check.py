@@ -23,7 +23,7 @@
    結果で、拳が細いのではない。2026-10-18。tip_check.py が部品の形で見るのと同じ考え。unit_rules.py が、どの武器にも
    握る拳の部品（grips）があり、拳の部品すべてに fist_sizes があるときに渡す）
 4. 穂先の向き: 攻撃のコマ（--hit）で、手の中心（手が隠れるコマは体の中心）から見た穂先が、向いている側にある
-5. 枠に収まる: 武器の画素がコマの端（x=0,31 / y=0,31）に無い
+5. 枠に収まる: 武器の画素がコマの端（32px は x=0,31 / y=0,31、48px は 0,47）に無い
 6. 握る位置: 向きごとに、--seq のコマ（攻撃 → 構え）で、手の中心から穂先までの距離が 1.5px 以内でそろう
 7. 武器の長さ: 向きごとに、--seq のコマで、武器の画素どうしの最大距離が 2px 以内でそろう
    （向きが違うと、柄頭が手に隠れるかどうかなどで見える長さが変わるので、向きをまたいでは比べない）
@@ -56,7 +56,6 @@ from gridfile import GridError  # noqa: E402
 
 DIRECTIONS = ("down", "up", "left", "right")
 FACING = {"down": (0, 1), "up": (0, -1), "left": (-1, 0), "right": (1, 0)}
-SIZE = 32
 N4 = ((1, 0), (-1, 0), (0, 1), (0, -1))
 N8 = N4 + ((1, 1), (1, -1), (-1, 1), (-1, -1))
 GRIP_TOLERANCE = 1.5
@@ -194,6 +193,7 @@ class Analysis:
 
     def __init__(self, frame, blade: set[str], weapon: set[str], hand: set[str]):
         pts = {(x, y): n for y, row in enumerate(frame) for x, n in enumerate(row) if n is not None}
+        self.size = len(frame)  # コマの大きさ（32 か 48。端と体の中心の既定に使う）
         self.hand_colours = set(hand)
         self.pixels = pts
         blade_px = {p for p, n in pts.items() if n in blade}
@@ -260,7 +260,7 @@ class Analysis:
 
     def body_center(self) -> tuple[float, float]:
         body = set(self.pixels) - self.weapon
-        return _center(body) if body else (SIZE / 2, SIZE / 2)
+        return _center(body) if body else (self.size / 2, self.size / 2)
 
     def grip(self) -> float | None:
         if not self.hand or self.tip is None:
@@ -340,7 +340,7 @@ def check_frame(name: str, a: Analysis, hidden: set[str], hit_states: set[str],
         if along <= 0 or along < across:
             ref = "手" if a.hand else "体"
             fails.append(f"{name}: 穂先が向いている側に無い（穂先 {a.tip}、{ref}の中心 ({cx:.1f},{cy:.1f})）")
-    edge = sorted(p for p in a.weapon if p[0] in (0, SIZE - 1) or p[1] in (0, SIZE - 1))
+    edge = sorted(p for p in a.weapon if p[0] in (0, a.size - 1) or p[1] in (0, a.size - 1))
     if edge:
         fails.append(f"{name}: 武器がコマの端で切れている: " + " ".join(f"({x},{y})" for x, y in edge))
     return fails

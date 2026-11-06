@@ -65,7 +65,7 @@ class LoadTest(unittest.TestCase):
         with self.assertRaisesRegex(UnitConfigError, "32 か 48"):
             load_unit_config(fx.write(build=False), fx.root)
 
-    @unittest.skip("Task 4 で外す")
+
     def test_fixture_48_passes_unit_rules(self):
         from unit_rules import main as rules_main
         fx = UnitFixture(size=48)

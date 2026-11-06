@@ -19,12 +19,12 @@ HANDLE = {"weapon_shaft_base"}
 SKIN = {"skin_fair_base"}
 
 
-def blank():
-    return [[None] * 32 for _ in range(32)]
+def blank(size: int = 32):
+    return [[None] * size for _ in range(size)]
 
 
 def put(f, x, y, name):
-    if 0 <= x < 32 and 0 <= y < 32:
+    if 0 <= x < len(f) and 0 <= y < len(f):
         f[y][x] = name
 
 
@@ -244,6 +244,17 @@ class EdgeTest(unittest.TestCase):
     def test_weapon_on_frame_edge_fails(self):
         f = standing(grip_y=12, top=0)
         self.assertIn("コマの端で切れている", " ".join(check_frame("down_base", analyse(f), set(), set())))
+
+
+    def test_48_edge_is_47(self):
+        for x, cut in ((47, True), (31, False)):
+            with self.subTest(x=x):
+                f = blank(48)
+                body(f, 18, 24, 26, 46)
+                spear_v(f, x, 10, 25)
+                fist(f, x, 22)
+                fails = " ".join(check_frame("down_base", analyse(f), set(), set()))
+                self.assertEqual("コマの端で切れている" in fails, cut, fails)
 
 
 class WeaponDetectionTest(unittest.TestCase):
