@@ -10,7 +10,7 @@
   変更を禁じるものではない**（`tools/` を触ったら下記の unittest を通すこと）。
 - **新規アセットを書く前に、必ず `types/<type>/SPEC.md` と `types/<type>/reference/` を読む。**
   絵柄は散文ではなく reference で揃える。
-  `unit` は `reference/` を持たない。手本は `assets/unit/roran/`（剣と盾）と `assets/unit/ines/`（弓）と `assets/unit/gau/`（短剣）、複製の土台は `types/unit/base/` の素体（`male_*`・`female_*`）。
+  `unit` は `reference/` を持たない。手本は `assets/unit/roran/`（剣と盾）と `assets/unit/ines/`（弓）と `assets/unit/gau/`（短剣）と `assets/unit/mist/`（杖。部品を素体・髪・被り物・目・服・拳・武器に分けた最初のユニット）、複製の土台は `types/unit/base/` の素体（`male_*`・`female_*`）。
   新しい `unit` は `types/unit/SPEC.md` の「描く手順」（確認ポイント CP0〜CP4）どおりに描く。
 - **目視の前に `tools/validate.py` を通す。** 行長・未定義文字・パレット外参照は
   機械で落とす。目視はそれを通ってからにする。
@@ -70,6 +70,7 @@
 .venv/bin/python tools/compose.py compose/roran.json --check   # ロランは全24コマが部品から再現できる（拳が閉じていないと終了 2）
 .venv/bin/python tools/compose.py compose/ines.json --check    # イネスは全32コマが部品から再現できる
 .venv/bin/python tools/compose.py compose/gau.json --check     # ガウは全24コマが部品から再現できる
+.venv/bin/python tools/compose.py compose/mist.json --check    # ミストも全24コマが部品から再現できる
 (set -e; for u in bandit knight horn thug; do .venv/bin/python tools/compose.py compose/dagger-$u.json --check; done)  # 短剣の敵4体も全24コマが部品から再現できる
 (set -e; for u in bandit horn bandit-a-f bandit-b-f bandit-c-f horn-b-f horn-c-f; do .venv/bin/python tools/compose.py compose/axe-$u.json --check; done)  # 斧の敵7体も全24コマが部品から再現できる
 (set -e; for u in knight thug thug-a-f thug-b-f thug-c-f; do .venv/bin/python tools/compose.py compose/spear-$u.json --check; done)  # 槍の敵5体も全24コマが部品から再現できる

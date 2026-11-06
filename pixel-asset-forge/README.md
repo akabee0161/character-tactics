@@ -288,6 +288,7 @@ cat sheets/roran.txt
 部品ごとに `front`（上に描く）か `back`（透明な画素にだけ描く。体に隠れる）を選び、`dx`・`dy` でずらす。
 `front` は積んだ時点の一番手前へ、`back` は一番奥へ入る（`back` は体に近いものから先に書く）。拳の部品には `hand: true` を付けると、四方を輪郭で閉じているかを `--check` が確かめる。
 ロランは全向きを、完全な単品の部品（体・剣・剣の拳・盾・盾の拳）で組んでいる（`compose/roran.json`。決まりは `types/unit/SPEC.md`「部品で組む規約」）。
+ミストは最初から、素体（芯）・髪・被り物（帽子）・目・服（ローブ）・拳・武器（杖）を別の部品に描いて組んだ（`compose/mist.json`、2026-11-06）。
 イネスも全32コマを、芯・弓（弦を含む）・矢・弓の拳・矢の拳で組んでいる（`compose/ines.json`、部品は `assets/part/` の `body/ines/`・`equip/bow/`・`equip/arrow/`・`fist/ines/`）。
 ガウも全24コマを、芯・短剣・短剣の拳・空き手の拳で組んでいる（`compose/gau.json`、部品は `assets/part/` の `body/gau/core_*`・`equip/dagger/dagger_<向き>_<状態>`・`fist/gau/`）。
 短剣の敵4体（`compose/dagger-{bandit,knight,horn,thug}.json`）は、敵の男性の芯（`body/enemy_male/core_*`）に、目・服・頭の部品とガウの短剣・拳を重ねて組む。設定は `checks/dagger-*.json`。
@@ -416,7 +417,7 @@ palette/swatches.json      色見本 -> RGB（値を持つのはここだけ）
 palette/kinds.json         種類の一覧と説明（道具が種類で物を見分ける）
 palette/uses/<型>.json     用途の色 -> 色見本・種類・説明。絵の map はここの名前を書く（common.json は全型の輪郭）
 types/<type>/SPEC.md       型ごとの機械的な規約（寸法・構成・並び方）
-types/<type>/reference/    合格済みのお手本。絵柄はここで揃える（`unit` は `reference/` を持たない。手本は `assets/unit/roran/`（剣と盾）・`assets/unit/ines/`（弓）・`assets/unit/gau/`（短剣）、土台は `types/unit/base/` の素体）
+types/<type>/reference/    合格済みのお手本。絵柄はここで揃える（`unit` は `reference/` を持たない。手本は `assets/unit/roran/`（剣と盾）・`assets/unit/ines/`（弓）・`assets/unit/gau/`（短剣）・`assets/unit/mist/`（杖）、土台は `types/unit/base/` の素体）
 types/unit/base/           unit の素体（4方向）。新しい unit を複製して作る土台
 assets/<type>/<name>.txt   アセットの元テキスト（これが正）
 assets/unit/<unit>/        unit のコマ。味方3体と、部品で組んだ敵16体（`assets/unit/<敵の id>/`）
