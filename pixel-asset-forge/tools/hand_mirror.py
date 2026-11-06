@@ -55,7 +55,8 @@ def check(frames: dict) -> list[str]:
             if key not in mine or key not in theirs:
                 failures.append(f"{name} と {partner}: {key} が片方にしか無い")
                 continue
-            mirrored = {(31 - x, y) for x, y in mine[key]}
+            size = parse(frames[name].body).width  # 32px は 31 − x、48px は 47 − x
+            mirrored = {(size - 1 - x, y) for x, y in mine[key]}
             if mirrored != theirs[key]:
                 failures.append(f"{name} と {partner}: {key} の位置が左右反転で合わない"
                                 f"（{name} を反転すると {sorted(mirrored)}、{partner} は {sorted(theirs[key])}）")

@@ -164,8 +164,8 @@ def _names(value, where: str) -> list[str]:
     return value
 
 
-def _coord(value) -> bool:
-    return isinstance(value, int) and not isinstance(value, bool) and 0 <= value < 32
+def _coord(value, size: int) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool) and 0 <= value < size
 
 
 def build_frame(name: str, spec: FrameSpec) -> Frame:
@@ -315,10 +315,10 @@ def load_unit_config(path: Path, root: Path = REPO_ROOT) -> UnitConfig:
         where = f"{path.name} の eyes.{direction}"
         _keys(value, EYE_KEYS, where)
         xs, ys = value.get("x"), value.get("y")
-        if not (isinstance(xs, list) and xs and all(_coord(v) for v in xs)):
-            raise UnitConfigError(f"{where}.x: 目の列（0〜31 の整数の配列）でない: {xs!r}")
-        if not (isinstance(ys, list) and len(ys) == 2 and all(_coord(v) for v in ys) and ys[0] <= ys[1]):
-            raise UnitConfigError(f"{where}.y: [上の行, 下の行]（0〜31）でない: {ys!r}")
+        if not (isinstance(xs, list) and xs and all(_coord(v, frame_size) for v in xs)):
+            raise UnitConfigError(f"{where}.x: 目の列（0〜{frame_size - 1} の整数の配列）でない: {xs!r}")
+        if not (isinstance(ys, list) and len(ys) == 2 and all(_coord(v, frame_size) for v in ys) and ys[0] <= ys[1]):
+            raise UnitConfigError(f"{where}.y: [上の行, 下の行]（0〜{frame_size - 1}）でない: {ys!r}")
         eyes[direction] = frozenset((x, y) for x in xs for y in range(ys[0], ys[1] + 1))
 
     weapon_check = data["weapon_check"]

@@ -221,6 +221,16 @@ class LoadTest(unittest.TestCase):
                 self.fx.checks["eyes"]["down"] = value
                 self.assertConfigError(text)
 
+    def test_48_eyes_accept_up_to_47(self):
+        fx = UnitFixture(size=48)
+        self.addCleanup(fx.close)
+        fx.checks["eyes"]["down"] = {"x": [40, 47], "y": [20, 47]}
+        cfg = load_unit_config(fx.write(build=False), fx.root)
+        self.assertIn((47, 47), cfg.eyes["down"])
+        fx.checks["eyes"]["down"] = {"x": [48], "y": [20, 21]}
+        with self.assertRaisesRegex(UnitConfigError, "0〜47"):
+            load_unit_config(fx.write(build=False), fx.root)
+
     def test_weapon_check_colour_and_frame_names_are_checked(self):
         for extra, text in (({"partial": ["down_atk_wind"]}, "down_atk_wind"), ({"depth": ["side"]}, "side")):
             with self.subTest(text):
