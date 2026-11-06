@@ -39,8 +39,236 @@
         }
       ]
     },
+    "down_idle2": {
+      "body": "assets/part/body/mist/core_down_idle2.txt",
+      "layers": [
+        {
+          "part": "assets/part/eye/E0/eye_E0_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/robe/cloth_robe_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/mist/hair_mist_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/witch/head_witch_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/staff/staff_down_idle2.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/mist/staff_hand_down_idle2.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/fist/mist/free_hand_down_idle2.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "down_walk_a": {
+      "body": "assets/part/body/mist/core_down_walk_a.txt",
+      "layers": [
+        {
+          "part": "assets/part/eye/E0/eye_E0_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/robe/cloth_robe_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/mist/hair_mist_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/witch/head_witch_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/staff/staff_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/mist/staff_hand_down_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/fist/mist/free_hand_down_base.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "down_walk_b": {
+      "body": "assets/part/body/mist/core_down_walk_b.txt",
+      "layers": [
+        {
+          "part": "assets/part/eye/E0/eye_E0_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/robe/cloth_robe_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/mist/hair_mist_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/witch/head_witch_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/staff/staff_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/mist/staff_hand_down_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/fist/mist/free_hand_down_base.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
     "up_base": {
       "body": "assets/part/body/mist/core_up_base.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/mist/free_hand_up_base.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/fist/mist/staff_hand_up_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/staff/staff_up_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E0/eye_E0_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/robe/cloth_robe_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/mist/hair_mist_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/witch/head_witch_up_base.txt",
+          "z": "front"
+        }
+      ]
+    },
+    "up_idle2": {
+      "body": "assets/part/body/mist/core_up_idle2.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/mist/free_hand_up_idle2.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/fist/mist/staff_hand_up_idle2.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/staff/staff_up_idle2.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E0/eye_E0_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/robe/cloth_robe_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/mist/hair_mist_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/witch/head_witch_up_base.txt",
+          "z": "front"
+        }
+      ]
+    },
+    "up_walk_a": {
+      "body": "assets/part/body/mist/core_up_walk_a.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/mist/free_hand_up_base.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/fist/mist/staff_hand_up_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/staff/staff_up_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E0/eye_E0_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/robe/cloth_robe_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/mist/hair_mist_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/witch/head_witch_up_base.txt",
+          "z": "front"
+        }
+      ]
+    },
+    "up_walk_b": {
+      "body": "assets/part/body/mist/core_up_walk_b.txt",
       "layers": [
         {
           "part": "assets/part/fist/mist/free_hand_up_base.txt",
@@ -115,8 +343,236 @@
         }
       ]
     },
+    "left_idle2": {
+      "body": "assets/part/body/mist/core_left_idle2.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/mist/staff_hand_left_idle2.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/staff/staff_left_idle2.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E0/eye_E0_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/robe/cloth_robe_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/mist/hair_mist_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/witch/head_witch_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/mist/free_hand_left_idle2.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "left_walk_a": {
+      "body": "assets/part/body/mist/core_left_walk_a.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/mist/staff_hand_left_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/staff/staff_left_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E0/eye_E0_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/robe/cloth_robe_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/mist/hair_mist_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/witch/head_witch_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/mist/free_hand_left_base.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "left_walk_b": {
+      "body": "assets/part/body/mist/core_left_walk_b.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/mist/staff_hand_left_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/staff/staff_left_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E0/eye_E0_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/robe/cloth_robe_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/mist/hair_mist_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/witch/head_witch_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/mist/free_hand_left_base.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
     "right_base": {
       "body": "assets/part/body/mist/core_right_base.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/mist/free_hand_right_base.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/eye/E0/eye_E0_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/robe/cloth_robe_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/mist/hair_mist_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/witch/head_witch_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/staff/staff_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/mist/staff_hand_right_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "weapon"
+          ]
+        }
+      ]
+    },
+    "right_idle2": {
+      "body": "assets/part/body/mist/core_right_idle2.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/mist/free_hand_right_idle2.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/eye/E0/eye_E0_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/robe/cloth_robe_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/mist/hair_mist_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/witch/head_witch_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/staff/staff_right_idle2.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/mist/staff_hand_right_idle2.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "weapon"
+          ]
+        }
+      ]
+    },
+    "right_walk_a": {
+      "body": "assets/part/body/mist/core_right_walk_a.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/mist/free_hand_right_base.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/eye/E0/eye_E0_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/robe/cloth_robe_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/mist/hair_mist_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/witch/head_witch_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/staff/staff_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/mist/staff_hand_right_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "weapon"
+          ]
+        }
+      ]
+    },
+    "right_walk_b": {
+      "body": "assets/part/body/mist/core_right_walk_b.txt",
       "layers": [
         {
           "part": "assets/part/fist/mist/free_hand_right_base.txt",
