@@ -52,6 +52,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from compose import ComposeError, FrameSpec, Layer, load_config, stack_order  # noqa: E402
 from gridfile import BACKGROUND, REPO_ROOT, Grid, GridError, parse  # noqa: E402
+from unit_scale import Scale, ScaleError, scale_for  # noqa: E402
 
 CORE = "CORE"
 OUTLINE = "contour"
@@ -123,6 +124,8 @@ class UnitConfig:
     exceptions: list[dict]
     frames: dict[str, Frame]
     root: Path
+    size: int     # コマの大きさ（全コマの芯の幅。32 か 48）
+    scale: Scale  # size の体の比率（tools/unit_scale.py）
 
     @property
     def unit_dir(self) -> Path:
@@ -181,6 +184,21 @@ def build_frame(name: str, spec: FrameSpec) -> Frame:
     return Frame(name, direction, state, core, parts, order)
 
 
+def frame_scale(frames: dict[str, Frame], path: Path) -> tuple[int, Scale]:
+    """全コマの芯が同じ大きさの正方形で、比率の表にある大きさか。部品と芯の大きさの違いは compose.py が止める。"""
+    sizes = {(frame.core.width, frame.core.height) for frame in frames.values()}
+    if len(sizes) != 1:
+        found = ", ".join(f"{w}x{h}" for w, h in sorted(sizes))
+        raise UnitConfigError(f"{path.name}: 芯の大きさがそろっていない（{found}）")
+    width, height = sizes.pop()
+    if width != height:
+        raise UnitConfigError(f"{path.name}: 芯が正方形でない（{width}x{height}）")
+    try:
+        return width, scale_for(width)
+    except ScaleError as exc:
+        raise UnitConfigError(f"{path.name}: {exc}") from None
+
+
 def load_unit_config(path: Path, root: Path = REPO_ROOT) -> UnitConfig:
     """Load and validate a unit check configuration and its composition.
 
@@ -211,6 +229,7 @@ def load_unit_config(path: Path, root: Path = REPO_ROOT) -> UnitConfig:
     except (ComposeError, GridError) as exc:
         raise UnitConfigError(str(exc)) from None
     hand = next(iter(specs.values())).hand_colours
+    frame_size, scale = frame_scale(frames, path)
 
     if data["body"] not in BODIES:
         raise UnitConfigError(f"{path.name} の body: male か female（{data['body']!r} だった）")
@@ -334,7 +353,7 @@ def load_unit_config(path: Path, root: Path = REPO_ROOT) -> UnitConfig:
                 raise UnitConfigError(f"{where}.{key}: 空でない文字列")
 
     return UnitConfig(path, data["unit"], compose_path, hand, data["body"], head_chars, data["items"], data["parts"], orders, eyes,
-                      weapon_check, data["exceptions"], frames, root)
+                      weapon_check, data["exceptions"], frames, root, frame_size, scale)
 
 
 def run_check(argv: list[str] | None, description: str, check, ok_message: str, notes=None) -> int:

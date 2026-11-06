@@ -10,7 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import palette  # noqa: E402
 from unit_config import UnitConfigError, load_unit_config, run_check  # noqa: E402
-from unit_fixture import UnitFixture  # noqa: E402
+from unit_fixture import UnitFixture, default_frames  # noqa: E402
 
 
 class LoadTest(unittest.TestCase):
@@ -35,6 +35,43 @@ class LoadTest(unittest.TestCase):
         self.assertEqual(list(frame.parts), ["sword", "sword_hand", "shield"])
         self.assertEqual(cfg.hand, palette.load().names_of_kind("skin", type="unit"))  # 手の色はパレットの種類 skin
         self.assertEqual(cfg.unit_dir, self.fx.root / "assets" / "unit" / "t")
+
+    def test_size_and_scale_come_from_the_core(self):
+        self.assertEqual((self.load().size, self.load().scale.foot), (32, 30))
+        fx = UnitFixture(size=48)
+        self.addCleanup(fx.close)
+        cfg = load_unit_config(fx.write(build=False), fx.root)
+        self.assertEqual((cfg.size, cfg.scale.foot), (48, 46))
+
+    def test_mixed_sizes_stop(self):
+        fx = UnitFixture(size=48)
+        self.addCleanup(fx.close)
+        fx.frames["up_walk_a"] = default_frames(32)["up_walk_a"]
+        fx.frame_size["up_walk_a"] = (32, 32)
+        with self.assertRaisesRegex(UnitConfigError, "芯の大きさがそろっていない"):
+            load_unit_config(fx.write(build=False), fx.root)
+
+    def test_non_square_stops(self):
+        fx = UnitFixture(size=48)
+        self.addCleanup(fx.close)
+        fx.frame_size = {name: (48, 47) for name in fx.frames}
+        with self.assertRaisesRegex(UnitConfigError, "48x47"):
+            load_unit_config(fx.write(build=False), fx.root)
+
+    def test_unknown_size_stops(self):
+        fx = UnitFixture()
+        self.addCleanup(fx.close)
+        fx.frame_size = {name: (40, 40) for name in fx.frames}
+        with self.assertRaisesRegex(UnitConfigError, "32 か 48"):
+            load_unit_config(fx.write(build=False), fx.root)
+
+    @unittest.skip("Task 4 で外す")
+    def test_fixture_48_passes_unit_rules(self):
+        from unit_rules import main as rules_main
+        fx = UnitFixture(size=48)
+        self.addCleanup(fx.close)
+        code, out = fx.run(rules_main)
+        self.assertEqual(code, 0, out)
 
     def test_the_stack_order_names_parts_by_the_file_name_before_the_direction(self):
         cfg = self.load()

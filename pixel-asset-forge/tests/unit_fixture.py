@@ -16,7 +16,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tools"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from compose import main as compose_main  # noqa: E402
-from test_compose import Workspace, grid_text  # noqa: E402
+from test_compose import Workspace  # noqa: E402
 
 MAPS = {
     "core": "o=contour b=skin_fair_base c=clothes_dark_base",
@@ -52,22 +52,50 @@ def shield() -> dict:
     return box(7, 18, 10, 23, "m")
 
 
-def mirror(pixels: dict) -> dict:
-    return {(31 - x, y): ch for (x, y), ch in pixels.items()}
+def core48(top: int = 8) -> dict:
+    """48px のコマの芯（足元 y=46、既定は背丈 39px）。"""
+    return box(20, top, 27, 46, "c")
 
 
-def default_frames() -> dict[str, dict]:
-    walk = core()
-    walk[(13, 29)] = "b"  # 脚だけ動かす
+SHIFT_48 = (8, 16)  # 48px の既定のコマは、32px の部品を右へ 8・下へ 16 ずらす（芯は core48）
+
+
+def shifted(pixels: dict, dx: int = SHIFT_48[0], dy: int = SHIFT_48[1]) -> dict:
+    return {(x + dx, y + dy): ch for (x, y), ch in pixels.items()}
+
+
+def mirror(pixels: dict, size: int = 32) -> dict:
+    return {(size - 1 - x, y): ch for (x, y), ch in pixels.items()}
+
+
+def default_frames(size: int = 32) -> dict[str, dict]:
+    """size=48 なら、部品を SHIFT_48 だけずらし、芯を core48 にする（どの確認も通る 48px のユニット）。"""
+    if size == 48:
+        body, move = core48, shifted
+    else:
+        body, move = core, (lambda pixels: pixels)
+    walk = body()
+    walk.update(move({(13, 29): "b"}))  # 脚だけ動かす
     down = {
-        "down_base": {"core": core(), "sword": sword(), "sword_hand": sword_hand(), "shield": shield()},
-        "down_idle2": {"core": core(), "sword": sword(-2), "sword_hand": sword_hand(-2), "shield": shield()},
-        "down_walk_a": {"core": walk, "sword": sword(), "sword_hand": sword_hand(), "shield": shield()},
-        "down_atk_hit": {"core": core(), "sword": sword(-4), "sword_hand": sword_hand(-4), "shield": shield()},
+        "down_base": {"core": body(), "sword": move(sword()), "sword_hand": move(sword_hand()), "shield": move(shield())},
+        "down_idle2": {"core": body(), "sword": move(sword(-2)), "sword_hand": move(sword_hand(-2)),
+                       "shield": move(shield())},
+        "down_walk_a": {"core": walk, "sword": move(sword()), "sword_hand": move(sword_hand()), "shield": move(shield())},
+        "down_atk_hit": {"core": body(), "sword": move(sword(-4)), "sword_hand": move(sword_hand(-4)),
+                         "shield": move(shield())},
     }
-    up = {name.replace("down_", "up_"): {key: mirror(pixels) for key, pixels in layers.items()}
+    up = {name.replace("down_", "up_"): {key: mirror(pixels, size) for key, pixels in layers.items()}
           for name, layers in down.items()}
     return {**down, **up}
+
+
+def grid(pixels: dict[tuple[int, int], str], maps: str, width: int, height: int) -> str:
+    """幅と高さを別に書けるグリッド（test_compose.grid_text は正方形だけ）。"""
+    rows = [["."] * width for _ in range(height)]
+    for (x, y), ch in pixels.items():
+        rows[y][x] = ch
+    header = f"# type: unit\n# size: {width}x{height}\n# light: upper-left\n# bg: transparent\n"
+    return header + f"# map: {maps}\n" + "\n".join("".join(r) for r in rows) + "\n"
 
 
 def default_checks() -> dict:
@@ -93,10 +121,12 @@ def default_checks() -> dict:
 class UnitFixture:
     """frames: コマの名前 → {"core": 画素, 部品の名前: 画素}（部品は書いた順に front で重ねる。back に挙げた部品の名前は back）。"""
 
-    def __init__(self) -> None:
+    def __init__(self, size: int = 32) -> None:
         self.ws = Workspace()
         self.root = self.ws.root
-        self.frames = default_frames()
+        self.size = size
+        self.frame_size: dict[str, tuple[int, int]] = {}  # コマの名前 → (幅, 高さ)。無ければ (size, size)
+        self.frames = default_frames(size)
         self.checks = default_checks()
         self.maps = dict(MAPS)
         self.back: set[str] = set()
@@ -111,13 +141,14 @@ class UnitFixture:
         frames = {}
         for name, layers in self.frames.items():
             direction, state = name.split("_", 1)
-            body = self.ws.write(f"assets/part/body/t/core_{name}.txt", grid_text(layers["core"], self.maps["core"]))
+            width, height = self.frame_size.get(name, (self.size, self.size))
+            body = self.ws.write(f"assets/part/body/t/core_{name}.txt", grid(layers["core"], self.maps["core"], width, height))
             parts = []
             for key, pixels in layers.items():
                 if key == "core":
                     continue
                 path = self.ws.write(f"assets/part/x/{key}_{direction}_{state}.txt",
-                                     grid_text(pixels, self.maps[key]))
+                                     grid(pixels, self.maps[key], width, height))
                 layer = {"part": str(path), "z": "back" if key in self.back else "front"}
                 if key in self.keep:
                     layer["keep"] = self.keep[key]
