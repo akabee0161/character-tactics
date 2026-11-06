@@ -69,10 +69,9 @@ class VerdictTest(unittest.TestCase):
     def test_outline_is_held_to_a_higher_floor(self):
         """The same distance passes for an ordinary pair and fails for an outline.
 
-        outline/pupil are the same colour in the palette, so this also pins the
-        one hard failure the repo is knowingly carrying.
+        A colour equal to the outline is the extreme case: distance 0, hard.
         """
-        label, distance = probe_colors.verdict("outline", "pupil", self.palette)
+        label, distance = probe_colors.verdict("outline", "#1a1228", self.palette)
         self.assertEqual(label, "HARD")
         self.assertEqual(distance, 0.0)
 

@@ -210,7 +210,7 @@ tile の目視は次の3通りで行う。**どれも機械チェックが無い
 ```
 
 隣り合う2色が見分けられるかを測る。明度の差が十分なら合格、無ければ色の距離 ΔE（0 なら同じ色）で判定する。
-現在は `knight` の瞳孔と輪郭が同じ色だという指摘が1件出る（[`ISSUES.md`](ISSUES.md) にある既知の課題）。
+同じ色見本を指す用途どうし（顔グラの瞳孔 `face_pupil` と輪郭 `contour` など）が接するのは、意図どおりとして数えない。
 
 **描く前に色の候補を測る：**
 
@@ -288,6 +288,7 @@ cat sheets/roran.txt
 部品ごとに `front`（上に描く）か `back`（透明な画素にだけ描く。体に隠れる）を選び、`dx`・`dy` でずらす。
 `front` は積んだ時点の一番手前へ、`back` は一番奥へ入る（`back` は体に近いものから先に書く）。拳の部品には `hand: true` を付けると、四方を輪郭で閉じているかを `--check` が確かめる。
 ロランは全向きを、完全な単品の部品（体・剣・剣の拳・盾・盾の拳）で組んでいる（`compose/roran.json`。決まりは `types/unit/SPEC.md`「部品で組む規約」）。
+ミストは最初から、素体（芯）・髪・被り物（帽子）・目・服（ローブ）・拳・武器（杖）を別の部品に描いて組んだ（`compose/mist.json`、2026-11-06）。
 イネスも全32コマを、芯・弓（弦を含む）・矢・弓の拳・矢の拳で組んでいる（`compose/ines.json`、部品は `assets/part/` の `body/ines/`・`equip/bow/`・`equip/arrow/`・`fist/ines/`）。
 ガウも全24コマを、芯・短剣・短剣の拳・空き手の拳で組んでいる（`compose/gau.json`、部品は `assets/part/` の `body/gau/core_*`・`equip/dagger/dagger_<向き>_<状態>`・`fist/gau/`）。
 短剣の敵4体（`compose/dagger-{bandit,knight,horn,thug}.json`）は、敵の男性の芯（`body/enemy_male/core_*`）に、目・服・頭の部品とガウの短剣・拳を重ねて組む。設定は `checks/dagger-*.json`。
@@ -416,10 +417,10 @@ palette/swatches.json      色見本 -> RGB（値を持つのはここだけ）
 palette/kinds.json         種類の一覧と説明（道具が種類で物を見分ける）
 palette/uses/<型>.json     用途の色 -> 色見本・種類・説明。絵の map はここの名前を書く（common.json は全型の輪郭）
 types/<type>/SPEC.md       型ごとの機械的な規約（寸法・構成・並び方）
-types/<type>/reference/    合格済みのお手本。絵柄はここで揃える（`unit` は `reference/` を持たない。手本は `assets/unit/roran/`（剣と盾）・`assets/unit/ines/`（弓）・`assets/unit/gau/`（短剣）、土台は `types/unit/base/` の素体）
+types/<type>/reference/    合格済みのお手本。絵柄はここで揃える（`unit` は `reference/` を持たない。手本は `assets/unit/roran/`（剣と盾）・`assets/unit/ines/`（弓）・`assets/unit/gau/`（短剣）・`assets/unit/mist/`（杖）、土台は `types/unit/base/` の素体）
 types/unit/base/           unit の素体（4方向）。新しい unit を複製して作る土台
 assets/<type>/<name>.txt   アセットの元テキスト（これが正）
-assets/unit/<unit>/        unit のコマ。味方3体と、部品で組んだ敵16体（`assets/unit/<敵の id>/`）
+assets/unit/<unit>/        unit のコマ。味方4体と、部品で組んだ敵16体（`assets/unit/<敵の id>/`）
 assets/part/<種類>/<名前>/  unit の部品。種類は equip・fist・body・head・hair・eye・cloth（`types/unit/SPEC.md`）
 compose/<unit>.json        部品の組み立て方（tools/compose.py が読む）
 enemy/<id>.json            敵のレシピ（tools/enemy_build.py が読む）
@@ -441,7 +442,7 @@ seed/face32.py             リポジトリ化前の原型。もう使ってい�
 | `face`（顔グラ） | reference 1点（`knight`） | 32x32 | [`types/face/SPEC.md`](types/face/SPEC.md) |
 | `item`（小物） | 3点（`chest`・`sword`・`bow`） | 16x16 | [`types/item/SPEC.md`](types/item/SPEC.md) |
 | `tile`（マップ） | 77点（草原57・城内20）。うち12点は物のセット3つ（村・岩・木）の部品 | 16x16（セットは 32x32） | [`types/tile/SPEC.md`](types/tile/SPEC.md) |
-| `unit`（マップ上のキャラ） | 3体（ロラン・ガウ 24コマ、イネス 32コマ）＋素体 `male_*`・`female_*` 4方向ずつ。ほかに敵16体（24コマずつ。部品で生成し、`enemy_build.py` で色替えする） | 32x32 | [`types/unit/SPEC.md`](types/unit/SPEC.md) |
+| `unit`（マップ上のキャラ） | 4体（ロラン・ガウ・ミスト 24コマ、イネス 32コマ）＋素体 `male_*`・`female_*` 4方向ずつ。ほかに敵16体（24コマずつ。部品で生成し、`enemy_build.py` で色替えする） | 32x32 | [`types/unit/SPEC.md`](types/unit/SPEC.md) |
 
 **「正」はテキストで、PNG は生成物。** 絵を変えるときに編集するのは `assets/**/*.txt` だけで、
 PNG を直接編集しない。
@@ -560,7 +561,7 @@ Claude は自分が何を描いたか知っているので、そう見えてし�
 | **未確定** | アセットあたりの色数上限。`# max_colors:` は実装済みだがどのアセットでも未使用 |
 | **未確定** | 色見本の具体的な色 |
 | **未確定** | `face` / `item` / `tile` / `unit` 以外の型と、その解像度 |
-| **未確定** | `unit` で許す最小の線幅（0.796倍表示で1pxの刃が消えた。[実測](docs/2026-09-23-findings.md#ゲームに入れて分かったこと)。0.796倍はゲーム側で修正予定の経過的な課題で、いずれ縮小されなくなる） |
+| **確定** | `unit` の最小の線幅は決めない。ゲームの縮小（0.796倍表示で1pxの刃が消えた。[実測](docs/2026-09-23-findings.md#ゲームに入れて分かったこと)）を理由に絵を変えず、ドット絵単体の品質で描く。倍率はゲーム側で直す（2026-09-25・11-05 依頼者） |
 | **未確定** | `tile` をゲームへどう渡すか（1枚ずつの PNG / タイルセット / マップの完成品）。`tilemap.py` は検証用 |
 
 未確定の項目は、Claude も勝手に決めない。決めたら依頼時に伝え、この表を更新する。

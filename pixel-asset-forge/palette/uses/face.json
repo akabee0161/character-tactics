@@ -45,9 +45,9 @@
     "note": "瞳の色"
   },
   "face_pupil": {
-    "swatch": "pupil",
+    "swatch": "outline",
     "kind": "eye",
-    "note": "瞳孔"
+    "note": "瞳孔。輪郭と同じ色見本を指す（ユニットの目と同じ。2026-11-05 依頼者）"
   },
   "face_skin_deep": {
     "swatch": "skin_deep",

@@ -318,5 +318,55 @@
     "swatch": "roof_base",
     "kind": "weapon",
     "note": "剣の柄頭"
+  },
+  "hat_witch_hi": {
+    "swatch": "witch_violet_hi",
+    "kind": "headgear",
+    "note": "ミストのつば広の帽子（明）"
+  },
+  "hat_witch_base": {
+    "swatch": "witch_violet_base",
+    "kind": "headgear",
+    "note": "ミストのつば広の帽子（中）"
+  },
+  "hat_witch_shadow": {
+    "swatch": "witch_violet_shadow",
+    "kind": "headgear",
+    "note": "ミストのつば広の帽子（暗）"
+  },
+  "hat_buckle": {
+    "swatch": "metal_hi",
+    "kind": "ornament",
+    "note": "ミストの帽子の金の留め金"
+  },
+  "hair_chestnut_hi": {
+    "swatch": "chestnut_hi",
+    "kind": "hair",
+    "note": "ミストの栗色の髪（明）"
+  },
+  "hair_chestnut_base": {
+    "swatch": "chestnut_base",
+    "kind": "hair",
+    "note": "ミストの栗色の髪（中）"
+  },
+  "hair_chestnut_shadow": {
+    "swatch": "chestnut_shadow",
+    "kind": "hair",
+    "note": "ミストの栗色の髪（暗）"
+  },
+  "robe_black_hi": {
+    "swatch": "cloak_dark_base",
+    "kind": "cloth",
+    "note": "ミストの黒基調のローブ（明）"
+  },
+  "robe_black_base": {
+    "swatch": "cloak_dark_shadow",
+    "kind": "cloth",
+    "note": "ミストの黒基調のローブ（中。これより暗い色は輪郭と見分けられないので2色）"
+  },
+  "staff_gem": {
+    "swatch": "orchid_base",
+    "kind": "weapon",
+    "note": "ミストの杖の先の玉"
   }
 }

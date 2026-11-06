@@ -10,7 +10,7 @@
   変更を禁じるものではない**（`tools/` を触ったら下記の unittest を通すこと）。
 - **新規アセットを書く前に、必ず `types/<type>/SPEC.md` と `types/<type>/reference/` を読む。**
   絵柄は散文ではなく reference で揃える。
-  `unit` は `reference/` を持たない。手本は `assets/unit/roran/`（剣と盾）と `assets/unit/ines/`（弓）と `assets/unit/gau/`（短剣）、複製の土台は `types/unit/base/` の素体（`male_*`・`female_*`）。
+  `unit` は `reference/` を持たない。手本は `assets/unit/roran/`（剣と盾）と `assets/unit/ines/`（弓）と `assets/unit/gau/`（短剣）と `assets/unit/mist/`（杖。部品を素体・髪・被り物・目・服・拳・武器に分けた最初のユニット）、複製の土台は `types/unit/base/` の素体（`male_*`・`female_*`）。
   新しい `unit` は `types/unit/SPEC.md` の「描く手順」（確認ポイント CP0〜CP4）どおりに描く。
 - **目視の前に `tools/validate.py` を通す。** 行長・未定義文字・パレット外参照は
   機械で落とす。目視はそれを通ってからにする。
@@ -70,6 +70,7 @@
 .venv/bin/python tools/compose.py compose/roran.json --check   # ロランは全24コマが部品から再現できる（拳が閉じていないと終了 2）
 .venv/bin/python tools/compose.py compose/ines.json --check    # イネスは全32コマが部品から再現できる
 .venv/bin/python tools/compose.py compose/gau.json --check     # ガウは全24コマが部品から再現できる
+.venv/bin/python tools/compose.py compose/mist.json --check    # ミストも全24コマが部品から再現できる
 (set -e; for u in bandit knight horn thug; do .venv/bin/python tools/compose.py compose/dagger-$u.json --check; done)  # 短剣の敵4体も全24コマが部品から再現できる
 (set -e; for u in bandit horn bandit-a-f bandit-b-f bandit-c-f horn-b-f horn-c-f; do .venv/bin/python tools/compose.py compose/axe-$u.json --check; done)  # 斧の敵7体も全24コマが部品から再現できる
 (set -e; for u in knight thug thug-a-f thug-b-f thug-c-f; do .venv/bin/python tools/compose.py compose/spear-$u.json --check; done)  # 槍の敵5体も全24コマが部品から再現できる
@@ -135,7 +136,7 @@
 - 道具で落ちたら、道具に従って絵を直して通す。直してよいか、道具の判定を変えてよいかを、途中で依頼者に聞かない
 - 依頼者には、道具に従って直し終えた完成品を見せる。途中の失敗の一覧や直し方の案を見せて止まらない
 - 例外（`exceptions`・`open_chars`）で落ちた絵を通さない
-- `ISSUES.md` に記録済みの原因（色が未定の `knight` による `check_colors.py` の失敗など、道具の不具合と依頼者が決める未確定事項）で落ちたときは、絵を変えない。絵の側で依頼者の決めることを決めてしまうため。`ISSUES.md` に記録し、その記録を添えて完成品を見せる。途中で止めて聞かない
+- `ISSUES.md` に記録済みの原因（道具の不具合と依頼者が決める未確定事項）で落ちたときは、絵を変えない。絵の側で依頼者の決めることを決めてしまうため。`ISSUES.md` に記録し、その記録を添えて完成品を見せる。途中で止めて聞かない
 - 道具は常に正しいものとする（2026-11-04 依頼者）。ただし上の `ISSUES.md` に記録済みの原因は例外で、そちらを先に適用する。それ以外で、正しい絵が道具に落ちたように見えても、道具の判定は直さず、絵を直す
 - 承認済みの重なり順（`checks/<ユニット>.json` の `orders`）は、絵を直して通す対象ではない。順そのものを変えたいときは、変える前に依頼者に確認する
 - 古い作り方の絵（2026-11-05 に消した `gen/enemy/` で作った絵など）と食い違っても、部品と道具の側に従う。古い絵は依頼者が全部を見きれていない
@@ -173,4 +174,5 @@ README は「リポジトリの使い方」を書く場所なので、課題を�
 **未確定:** 目指す絵柄、アセットあたりの色数上限（`# max_colors:` は実装済みだが
 どのアセットでも未使用）、色見本の具体的な色、
 `face` / `item` / `tile` / `unit` 以外の型の一覧、未定義の型の解像度、
-`unit` で許す最小の線幅、`tile` をゲームへどう渡すか。必要になったら確認を取る。
+`tile` をゲームへどう渡すか。必要になったら確認を取る。
+`unit` の最小の線幅は決めない（縮小を理由に絵を変えない。倍率はゲーム側で直す。2026-11-05 依頼者）。

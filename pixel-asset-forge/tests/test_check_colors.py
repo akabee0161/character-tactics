@@ -160,14 +160,13 @@ class RepositoryTest(unittest.TestCase):
             with self.subTest(relative):
                 self.assert_report(relative, hard=0, warn=0)
 
-    def test_knight_reference_has_a_known_unfixed_failure(self):
-        """`outline` and `pupil` are both #1a1228, so the pupil dissolves into
-        the eye outline. Fixing it means choosing a colour, which is still open
-        (HANDOFF 3). Update this test when it is chosen."""
+    def test_knight_pupil_is_the_outline_swatch(self):
+        """The pupil touches the eye outline on purpose. Since 2026-11-05 the
+        use `face_pupil` points at the `outline` swatch (as unit eyes do), so the
+        pair is one colour, not two to tell apart."""
         grid = parse(REPO_ROOT / "types/face/reference/knight.txt")
         hard, _ = inspect(grid, *live_swatches())
-        self.assertEqual(len(hard), 1)
-        self.assertIn("outline / pupil", hard[0])
+        self.assertEqual(hard, [])
 
 
 if __name__ == "__main__":
