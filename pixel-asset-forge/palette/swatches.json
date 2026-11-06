@@ -274,5 +274,29 @@
   "orchid_dark": {
     "hex": "#571562",
     "note": "紫の最暗"
+  },
+  "witch_violet_hi": {
+    "hex": "#8a6aa0",
+    "note": "くすんだ紫の明（ミストの帽子。顔グラの帽子から。2026-11-06 probe_colors で輪郭・ローブ・肌と測った）"
+  },
+  "witch_violet_base": {
+    "hex": "#5e4871",
+    "note": "くすんだ紫の中"
+  },
+  "witch_violet_shadow": {
+    "hex": "#48305e",
+    "note": "くすんだ紫の暗"
+  },
+  "chestnut_hi": {
+    "hex": "#d8884a",
+    "note": "栗色の明（ミストの髪。顔グラの髪から。2026-11-06 probe_colors で輪郭・肌・帽子・ローブと測った）"
+  },
+  "chestnut_base": {
+    "hex": "#b0602a",
+    "note": "栗色の中"
+  },
+  "chestnut_shadow": {
+    "hex": "#6e3a22",
+    "note": "栗色の暗"
   }
 }
