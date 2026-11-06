@@ -39,6 +39,7 @@
 | 待機・歩きの切っ先の上限 | 5 | 8 | `blade_height` |
 | 待機2コマ目の切っ先の上限 | 3 | 5 | `blade_height` |
 | 頭・胴・脚の行 | 3-14・15-24・25-31 | 5-22・23-37・38-47 | `body_check`・`head_cover_check` |
+| 手とみなす肌の塊の上限（画素） | 12 | 27（面積なので 1.5²倍） | `weapon_check`・`hand_outline` |
 
 左右反転（`weapon_mirror`・`hand_mirror`）は 47 − x、武器がコマの端で切れる判定（`weapon_check`）は x・y が 0 か 47。
 部品のピッカー（`unit_picker.py`）は素体と手本の大きさがそろっている必要がある（48px のガルムの横に 32px のロランは並べられない）。
