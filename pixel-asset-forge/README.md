@@ -442,7 +442,7 @@ seed/face32.py             リポジトリ化前の原型。もう使ってい�
 | `face`（顔グラ） | reference 1点（`knight`） | 32x32 | [`types/face/SPEC.md`](types/face/SPEC.md) |
 | `item`（小物） | 3点（`chest`・`sword`・`bow`） | 16x16 | [`types/item/SPEC.md`](types/item/SPEC.md) |
 | `tile`（マップ） | 77点（草原57・城内20）。うち12点は物のセット3つ（村・岩・木）の部品 | 16x16（セットは 32x32） | [`types/tile/SPEC.md`](types/tile/SPEC.md) |
-| `unit`（マップ上のキャラ） | 3体（ロラン・ガウ 24コマ、イネス 32コマ）＋素体 `male_*`・`female_*` 4方向ずつ。ほかに敵16体（24コマずつ。部品で生成し、`enemy_build.py` で色替えする） | 32x32 | [`types/unit/SPEC.md`](types/unit/SPEC.md) |
+| `unit`（マップ上のキャラ） | 4体（ロラン・ガウ・ミスト 24コマ、イネス 32コマ）＋素体 `male_*`・`female_*` 4方向ずつ。ほかに敵16体（24コマずつ。部品で生成し、`enemy_build.py` で色替えする） | 32x32 | [`types/unit/SPEC.md`](types/unit/SPEC.md) |
 
 **「正」はテキストで、PNG は生成物。** 絵を変えるときに編集するのは `assets/**/*.txt` だけで、
 PNG を直接編集しない。
