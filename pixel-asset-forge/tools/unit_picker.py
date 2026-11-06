@@ -250,6 +250,13 @@ def build_data(picker: Picker) -> dict:
                 raise PickerError(str(exc)) from None
         return grids[path]
 
+    # 素体と手本は同じ大きさ（32px か 48px）。ページは1つの大きさで全部を描く。部品と素体の違いは compose_frame が止める
+    sizes = {(g.width, g.height) for d in picker.directions
+             for g in [grid(picker.path(picker.body, d))] + [grid(picker.path(t, d)) for t in picker.refs.values()]}
+    if len(sizes) != 1:
+        raise PickerError(f"素体と手本の大きさがそろっていない: {', '.join(f'{w}x{h}' for w, h in sorted(sizes))}")
+    (width, height), = sizes
+
     frames, parts, refs = {}, {}, {}
     for d in picker.directions:
         body = grid(picker.path(picker.body, d))
@@ -280,7 +287,7 @@ def build_data(picker: Picker) -> dict:
 
     return {
         "unit": picker.unit,
-        "size": [32, 32],
+        "size": [width, height],
         "directions": picker.directions,
         "elements": {key: {"label": el.label, "variants": {vid: v.label for vid, v in el.variants.items()}}
                      for key, el in picker.elements.items()},

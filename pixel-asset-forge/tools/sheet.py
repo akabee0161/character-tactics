@@ -48,9 +48,16 @@ ROWS = 12
 STATES = ("idle", "walk", "attack")
 DIRECTIONS = ("down", "up", "left", "right")
 
-# The frame row the feet are supposed to sit on. Declared in
-# docs/2026-09-20-unit-sprite-sheet-spec.md section 3.
-FOOT_Y = 30
+# The feet sit FOOT_INSET rows above the bottom edge of the frame: y=30 in a
+# 32px frame (docs/2026-09-20-unit-sprite-sheet-spec.md section 3) and y=46
+# in a 48px one (tools/unit_scale.py). The game uses the same inset
+# (character-tactics src/render/sprites.ts FOOT_INSET).
+FOOT_INSET = 2
+
+
+def foot_y(frame: int) -> int:
+    """The row the feet are supposed to sit on in a frame of this size."""
+    return frame - FOOT_INSET
 
 
 def read_sheet(path: Path) -> list[list[str | None]]:
@@ -205,7 +212,7 @@ def preview(canvas: Image.Image, frame: int, scale: int = 4) -> Image.Image:
     for y in range(0, canvas.height + 1, frame):
         draw.line([(0, y * scale), (out.width, y * scale)], fill=BORDER)
     for top in range(0, canvas.height, frame):
-        y = (top + FOOT_Y) * scale
+        y = (top + foot_y(frame)) * scale
         draw.line([(0, y), (out.width, y)], fill=FOOT_LINE)
     for left in range(0, canvas.width, frame):
         x = int((left + (frame - 1) / 2) * scale)
@@ -223,11 +230,11 @@ def report(frames: dict[str, Image.Image], frame: int) -> None:
     """
     expected_center = (frame - 1) / 2
     print(f"     {'frame':<18}{'foot_y':>7}{'center_x':>10}   "
-          f"(expected foot_y={FOOT_Y}, center_x={expected_center})")
+          f"(expected foot_y={foot_y(frame)}, center_x={expected_center})")
     for name in sorted(frames):
         foot, center = measure(frames[name])
         flag = ""
-        if foot != FOOT_Y or center is None or abs(center - expected_center) > 1:
+        if foot != foot_y(frame) or center is None or abs(center - expected_center) > 1:
             flag = "  <-- off"
         print(f"     {name:<18}{str(foot):>7}{str(center):>10}{flag}")
 

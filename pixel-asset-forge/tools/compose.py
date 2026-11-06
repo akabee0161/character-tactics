@@ -5,7 +5,7 @@
     tools/compose.py compose/gau.json --frames down_base --out /tmp/cand
     tools/compose.py compose/gau.json --check             # 書いてあるコマと同じか
 
-部品は素体抜きで描いた 32x32 の unit グリッド（部品は assets/part/<種類>/<名前>/、
+部品は素体抜きで描いた、素体と同じ大きさ（32x32 か 48x48）の unit グリッド（部品は assets/part/<種類>/<名前>/、
 種類は equip・fist・body・head・hair・eye・cloth）。どこが隠れてどこが見えるかは、部品ごとの前後で決める:
 
 - front: 部品の透明でない画素をすべて上に描く

@@ -50,6 +50,22 @@ def load_states(path: Path) -> list[tuple[str, str, int, float]]:
     return out
 
 
+def load_frame_size(path: Path) -> int:
+    """コマの大きさ（sprites.map.frame。書いていなければ 32。ガルムは 48）。"""
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except OSError as exc:
+        raise AnimError(f"{path}: 読めない: {exc}") from None
+    except json.JSONDecodeError as exc:
+        raise AnimError(f"{path}: JSON として読めない: {exc}") from None
+    sprites = data.get("sprites") if isinstance(data, dict) else None
+    anim = sprites.get("map") if isinstance(sprites, dict) else None
+    frame = anim.get("frame", 32) if isinstance(anim, dict) else 32  # sprites.map が無いことは load_states が止める
+    if not isinstance(frame, int) or isinstance(frame, bool) or frame < 1:
+        raise AnimError(f"{path}: sprites.map.frame が1以上の整数でない: {frame!r}")
+    return frame
+
+
 PAGE = """<!doctype html>
 <meta charset="utf-8">
 <title>{title}</title>
@@ -107,8 +123,9 @@ function draw(t) {{
     const n = +c.dataset.frames, fps = +c.dataset.fps / slow;
     const i = Math.floor((t - start) / 1000 * fps) % n;
     const ctx = c.getContext("2d"); ctx.imageSmoothingEnabled = false;
-    ctx.clearRect(0, 0, 32, 32);
-    ctx.drawImage(img, i * 32, +c.dataset.row * 32, 32, 32, 0, 0, 32, 32);
+    const s = c.width;
+    ctx.clearRect(0, 0, s, s);
+    ctx.drawImage(img, i * s, +c.dataset.row * s, s, s, 0, 0, s, s);
   }}
   if (playing) requestAnimationFrame(draw);
 }}
@@ -136,7 +153,7 @@ def uri(path: Path) -> str:
         raise AnimError(f"{path}: 読めない: {exc}") from None
 
 
-def _check_sheet(path: Path, states) -> None:
+def _check_sheet(path: Path, states, frame: int = 32) -> None:
     """シートに、状態×4方向の行と、一番長い状態のコマが入っているか（入っていないと空のセルが黙って再生される）。"""
     try:
         with Image.open(path) as im:
@@ -144,20 +161,21 @@ def _check_sheet(path: Path, states) -> None:
             im.load()  # 画素まで読む（寸法だけ読めて画素が壊れた PNG を通さない）
     except OSError as exc:
         raise AnimError(f"{path}: 読めない: {exc}") from None
-    need_w, need_h = max(frames for _k, _ja, frames, _fps in states) * 32, len(states) * len(DIRS) * 32
+    need_w, need_h = max(frames for _k, _ja, frames, _fps in states) * frame, len(states) * len(DIRS) * frame
     if width < need_w or height < need_h:
         raise AnimError(f"{path}: シートが {width}x{height} で、ゲームのユニット設定の {need_w}x{need_h} に足りない"
                         "（別のユニットのシートか、--anim の取り違え）")
 
 
-def build_page(now: Path, cand: Path, states, dirs: list[str], title: str, note: str, labels: list[str]) -> str:
+def build_page(now: Path, cand: Path, states, dirs: list[str], title: str, note: str, labels: list[str],
+               frame: int = 32) -> str:
     unknown = [d for d in dirs if d not in DIRS]
     if unknown:
         raise AnimError(f"向きは {', '.join(DIRS)} から選ぶ（{', '.join(unknown)} だった）")
     if len(labels) != 2:
         raise AnimError(f"見出し（--labels）は 左,右 の2つにする（{len(labels)} つだった）")
     for sheet in (now, cand):
-        _check_sheet(sheet, states)
+        _check_sheet(sheet, states, frame)
     labels = [html.escape(s) for s in labels]
     sections = []
     for si, (_key, ja, frames, fps) in enumerate(states):
@@ -165,7 +183,7 @@ def build_page(now: Path, cand: Path, states, dirs: list[str], title: str, note:
         for d in dirs:
             row = si * 4 + DIRS.index(d)
             pair = "".join(
-                f'<div class="{k}"><canvas width="32" height="32" data-sheet="{k}" data-row="{row}" '
+                f'<div class="{k}"><canvas width="{frame}" height="{frame}" data-sheet="{k}" data-row="{row}" '
                 f'data-frames="{frames}" data-fps="{fps}"></canvas>{label}</div>'
                 for k, label in zip(("now", "cand"), labels))
             figs.append(f'<figure><div class="pair">{pair}</div><figcaption>{DIR_JA[d]}</figcaption></figure>')
@@ -186,7 +204,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--labels", default="今,新しい案", help="左,右 の見出し")
     a = ap.parse_args(argv)
     try:
-        page = build_page(a.now, a.cand, load_states(a.anim), a.dirs.split(","), a.title, a.note, a.labels.split(","))
+        page = build_page(a.now, a.cand, load_states(a.anim), a.dirs.split(","), a.title, a.note, a.labels.split(","),
+                          load_frame_size(a.anim))
     except AnimError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2

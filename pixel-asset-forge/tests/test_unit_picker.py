@@ -39,15 +39,15 @@ def grid_text(pixels: dict[tuple[int, int], str], maps: str, size: int = 32) -> 
 class Workspace:
     """A throwaway forge root: a body and parts for every direction, and a picker config."""
 
-    def __init__(self) -> None:
+    def __init__(self, size: int = 32) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)
         for d in DIRS:
-            self.write(f"body_{d}.txt", grid_text({(10, 10): "b"}, BODY_MAP))
+            self.write(f"body_{d}.txt", grid_text({(10, 10): "b"}, BODY_MAP, size))
             # 頭の案 H1 は (11,10)、H2 は (12,10)。体の画素 (10,10) にも1画素重ねる
-            self.write(f"head1_{d}.txt", grid_text({(11, 10): "h", (10, 10): "h"}, PART_MAP))
-            self.write(f"head2_{d}.txt", grid_text({(12, 10): "h"}, PART_MAP))
-            self.write(f"knife_{d}.txt", grid_text({(10, 10): "o", (5, 5): "o"}, "o=contour"))
+            self.write(f"head1_{d}.txt", grid_text({(11, 10): "h", (10, 10): "h"}, PART_MAP, size))
+            self.write(f"head2_{d}.txt", grid_text({(12, 10): "h"}, PART_MAP, size))
+            self.write(f"knife_{d}.txt", grid_text({(10, 10): "o", (5, 5): "o"}, "o=contour", size))
 
     def write(self, rel: str, text: str) -> Path:
         path = self.root / rel
@@ -202,6 +202,23 @@ class BuildDataTest(unittest.TestCase):
         self.ws.write("knife_down.txt", grid_text({(5, 5): "b"}, "b=clothes_blue_base"))
         with self.assertRaisesRegex(PickerError, r"H1-D1.*down"):
             build_data(load_picker(self.ws.config(), root=self.ws.root))
+
+
+class Size48Test(unittest.TestCase):
+    def setUp(self):
+        self.ws = Workspace(48)
+        self.addCleanup(self.ws.close)
+
+    def test_48_size(self):
+        data = build_data(load_picker(self.ws.config(), root=self.ws.root))
+        self.assertEqual(data["size"], [48, 48])
+        self.assertTrue(all(len(f) == 48 * 48 for f in data["frames"].values()))
+
+    def test_a_ref_of_another_size_stops(self):
+        for d in DIRS:
+            self.ws.write(f"roran_{d}.txt", grid_text({(10, 10): "b"}, BODY_MAP, 32))
+        with self.assertRaisesRegex(PickerError, "大きさ"):
+            build_data(load_picker(self.ws.config(refs={"ロラン": "roran_{dir}.txt"}), root=self.ws.root))
 
 
 class WriteHtmlTest(unittest.TestCase):

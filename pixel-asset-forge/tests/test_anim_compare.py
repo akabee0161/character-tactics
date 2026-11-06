@@ -9,7 +9,7 @@ from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tools"))
 
-from anim_compare import AnimError, build_page, load_states, main  # noqa: E402
+from anim_compare import AnimError, build_page, load_frame_size, load_states, main  # noqa: E402
 
 GAME = {"id": "t", "sprites": {"map": {"sheet": "t.png", "frame": 32,
                                        "idle": {"frames": 2, "fps": 4}, "walk": {"frames": 4, "fps": 8},
@@ -54,6 +54,34 @@ class AnimCompareTest(unittest.TestCase):
         self.assertIn('data-row="8" data-frames="3" data-fps="6"', page)   # 攻撃の down
         self.assertIn('data-row="6" data-frames="4" data-fps="8"', page)   # 歩きの left
         self.assertIn("<title>題</title>", page)
+
+    def test_48_page_uses_frame_from_settings(self):
+        big = json.loads(json.dumps(GAME))
+        big["sprites"]["map"]["frame"] = 48
+        game = self.game(big)
+        self.assertEqual(load_frame_size(game), 48)
+        for name in ("now48.png", "cand48.png"):
+            Image.new("RGBA", (48 * 4, 48 * 12)).save(self.dir / name)
+        page = build_page(self.dir / "now48.png", self.dir / "cand48.png", load_states(game),
+                          ["down"], "題", "", ["今", "案"], load_frame_size(game))
+        self.assertIn('<canvas width="48" height="48"', page)
+        self.assertNotIn('<canvas width="32"', page)
+
+    def test_frame_defaults_to_32(self):
+        self.assertEqual(load_frame_size(self.game(GAME)), 32)
+
+    def test_48_settings_with_32_sheet_stops(self):
+        Image.new("RGBA", (32 * 4, 32 * 12)).save(self.dir / "small.png")
+        with self.assertRaisesRegex(AnimError, "足りない"):
+            build_page(self.dir / "small.png", self.dir / "small.png", load_states(self.game(GAME)),
+                       ["down"], "題", "", ["今", "案"], 48)
+
+    def test_frame_not_integer_stops(self):
+        for bad in ("48", 0, True):
+            bad_game = json.loads(json.dumps(GAME))
+            bad_game["sprites"]["map"]["frame"] = bad
+            with self.subTest(frame=bad), self.assertRaisesRegex(AnimError, "frame"):
+                load_frame_size(self.game(bad_game))
 
     def test_page_declares_html5_and_utf8(self):
         page = build_page(self.dir / "now.png", self.dir / "cand.png", load_states(self.game(GAME)),
