@@ -74,10 +74,6 @@
       "staff_hand"
     ]
   },
-  "weapon_check": {
-    "depth": [
-      "down"
-    ]
-  },
+  "weapon_check": null,
   "exceptions": []
 }

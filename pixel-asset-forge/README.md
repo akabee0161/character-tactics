@@ -420,7 +420,7 @@ types/<type>/SPEC.md       型ごとの機械的な規約（寸法・構成・�
 types/<type>/reference/    合格済みのお手本。絵柄はここで揃える（`unit` は `reference/` を持たない。手本は `assets/unit/roran/`（剣と盾）・`assets/unit/ines/`（弓）・`assets/unit/gau/`（短剣）・`assets/unit/mist/`（杖）、土台は `types/unit/base/` の素体）
 types/unit/base/           unit の素体（4方向）。新しい unit を複製して作る土台
 assets/<type>/<name>.txt   アセットの元テキスト（これが正）
-assets/unit/<unit>/        unit のコマ。味方3体と、部品で組んだ敵16体（`assets/unit/<敵の id>/`）
+assets/unit/<unit>/        unit のコマ。味方4体と、部品で組んだ敵16体（`assets/unit/<敵の id>/`）
 assets/part/<種類>/<名前>/  unit の部品。種類は equip・fist・body・head・hair・eye・cloth（`types/unit/SPEC.md`）
 compose/<unit>.json        部品の組み立て方（tools/compose.py が読む）
 enemy/<id>.json            敵のレシピ（tools/enemy_build.py が読む）
