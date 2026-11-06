@@ -180,6 +180,29 @@ class BodyCheck48Test(unittest.TestCase):
         self.assertEqual(code, 1, out)
         self.assertIn("胴からはみ出した画素", out)
 
+    def test_non_square_stops(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = write_core(Path(tmp), "core_down_base.txt", whole_body(), 32)
+            text = path.read_text(encoding="utf-8").replace("# size: 32x32", "# size: 48x32")
+            rows = text.split("\n")
+            path.write_text("\n".join(r + "." * 16 if r.startswith((".", "o", "b")) else r for r in rows),
+                            encoding="utf-8")
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out), contextlib.redirect_stderr(out):
+                code = main([tmp])
+        self.assertEqual(code, 2, out.getvalue())
+        self.assertIn("正方形でない", out.getvalue())
+
+    def test_mixed_sizes_in_a_directory_stop(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            write_core(Path(tmp), "core_down_base.txt", body48(), 48)
+            write_core(Path(tmp), "core_down_idle2.txt", whole_body(), 32)
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out), contextlib.redirect_stderr(out):
+                code = main([tmp])
+        self.assertEqual(code, 2, out.getvalue())
+        self.assertIn("大きさがそろっていない", out.getvalue())
+
     def test_40_stops(self):
         code, out = self.run_main(whole_body(), 40)
         self.assertEqual(code, 2, out)

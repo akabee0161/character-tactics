@@ -51,7 +51,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from enemy_build import EnemyError, read_frame  # noqa: E402
-from hand_outline import HAND_MAX  # noqa: E402
+from unit_scale import ScaleError, scale_for  # noqa: E402
 from gridfile import GridError  # noqa: E402
 
 DIRECTIONS = ("down", "up", "left", "right")
@@ -194,6 +194,7 @@ class Analysis:
     def __init__(self, frame, blade: set[str], weapon: set[str], hand: set[str]):
         pts = {(x, y): n for y, row in enumerate(frame) for x, n in enumerate(row) if n is not None}
         self.size = len(frame)  # コマの大きさ（32 か 48。端と体の中心の既定に使う）
+        self.hand_max = scale_for(self.size).hand_max  # 手とみなす肌の塊の上限。表に無い大きさは ScaleError
         self.hand_colours = set(hand)
         self.pixels = pts
         blade_px = {p for p, n in pts.items() if n in blade}
@@ -322,7 +323,7 @@ def check_frame(name: str, a: Analysis, hidden: set[str], hit_states: set[str],
         k = 0 if orient == "v" else 1
         beyond = [p for p in near if not min(h[1 - k] for h in a.hand) <= p[1 - k] <= max(h[1 - k] for h in a.hand)]
         # 拳の大きさの手（顔を手と取り違えたときは測らない）で、柄が拳の外へ柄の向きに 2px 以上伸びているとき
-        if orient in ("v", "h") and orient == _orientation(a.weapon) and len(a.hand) <= HAND_MAX \
+        if orient in ("v", "h") and orient == _orientation(a.weapon) and len(a.hand) <= a.hand_max \
                 and len(beyond) >= 2:
             off = sum(p[k] for p in near) / len(near) - _center(a.hand)[k]
             if abs(off) > 0.5:
@@ -405,7 +406,10 @@ def load(directory: Path, blade, weapon, hand) -> dict[str, Analysis]:
     frames = {}
     for path in sorted(directory.glob("*.txt")):
         if _direction(path.stem) in DIRECTIONS:
-            frames[path.stem] = Analysis(read_frame(path), blade, weapon, hand)
+            try:
+                frames[path.stem] = Analysis(read_frame(path), blade, weapon, hand)
+            except ScaleError as exc:
+                raise WeaponCheckError(f"{path.name}: {exc}") from None
     if not frames:
         raise WeaponCheckError(f"{directory}: <向き>_<名前>.txt が1つも無い")
     return frames

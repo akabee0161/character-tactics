@@ -163,6 +163,15 @@ class HandTest(unittest.TestCase):
         fails = check_frame("down_atk_hit", analyse(f), set(), set())
         self.assertTrue(any("拳が柄の真ん中に無い" in s for s in fails), fails)
 
+    def test_48_large_fist_off_the_middle_fails(self):
+        # 48px の拳は 5x3＝15 画素まである（32px の 12 画素を面積の比 1.5² で 27 に）。黙って飛ばさない
+        f = blank(48)
+        body(f, 18, 24, 26, 46)
+        spear_v(f, 9, 6, 35)
+        fist(f, 10, 22, w=5, h=3)  # 肌 x10〜14、真ん中 x12、柄 x9
+        fails = check_frame("down_atk_hit", analyse(f), set(), set())
+        self.assertTrue(any("拳が柄の真ん中に無い" in s for s in fails), fails)
+
     def test_fist_apart_from_the_weapon_fails(self):
         f = blank()
         body(f)

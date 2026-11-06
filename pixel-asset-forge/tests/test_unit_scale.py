@@ -28,6 +28,9 @@ class ScaleTest(unittest.TestCase):
         self.assertEqual(values(s), (46, 36, 39, 37, 43, 42, 8, 5))
         self.assertEqual(s.bands, {"head": (5, 22), "trunk": (23, 37), "legs": (38, 47)})
 
+    def test_hand_max_scales_by_area(self):
+        self.assertEqual((scale_for(32).hand_max, scale_for(48).hand_max), (12, 27))
+
     def test_other_sizes_stop(self):
         with self.assertRaisesRegex(ScaleError, "40.*32 か 48"):
             scale_for(40)

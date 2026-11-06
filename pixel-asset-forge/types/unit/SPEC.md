@@ -53,7 +53,7 @@ build/sheets/<unit>.png           ゲームに渡すシート
 build/sheets/<unit>_preview.png   目視用のプレビュー
 types/unit/base/<body>_<dir>.txt  素体（装備・髪・顔の造作・拳なし）。`male_*`・`female_*`。新しい unit を複製して作る土台。
                                   頭は髪の下の地肌の形（髪込みの外形からてっぺんと横を1px 削った形）、男性の胴はまっすぐな筒（2026-10-27 依頼者の判断）
-assets/part/<種類>/<名前>/<部品>_<dir>[_<状態>].txt  部品。素体抜き、32x32 のコマの上の位置に描く。種類は equip（武器・盾）・fist（拳）・
+assets/part/<種類>/<名前>/<部品>_<dir>[_<状態>].txt  部品。素体抜き、素体と同じ大きさ（32x32、ガルムは 48x48）のコマの上の位置に描く。種類は equip（武器・盾）・fist（拳）・
                                                      body（芯・体）・head・hair・eye・cloth。1体だけの部品は名前をユニット名にする
                                                      （body/roran・fist/ines・hair/gau）。ファイル名は変えない
 compose/<unit>.json                       部品の組み立て方（tools/compose.py が読む。assets/ の下に置かない）

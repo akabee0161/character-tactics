@@ -15,6 +15,7 @@ idle2_blade_top は blade_top − 3（32px の2行 ×1.5）、walk_outline_row �
 | blade_top 待機・歩きの切っ先の上限 | 5 | 8 | blade_height |
 | idle2_blade_top 待機2コマ目の上限 | 3 | 5 | blade_height |
 | bands 頭・胴・脚の行 | (3,14) (15,24) (25,31) | (5,22) (23,37) (38,47) | body_check・head_cover_check |
+| hand_max 手とみなす肌の塊の上限（画素） | 12 | 27（面積なので 1.5²倍） | weapon_check・hand_outline |
 
 設計: character-tactics の docs/superpowers/specs/2026-11-06-garum-unit-design.md
 """
@@ -39,13 +40,16 @@ class Scale:
     blade_top: int
     idle2_blade_top: int
     bands: dict[str, tuple[int, int]]
+    hand_max: int  # 手（拳の肌の塊）とみなす大きさの上限（画素の数）
 
 
 SCALES = {
     32: Scale(32, foot=30, min_height=24, max_height=26, leg_top=24, walk_leg_top=28, walk_outline_row=27,
-              blade_top=5, idle2_blade_top=3, bands={"head": (3, 14), "trunk": (15, 24), "legs": (25, 31)}),
+              blade_top=5, idle2_blade_top=3, bands={"head": (3, 14), "trunk": (15, 24), "legs": (25, 31)},
+              hand_max=12),
     48: Scale(48, foot=46, min_height=36, max_height=39, leg_top=37, walk_leg_top=43, walk_outline_row=42,
-              blade_top=8, idle2_blade_top=5, bands={"head": (5, 22), "trunk": (23, 37), "legs": (38, 47)}),
+              blade_top=8, idle2_blade_top=5, bands={"head": (5, 22), "trunk": (23, 37), "legs": (38, 47)},
+              hand_max=27),
 }
 SIZES = tuple(SCALES)
 

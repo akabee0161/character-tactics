@@ -202,6 +202,20 @@ def main(argv: list[str] | None = None) -> int:
         print(f"error: 見つからない: {args.target}", file=sys.stderr)
         return 2
 
+    try:  # コマごとに既定の行の範囲を選ぶので、正方形でないコマと 32px・48px の混ざりを先に止める
+        sizes = {path: (grid.width, grid.height) for path in paths for grid in [parse(path)]}
+    except GridError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+    for path, (width, height) in sizes.items():
+        if width != height:
+            print(f"error: {path}: コマが正方形でない（{width}x{height}）", file=sys.stderr)
+            return 2
+    if len(set(sizes.values())) > 1:
+        found = ", ".join(f"{w}x{h}" for w, h in sorted(set(sizes.values())))
+        print(f"error: {args.target}: 芯の大きさがそろっていない（{found}）", file=sys.stderr)
+        return 2
+
     bad = 0
     for path in paths:
         try:

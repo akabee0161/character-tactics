@@ -39,9 +39,10 @@ def rows_of(pixels: dict[tuple[int, int], str], size: int = 32) -> list[str]:
     return ["".join(r) for r in grid]
 
 
-def grid_text(pixels: dict[tuple[int, int], str], maps: str = "o=contour b=skin_fair_base k=weapon_shaft_base") -> str:
-    header = "# type: unit\n# size: 32x32\n# light: upper-left\n# bg: transparent\n"
-    return header + f"# map: {maps}\n" + "\n".join(rows_of(pixels)) + "\n"
+def grid_text(pixels: dict[tuple[int, int], str], maps: str = "o=contour b=skin_fair_base k=weapon_shaft_base",
+              size: int = 32) -> str:
+    header = f"# type: unit\n# size: {size}x{size}\n# light: upper-left\n# bg: transparent\n"
+    return header + f"# map: {maps}\n" + "\n".join(rows_of(pixels, size)) + "\n"
 
 
 class LegCenterTest(unittest.TestCase):
@@ -131,6 +132,19 @@ class LoadFramesTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             with self.assertRaises(UnitCheckError):
                 load_frames(Path(tmp))
+
+    def test_mixed_sizes_stop(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            d = Path(tmp)
+            (d / "down_base.txt").write_text(grid_text(body(12, 20, 19, 30)), encoding="utf-8")
+            (d / "down_walk_a.txt").write_text(grid_text(body(20, 30, 27, 46), size=48), encoding="utf-8")
+            with self.assertRaisesRegex(UnitCheckError, "大きさがそろっていない"):
+                load_frames(d)
+
+    def test_non_square_stops(self):
+        rows = [row + "." * 16 for row in rows_of(body(12, 20, 19, 30))]  # 48x32
+        with self.assertRaisesRegex(UnitCheckError, "正方形でない"):
+            leg_center(rows, set())
 
 
 class MainTest(unittest.TestCase):

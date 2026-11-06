@@ -47,6 +47,8 @@ def _direction(name: str) -> str:
 
 def leg_center(rows: list[str], items: set[str]) -> float:
     """脚（32px のコマは y>=24、48px は y>=37。tools/unit_scale.py の leg_top）の画素の外接の中心。"""
+    if any(len(row) != len(rows) for row in rows):
+        raise UnitCheckError(f"コマが正方形でない（幅 {len(rows[0]) if rows else 0}、高さ {len(rows)}）")
     try:
         leg_top = scale_for(len(rows)).leg_top
     except ScaleError as exc:
@@ -86,7 +88,15 @@ def load_frames(directory: Path) -> dict[str, list[str]]:
         frames[path.stem] = parse(path).rows
     if not frames:
         raise UnitCheckError(f"{directory}: <向き>_<名前>.txt が1つも無い")
+    same_size(frames, directory)
     return frames
+
+
+def same_size(frames: dict[str, list[str]], where: Path) -> None:
+    """全コマが同じ大きさか（32px と 48px が混ざると、コマごとに違う脚の上端で測ってしまう）。"""
+    sizes = {(len(rows[0]) if rows else 0, len(rows)) for rows in frames.values()}
+    if len(sizes) > 1:
+        raise UnitCheckError(f"{where}: コマの大きさがそろっていない（{', '.join(f'{w}x{h}' for w, h in sorted(sizes))}）")
 
 
 def check_legs(frames: dict[str, list[str]], items: set[str]) -> list[str]:
@@ -141,6 +151,7 @@ def main(argv: list[str] | None = None) -> int:
                 if not path.is_file():
                     raise UnitCheckError(f"{args.core}: 芯 {path.name} が無い")
                 legs[name] = parse(path).rows
+            same_size(legs, args.core)
         failures = check_legs(legs, set(args.items))
         edges = new_edges(frames)
     except (GridError, UnitCheckError) as exc:

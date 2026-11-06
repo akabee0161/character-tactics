@@ -176,5 +176,27 @@ class MainTest(unittest.TestCase):
             self.assertEqual(fix.call_args.args[1], palette.load().names_of_kind("skin", type="unit"))
 
 
+class Size48Test(unittest.TestCase):
+    def test_48_large_hand_gets_outline(self):
+        f = [[None] * 48 for _ in range(48)]
+        for y in range(30, 33):
+            for x in range(20, 25):  # 5x3＝15 画素の手（48px の上限は 27）
+                f[y][x] = "skin_fair_base"
+        fixed, changed = close_hands(f, HAND)
+        self.assertEqual(fixed[29][22], "contour")
+        self.assertEqual(len(changed), 2 * 5 + 2 * 3)
+
+    def test_48_body_sized_skin_is_left_alone(self):
+        f = [[None] * 48 for _ in range(48)]
+        for y in range(10, 14):
+            for x in range(20, 27):  # 7x4＝28 画素（顔など。手ではない）
+                f[y][x] = "skin_fair_base"
+        self.assertEqual(close_hands(f, HAND)[1], [])
+
+    def test_40_stops(self):
+        with self.assertRaisesRegex(HandOutlineError, "32 か 48"):
+            close_hands([[None] * 40 for _ in range(40)], HAND)
+
+
 if __name__ == "__main__":
     unittest.main()
