@@ -1,0 +1,145 @@
+{
+  "unit": "garum",
+  "frames": {
+    "down_base": {
+      "body": "assets/part/body/garum/core_down_base.txt",
+      "layers": [
+        {
+          "part": "assets/part/cloth/garum/cloth_garum_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/garum/head_garum_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/garum/shield_hand_down_base.txt",
+          "hand": true,
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/shield/shield_garum_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/greatsword/greatsword_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/garum/sword_hand_down_base.txt",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ],
+          "z": "front"
+        }
+      ]
+    },
+    "up_base": {
+      "body": "assets/part/body/garum/core_up_base.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/garum/shield_hand_up_base.txt",
+          "hand": true,
+          "z": "back"
+        },
+        {
+          "part": "assets/part/fist/garum/sword_hand_up_base.txt",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ],
+          "z": "back"
+        },
+        {
+          "part": "assets/part/equip/shield/shield_garum_up_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/equip/greatsword/greatsword_up_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/cloth/garum/cloth_garum_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/garum/head_garum_up_base.txt",
+          "z": "front"
+        }
+      ]
+    },
+    "left_base": {
+      "body": "assets/part/body/garum/core_left_base.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/garum/sword_hand_left_base.txt",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ],
+          "z": "back"
+        },
+        {
+          "part": "assets/part/equip/greatsword/greatsword_left_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/cloth/garum/cloth_garum_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/garum/head_garum_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/garum/shield_hand_left_base.txt",
+          "hand": true,
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/shield/shield_garum_left_base.txt",
+          "z": "front"
+        }
+      ]
+    },
+    "right_base": {
+      "body": "assets/part/body/garum/core_right_base.txt",
+      "layers": [
+        {
+          "part": "assets/part/equip/shield/shield_garum_right_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/fist/garum/shield_hand_right_base.txt",
+          "hand": true,
+          "z": "back"
+        },
+        {
+          "part": "assets/part/cloth/garum/cloth_garum_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/garum/head_garum_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/greatsword/greatsword_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/garum/sword_hand_right_base.txt",
+          "hand": true,
+          "keep": [
+            "blade",
+            "weapon"
+          ],
+          "z": "front"
+        }
+      ]
+    }
+  }
+}
