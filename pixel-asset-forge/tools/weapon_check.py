@@ -289,14 +289,37 @@ def floating(a: Analysis, arm: set[str]) -> bool:
     return True
 
 
+def grip_off_centre(a: Analysis) -> str | None:
+    """拳が柄の真ん中に無い、または柄から離れているなら、その文言（斧の down の当たり・女性の up の立ち、
+    2026-10-08 依頼者の指摘）。拳から 3px 以内の柄の向きが武器全体の向きと同じとき（柄に直角な短剣・剣の鍔は
+    測らない）、縦の柄なら左右、横の柄なら上下の真ん中を比べる。2px 幅の拳があるので 0.5px までのずれはよい。
+    拳の大きさの手（顔を手と取り違えたときは測らない）で、柄が拳の外へ柄の向きに 2px 以上伸びているときだけ測る。"""
+    if not a.hand:
+        return None
+    near = {p for p in a.handle - a.hand
+            if any(max(abs(p[0] - h[0]), abs(p[1] - h[1])) <= 3 for h in a.hand)}
+    orient = _orientation(near) if len(near) >= 2 else "any"
+    k = 0 if orient == "v" else 1
+    beyond = [p for p in near if not min(h[1 - k] for h in a.hand) <= p[1 - k] <= max(h[1 - k] for h in a.hand)]
+    if orient in ("v", "h") and orient == _orientation(a.weapon) and len(a.hand) <= a.hand_max \
+            and len(beyond) >= 2:
+        off = sum(p[k] for p in near) / len(near) - _center(a.hand)[k]
+        if abs(off) > 0.5:
+            return f"拳が柄の真ん中に無い（{'左右' if k == 0 else '上下'}に {abs(off):.1f}px ずれる。柄から離れている）"
+    return None
+
+
 def check_frame(name: str, a: Analysis, hidden: set[str], hit_states: set[str],
-                arm: set[str] = frozenset(), hand_width: bool = True, presence: bool = True) -> list[str]:
+                arm: set[str] = frozenset(), hand_width: bool = True, presence: bool = True,
+                grip_centre: bool = True) -> list[str]:
     """Return frame failure messages for weapon and hand checks.
 
     If no weapon is found, return immediately with a failure unless the frame
     is in hidden or presence is false. Set hand_width to false to skip the minimum width check.
     presence=False なら 1（武器と手が見える）を確かめない。部品で組むユニットでは、武器があることを部品の
-    ファイルが、握る手が武器に接することを fist_check.py が部品で見るため（2026-11-04 依頼者）。"""
+    ファイルが、握る手が武器に接することを fist_check.py が部品で見るため（2026-11-04 依頼者）。
+    grip_centre=False なら「拳が柄の真ん中」を組んだコマで見ない。組んだコマでは体や髪に隠れた分だけ拳が
+    ずれて見えるので、部品で組むユニットは grip_centre_check.py が武器と拳の部品だけで見る（2026-11-07 依頼者）。"""
     fails = []
     if not a.weapon:
         return [] if name in hidden or not presence else [f"{name}: 武器が見えない（刃と柄がつながった塊が無い）"]
@@ -314,21 +337,9 @@ def check_frame(name: str, a: Analysis, hidden: set[str], hit_states: set[str],
             w, h = max(xs) - min(xs) + 1, max(ys) - min(ys) + 1
             if hand_width and min(w, h) < 2:
                 fails.append(f"{name}: 手が細い（{w}x{h}px、(%d,%d) から）" % (min(xs), min(ys)))
-        # 拳が柄の真ん中に無い、または柄から離れている（斧の down の当たり・女性の up の立ち、2026-10-08 依頼者の
-        # 指摘）。拳から 3px 以内の柄の向きが武器全体の向きと同じとき（柄に直角な短剣・剣の鍔は測らない）、縦の柄
-        # なら左右、横の柄なら上下の真ん中を比べる。2px 幅の拳があるので 0.5px までのずれはよい
-        near = {p for p in a.handle - a.hand
-                if any(max(abs(p[0] - h[0]), abs(p[1] - h[1])) <= 3 for h in a.hand)}
-        orient = _orientation(near) if len(near) >= 2 else "any"
-        k = 0 if orient == "v" else 1
-        beyond = [p for p in near if not min(h[1 - k] for h in a.hand) <= p[1 - k] <= max(h[1 - k] for h in a.hand)]
-        # 拳の大きさの手（顔を手と取り違えたときは測らない）で、柄が拳の外へ柄の向きに 2px 以上伸びているとき
-        if orient in ("v", "h") and orient == _orientation(a.weapon) and len(a.hand) <= a.hand_max \
-                and len(beyond) >= 2:
-            off = sum(p[k] for p in near) / len(near) - _center(a.hand)[k]
-            if abs(off) > 0.5:
-                fails.append(f"{name}: 拳が柄の真ん中に無い（{'左右' if k == 0 else '上下'}に {abs(off):.1f}px "
-                             "ずれる。柄から離れている）")
+        off_centre = grip_off_centre(a) if grip_centre else None
+        if off_centre:
+            fails.append(f"{name}: {off_centre}")
         if arm and floating(a, arm):
             x, y = min(a.hand, key=lambda p: (p[1], p[0]))
             fails.append(f"{name}: 手が体から浮いている（({x},{y}) の手が腕の色とつながっていない）")
@@ -350,7 +361,7 @@ def check_frame(name: str, a: Analysis, hidden: set[str], hit_states: set[str],
 def check_unit(frames: dict[str, Analysis], hidden: set[str], hit_states: set[str],
                seq: list[str], depth: set[str] = frozenset(),
                arm: set[str] = frozenset(), partial: set[str] = frozenset(),
-               hand_width: bool = True, presence: bool = True) -> tuple[list[str], list[str]]:
+               hand_width: bool = True, presence: bool = True, grip_centre: bool = True) -> tuple[list[str], list[str]]:
     """Return failure messages and grip/length notes for the unit's frames.
 
     Exclude directions in depth and frames in partial from grip and length
@@ -359,7 +370,7 @@ def check_unit(frames: dict[str, Analysis], hidden: set[str], hit_states: set[st
     """
     fails, notes = [], []
     for name, a in frames.items():
-        fails += check_frame(name, a, hidden, hit_states, arm, hand_width, presence)
+        fails += check_frame(name, a, hidden, hit_states, arm, hand_width, presence, grip_centre)
     for d in DIRECTIONS:
         if d in depth:
             continue
@@ -447,6 +458,8 @@ def main(argv: list[str] | None = None) -> int:
                         help="3（手の幅）を確かめない。拳を部品で描き、fist_check.py が部品の形で大きさを見るユニット用")
     parser.add_argument("--no-presence", action="store_true",
                         help="1（武器と手が見える）を確かめない。部品で組むユニット用（unit_rules.py が渡す。2026-11-04）")
+    parser.add_argument("--no-grip-centre", action="store_true",
+                        help="拳が柄の真ん中かを組んだコマで見ない。部品で組むユニット用（grip_centre_check.py が武器と拳の部品で見る。2026-11-07）")
     args = parser.parse_args(argv)
 
     if not args.directory.is_dir():
@@ -470,7 +483,8 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     fails, notes = check_unit(frames, _names(args.hidden), _names(args.hit),
                               [s for s in args.seq.split(",") if s], _names(args.depth), _names(args.arm),
-                              _names(args.partial), not args.no_hand_width, not args.no_presence)
+                              _names(args.partial), not args.no_hand_width, not args.no_presence,
+                              not args.no_grip_centre)
     attack = (set(s for s in args.seq.split(",") if s) - {"base"}) | _names(args.hit)
     for name, ref in refs.items():
         final = read_frame(args.directory / f"{name}.txt")

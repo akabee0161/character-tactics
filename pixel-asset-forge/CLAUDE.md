@@ -58,7 +58,7 @@
 .venv/bin/python tools/enemy_build.py --colours dagger           # 男女の元のコマが使う色の差（女性の元のコマができるまで使えない）
 .venv/bin/python tools/enemy_gallery.py build/enemy_gallery.html --ref build/sheets/gau.png:ガウ（味方）  # 敵を並べて動きを再生する確認ページ（依頼者へ渡す）
 .venv/bin/python tools/unit_rules.py checks/gau.json  # unit の方針の確認をまとめて走らせる（自己チェック①。設定は checks/<ユニット>.json、例外に無い失敗で終了 1）
-.venv/bin/python tools/order_check.py checks/gau.json  # 承認された重なり順（ほかに blade_height・still_check・height_check・tip_check・part_chars・eye_check・part_outline・fist_check・head_cover_check・far_fist_check。どれも同じ引数）
+.venv/bin/python tools/order_check.py checks/gau.json  # 承認された重なり順（ほかに blade_height・still_check・height_check・tip_check・part_chars・eye_check・part_outline・fist_check・head_cover_check・far_fist_check・grip_centre_check。どれも同じ引数。grip_centre_check は拳が柄の真ん中かを武器と拳の部品だけで見る）
 .venv/bin/python tools/tip_check.py --items checks/items.json  # item のアイコンの刃・鏃の先端が決まり1〜5（types/item/SPEC.md）に合うか。刃の文字は checks/items.json に書く
 .venv/bin/python tools/unit_check.py assets/unit/ines --items klmstuw --core assets/part/body/ines  # unit の脚の中心（芯で測る）と増えた切れ目（unit_rules.py が設定ファイルから走らせる）
 .venv/bin/python tools/weapon_check.py assets/unit/gau --blade blade_hi,blade_base --weapon weapon_shaft_hi,weapon_shaft_base,weapon_shaft_shadow --hand skin_ruddy_hi,skin_ruddy_base,skin_ruddy_shadow --depth down --no-presence  # 武器と握る手（unit_rules.py が、刃・武器・手の色をパレットの種類 blade・weapon・skin から読んで走らせる。--arm は使わない）

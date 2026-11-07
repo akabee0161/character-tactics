@@ -59,7 +59,7 @@ OUTLINE = "contour"
 DIRECTIONS = ("down", "up", "left", "right")
 CHECKS = ("validate", "compose", "body_check", "hand_mirror", "unit_check", "weapon_check",
           "order_check", "blade_height", "still_check", "height_check", "tip_check", "part_chars", "eye_check",
-          "part_outline", "fist_check", "weapon_mirror", "head_cover_check", "far_fist_check")
+          "part_outline", "fist_check", "weapon_mirror", "head_cover_check", "far_fist_check", "grip_centre_check")
 CONFIG_KEYS = {"unit", "compose", "body", "head_chars", "items", "parts", "orders", "eyes", "weapon_check",
                "exceptions"}
 BODIES = ("male", "female")

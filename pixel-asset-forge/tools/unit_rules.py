@@ -41,7 +41,8 @@ from gridfile import REPO_ROOT  # noqa: E402
 from unit_config import UnitConfig, UnitConfigError, load_unit_config  # noqa: E402
 
 NEW_CHECKS = ("order_check", "blade_height", "still_check", "height_check", "tip_check", "part_chars",
-              "eye_check", "part_outline", "fist_check", "weapon_mirror", "head_cover_check", "far_fist_check")
+              "eye_check", "part_outline", "fist_check", "weapon_mirror", "head_cover_check", "far_fist_check",
+              "grip_centre_check")
 NAME_RE = re.compile(r"[A-Za-z0-9_]+")
 # body_check の「はみ出し」を掛ける体。袖の名残を見つけるためのもので、D で敵の袖を消し終えたのでやめた（2026-11-05。
 # 以前は胴がまっすぐな男性の体だけに掛けていた。body_check.py のコードは古いコマを確かめ直すときのために残す）
@@ -102,6 +103,10 @@ def plan(cfg: UnitConfig, config: Path, root: Path,
         if weapons and weapons <= {role.get("grips") for role in fists} \
                 and all(role.get("fist_sizes") for role in fists):
             args.append("--no-hand-width")
+        # 拳が柄の真ん中かは、どの武器にも握る拳の部品があれば grip_centre_check が武器と拳の部品だけで見る。
+        # 組んだコマでは体や髪に隠れた分だけ拳がずれて見えるため（2026-11-07 依頼者）
+        if weapons and weapons <= {role.get("grips") for role in fists}:
+            args.append("--no-grip-centre")
         steps.append(("weapon_check", args))
     steps += [(name, [str(config), "--root", str(root)]) for name in NEW_CHECKS]
     return steps

@@ -12,7 +12,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "tools"))
 
 from enemy_build import serialize_frame  # noqa: E402
-from weapon_check import Analysis, check_frame, check_unit, covered, main  # noqa: E402
+from weapon_check import Analysis, check_frame, check_unit, covered, grip_off_centre, main  # noqa: E402
 
 BLADE = {"blade_hi", "blade_base"}
 HANDLE = {"weapon_shaft_base"}
@@ -162,6 +162,27 @@ class HandTest(unittest.TestCase):
         fist(f, 10, 18, w=3)  # 肌 x10〜12、真ん中 x11、柄 x9（斧の down の当たり）
         fails = check_frame("down_atk_hit", analyse(f), set(), set())
         self.assertTrue(any("拳が柄の真ん中に無い" in s for s in fails), fails)
+
+    def test_grip_centre_can_be_left_to_the_parts(self):
+        # 部品で組むユニットは grip_centre_check.py が武器と拳の部品だけで見る（2026-11-07 依頼者）
+        f = blank()
+        body(f)
+        spear_v(f, 9, 6, 25)
+        fist(f, 10, 18, w=3)
+        fails = check_frame("down_atk_hit", analyse(f), set(), set(), grip_centre=False)
+        self.assertFalse(any("真ん中" in s for s in fails), fails)
+
+    def test_grip_off_centre_names_the_axis_and_distance(self):
+        f = blank()
+        body(f)
+        spear_v(f, 9, 6, 25)
+        fist(f, 10, 18, w=3)  # 肌 x10〜12、真ん中 x11、柄 x9
+        self.assertEqual(grip_off_centre(analyse(f)), "拳が柄の真ん中に無い（左右に 2.0px ずれる。柄から離れている）")
+        g = blank()
+        body(g)
+        spear_v(g, 9, 6, 25)
+        fist(g, 9, 18)
+        self.assertIsNone(grip_off_centre(analyse(g)))
 
     def test_48_large_fist_off_the_middle_fails(self):
         # 48px の拳は 5x3＝15 画素まである（32px の 12 画素を面積の比 1.5² で 27 に）。黙って飛ばさない
