@@ -7,7 +7,7 @@
 設定ファイルの parts で blade（刃・鏃の文字）を書いた部品について、部品のファイルを単品で見て、
 tools/tip_rule.py の find_tips() で先端を判定する（決まりは types/item/SPEC.md と
 character-tactics の docs/superpowers/specs/2026-10-22-tip-drawing-rule-design.md）。
-決まりに反する先端を FAIL で出す。中身5画素以上・45°以外の斜め・根元の無い刃は落とさず NOTE で出す。
+決まりに反する先端を FAIL で出す。上限より太い刃（縦・横は中身5画素以上、斜めは6画素以上。tip_rule.MAX_DIAGONAL_WIDTH）・45°以外の斜め・根元の無い刃は落とさず NOTE で出す。
 同じ部品のファイルは1回だけ見る。名前は部品のファイル名（拡張子なし）で出す。
 
 - 刃は色でなく文字で見分ける（2026-10-22 依頼者）。鍔の端・弓の端・斜めの矢や弦・足先など、刃の文字でない先端は見ない

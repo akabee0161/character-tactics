@@ -166,7 +166,8 @@ class TipRuleTest(unittest.TestCase):
     def test_wide_blades_are_skipped(self):
         found = tips(vertical(["...o...", "..ojo.."], 5))
         self.assertEqual(len(found), 1)
-        self.assertIn("中身5画素", found[0].skipped or "")
+        self.assertTrue((found[0].skipped or "").startswith("中身5画素（"), found[0].skipped)
+        self.assertEqual(found[0].width, 5)
         self.assertEqual(found[0].problems, ())
 
     def test_diagonal_limit_is_the_vertical_limit_times_root_two(self):
@@ -184,7 +185,8 @@ class TipRuleTest(unittest.TestCase):
     def test_diagonal_blades_over_the_diagonal_limit_are_skipped(self):
         found = tips(diagonal_band(6, 1))
         self.assertEqual(len(found), 1)
-        self.assertIn("中身6画素", found[0].skipped or "")
+        self.assertTrue((found[0].skipped or "").startswith("中身6画素（"), found[0].skipped)
+        self.assertEqual(found[0].width, 6)
         self.assertEqual(found[0].problems, ())
 
     def test_a_cluster_without_a_root_is_skipped(self):
