@@ -57,3 +57,5 @@ Task 6: Step 5: export で garum-map.png（192x576、仮の絵と画素が違う
 Task 6: complete (commits d172849..45472b8; unit_rules 19種 ok, compose --check 0, npm test 776 passed, build ok)
 Task 7: ISSUES.md の garum の行を火花・矢の件だけに直し、sheet.py の足元の表の誤報を足した
 Task 7: complete（台帳を docs/superpowers/ledgers/2026-11-06-garum-unit.md に写した）
+Final review: code-reviewer（opus）。Critical 0・Important 0・Minor 3
+Final: fixed Minor 3件（テストの太さの確認・grip_centre_check の対比と keep のテスト・tip_check の docstring）— keep のテストは分岐を壊すと落ちるのを確かめた、suite 787/787（0eac926）
