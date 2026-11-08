@@ -23,7 +23,7 @@
    結果で、拳が細いのではない。2026-10-18。tip_check.py が部品の形で見るのと同じ考え。unit_rules.py が、どの武器にも
    握る拳の部品（grips）があり、拳の部品すべてに fist_sizes があるときに渡す）
 4. 穂先の向き: 攻撃のコマ（--hit）で、手の中心（手が隠れるコマは体の中心）から見た穂先が、向いている側にある
-5. 枠に収まる: 武器の画素がコマの端（x=0,31 / y=0,31）に無い
+5. 枠に収まる: 武器の画素がコマの端（32px は x=0,31 / y=0,31、48px は 0,47）に無い
 6. 握る位置: 向きごとに、--seq のコマ（攻撃 → 構え）で、手の中心から穂先までの距離が 1.5px 以内でそろう
 7. 武器の長さ: 向きごとに、--seq のコマで、武器の画素どうしの最大距離が 2px 以内でそろう
    （向きが違うと、柄頭が手に隠れるかどうかなどで見える長さが変わるので、向きをまたいでは比べない）
@@ -51,12 +51,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from enemy_build import EnemyError, read_frame  # noqa: E402
-from hand_outline import HAND_MAX  # noqa: E402
+from unit_scale import ScaleError, scale_for  # noqa: E402
 from gridfile import GridError  # noqa: E402
 
 DIRECTIONS = ("down", "up", "left", "right")
 FACING = {"down": (0, 1), "up": (0, -1), "left": (-1, 0), "right": (1, 0)}
-SIZE = 32
 N4 = ((1, 0), (-1, 0), (0, 1), (0, -1))
 N8 = N4 + ((1, 1), (1, -1), (-1, 1), (-1, -1))
 GRIP_TOLERANCE = 1.5
@@ -194,6 +193,8 @@ class Analysis:
 
     def __init__(self, frame, blade: set[str], weapon: set[str], hand: set[str]):
         pts = {(x, y): n for y, row in enumerate(frame) for x, n in enumerate(row) if n is not None}
+        self.size = len(frame)  # コマの大きさ（32 か 48。端と体の中心の既定に使う）
+        self.hand_max = scale_for(self.size).hand_max  # 手とみなす肌の塊の上限。表に無い大きさは ScaleError
         self.hand_colours = set(hand)
         self.pixels = pts
         blade_px = {p for p, n in pts.items() if n in blade}
@@ -260,7 +261,7 @@ class Analysis:
 
     def body_center(self) -> tuple[float, float]:
         body = set(self.pixels) - self.weapon
-        return _center(body) if body else (SIZE / 2, SIZE / 2)
+        return _center(body) if body else (self.size / 2, self.size / 2)
 
     def grip(self) -> float | None:
         if not self.hand or self.tip is None:
@@ -288,14 +289,37 @@ def floating(a: Analysis, arm: set[str]) -> bool:
     return True
 
 
+def grip_off_centre(a: Analysis) -> str | None:
+    """拳が柄の真ん中に無い、または柄から離れているなら、その文言（斧の down の当たり・女性の up の立ち、
+    2026-10-08 依頼者の指摘）。拳から 3px 以内の柄の向きが武器全体の向きと同じとき（柄に直角な短剣・剣の鍔は
+    測らない）、縦の柄なら左右、横の柄なら上下の真ん中を比べる。2px 幅の拳があるので 0.5px までのずれはよい。
+    拳の大きさの手（顔を手と取り違えたときは測らない）で、柄が拳の外へ柄の向きに 2px 以上伸びているときだけ測る。"""
+    if not a.hand:
+        return None
+    near = {p for p in a.handle - a.hand
+            if any(max(abs(p[0] - h[0]), abs(p[1] - h[1])) <= 3 for h in a.hand)}
+    orient = _orientation(near) if len(near) >= 2 else "any"
+    k = 0 if orient == "v" else 1
+    beyond = [p for p in near if not min(h[1 - k] for h in a.hand) <= p[1 - k] <= max(h[1 - k] for h in a.hand)]
+    if orient in ("v", "h") and orient == _orientation(a.weapon) and len(a.hand) <= a.hand_max \
+            and len(beyond) >= 2:
+        off = sum(p[k] for p in near) / len(near) - _center(a.hand)[k]
+        if abs(off) > 0.5:
+            return f"拳が柄の真ん中に無い（{'左右' if k == 0 else '上下'}に {abs(off):.1f}px ずれる。柄から離れている）"
+    return None
+
+
 def check_frame(name: str, a: Analysis, hidden: set[str], hit_states: set[str],
-                arm: set[str] = frozenset(), hand_width: bool = True, presence: bool = True) -> list[str]:
+                arm: set[str] = frozenset(), hand_width: bool = True, presence: bool = True,
+                grip_centre: bool = True) -> list[str]:
     """Return frame failure messages for weapon and hand checks.
 
     If no weapon is found, return immediately with a failure unless the frame
     is in hidden or presence is false. Set hand_width to false to skip the minimum width check.
     presence=False なら 1（武器と手が見える）を確かめない。部品で組むユニットでは、武器があることを部品の
-    ファイルが、握る手が武器に接することを fist_check.py が部品で見るため（2026-11-04 依頼者）。"""
+    ファイルが、握る手が武器に接することを fist_check.py が部品で見るため（2026-11-04 依頼者）。
+    grip_centre=False なら「拳が柄の真ん中」を組んだコマで見ない。組んだコマでは体や髪に隠れた分だけ拳が
+    ずれて見えるので、部品で組むユニットは grip_centre_check.py が武器と拳の部品だけで見る（2026-11-07 依頼者）。"""
     fails = []
     if not a.weapon:
         return [] if name in hidden or not presence else [f"{name}: 武器が見えない（刃と柄がつながった塊が無い）"]
@@ -313,21 +337,9 @@ def check_frame(name: str, a: Analysis, hidden: set[str], hit_states: set[str],
             w, h = max(xs) - min(xs) + 1, max(ys) - min(ys) + 1
             if hand_width and min(w, h) < 2:
                 fails.append(f"{name}: 手が細い（{w}x{h}px、(%d,%d) から）" % (min(xs), min(ys)))
-        # 拳が柄の真ん中に無い、または柄から離れている（斧の down の当たり・女性の up の立ち、2026-10-08 依頼者の
-        # 指摘）。拳から 3px 以内の柄の向きが武器全体の向きと同じとき（柄に直角な短剣・剣の鍔は測らない）、縦の柄
-        # なら左右、横の柄なら上下の真ん中を比べる。2px 幅の拳があるので 0.5px までのずれはよい
-        near = {p for p in a.handle - a.hand
-                if any(max(abs(p[0] - h[0]), abs(p[1] - h[1])) <= 3 for h in a.hand)}
-        orient = _orientation(near) if len(near) >= 2 else "any"
-        k = 0 if orient == "v" else 1
-        beyond = [p for p in near if not min(h[1 - k] for h in a.hand) <= p[1 - k] <= max(h[1 - k] for h in a.hand)]
-        # 拳の大きさの手（顔を手と取り違えたときは測らない）で、柄が拳の外へ柄の向きに 2px 以上伸びているとき
-        if orient in ("v", "h") and orient == _orientation(a.weapon) and len(a.hand) <= HAND_MAX \
-                and len(beyond) >= 2:
-            off = sum(p[k] for p in near) / len(near) - _center(a.hand)[k]
-            if abs(off) > 0.5:
-                fails.append(f"{name}: 拳が柄の真ん中に無い（{'左右' if k == 0 else '上下'}に {abs(off):.1f}px "
-                             "ずれる。柄から離れている）")
+        off_centre = grip_off_centre(a) if grip_centre else None
+        if off_centre:
+            fails.append(f"{name}: {off_centre}")
         if arm and floating(a, arm):
             x, y = min(a.hand, key=lambda p: (p[1], p[0]))
             fails.append(f"{name}: 手が体から浮いている（({x},{y}) の手が腕の色とつながっていない）")
@@ -340,7 +352,7 @@ def check_frame(name: str, a: Analysis, hidden: set[str], hit_states: set[str],
         if along <= 0 or along < across:
             ref = "手" if a.hand else "体"
             fails.append(f"{name}: 穂先が向いている側に無い（穂先 {a.tip}、{ref}の中心 ({cx:.1f},{cy:.1f})）")
-    edge = sorted(p for p in a.weapon if p[0] in (0, SIZE - 1) or p[1] in (0, SIZE - 1))
+    edge = sorted(p for p in a.weapon if p[0] in (0, a.size - 1) or p[1] in (0, a.size - 1))
     if edge:
         fails.append(f"{name}: 武器がコマの端で切れている: " + " ".join(f"({x},{y})" for x, y in edge))
     return fails
@@ -349,7 +361,7 @@ def check_frame(name: str, a: Analysis, hidden: set[str], hit_states: set[str],
 def check_unit(frames: dict[str, Analysis], hidden: set[str], hit_states: set[str],
                seq: list[str], depth: set[str] = frozenset(),
                arm: set[str] = frozenset(), partial: set[str] = frozenset(),
-               hand_width: bool = True, presence: bool = True) -> tuple[list[str], list[str]]:
+               hand_width: bool = True, presence: bool = True, grip_centre: bool = True) -> tuple[list[str], list[str]]:
     """Return failure messages and grip/length notes for the unit's frames.
 
     Exclude directions in depth and frames in partial from grip and length
@@ -358,7 +370,7 @@ def check_unit(frames: dict[str, Analysis], hidden: set[str], hit_states: set[st
     """
     fails, notes = [], []
     for name, a in frames.items():
-        fails += check_frame(name, a, hidden, hit_states, arm, hand_width, presence)
+        fails += check_frame(name, a, hidden, hit_states, arm, hand_width, presence, grip_centre)
     for d in DIRECTIONS:
         if d in depth:
             continue
@@ -405,7 +417,10 @@ def load(directory: Path, blade, weapon, hand) -> dict[str, Analysis]:
     frames = {}
     for path in sorted(directory.glob("*.txt")):
         if _direction(path.stem) in DIRECTIONS:
-            frames[path.stem] = Analysis(read_frame(path), blade, weapon, hand)
+            try:
+                frames[path.stem] = Analysis(read_frame(path), blade, weapon, hand)
+            except ScaleError as exc:
+                raise WeaponCheckError(f"{path.name}: {exc}") from None
     if not frames:
         raise WeaponCheckError(f"{directory}: <向き>_<名前>.txt が1つも無い")
     return frames
@@ -443,6 +458,8 @@ def main(argv: list[str] | None = None) -> int:
                         help="3（手の幅）を確かめない。拳を部品で描き、fist_check.py が部品の形で大きさを見るユニット用")
     parser.add_argument("--no-presence", action="store_true",
                         help="1（武器と手が見える）を確かめない。部品で組むユニット用（unit_rules.py が渡す。2026-11-04）")
+    parser.add_argument("--no-grip-centre", action="store_true",
+                        help="拳が柄の真ん中かを組んだコマで見ない。部品で組むユニット用（grip_centre_check.py が武器と拳の部品で見る。2026-11-07）")
     args = parser.parse_args(argv)
 
     if not args.directory.is_dir():
@@ -466,7 +483,8 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     fails, notes = check_unit(frames, _names(args.hidden), _names(args.hit),
                               [s for s in args.seq.split(",") if s], _names(args.depth), _names(args.arm),
-                              _names(args.partial), not args.no_hand_width, not args.no_presence)
+                              _names(args.partial), not args.no_hand_width, not args.no_presence,
+                              not args.no_grip_centre)
     attack = (set(s for s in args.seq.split(",") if s) - {"base"}) | _names(args.hit)
     for name, ref in refs.items():
         final = read_frame(args.directory / f"{name}.txt")

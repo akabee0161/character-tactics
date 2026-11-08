@@ -32,6 +32,10 @@ ANGLES = {"right": 0, "up_right": 45, "up": 90, "up_left": 135, "left": 180, "do
           "down_right": 315}
 MAX_ANGLE_OFF = 10
 MAX_WIDTH = 4
+# 斜めの刃の上限。斜めの1行の画素数を √2 で割ると刃に直角な太さになるので、縦横の上限の √2 倍（切り捨て）までなら
+# 縦横の上限より太く見えない（2026-11-08 依頼者と決めた。固定の値でなく倍率で決める）
+DIAGONAL_FACTOR = math.sqrt(2)
+MAX_DIAGONAL_WIDTH = math.floor(MAX_WIDTH * DIAGONAL_FACTOR)
 
 
 @dataclass(frozen=True)
@@ -232,8 +236,11 @@ def find_tips(rows: list[str], blade: frozenset[str], outline: frozenset[str],
         for _, y in light:
             per_row[y] = per_row.get(y, 0) + 1
         n = max(per_row.values())
-        if n > MAX_WIDTH:
-            tips.append(Tip(any_point, direction, n, (), f"中身{n}画素（中身5画素以上は決まりの外）"))
+        limit = MAX_WIDTH if shape == "axis" else MAX_DIAGONAL_WIDTH
+        if n > limit:
+            what = "縦横" if shape == "axis" else "斜め"
+            tips.append(Tip(any_point, direction, n, (),
+                            f"中身{n}画素（{what}の刃は中身{limit + 1}画素以上が決まりの外）"))
             continue
         if shape == "axis":
             problems, point = _judge_axis(light, {f(*p) for p in root}, kind, n)

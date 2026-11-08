@@ -158,16 +158,18 @@ class MeasureTest(unittest.TestCase):
     def setUp(self):
         self.palette = load_palette()
 
-    def test_a_single_pixel_reports_its_row_and_column(self):
+    # 測るのは足元（一番下の不透明な行）だけ。左右の中心は、武器を含む絵全体の幅では体の中心にならないので測らない。
+    # 体の中心がそろっているかは unit_check.py が芯の脚で確かめる（2026-11-08 依頼者）
+    def test_a_single_pixel_reports_its_row(self):
         image = sheet.load_frame(FIXTURES / "sheet_dot.txt", self.palette)
-        self.assertEqual(sheet.measure(image), (2, 1.0))
+        self.assertEqual(sheet.measure(image), 2)
 
-    def test_a_full_block_reports_the_bottom_row_and_the_middle(self):
+    def test_a_full_block_reports_the_bottom_row(self):
         image = sheet.load_frame(FIXTURES / "sheet_block.txt", self.palette)
-        self.assertEqual(sheet.measure(image), (3, 1.5))
+        self.assertEqual(sheet.measure(image), 3)
 
     def test_an_empty_frame_reports_nothing(self):
-        self.assertEqual(sheet.measure(Image.new("RGBA", (4, 4))), (None, None))
+        self.assertIsNone(sheet.measure(Image.new("RGBA", (4, 4))))
 
 
 class PreviewTest(unittest.TestCase):
@@ -181,3 +183,50 @@ class PreviewTest(unittest.TestCase):
         self.assertEqual(out.size, (canvas.width * 4, canvas.height * 4))
         # 背景を敷くので、透明だった領域も不透明になる
         self.assertEqual(out.getpixel((out.width - 2, out.height - 2))[3], 255)
+
+
+def frame48() -> Image.Image:
+    """足元 y=46、左右中央（x=20〜27）の 48px のコマ。"""
+    image = Image.new("RGBA", (48, 48))
+    for y in range(8, 47):
+        for x in range(20, 28):
+            image.putpixel((x, y), (200, 100, 50, 255))
+    return image
+
+
+class Size48Test(unittest.TestCase):
+    def test_48_report_expects_foot_46(self):
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            sheet.report({"down_base": frame48()}, 48)
+        self.assertIn("expected foot_y=46", out.getvalue())
+        self.assertNotIn("<-- off", out.getvalue())
+
+    def test_report_does_not_measure_the_centre(self):
+        # 剣と盾が片側へ張り出して絵全体の中心が外れても、足元が合っていれば印を付けない
+        image = frame48()
+        for y in range(10, 40):
+            for x in range(2, 8):
+                image.putpixel((x, y), (180, 180, 190, 255))
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            sheet.report({"down_base": image}, 48)
+        self.assertNotIn("center", out.getvalue())
+        self.assertNotIn("<-- off", out.getvalue())
+
+    def test_report_marks_a_frame_whose_feet_are_off(self):
+        image = frame48()
+        for x in range(20, 28):
+            image.putpixel((x, 47), (200, 100, 50, 255))  # 足元が y=47
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            sheet.report({"down_base": image}, 48)
+        self.assertIn("<-- off", out.getvalue())
+
+    def test_48_preview_draws_foot_line_at_46(self):
+        scale = 2
+        out = sheet.preview(Image.new("RGBA", (48, 48)), frame=48, scale=scale)
+        red = out.getpixel((5 * scale, 46 * scale))
+        plain = out.getpixel((5 * scale, 30 * scale))
+        self.assertGreater(red[0] - red[2], 60, red)    # 赤い足元の線
+        self.assertLess(abs(plain[0] - plain[2]), 30, plain)  # 32px の足元の行には線が無い

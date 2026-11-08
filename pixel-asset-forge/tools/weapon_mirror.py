@@ -5,7 +5,7 @@
 
 比べる部品は、設定ファイルの parts で fist の部品の grips に書かれた部品（剣・盾・短剣・弓・矢）。
 髪・かぶり物や役割の無い部品は比べない。部品の空でない画素の位置（dx・dy を足したコマの上の位置）を、
-right を x → 31 − x で反転して集合として比べる。色は比べない（光源が左上に固定なので、反転した部品は陰の付き方が変わる）。
+right を x → 31 − x（48px のコマは 47 − x）で反転して集合として比べる。色は比べない（光源が左上に固定なので、反転した部品は陰の付き方が変わる）。
 体や手前の物に隠れる画素も比べる。両方の部品が空なら合っているとみなす。down と up は比べない（2026-10-25 依頼者）。
 
 拳の位置は hand_mirror.py が攻撃以外のコマで比べる（2026-10-12「攻撃は動きの表現で位置がずれることが多い」）。
@@ -46,7 +46,7 @@ def check(cfg: UnitConfig) -> list[tuple[str, str]]:
                 failures.append((left.name, f"{key} が {missing} に無い"))
                 continue
             mine = set(left.parts[key].pixels())
-            theirs = {(31 - x, y) for x, y in right.parts[key].pixels()}
+            theirs = {(cfg.size - 1 - x, y) for x, y in right.parts[key].pixels()}
             if mine == theirs:
                 continue
             if not mine or not theirs:

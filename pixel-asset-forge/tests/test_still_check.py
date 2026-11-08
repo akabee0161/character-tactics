@@ -67,6 +67,23 @@ class StillCheckTest(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertIn("(13,27)", out)
 
+    def test_48_walk_may_move_rows_43_to_46(self):
+        fx = UnitFixture(size=48)
+        self.addCleanup(fx.close)
+        fx.frames["down_walk_a"]["core"][(22, 43)] = "b"
+        fx.frames["down_walk_a"]["core"][(19, 42)] = "o"  # base で透明の所に、上げた足の上の輪郭が増えた
+        code, out = fx.run(main)
+        self.assertEqual(code, 0, out)
+
+    def test_48_walk_upper_body_change_fails(self):
+        fx = UnitFixture(size=48)
+        self.addCleanup(fx.close)
+        fx.frames["down_walk_a"]["core"][(22, 41)] = "b"
+        fx.frames["down_walk_a"]["core"][(22, 30)] = "b"
+        code, out = fx.run(main)
+        self.assertEqual(code, 1, out)
+        self.assertIn("FAIL down_walk_a: 芯の y<43 が base と違う画素 2 件（y=42 は輪郭が増えた所だけ通す）: (22,30) (22,41)", out)
+
     def test_a_fixed_part_missing_from_a_frame_fails(self):
         # 盾の部品がコマごと抜けても、比べる相手が無いので気付けなかった（CodeRabbit の指摘、PR #37）
         del self.fx.frames["down_atk_hit"]["shield"]

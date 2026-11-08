@@ -52,13 +52,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from compose import ComposeError, FrameSpec, Layer, load_config, stack_order  # noqa: E402
 from gridfile import BACKGROUND, REPO_ROOT, Grid, GridError, parse  # noqa: E402
+from unit_scale import Scale, ScaleError, scale_for  # noqa: E402
 
 CORE = "CORE"
 OUTLINE = "contour"
 DIRECTIONS = ("down", "up", "left", "right")
 CHECKS = ("validate", "compose", "body_check", "hand_mirror", "unit_check", "weapon_check",
           "order_check", "blade_height", "still_check", "height_check", "tip_check", "part_chars", "eye_check",
-          "part_outline", "fist_check", "weapon_mirror", "head_cover_check", "far_fist_check")
+          "part_outline", "fist_check", "weapon_mirror", "head_cover_check", "far_fist_check", "grip_centre_check")
 CONFIG_KEYS = {"unit", "compose", "body", "head_chars", "items", "parts", "orders", "eyes", "weapon_check",
                "exceptions"}
 BODIES = ("male", "female")
@@ -123,6 +124,8 @@ class UnitConfig:
     exceptions: list[dict]
     frames: dict[str, Frame]
     root: Path
+    size: int     # コマの大きさ（全コマの芯の幅。32 か 48）
+    scale: Scale  # size の体の比率（tools/unit_scale.py）
 
     @property
     def unit_dir(self) -> Path:
@@ -161,8 +164,8 @@ def _names(value, where: str) -> list[str]:
     return value
 
 
-def _coord(value) -> bool:
-    return isinstance(value, int) and not isinstance(value, bool) and 0 <= value < 32
+def _coord(value, size: int) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool) and 0 <= value < size
 
 
 def build_frame(name: str, spec: FrameSpec) -> Frame:
@@ -179,6 +182,21 @@ def build_frame(name: str, spec: FrameSpec) -> Frame:
     names = list(parts)
     order = [CORE if i < 0 else names[i] for i in stack_order(spec.layers)]
     return Frame(name, direction, state, core, parts, order)
+
+
+def frame_scale(frames: dict[str, Frame], path: Path) -> tuple[int, Scale]:
+    """全コマの芯が同じ大きさの正方形で、比率の表にある大きさか。部品と芯の大きさの違いは compose.py が止める。"""
+    sizes = {(frame.core.width, frame.core.height) for frame in frames.values()}
+    if len(sizes) != 1:
+        found = ", ".join(f"{w}x{h}" for w, h in sorted(sizes))
+        raise UnitConfigError(f"{path.name}: 芯の大きさがそろっていない（{found}）")
+    width, height = sizes.pop()
+    if width != height:
+        raise UnitConfigError(f"{path.name}: 芯が正方形でない（{width}x{height}）")
+    try:
+        return width, scale_for(width)
+    except ScaleError as exc:
+        raise UnitConfigError(f"{path.name}: {exc}") from None
 
 
 def load_unit_config(path: Path, root: Path = REPO_ROOT) -> UnitConfig:
@@ -211,6 +229,7 @@ def load_unit_config(path: Path, root: Path = REPO_ROOT) -> UnitConfig:
     except (ComposeError, GridError) as exc:
         raise UnitConfigError(str(exc)) from None
     hand = next(iter(specs.values())).hand_colours
+    frame_size, scale = frame_scale(frames, path)
 
     if data["body"] not in BODIES:
         raise UnitConfigError(f"{path.name} の body: male か female（{data['body']!r} だった）")
@@ -296,10 +315,10 @@ def load_unit_config(path: Path, root: Path = REPO_ROOT) -> UnitConfig:
         where = f"{path.name} の eyes.{direction}"
         _keys(value, EYE_KEYS, where)
         xs, ys = value.get("x"), value.get("y")
-        if not (isinstance(xs, list) and xs and all(_coord(v) for v in xs)):
-            raise UnitConfigError(f"{where}.x: 目の列（0〜31 の整数の配列）でない: {xs!r}")
-        if not (isinstance(ys, list) and len(ys) == 2 and all(_coord(v) for v in ys) and ys[0] <= ys[1]):
-            raise UnitConfigError(f"{where}.y: [上の行, 下の行]（0〜31）でない: {ys!r}")
+        if not (isinstance(xs, list) and xs and all(_coord(v, frame_size) for v in xs)):
+            raise UnitConfigError(f"{where}.x: 目の列（0〜{frame_size - 1} の整数の配列）でない: {xs!r}")
+        if not (isinstance(ys, list) and len(ys) == 2 and all(_coord(v, frame_size) for v in ys) and ys[0] <= ys[1]):
+            raise UnitConfigError(f"{where}.y: [上の行, 下の行]（0〜{frame_size - 1}）でない: {ys!r}")
         eyes[direction] = frozenset((x, y) for x in xs for y in range(ys[0], ys[1] + 1))
 
     weapon_check = data["weapon_check"]
@@ -334,7 +353,7 @@ def load_unit_config(path: Path, root: Path = REPO_ROOT) -> UnitConfig:
                 raise UnitConfigError(f"{where}.{key}: 空でない文字列")
 
     return UnitConfig(path, data["unit"], compose_path, hand, data["body"], head_chars, data["items"], data["parts"], orders, eyes,
-                      weapon_check, data["exceptions"], frames, root)
+                      weapon_check, data["exceptions"], frames, root, frame_size, scale)
 
 
 def run_check(argv: list[str] | None, description: str, check, ok_message: str, notes=None) -> int:

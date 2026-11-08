@@ -67,6 +67,19 @@ class HeadCoverCheckTest(unittest.TestCase):
         self.assertEqual(code, 1, out)
         self.assertIn("被り物の外に出る 4 件", out)
 
+    def test_48_head_bottom_is_22(self):
+        # 48px の芯の頭は x=20〜27・y>=8。被り物は y=4〜12 で x=19〜28（縁 y=12）。頭の高さは y<=22
+        self.fx = UnitFixture(size=48)
+        self.addCleanup(self.fx.close)
+        hair = area(19, 6, 28, 19, "r")
+        hair.update(area(18, 20, 29, 22, "r"))  # 頭の高さのうち（y=20〜22）で横へ広がる → 6 件
+        hair.update(area(17, 23, 30, 26, "r"))  # 頭より下（y>=23）は広がってよい
+        self.add("hair", hair, "r=hair_red_base")
+        self.add("helm", box(19, 4, 28, 12, "h"), "o=contour h=helmet_steel_base")
+        code, out = self.fx.run(main)
+        self.assertEqual(code, 1, out)
+        self.assertIn("FAIL hair_down_base と helm_down_base: 頭の高さ（y<=22）で、髪が被り物の外に出る 6 件", out)
+
     def test_units_without_hair_and_headgear_pass(self):
         code, out = self.fx.run(main)
         self.assertEqual(code, 0, out)

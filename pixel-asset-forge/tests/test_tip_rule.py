@@ -1,17 +1,18 @@
 """Checks for tools/tip_rule.py（刃・鏃の先端の決まり1〜5。docs/superpowers/specs/2026-10-22-tip-drawing-rule-design.md）."""
 from __future__ import annotations
 
+import math
 import sys
 import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tools"))
 
-from tip_rule import find_tips  # noqa: E402
+from tip_rule import MAX_DIAGONAL_WIDTH, MAX_WIDTH, find_tips  # noqa: E402
 
 BLADE = frozenset("ijk")
 OUTLINE = frozenset("o")
-LIGHT = {1: "j", 2: "ij", 3: "ijk", 4: "ijjk", 5: "ijjjk"}
+LIGHT = {1: "j", 2: "ij", 3: "ijk", 4: "ijjk", 5: "ijjjk", 6: "ijjjjk"}
 
 
 def vertical(top: list[str], n: int, body: int = 4, root: bool = True) -> list[str]:
@@ -46,6 +47,33 @@ def diagonal(n: int, p: int, fill: bool = True) -> list[str]:
     for (x, y), c in light.items():
         rows[y][x] = c
     rows[last + 1][a - last - 1] = "h"
+    return ["".join(r) for r in rows]
+
+
+def diagonal_band(n: int, p: int, fill: bool = True) -> list[str]:
+    """右上向き45°の太い刃（24x24）。diagonal と同じ切り方で、柄 h は刃の帯を1行下へ続けたもの（根元の重心が刃の軸に乗り、
+    向きが 45° に読まれる）。行 y の刃の色は x = 21-p+2-y+k（k=0..n-1, x<=21）、y=2..17。"""
+    size, right, last = 24, 21, 17
+    a = right - p + 2
+    light = {}
+    for y in range(2, last + 1):
+        for k in range(n):
+            x = a - y + k
+            if x <= right:
+                light[(x, y)] = LIGHT[n][k]
+    hilt = {(a - (last + 1) + k, last + 1) for k in range(n)}
+    rows = [["."] * size for _ in range(size)]
+    for (x, y) in light:
+        for dx, dy in ((0, -1), (0, 1), (-1, 0), (1, 0)):
+            q = (x + dx, y + dy)
+            if q not in light and q not in hilt and 0 <= q[0] < size and 0 <= q[1] < size:
+                rows[q[1]][q[0]] = "o"
+    if fill:
+        rows[1][right + 1] = "o"
+    for (x, y), c in light.items():
+        rows[y][x] = c
+    for x, y in hilt:
+        rows[y][x] = "h"
     return ["".join(r) for r in rows]
 
 
@@ -138,7 +166,27 @@ class TipRuleTest(unittest.TestCase):
     def test_wide_blades_are_skipped(self):
         found = tips(vertical(["...o...", "..ojo.."], 5))
         self.assertEqual(len(found), 1)
-        self.assertIn("中身5画素", found[0].skipped or "")
+        self.assertTrue((found[0].skipped or "").startswith("中身5画素（"), found[0].skipped)
+        self.assertEqual(found[0].width, 5)
+        self.assertEqual(found[0].problems, ())
+
+    def test_diagonal_limit_is_the_vertical_limit_times_root_two(self):
+        # 斜めの1行の画素数を √2 で割ると刃に直角な太さになる。縦の上限4の √2 倍（5.66）の切り捨てで 5（2026-11-08 依頼者）
+        self.assertEqual(MAX_DIAGONAL_WIDTH, math.floor(MAX_WIDTH * math.sqrt(2)))
+        self.assertEqual(MAX_DIAGONAL_WIDTH, 5)
+
+    def test_diagonal_blades_up_to_the_diagonal_limit_are_judged(self):
+        for n, p in [(4, 1), (5, 1), (5, 2)]:
+            with self.subTest(n=n, p=p):
+                tip = self.assert_one_pass(diagonal_band(n, p), "up_right", n)
+                self.assertEqual(tip.point, (21, 2))
+        self.assert_rule(diagonal_band(5, 1, fill=False), "決まり5")
+
+    def test_diagonal_blades_over_the_diagonal_limit_are_skipped(self):
+        found = tips(diagonal_band(6, 1))
+        self.assertEqual(len(found), 1)
+        self.assertTrue((found[0].skipped or "").startswith("中身6画素（"), found[0].skipped)
+        self.assertEqual(found[0].width, 6)
         self.assertEqual(found[0].problems, ())
 
     def test_a_cluster_without_a_root_is_skipped(self):

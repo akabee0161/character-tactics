@@ -13,7 +13,8 @@
   部品が base と違うもの（上半身と剣は base のまま）
 - すべてのコマ: fixed の部品（盾）が base と違うもの・コマに無いもの（盾はどのコマでも base の位置から動かさない）
 
-部品は色名と位置（dx・dy でずらした後）で比べる。
+部品は色名と位置（dx・dy でずらした後）で比べる。行の値は 32px のコマのもの。48px のコマは脚 y=43〜46・輪郭の行 y=42
+（tools/unit_scale.py の walk_leg_top・walk_outline_row。2026-11-06）。
 """
 from __future__ import annotations
 
@@ -24,11 +25,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from unit_config import OUTLINE, UnitConfig, points, run_check  # noqa: E402
 
-LEG_TOP = 28      # 脚 y=28〜30 は動いてよい
-OUTLINE_ROW = 27  # 上げた足の上を閉じる輪郭だけ動いてよい行
-
 
 def check(cfg: UnitConfig) -> list[tuple[str, str]]:
+    leg_top = cfg.scale.walk_leg_top          # 脚（ここから足元まで）は動いてよい
+    outline_row = cfg.scale.walk_outline_row  # 上げた足の上を閉じる輪郭だけ動いてよい行
     failures = []
     for name, frame in cfg.frames.items():
         base = cfg.frames.get(f"{frame.direction}_base")
@@ -47,12 +47,12 @@ def check(cfg: UnitConfig) -> list[tuple[str, str]]:
             if bad:
                 failures.append((name, f"芯が base と違う画素 {len(bad)} 件: {points(bad)}"))
         elif walk:
-            # y=27 は、上げた足の上を閉じる輪郭が増えた所（base では透明）だけ通す
-            added = {p for p in moved if p[1] == OUTLINE_ROW and mine.get(p) == OUTLINE and p not in theirs}
-            bad = {p for p in moved if p[1] <= OUTLINE_ROW} - added
+            # outline_row（32px は y=27）は、上げた足の上を閉じる輪郭が増えた所（base では透明）だけ通す
+            added = {p for p in moved if p[1] == outline_row and mine.get(p) == OUTLINE and p not in theirs}
+            bad = {p for p in moved if p[1] <= outline_row} - added
             if bad:
-                failures.append((name, f"芯の y<{LEG_TOP} が base と違う画素 {len(bad)} 件"
-                                       f"（y={OUTLINE_ROW} は輪郭が増えた所だけ通す）: {points(bad)}"))
+                failures.append((name, f"芯の y<{leg_top} が base と違う画素 {len(bad)} 件"
+                                       f"（y={outline_row} は輪郭が増えた所だけ通す）: {points(bad)}"))
         for key in base.parts.keys() - frame.parts.keys():  # 盾がコマごと抜けても気付けるように
             if cfg.role(key, "fixed"):
                 failures.append((name, f"{key} が無い（どのコマでも動かさない部品）"))

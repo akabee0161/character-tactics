@@ -58,7 +58,7 @@
 .venv/bin/python tools/enemy_build.py --colours dagger           # 男女の元のコマが使う色の差（女性の元のコマができるまで使えない）
 .venv/bin/python tools/enemy_gallery.py build/enemy_gallery.html --ref build/sheets/gau.png:ガウ（味方）  # 敵を並べて動きを再生する確認ページ（依頼者へ渡す）
 .venv/bin/python tools/unit_rules.py checks/gau.json  # unit の方針の確認をまとめて走らせる（自己チェック①。設定は checks/<ユニット>.json、例外に無い失敗で終了 1）
-.venv/bin/python tools/order_check.py checks/gau.json  # 承認された重なり順（ほかに blade_height・still_check・height_check・tip_check・part_chars・eye_check・part_outline・fist_check・head_cover_check・far_fist_check。どれも同じ引数）
+.venv/bin/python tools/order_check.py checks/gau.json  # 承認された重なり順（ほかに blade_height・still_check・height_check・tip_check・part_chars・eye_check・part_outline・fist_check・head_cover_check・far_fist_check・grip_centre_check。どれも同じ引数。grip_centre_check は拳が柄の真ん中かを武器と拳の部品だけで見る）
 .venv/bin/python tools/tip_check.py --items checks/items.json  # item のアイコンの刃・鏃の先端が決まり1〜5（types/item/SPEC.md）に合うか。刃の文字は checks/items.json に書く
 .venv/bin/python tools/unit_check.py assets/unit/ines --items klmstuw --core assets/part/body/ines  # unit の脚の中心（芯で測る）と増えた切れ目（unit_rules.py が設定ファイルから走らせる）
 .venv/bin/python tools/weapon_check.py assets/unit/gau --blade blade_hi,blade_base --weapon weapon_shaft_hi,weapon_shaft_base,weapon_shaft_shadow --hand skin_ruddy_hi,skin_ruddy_base,skin_ruddy_shadow --depth down --no-presence  # 武器と握る手（unit_rules.py が、刃・武器・手の色をパレットの種類 blade・weapon・skin から読んで走らせる。--arm は使わない）
@@ -71,6 +71,7 @@
 .venv/bin/python tools/compose.py compose/ines.json --check    # イネスは全32コマが部品から再現できる
 .venv/bin/python tools/compose.py compose/gau.json --check     # ガウは全24コマが部品から再現できる
 .venv/bin/python tools/compose.py compose/mist.json --check    # ミストも全24コマが部品から再現できる
+.venv/bin/python tools/compose.py compose/garum.json --check   # ガルム（48px）も全24コマが部品から再現できる
 (set -e; for u in bandit knight horn thug; do .venv/bin/python tools/compose.py compose/dagger-$u.json --check; done)  # 短剣の敵4体も全24コマが部品から再現できる
 (set -e; for u in bandit horn bandit-a-f bandit-b-f bandit-c-f horn-b-f horn-c-f; do .venv/bin/python tools/compose.py compose/axe-$u.json --check; done)  # 斧の敵7体も全24コマが部品から再現できる
 (set -e; for u in knight thug thug-a-f thug-b-f thug-c-f; do .venv/bin/python tools/compose.py compose/spear-$u.json --check; done)  # 槍の敵5体も全24コマが部品から再現できる
@@ -166,9 +167,9 @@ README は「リポジトリの使い方」を書く場所なので、課題を�
 
 `docs/HANDOFF.md` の「3. 未確定のこと」を参照。
 
-**確定済み:** 解像度は `face` = 32x32、`item` = 16x16、`tile` = 16x16、`unit` = 32x32。
+**確定済み:** 解像度は `face` = 32x32、`item` = 16x16、`tile` = 16x16、`unit` = 32x32（`garum` だけ 48x48。2026-11-06）。
 `tile` はシームレス（全周に輪郭を回さない）。
-`unit` は足元 y=30・左右中央・背丈24〜26px で、シート定義は `sheets/` に置く
+`unit` は足元 y=30・左右中央・背丈24〜26px（48px は足元 y=46・背丈36〜39px。`types/unit/SPEC.md`「48px のコマの比率」）で、シート定義は `sheets/` に置く
 （`assets/` の下に置くと `validate.py` / `render.py` がグリッドとして読んで落ちる）。
 
 **未確定:** 目指す絵柄、アセットあたりの色数上限（`# max_colors:` は実装済みだが

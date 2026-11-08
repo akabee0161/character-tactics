@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tools"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from blade_height import main  # noqa: E402
-from unit_fixture import UnitFixture, mirror, sword  # noqa: E402
+from unit_fixture import UnitFixture, mirror, shifted, sword  # noqa: E402
 
 
 class BladeHeightTest(unittest.TestCase):
@@ -35,6 +35,28 @@ class BladeHeightTest(unittest.TestCase):
         code, out = self.fx.run(main)
         self.assertEqual(code, 1)
         self.assertIn("FAIL up_idle2: sword の切っ先が y=2（y=3 より上に出さない）", out)
+
+    def test_48_limit_is_y8(self):
+        fx = UnitFixture(size=48)
+        self.addCleanup(fx.close)
+        fx.frames["down_base"]["sword"] = shifted(sword(-14))  # 刃の上端 y=8
+        code, out = fx.run(main)
+        self.assertEqual(code, 0, out)
+        fx.frames["down_base"]["sword"] = shifted(sword(-15))  # 刃の上端 y=7
+        code, out = fx.run(main)
+        self.assertEqual(code, 1, out)
+        self.assertIn("FAIL down_base: sword の切っ先が y=7（y=8 より上に出さない）", out)
+
+    def test_48_idle2_limit_is_y5(self):
+        fx = UnitFixture(size=48)
+        self.addCleanup(fx.close)
+        fx.frames["down_idle2"]["sword"] = shifted(sword(-17))  # 刃の上端 y=5
+        code, out = fx.run(main)
+        self.assertEqual(code, 0, out)
+        fx.frames["down_idle2"]["sword"] = shifted(sword(-18))  # 刃の上端 y=4
+        code, out = fx.run(main)
+        self.assertEqual(code, 1, out)
+        self.assertIn("FAIL down_idle2: sword の切っ先が y=4（y=5 より上に出さない）", out)
 
     def test_attack_frames_are_not_checked(self):
         self.fx.frames["down_atk_hit"]["sword"] = sword(-5)  # 刃の上端 y=1

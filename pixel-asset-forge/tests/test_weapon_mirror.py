@@ -8,7 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tools"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from unit_fixture import UnitFixture, box, default_frames, mirror, sword  # noqa: E402
+from unit_fixture import UnitFixture, box, default_frames, mirror, shifted, sword  # noqa: E402
 from weapon_mirror import main  # noqa: E402
 
 
@@ -16,11 +16,11 @@ def sword_shifted(dx: int, dy: int = 0) -> dict:
     return {(x + dx, y): ch for (x, y), ch in sword(dy).items()}
 
 
-def left_right_frames() -> dict[str, dict]:
-    """既定の down の4コマを left、その左右反転を right にする。"""
-    down = {name: layers for name, layers in default_frames().items() if name.startswith("down_")}
+def left_right_frames(size: int = 32) -> dict[str, dict]:
+    """既定の down の4コマを left、その左右反転（size − 1 − x）を right にする。"""
+    down = {name: layers for name, layers in default_frames(size).items() if name.startswith("down_")}
     left = {name.replace("down_", "left_"): layers for name, layers in down.items()}
-    right = {name.replace("down_", "right_"): {key: mirror(pixels) for key, pixels in layers.items()}
+    right = {name.replace("down_", "right_"): {key: mirror(pixels, size) for key, pixels in layers.items()}
              for name, layers in down.items()}
     return {**left, **right}
 
@@ -46,6 +46,29 @@ class WeaponMirrorTest(unittest.TestCase):
         self.assertIn("FAIL left_base: sword の位置が right の反転と合わない", out)
         self.assertIn("left だけ (21,5) (20,6) (20,7)", out)
         self.assertIn("right 反転だけ (22,5) (23,6) (23,7)", out)
+
+    def use_48(self):
+        self.fx.close()
+        self.fx = UnitFixture(size=48)
+        self.addCleanup(self.fx.close)
+        self.fx.frames = left_right_frames(48)
+        order = self.fx.checks["orders"]["down"]
+        self.fx.checks["orders"] = {"left": list(order), "right": list(order)}
+        self.fx.checks["eyes"] = {"left": None, "right": None}
+
+    def test_48_mirrored_left_right_pass(self):
+        self.use_48()
+        code, out = self.fx.run(main)
+        self.assertEqual(code, 0, out)
+
+    def test_48_uses_47(self):
+        self.use_48()
+        for name in ("right_base", "right_idle2", "right_walk_a", "right_atk_hit"):
+            # 剣だけを 31 − x で反転した位置へ（47 − x より 16 左）
+            self.fx.frames[name]["sword"] = shifted(self.fx.frames[name]["sword"], -16, 0)
+        code, out = self.fx.run(main)
+        self.assertEqual(code, 1, out)
+        self.assertIn("FAIL left_base: sword の位置が right の反転と合わない", out)
 
     def test_an_empty_part_on_one_side_fails(self):
         self.fx.frames["left_atk_hit"]["sword"] = {}

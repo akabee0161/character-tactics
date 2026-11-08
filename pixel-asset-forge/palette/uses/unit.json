@@ -368,5 +368,85 @@
     "swatch": "orchid_base",
     "kind": "weapon",
     "note": "ミストの杖の先の玉"
+  },
+  "armor_blue_hi": {
+    "swatch": "cloak_dark_hi",
+    "kind": "cloth",
+    "note": "ガルムの鎧の青い側（明）"
+  },
+  "armor_blue_base": {
+    "swatch": "cloak_dark_base",
+    "kind": "cloth",
+    "note": "ガルムの鎧の青い側（中）"
+  },
+  "armor_blue_shadow": {
+    "swatch": "cloak_dark_shadow",
+    "kind": "cloth",
+    "note": "ガルムの鎧の青い側（暗）"
+  },
+  "armor_rose_hi": {
+    "swatch": "skin_rose_shadow",
+    "kind": "cloth",
+    "note": "ガルムの鎧の赤い側（明）"
+  },
+  "armor_rose_base": {
+    "swatch": "skin_rose_deep",
+    "kind": "cloth",
+    "note": "ガルムの鎧の赤い側（中）"
+  },
+  "armor_rose_shadow": {
+    "swatch": "rose_dark",
+    "kind": "cloth",
+    "note": "ガルムの鎧の赤い側（暗）"
+  },
+  "helm_blue_hi": {
+    "swatch": "cloak_dark_hi",
+    "kind": "headgear",
+    "note": "ガルムの兜の青い側（明）"
+  },
+  "helm_blue_base": {
+    "swatch": "cloak_dark_base",
+    "kind": "headgear",
+    "note": "ガルムの兜の青い側（中）"
+  },
+  "helm_blue_shadow": {
+    "swatch": "cloak_dark_shadow",
+    "kind": "headgear",
+    "note": "ガルムの兜の青い側（暗）"
+  },
+  "helm_rose_hi": {
+    "swatch": "skin_rose_shadow",
+    "kind": "headgear",
+    "note": "ガルムの兜の赤い側（明）"
+  },
+  "helm_rose_base": {
+    "swatch": "skin_rose_deep",
+    "kind": "headgear",
+    "note": "ガルムの兜の赤い側（中）"
+  },
+  "helm_rose_shadow": {
+    "swatch": "rose_dark",
+    "kind": "headgear",
+    "note": "ガルムの兜の赤い側（暗）"
+  },
+  "shield_steel_hi": {
+    "swatch": "stone_base",
+    "kind": "shield",
+    "note": "ガルムの盾の鋼（明）"
+  },
+  "shield_steel_base": {
+    "swatch": "stone_shadow",
+    "kind": "shield",
+    "note": "ガルムの盾の鋼（中）"
+  },
+  "shield_steel_shadow": {
+    "swatch": "stone_dark",
+    "kind": "shield",
+    "note": "ガルムの盾の鋼（暗）"
+  },
+  "shield_emblem": {
+    "swatch": "skin_rose_deep",
+    "kind": "shield",
+    "note": "ガルムの盾の紋（赤紫）"
   }
 }

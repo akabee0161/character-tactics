@@ -11,7 +11,7 @@
 4. 穴: 輪郭に囲まれて外とつながらない透明の画素（耳と頭の間のすき間・脚の間のすき間のように、
    上下左右にたどってコマの外へ出られる透明は穴としない。2026-10-16 依頼者）。
 
-行の範囲は 32px の体の既定値（頭 3-14、胴 15-24、脚 25-31）。別の体は --head --trunk --legs で指定する。
+行の範囲の既定は、32px の体で頭 3-14・胴 15-24・脚 25-31、48px の体で頭 5-22・胴 23-37・脚 38-47（tools/unit_scale.py）。別の体は --head --trunk --legs で指定する。
 `<向き>` は core_<向き>_<名前>.txt の名前から読む。左右向き（left・right）は中心の検査をしない。
 
 --hanging 文字: 芯に髪・かぶり物を含めて組んだユニット（ロラン・イネス・ガウ）の、髪・かぶり物の文字。
@@ -30,12 +30,12 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from gridfile import BACKGROUND, GridError, parse  # noqa: E402
+from unit_scale import ScaleError, scale_for  # noqa: E402
 
 OUTLINE_NAME = "contour"
 FRONT_BACK = ("down", "up")
 NEIGHBOURS = ((1, 0), (-1, 0), (0, 1), (0, -1))
-DEFAULT_BANDS = {"head": (3, 14), "trunk": (15, 24), "legs": (25, 31)}
-BAND_LABEL = {"head": "頭", "trunk": "胴", "legs": "脚"}
+BAND_LABEL = {"head": "頭", "trunk": "胴", "legs": "脚"}  # 既定の行の範囲はコマの大きさから（tools/unit_scale.py の bands）
 
 
 def _filled(rows: list[str], y: int) -> list[int]:
@@ -146,11 +146,15 @@ def _points(points: list[tuple[int, int]]) -> str:
     return " ".join(f"({x},{y})" for x, y in sorted(points, key=lambda p: (p[1], p[0])))
 
 
-def check_file(path: Path, bands: dict[str, tuple[int, int]], hanging: set[str] = frozenset(),
+def check_file(path: Path, bands: dict[str, tuple[int, int] | None], hanging: set[str] = frozenset(),
                protrusion: bool = True) -> list[str]:
+    """bands の None の範囲は、コマの大きさの既定（scale_for(...).bands）で埋める。大きさが表に無ければ ScaleError。"""
     parts = path.stem.split("_")
     direction = parts[1] if len(parts) > 1 else ""
     grid = parse(path)
+    if any(band is None for band in bands.values()):
+        defaults = scale_for(grid.width).bands
+        bands = {name: band or defaults[name] for name, band in bands.items()}
     body = without(grid.rows, hanging_pixels(grid.rows, grid.charmap, set(hanging), bands["trunk"][0])) \
         if hanging else grid.rows
     failures = []
@@ -178,12 +182,14 @@ def _band(text: str) -> tuple[int, int]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("target", type=Path, help="core_<向き>_<名前>.txt か、それらのあるディレクトリ")
-    for name, (lo, hi) in DEFAULT_BANDS.items():
-        parser.add_argument(f"--{name}", type=_band, default=(lo, hi), help=f"{BAND_LABEL[name]}の行の範囲（既定 {lo}-{hi}）")
+    for name, label in BAND_LABEL.items():
+        small, large = scale_for(32).bands[name], scale_for(48).bands[name]
+        parser.add_argument(f"--{name}", type=_band, default=None,
+                            help=f"{label}の行の範囲（既定は 32px で {small[0]}-{small[1]}、48px で {large[0]}-{large[1]}）")
     parser.add_argument("--hanging", default="", help="芯に描いた髪・かぶり物の文字（胴まで垂れた塊を中心とはみ出しから外す）")
     parser.add_argument("--no-protrusion", action="store_true", help="はみ出しを見ない（unit_rules.py は 2026-11-05 から常に渡す）")
     args = parser.parse_args(argv)
-    bands = {name: getattr(args, name) for name in DEFAULT_BANDS}
+    bands = {name: getattr(args, name) for name in BAND_LABEL}
 
     if args.target.is_dir():
         paths = sorted(args.target.glob("core_*.txt"))
@@ -196,11 +202,25 @@ def main(argv: list[str] | None = None) -> int:
         print(f"error: 見つからない: {args.target}", file=sys.stderr)
         return 2
 
+    try:  # コマごとに既定の行の範囲を選ぶので、正方形でないコマと 32px・48px の混ざりを先に止める
+        sizes = {path: (grid.width, grid.height) for path in paths for grid in [parse(path)]}
+    except GridError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+    for path, (width, height) in sizes.items():
+        if width != height:
+            print(f"error: {path}: コマが正方形でない（{width}x{height}）", file=sys.stderr)
+            return 2
+    if len(set(sizes.values())) > 1:
+        found = ", ".join(f"{w}x{h}" for w, h in sorted(set(sizes.values())))
+        print(f"error: {args.target}: 芯の大きさがそろっていない（{found}）", file=sys.stderr)
+        return 2
+
     bad = 0
     for path in paths:
         try:
             failures = check_file(path, bands, set(args.hanging), not args.no_protrusion)
-        except GridError as exc:
+        except (GridError, ScaleError) as exc:
             print(f"error: {path}: {exc}", file=sys.stderr)
             return 2
         for failure in failures:

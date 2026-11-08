@@ -1,0 +1,26 @@
+{
+  "unit": "garum",
+  "compose": "compose/garum.json",
+  "body": "male",
+  "head_chars": "",
+  "items": "ijvwxydefz",
+  "parts": {
+    "greatsword": {"weapon": true, "blade": "ij", "moves": true},
+    "sword_hand": {"fist": true, "grips": "greatsword", "fist_sizes": ["5x3"], "moves": true},
+    "shield_garum": {"fixed": true},
+    "shield_hand": {"fist": true, "grips": "shield_garum", "fist_sizes": ["4x3"]},
+    "head_garum": {"head": true},
+    "cloth_garum": {}
+  },
+  "orders": {
+    "down": ["CORE", "cloth_garum", "head_garum", "shield_hand", "shield_garum", "greatsword", "sword_hand"],
+    "up": ["greatsword", "shield_garum", "sword_hand", "shield_hand", "CORE", "cloth_garum", "head_garum"],
+    "left": ["greatsword", "sword_hand", "CORE", "cloth_garum", "head_garum", "shield_hand", "shield_garum"],
+    "right": ["shield_hand", "shield_garum", "CORE", "cloth_garum", "head_garum", "greatsword", "sword_hand"]
+  },
+  "eyes": {"down": null, "up": null, "left": null, "right": null},
+  "weapon_check": {
+    "depth": ["down"]
+  },
+  "exceptions": []
+}

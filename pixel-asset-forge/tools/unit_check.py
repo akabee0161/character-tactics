@@ -4,9 +4,9 @@
     tools/unit_check.py assets/unit/ines --items klmstuw
     tools/unit_check.py assets/unit/roran --items GHJRkmns
 
-1. 脚の中心: 向きごとに、全コマの脚（y>=24 の画素から、輪郭 `o` と --items の文字を除く）の
+1. 脚の中心: 向きごとに、全コマの脚（y>=24。48px のコマは y>=37 の画素から、輪郭 `o` と --items の文字を除く）の
    左右の中心がそろっているか。そろっていなければ失敗（終了コード 1）。
-   持ち物が体の横へはみ出すユニット（弓）では `sheet.py` の中心の判定が使えないので、こちらで確かめる。
+   体の中心がそろっているかはこの確認で見る（`sheet.py` は武器を含む絵全体の幅になるので中心を測らない。2026-11-08）。
 2. 増えた輪郭の切れ目: 輪郭でない画素で、上下左右のどれかが透明かコマの外のもののうち、
    同じ向きの `<向き>_base` に無いもの。報告だけで、終了コードには影響しない。
    歩きの足先のようにわざと切れているものもあるので、1件ずつ目で確かめる。
@@ -30,10 +30,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from gridfile import BACKGROUND, GridError, parse  # noqa: E402
+from unit_scale import ScaleError, scale_for  # noqa: E402
 
 DIRECTIONS = ("down", "up", "left", "right")
 OUTLINE = "o"
-LEG_TOP = 24
 NEIGHBOURS = ((1, 0), (-1, 0), (0, 1), (0, -1))
 
 
@@ -46,15 +46,22 @@ def _direction(name: str) -> str:
 
 
 def leg_center(rows: list[str], items: set[str]) -> float:
+    """脚（32px のコマは y>=24、48px は y>=37。tools/unit_scale.py の leg_top）の画素の外接の中心。"""
+    if any(len(row) != len(rows) for row in rows):
+        raise UnitCheckError(f"コマが正方形でない（幅 {len(rows[0]) if rows else 0}、高さ {len(rows)}）")
+    try:
+        leg_top = scale_for(len(rows)).leg_top
+    except ScaleError as exc:
+        raise UnitCheckError(str(exc)) from None
     xs = [
         x
         for y, row in enumerate(rows)
-        if y >= LEG_TOP
+        if y >= leg_top
         for x, ch in enumerate(row)
         if ch not in items and ch not in (BACKGROUND, OUTLINE)
     ]
     if not xs:
-        raise UnitCheckError(f"脚の画素が無い（y>={LEG_TOP} に輪郭と持ち物以外の画素が無い）")
+        raise UnitCheckError(f"脚の画素が無い（y>={leg_top} に輪郭と持ち物以外の画素が無い）")
     return (min(xs) + max(xs)) / 2
 
 
@@ -81,7 +88,15 @@ def load_frames(directory: Path) -> dict[str, list[str]]:
         frames[path.stem] = parse(path).rows
     if not frames:
         raise UnitCheckError(f"{directory}: <向き>_<名前>.txt が1つも無い")
+    same_size(frames, directory)
     return frames
+
+
+def same_size(frames: dict[str, list[str]], where: Path) -> None:
+    """全コマが同じ大きさか（32px と 48px が混ざると、コマごとに違う脚の上端で測ってしまう）。"""
+    sizes = {(len(rows[0]) if rows else 0, len(rows)) for rows in frames.values()}
+    if len(sizes) > 1:
+        raise UnitCheckError(f"{where}: コマの大きさがそろっていない（{', '.join(f'{w}x{h}' for w, h in sorted(sizes))}）")
 
 
 def check_legs(frames: dict[str, list[str]], items: set[str]) -> list[str]:
@@ -136,6 +151,7 @@ def main(argv: list[str] | None = None) -> int:
                 if not path.is_file():
                     raise UnitCheckError(f"{args.core}: 芯 {path.name} が無い")
                 legs[name] = parse(path).rows
+            same_size(legs, args.core)
         failures = check_legs(legs, set(args.items))
         edges = new_edges(frames)
     except (GridError, UnitCheckError) as exc:

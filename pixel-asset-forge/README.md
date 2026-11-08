@@ -244,8 +244,9 @@ cat sheets/roran.txt
 - `build/sheets/roran_preview.png`：目視用。**赤い横線が足元 y=30**、青い縦線が左右中心。
   コマ間で足元が1pxずれるとアニメがガタつくが、1コマの拡大画像では分からない
 
-最後に出る表は足元と中心の実測である。横向きの `atk_wind` と `atk_hit` の `off` は、剣が体の外に出て
-外接矩形が広がるので中心がずれる、という仕様どおりの逸脱で、問題ではない。
+最後に出る表は足元（一番下の不透明な行）の実測である（助言のみ）。左右の中心は測らない。武器や盾を含む絵全体の幅の
+中心は体の中心にならず、剣と盾が張り出すガルムでは全コマに `off` が出たため（2026-11-08 依頼者）。体の中心がそろっているかは
+`unit_check.py` が芯の脚で確かめる（`unit_rules.py` が走らせる）。
 
 動きを見るには、同じ定義から状態ごとの GIF を作る。
 
@@ -270,11 +271,11 @@ cat sheets/roran.txt
 ```
 
 - 設定ファイル `checks/<ユニット>.json` に、素体の型（男性・女性）・芯に描いた髪とかぶり物の文字・承認された重なり順・部品の役割（武器と刃の文字・拳・動いてよい部品・動かない盾）・目の位置（目の部品 `"eye": true` があるユニットは書かない。`types/unit/SPEC.md`）・`weapon_check.py` の指定（一部が隠れるコマ `partial`・奥行き `depth`。`hidden` は書けない。刃・武器・手の色は書かず、パレットの種類 blade・weapon・skin から読む）・例外を書く（形は `tools/unit_config.py` の docstring）
-- 今ある道具（`validate.py`・`compose.py --check`・`body_check.py`・`hand_mirror.py`・`unit_check.py`・`weapon_check.py`）と、方針の確認（重なり順・切っ先の高さ・動かない所と盾・背丈・刃と鏃の先端（決まり1〜5）・部品の文字・目・部品が閉じている・拳の大きさと握り・left と right の武器の位置・髪と被り物の重なり `head_cover_check`・体の奥の拳の色 `far_fist_check`）を順に走らせ、確認ごとに1行「ok／NG」を出す
+- 今ある道具（`validate.py`・`compose.py --check`・`body_check.py`・`hand_mirror.py`・`unit_check.py`・`weapon_check.py`）と、方針の確認（重なり順・切っ先の高さ・動かない所と盾・背丈・刃と鏃の先端（決まり1〜5）・部品の文字・目・部品が閉じている・拳の大きさと握り・left と right の武器の位置・髪と被り物の重なり `head_cover_check`・体の奥の拳の色 `far_fist_check`・拳が柄の真ん中か（武器と拳の部品だけで見る） `grip_centre_check`）を順に走らせ、確認ごとに1行「ok／NG」を出す
 - 例外に書いていない失敗が1つでもあれば終了コード 1、設定の誤り（知らないキー・無い部品・無いコマ・パレットに無い用途の色の名前）は 2。例外は基本的に作らず、道具は常に正しいものとして、落ちたら絵を直す（道具の判定は直さない）
 - `unit_check.py` の「増えた切れ目」は報告だけ（歩きの足先のようにわざと切れているものもあるので、1件ずつ目で確かめる）。`weapon_check.py` の `--arm` は使わない（体＋拳の方針、2026-10-16）
 - 確認はそれぞれ単独でも走らせられる（`tools/order_check.py checks/gau.json` など）
-- 刃・鏃の先端の確認（`tip_check.py`）は、中身5画素以上・45°以外の斜め・向きの決まらない刃を落とさず「対象外」とし、ok の行に件数を添えて場所を出す。
+- 刃・鏃の先端の確認（`tip_check.py`）は、上限より太い刃（縦・横は中身5画素以上、斜めは縦・横の上限の √2 倍を超える中身6画素以上）・45°以外の斜め・向きの決まらない刃を落とさず「対象外」とし、ok の行に件数を添えて場所を出す。
   item のアイコンは `tools/tip_check.py --items checks/items.json` で同じ確認をかける（刃・鏃の文字は `checks/items.json` に書く。決まりは `types/item/SPEC.md`）
 
 髪・かぶり物・武器を素体抜きの部品として描いたユニットは、`tools/compose.py` で素体と重ねてコマにする。
@@ -289,6 +290,7 @@ cat sheets/roran.txt
 `front` は積んだ時点の一番手前へ、`back` は一番奥へ入る（`back` は体に近いものから先に書く）。拳の部品には `hand: true` を付けると、四方を輪郭で閉じているかを `--check` が確かめる。
 ロランは全向きを、完全な単品の部品（体・剣・剣の拳・盾・盾の拳）で組んでいる（`compose/roran.json`。決まりは `types/unit/SPEC.md`「部品で組む規約」）。
 ミストは最初から、素体（芯）・髪・被り物（帽子）・目・服（ローブ）・拳・武器（杖）を別の部品に描いて組んだ（`compose/mist.json`、2026-11-06）。
+ガルム（48px のボス）は、芯・兜（目のすき間も兜に描き、目の部品は無い）・鎧・大きな剣・盾・剣の拳・盾の拳で組む（`compose/garum.json`、部品は `assets/part/` の `body/garum/`・`head/garum/`・`cloth/garum/`・`equip/greatsword/`・`equip/shield/shield_garum_*`・`fist/garum/`、2026-11-08）。
 イネスも全32コマを、芯・弓（弦を含む）・矢・弓の拳・矢の拳で組んでいる（`compose/ines.json`、部品は `assets/part/` の `body/ines/`・`equip/bow/`・`equip/arrow/`・`fist/ines/`）。
 ガウも全24コマを、芯・短剣・短剣の拳・空き手の拳で組んでいる（`compose/gau.json`、部品は `assets/part/` の `body/gau/core_*`・`equip/dagger/dagger_<向き>_<状態>`・`fist/gau/`）。
 短剣の敵4体（`compose/dagger-{bandit,knight,horn,thug}.json`）は、敵の男性の芯（`body/enemy_male/core_*`）に、目・服・頭の部品とガウの短剣・拳を重ねて組む。設定は `checks/dagger-*.json`。
@@ -417,7 +419,7 @@ palette/swatches.json      色見本 -> RGB（値を持つのはここだけ）
 palette/kinds.json         種類の一覧と説明（道具が種類で物を見分ける）
 palette/uses/<型>.json     用途の色 -> 色見本・種類・説明。絵の map はここの名前を書く（common.json は全型の輪郭）
 types/<type>/SPEC.md       型ごとの機械的な規約（寸法・構成・並び方）
-types/<type>/reference/    合格済みのお手本。絵柄はここで揃える（`unit` は `reference/` を持たない。手本は `assets/unit/roran/`（剣と盾）・`assets/unit/ines/`（弓）・`assets/unit/gau/`（短剣）・`assets/unit/mist/`（杖）、土台は `types/unit/base/` の素体）
+types/<type>/reference/    合格済みのお手本。絵柄はここで揃える（`unit` は `reference/` を持たない。手本は `assets/unit/roran/`（剣と盾）・`assets/unit/ines/`（弓）・`assets/unit/gau/`（短剣）・`assets/unit/mist/`（杖）・`assets/unit/garum/`（48px。大きな剣と盾）、土台は `types/unit/base/` の素体）
 types/unit/base/           unit の素体（4方向）。新しい unit を複製して作る土台
 assets/<type>/<name>.txt   アセットの元テキスト（これが正）
 assets/unit/<unit>/        unit のコマ。味方4体と、部品で組んだ敵16体（`assets/unit/<敵の id>/`）
@@ -442,7 +444,7 @@ seed/face32.py             リポジトリ化前の原型。もう使ってい�
 | `face`（顔グラ） | reference 1点（`knight`） | 32x32 | [`types/face/SPEC.md`](types/face/SPEC.md) |
 | `item`（小物） | 3点（`chest`・`sword`・`bow`） | 16x16 | [`types/item/SPEC.md`](types/item/SPEC.md) |
 | `tile`（マップ） | 77点（草原57・城内20）。うち12点は物のセット3つ（村・岩・木）の部品 | 16x16（セットは 32x32） | [`types/tile/SPEC.md`](types/tile/SPEC.md) |
-| `unit`（マップ上のキャラ） | 4体（ロラン・ガウ・ミスト 24コマ、イネス 32コマ）＋素体 `male_*`・`female_*` 4方向ずつ。ほかに敵16体（24コマずつ。部品で生成し、`enemy_build.py` で色替えする） | 32x32 | [`types/unit/SPEC.md`](types/unit/SPEC.md) |
+| `unit`（マップ上のキャラ） | 4体（ロラン・ガウ・ミスト 24コマ、イネス 32コマ）＋素体 `male_*`・`female_*` 4方向ずつ。ほかに敵16体（24コマずつ。部品で生成し、`enemy_build.py` で色替えする）とボスのガルム（24コマ） | 32x32（ガルムだけ 48x48） | [`types/unit/SPEC.md`](types/unit/SPEC.md) |
 
 **「正」はテキストで、PNG は生成物。** 絵を変えるときに編集するのは `assets/**/*.txt` だけで、
 PNG を直接編集しない。
@@ -554,9 +556,9 @@ Claude は自分が何を描いたか知っているので、そう見えてし�
 
 | | |
 |---|---|
-| **確定** | 解像度 `face` = 32x32、`item` = 16x16、`tile` = 16x16、`unit` = 32x32 |
+| **確定** | 解像度 `face` = 32x32、`item` = 16x16、`tile` = 16x16、`unit` = 32x32（`garum` だけ 48x48。2026-11-06） |
 | **確定** | `tile` はシームレス。全周に輪郭を回さない |
-| **確定** | `unit` は足元 y=30・左右中央・背丈24〜26px。シート定義は `sheets/` に置く（`assets/` 不可） |
+| **確定** | `unit` は足元 y=30・左右中央・背丈24〜26px（48px は足元 y=46・背丈36〜39px）。シート定義は `sheets/` に置く（`assets/` 不可） |
 | **未確定** | 目指す絵柄（「SFC世代相当」以上の指定はない） |
 | **未確定** | アセットあたりの色数上限。`# max_colors:` は実装済みだがどのアセットでも未使用 |
 | **未確定** | 色見本の具体的な色 |

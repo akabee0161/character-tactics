@@ -12,19 +12,19 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "tools"))
 
 from enemy_build import serialize_frame  # noqa: E402
-from weapon_check import Analysis, check_frame, check_unit, covered, main  # noqa: E402
+from weapon_check import Analysis, check_frame, check_unit, covered, grip_off_centre, main  # noqa: E402
 
 BLADE = {"blade_hi", "blade_base"}
 HANDLE = {"weapon_shaft_base"}
 SKIN = {"skin_fair_base"}
 
 
-def blank():
-    return [[None] * 32 for _ in range(32)]
+def blank(size: int = 32):
+    return [[None] * size for _ in range(size)]
 
 
 def put(f, x, y, name):
-    if 0 <= x < 32 and 0 <= y < 32:
+    if 0 <= x < len(f) and 0 <= y < len(f):
         f[y][x] = name
 
 
@@ -163,6 +163,36 @@ class HandTest(unittest.TestCase):
         fails = check_frame("down_atk_hit", analyse(f), set(), set())
         self.assertTrue(any("拳が柄の真ん中に無い" in s for s in fails), fails)
 
+    def test_grip_centre_can_be_left_to_the_parts(self):
+        # 部品で組むユニットは grip_centre_check.py が武器と拳の部品だけで見る（2026-11-07 依頼者）
+        f = blank()
+        body(f)
+        spear_v(f, 9, 6, 25)
+        fist(f, 10, 18, w=3)
+        fails = check_frame("down_atk_hit", analyse(f), set(), set(), grip_centre=False)
+        self.assertFalse(any("真ん中" in s for s in fails), fails)
+
+    def test_grip_off_centre_names_the_axis_and_distance(self):
+        f = blank()
+        body(f)
+        spear_v(f, 9, 6, 25)
+        fist(f, 10, 18, w=3)  # 肌 x10〜12、真ん中 x11、柄 x9
+        self.assertEqual(grip_off_centre(analyse(f)), "拳が柄の真ん中に無い（左右に 2.0px ずれる。柄から離れている）")
+        g = blank()
+        body(g)
+        spear_v(g, 9, 6, 25)
+        fist(g, 9, 18)
+        self.assertIsNone(grip_off_centre(analyse(g)))
+
+    def test_48_large_fist_off_the_middle_fails(self):
+        # 48px の拳は 5x3＝15 画素まである（32px の 12 画素を面積の比 1.5² で 27 に）。黙って飛ばさない
+        f = blank(48)
+        body(f, 18, 24, 26, 46)
+        spear_v(f, 9, 6, 35)
+        fist(f, 10, 22, w=5, h=3)  # 肌 x10〜14、真ん中 x12、柄 x9
+        fails = check_frame("down_atk_hit", analyse(f), set(), set())
+        self.assertTrue(any("拳が柄の真ん中に無い" in s for s in fails), fails)
+
     def test_fist_apart_from_the_weapon_fails(self):
         f = blank()
         body(f)
@@ -244,6 +274,17 @@ class EdgeTest(unittest.TestCase):
     def test_weapon_on_frame_edge_fails(self):
         f = standing(grip_y=12, top=0)
         self.assertIn("コマの端で切れている", " ".join(check_frame("down_base", analyse(f), set(), set())))
+
+
+    def test_48_edge_is_47(self):
+        for x, cut in ((47, True), (31, False)):
+            with self.subTest(x=x):
+                f = blank(48)
+                body(f, 18, 24, 26, 46)
+                spear_v(f, x, 10, 25)
+                fist(f, x, 22)
+                fails = " ".join(check_frame("down_base", analyse(f), set(), set()))
+                self.assertEqual("コマの端で切れている" in fails, cut, fails)
 
 
 class WeaponDetectionTest(unittest.TestCase):

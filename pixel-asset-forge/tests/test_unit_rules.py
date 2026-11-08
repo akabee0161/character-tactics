@@ -158,7 +158,8 @@ class UnitRulesTest(unittest.TestCase):
         steps = dict(plan(load_unit_config(path, self.fx.root), path, self.fx.root, small_palette()))
         self.assertEqual(steps["weapon_check"], [
             str(self.fx.root / "assets/unit/t"), "--blade", "b_one,b_two", "--weapon", "w_one", "--hand", "s_one,s_two",
-            "--depth", "down", "--partial", "down_atk_hit,up_atk_hit", "--no-presence", "--no-hand-width"])
+            "--depth", "down", "--partial", "down_atk_hit,up_atk_hit", "--no-presence", "--no-hand-width",
+            "--no-grip-centre"])
 
     def test_hidden_frames_are_no_longer_written_in_the_config(self):
         # 武器と手が見えるかは確かめないので、隠れるコマを書く項目は無い（2026-11-04 依頼者）
@@ -206,6 +207,19 @@ class UnitRulesTest(unittest.TestCase):
         self.fx.checks["weapon_check"] = {}
         self.fx.checks["parts"]["sword_hand"] = {"fist": True, "fist_sizes": ["3x2"]}
         self.assertNotIn("--no-hand-width", self.steps()["weapon_check"])
+
+    def test_grip_centre_is_measured_on_the_parts(self):
+        # 拳が柄の真ん中かは、武器と拳の部品だけで grip_centre_check が見る（2026-11-07 依頼者）
+        self.fx.checks["weapon_check"] = {}
+        steps = self.steps()
+        self.assertIn("--no-grip-centre", steps["weapon_check"])
+        self.assertIn("grip_centre_check", steps)
+
+    def test_weapon_check_measures_the_grip_centre_when_a_weapon_has_no_gripping_fist(self):
+        # 握る拳の部品が無い武器は grip_centre_check が見られないので、weapon_check が組んだコマで見る
+        self.fx.checks["weapon_check"] = {}
+        self.fx.checks["parts"]["sword_hand"] = {"fist": True, "fist_sizes": ["3x2"]}
+        self.assertNotIn("--no-grip-centre", self.steps()["weapon_check"])
 
     def test_weapon_check_measures_the_hand_width_when_any_fist_has_no_sizes(self):
         # 大きさを持たない拳が1つでもあれば渡さない（weapon_check が色で見つける手がどの拳の部品かは決まらない）

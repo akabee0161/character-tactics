@@ -48,9 +48,16 @@ ROWS = 12
 STATES = ("idle", "walk", "attack")
 DIRECTIONS = ("down", "up", "left", "right")
 
-# The frame row the feet are supposed to sit on. Declared in
-# docs/2026-09-20-unit-sprite-sheet-spec.md section 3.
-FOOT_Y = 30
+# The feet sit FOOT_INSET rows above the bottom edge of the frame: y=30 in a
+# 32px frame (docs/2026-09-20-unit-sprite-sheet-spec.md section 3) and y=46
+# in a 48px one (tools/unit_scale.py). The game uses the same inset
+# (character-tactics src/render/sprites.ts FOOT_INSET).
+FOOT_INSET = 2
+
+
+def foot_y(frame: int) -> int:
+    """The row the feet are supposed to sit on in a frame of this size."""
+    return frame - FOOT_INSET
 
 
 def read_sheet(path: Path) -> list[list[str | None]]:
@@ -177,13 +184,18 @@ FOOT_LINE = (255, 90, 90, 150)
 CENTER_LINE = (90, 170, 255, 110)
 
 
-def measure(image: Image.Image) -> tuple[int | None, float | None]:
-    """The lowest opaque row and the horizontal midpoint of the opaque pixels."""
+def measure(image: Image.Image) -> int | None:
+    """The lowest opaque row.
+
+    The horizontal centre is not measured here: the midpoint of every opaque
+    pixel includes the weapon and the shield, so it is not the body's centre
+    (Garum's sword and shield flagged every frame). unit_check.py checks that
+    the legs line up, measured on the core part (2026-11-08).
+    """
     box = image.getchannel("A").getbbox()
     if box is None:
-        return None, None
-    left, _, right, bottom = box
-    return bottom - 1, (left + right - 1) / 2
+        return None
+    return box[3] - 1
 
 
 def preview(canvas: Image.Image, frame: int, scale: int = 4) -> Image.Image:
@@ -205,7 +217,7 @@ def preview(canvas: Image.Image, frame: int, scale: int = 4) -> Image.Image:
     for y in range(0, canvas.height + 1, frame):
         draw.line([(0, y * scale), (out.width, y * scale)], fill=BORDER)
     for top in range(0, canvas.height, frame):
-        y = (top + FOOT_Y) * scale
+        y = (top + foot_y(frame)) * scale
         draw.line([(0, y), (out.width, y)], fill=FOOT_LINE)
     for left in range(0, canvas.width, frame):
         x = int((left + (frame - 1) / 2) * scale)
@@ -214,22 +226,18 @@ def preview(canvas: Image.Image, frame: int, scale: int = 4) -> Image.Image:
 
 
 def report(frames: dict[str, Image.Image], frame: int) -> None:
-    """Print where the feet and the centre actually are.
+    """Print where the feet actually are.
 
-    Advice only - this never changes the exit code. `attack` frames step
-    forward, so the feet are supposed to move there. Three earlier machine
+    Advice only - this never changes the exit code. Three earlier machine
     checks in this repo were withdrawn or downgraded once they were measured
-    against every existing asset; see docs/2026-09-23-findings.md.
+    against every existing asset; see docs/2026-09-23-findings.md. The centre
+    is checked by unit_check.py on the core part, not here (see measure()).
     """
-    expected_center = (frame - 1) / 2
-    print(f"     {'frame':<18}{'foot_y':>7}{'center_x':>10}   "
-          f"(expected foot_y={FOOT_Y}, center_x={expected_center})")
+    print(f"     {'frame':<18}{'foot_y':>7}   (expected foot_y={foot_y(frame)})")
     for name in sorted(frames):
-        foot, center = measure(frames[name])
-        flag = ""
-        if foot != FOOT_Y or center is None or abs(center - expected_center) > 1:
-            flag = "  <-- off"
-        print(f"     {name:<18}{str(foot):>7}{str(center):>10}{flag}")
+        foot = measure(frames[name])
+        flag = "  <-- off" if foot != foot_y(frame) else ""
+        print(f"     {name:<18}{str(foot):>7}{flag}")
 
 
 def main(argv: list[str] | None = None) -> int:

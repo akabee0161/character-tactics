@@ -7,7 +7,7 @@
 --hand を省くと、手の色はパレットの種類 skin の、unit と common の用途の色（compose.py と同じ。2026-10-30）。
 
 拳は部品として完全な形で描き、四方とも輪郭（黒）で囲う（2026-10-10 依頼者と決めた）。手（--hand の色の塊のうち、
-HAND_MAX 画素以下の小さいもの）の上下左右の隣が、透明でも袖でも輪郭にする。--keep の色の上には描かない
+32px のコマは 12 画素、48px は 27 画素以下の小さいもの。tools/unit_scale.py の hand_max）の上下左右の隣が、透明でも袖でも輪郭にする。--keep の色の上には描かない
 （部品のファイルには普通いらない）。部品が閉じているかの検査は tools/compose.py（部品の "hand"）。
 **組み立て済みのコマ（assets/unit/<ユニット>/*.txt）には使わない**（拳が体や武器に接する所まで「切れ目」と数え、--write で組み立て結果を壊す）。
 ファイルは文字だけを置き換える（注記や map の行はそのまま）。ディレクトリを渡すと直下の `<名前>_<名前>.txt` を読む。
@@ -23,8 +23,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import palette as palette_mod  # noqa: E402
 from enemy_build import EnemyError, read_frame  # noqa: E402
 from gridfile import GridError, parse  # noqa: E402
+from unit_scale import ScaleError, scale_for  # noqa: E402
 
-HAND_MAX = 12
 N4 = ((1, 0), (-1, 0), (0, 1), (0, -1))
 
 Point = tuple[int, int]
@@ -54,11 +54,15 @@ def _components(points: set[Point]) -> list[set[Point]]:
 def close_hands(frame, hand: set[str], keep=frozenset()) -> tuple[list[list[str | None]], list[Point]]:
     """(直したコマ, 輪郭にした画素)。入力は変えない。keep の色（握る武器、拳の手前の盾など）の上には描かない。"""
     h, w = len(frame), len(frame[0])
+    try:
+        hand_max = scale_for(h).hand_max
+    except ScaleError as exc:
+        raise HandOutlineError(str(exc)) from None
     skin = {(x, y) for y in range(h) for x in range(w) if frame[y][x] in hand}
     out = [row[:] for row in frame]
     changed: list[Point] = []
     for comp in _components(skin):
-        if len(comp) > HAND_MAX:
+        if len(comp) > hand_max:
             continue
         for x, y in sorted(comp, key=lambda p: (p[1], p[0])):
             for dx, dy in N4:

@@ -22,10 +22,13 @@ def fist(x, y):
     return {(x, y): "b", (x + 1, y): "b", (x, y + 1): "b", (x + 1, y + 1): "b"}
 
 
-class HandMirrorTest(unittest.TestCase):
+class HandMirrorBase(unittest.TestCase):
+    """組を書いて確かめる手伝い（テストは持たない）。"""
+    size = 32
+
     def setUp(self):
         self.ws = Workspace()
-        self.ws.write("body.txt", grid_text({(15, 15): "b"}, BODY_MAP))
+        self.ws.write("body.txt", grid_text({(15, 15): "b"}, BODY_MAP, self.size))
         self.frames = {}
 
     def tearDown(self):
@@ -37,7 +40,7 @@ class HandMirrorTest(unittest.TestCase):
         layers = []
         for key, (x, y) in hands.items():
             rel = f"parts/{key}_{d}_{st}.txt"
-            self.ws.write(rel, grid_text(fist(x, y), FIST_MAP))
+            self.ws.write(rel, grid_text(fist(x, y), FIST_MAP, self.size))
             layers.append({"part": rel, "z": "front", "hand": True})
         self.frames[name] = {"body": "body.txt", "layers": layers}
 
@@ -49,6 +52,8 @@ class HandMirrorTest(unittest.TestCase):
             code = main([str(path), "--root", str(self.ws.root)])
         return code, out.getvalue()
 
+
+class HandMirrorTest(HandMirrorBase):
     def test_mirrored_fists_pass(self):
         self.frame("down_base", {"bow_hand": (20, 20), "arrow_hand": (13, 19)})
         self.frame("up_base", {"bow_hand": (10, 20), "arrow_hand": (17, 19)})
@@ -97,6 +102,24 @@ class HandMirrorTest(unittest.TestCase):
             self.frames[f"{d}_walk_a"] = self.frames[f"{d}_base"]  # 歩きは立ちの部品のファイルを使い回す
         code, out = self.run_check()
         self.assertEqual(code, 0, out)
+
+
+class HandMirror48Test(HandMirrorBase):
+    """48px のコマ。左右反転は 47 − x。"""
+    size = 48
+
+    def test_mirrored_fists_pass(self):
+        self.frame("down_base", {"bow_hand": (20, 20)})
+        self.frame("up_base", {"bow_hand": (26, 20)})  # x=20・21 → 27・26
+        code, out = self.run_check()
+        self.assertEqual(code, 0, out)
+
+    def test_32px_mirror_fails(self):
+        self.frame("down_base", {"bow_hand": (20, 20)})
+        self.frame("up_base", {"bow_hand": (10, 20)})  # 31 − x で反転した位置
+        code, out = self.run_check()
+        self.assertEqual(code, 1, out)
+        self.assertIn("bow_hand の位置が左右反転で合わない", out)
 
 
 if __name__ == "__main__":
