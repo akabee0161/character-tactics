@@ -177,13 +177,17 @@ def build_page(now: Path, cand: Path, states, dirs: list[str], title: str, note:
     for sheet in (now, cand):
         _check_sheet(sheet, states, frame)
     labels = [html.escape(s) for s in labels]
+    # 表示はコマの整数倍（32px は 4倍の 128px、48px は 2倍の 96px）。128px に引き伸ばすと 48px では
+    # 1画素が 2px と 3px に不揃いになり、1px の線の見え方が揺れる（2026-11-08 PR #46 のレビュー）
+    shown = frame * max(1, 128 // frame)
     sections = []
     for si, (_key, ja, frames, fps) in enumerate(states):
         figs = []
         for d in dirs:
             row = si * 4 + DIRS.index(d)
             pair = "".join(
-                f'<div class="{k}"><canvas width="{frame}" height="{frame}" data-sheet="{k}" data-row="{row}" '
+                f'<div class="{k}"><canvas width="{frame}" height="{frame}" '
+                f'style="width:{shown}px;height:{shown}px" data-sheet="{k}" data-row="{row}" '
                 f'data-frames="{frames}" data-fps="{fps}"></canvas>{label}</div>'
                 for k, label in zip(("now", "cand"), labels))
             figs.append(f'<figure><div class="pair">{pair}</div><figcaption>{DIR_JA[d]}</figcaption></figure>')

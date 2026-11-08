@@ -66,6 +66,13 @@ class AnimCompareTest(unittest.TestCase):
                           ["down"], "題", "", ["今", "案"], load_frame_size(game))
         self.assertIn('<canvas width="48" height="48"', page)
         self.assertNotIn('<canvas width="32"', page)
+        # 表示の大きさはコマの整数倍（48px なら 2倍の 96px）。128px に引き伸ばすと 1画素が 2px と 3px に不揃いになる
+        self.assertIn('style="width:96px;height:96px"', page)
+
+    def test_32_page_is_shown_at_four_times(self):
+        page = build_page(self.dir / "now.png", self.dir / "cand.png", load_states(self.game(GAME)), ["down"], "題", "",
+                          ["今", "案"])
+        self.assertIn('style="width:128px;height:128px"', page)
 
     def test_frame_defaults_to_32(self):
         self.assertEqual(load_frame_size(self.game(GAME)), 32)
