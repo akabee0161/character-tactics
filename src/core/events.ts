@@ -1,6 +1,8 @@
 import type { VillageDef } from '../engine/schema';
-import { VISIT_MARGIN } from './constants';
-import { resolveMoveDest } from './field';
+import { MAX_PARTY, PERSUADE_RANGE, VISIT_MARGIN } from './constants';
+import { distance, resolveMoveDest } from './field';
+import { retireUnit } from './retire';
+import { makeUnit } from './state';
 import { awardXp } from './growth';
 import type { BattleState, Unit, Vec2 } from './types';
 
@@ -78,4 +80,48 @@ export function updateVillages(state: BattleState): void {
     state.visited.push(v.id);
     applyVillage(state, visitor, v);
   }
+}
+
+/**
+ * 説得の相手（生きている）に、決められた仲間が PERSUADE_RANGE 以内へ入ったら加入の会話を始める。
+ * 1 tick に 1 つまで。すでに加入の会話があれば何もしない
+ */
+export function updatePersuasions(state: BattleState): void {
+  if (state.pendingRecruit !== null) return;
+  for (const foe of state.units) {
+    if (foe.side !== 'enemy' || foe.persuasion === null || foe.retired || foe.hp <= 0) continue;
+    const def = state.stage.persuasions[foe.persuasion];
+    if (!def) continue;
+    const near = state.units.some(
+      (u) => u.side === 'player' && !u.retired && u.hp > 0 && u.defId === def.persuader
+        && distance(u.pos, foe.pos) <= PERSUADE_RANGE,
+    );
+    if (!near) continue;
+    state.pendingRecruit = { recruit: def, pos: { ...foe.pos }, foeUid: foe.uid };
+    return;
+  }
+}
+
+/**
+ * 加入の会話が終わったあとに呼ぶ。説得の相手を（倒れた扱いにせず）取り除き、新しい味方を足す。
+ * すでに MAX_PARTY 人いれば足さずに null
+ */
+export function completeRecruit(state: BattleState): Unit | null {
+  const pending = state.pendingRecruit;
+  if (pending === null) return null;
+  state.pendingRecruit = null;
+  if (pending.foeUid !== null) {
+    const foe = state.units.find((u) => u.uid === pending.foeUid);
+    if (foe) retireUnit(state, foe);
+  }
+  const allies = state.units.filter((u) => u.side === 'player' && !u.retired).length;
+  if (allies >= MAX_PARTY) return null;
+  const unit = makeUnit({
+    uid: `p${state.nextPlayerUid++}`, def: state.reg.units.get(pending.recruit.unitId)!, side: 'player',
+    controller: 'player', pos: { ...pending.pos }, level: pending.recruit.level, xp: 0, ai: null,
+    growth: state.reg.growth,
+  });
+  state.units.push(unit);
+  state.joined.push(pending.recruit.unitId);
+  return unit;
 }

@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_LEGEND } from '../engine/schema';
 import type { StageDef, VillageDef } from '../engine/schema';
-import { isVisiting, rewardKey, updateVillages, VILLAGE_DONE_TEXT } from './events';
+import { MAX_PARTY } from './constants';
+import {
+  completeRecruit, isVisiting, rewardKey, updatePersuasions, updateVillages, VILLAGE_DONE_TEXT,
+} from './events';
 import { step } from './sim';
 import { beginBattle, createBattleState } from './state';
 import { testRegistry } from './testing';
@@ -203,5 +206,122 @@ describe('updateVillages', () => {
     updateVillages(s);
     expect(s.pendingRecruit).toBeNull();
     expect(s.events[0]).toMatchObject({ type: 'villageVisited', text: VILLAGE_DONE_TEXT });
+  });
+});
+
+/** 説得の相手を 1 人置いた状態。相手は離れた場所に置き、ローランが persuader */
+function withPersuasion(): { s: BattleState; foe: Unit } {
+  const s = fresh([]);
+  const foe = s.units.find((u) => u.side === 'enemy' && u.defId === 'narazumono')!;
+  s.stage = {
+    ...s.stage,
+    persuasions: [{
+      foeId: 'narazumono', pos: { ...foe.pos }, ai: { kind: 'aggressive' }, persuader: 'roran',
+      unitId: 'ally05', level: 3, talk: [{ speaker: 'ally05', text: 'こんにちは', lineId: null }],
+    }],
+  };
+  foe.persuasion = 0;
+  for (const u of s.units) if (u.side === 'enemy' && u !== foe) u.retired = true;
+  placeAll(s, FAR);
+  foe.pos = { x: 300, y: 300 };
+  return { s, foe };
+}
+
+const roranOf = (s: BattleState): Unit => players(s).find((u) => u.defId === 'roran')!;
+
+describe('updatePersuasions', () => {
+  it('決められた仲間が 64px 以内に入ると説得が始まる', () => {
+    const { s, foe } = withPersuasion();
+    roranOf(s).pos = { x: 364, y: 300 };
+    updatePersuasions(s);
+    expect(s.pendingRecruit).toEqual({ recruit: s.stage.persuasions[0], pos: { x: 300, y: 300 }, foeUid: foe.uid });
+  });
+
+  it('64px より遠いと始まらない', () => {
+    const { s } = withPersuasion();
+    roranOf(s).pos = { x: 365, y: 300 };
+    updatePersuasions(s);
+    expect(s.pendingRecruit).toBeNull();
+  });
+
+  it('ほかの仲間では始まらない', () => {
+    const { s } = withPersuasion();
+    for (const u of players(s)) if (u.defId !== 'roran') u.pos = { x: 300, y: 310 };
+    updatePersuasions(s);
+    expect(s.pendingRecruit).toBeNull();
+  });
+
+  it('倒れた相手は説得されない', () => {
+    const { s, foe } = withPersuasion();
+    roranOf(s).pos = { x: 310, y: 300 };
+    foe.hp = 0;
+    updatePersuasions(s);
+    expect(s.pendingRecruit).toBeNull();
+    foe.hp = foe.maxHp;
+    foe.retired = true;
+    updatePersuasions(s);
+    expect(s.pendingRecruit).toBeNull();
+  });
+
+  it('すでに加入の会話があれば何もしない', () => {
+    const { s } = withPersuasion();
+    roranOf(s).pos = { x: 310, y: 300 };
+    const pending = { recruit: s.stage.persuasions[0]!, pos: { x: 1, y: 2 }, foeUid: null };
+    s.pendingRecruit = pending;
+    updatePersuasions(s);
+    expect(s.pendingRecruit).toBe(pending);
+  });
+});
+
+describe('completeRecruit', () => {
+  it('加入すると敵が消え、同じ位置に味方が現れる', () => {
+    const { s, foe } = withPersuasion();
+    foe.engagedWith = roranOf(s).uid;
+    roranOf(s).engagedWith = foe.uid;
+    roranOf(s).pos = { x: 310, y: 300 };
+    const xpBefore = players(s).map((u) => u.xp);
+    updatePersuasions(s);
+    s.events = [];
+    const joined = completeRecruit(s);
+    expect(joined).not.toBeNull();
+    expect(s.pendingRecruit).toBeNull();
+    expect(foe.retired).toBe(true);
+    expect(roranOf(s).engagedWith).toBeNull();
+    expect(s.events.some((e) => e.type === 'unitDefeated')).toBe(false);
+    expect(players(s).slice(0, xpBefore.length).map((u) => u.xp)).toEqual(xpBefore);
+    expect(joined!.side).toBe('player');
+    expect(joined!.defId).toBe('ally05');
+    expect(joined!.level).toBe(3);
+    expect(joined!.hp).toBe(joined!.maxHp);
+    expect(joined!.pos).toEqual({ x: 300, y: 300 });
+    expect(joined!.uid).toBe('p5');
+    expect(s.nextPlayerUid).toBe(6);
+    expect(s.units).toContain(joined);
+    expect(s.joined).toContain('ally05');
+  });
+
+  it('すでに MAX_PARTY 人いれば加えない', () => {
+    const { s, foe } = withPersuasion();
+    roranOf(s).pos = { x: 310, y: 300 };
+    updatePersuasions(s);
+    const base = players(s)[0]!;
+    while (players(s).length < MAX_PARTY) s.units.push({ ...base, uid: `x${s.units.length}` });
+    const n = s.units.length;
+    expect(completeRecruit(s)).toBeNull();
+    expect(s.units.length).toBe(n);
+    expect(s.pendingRecruit).toBeNull();
+    expect(foe.retired).toBe(true);
+  });
+
+  it('勝利の条件を満たしても、加入の会話が先に出る', () => {
+    const { s } = withPersuasion();
+    roranOf(s).pos = { x: 310, y: 300 };
+    s.stage = { ...s.stage, victory: { ...s.stage.victory, pos: { x: 310, y: 300 }, radius: 40, by: 'roran' } };
+    step(s, [], 1 / 60);
+    expect(s.pendingRecruit).not.toBeNull();
+    expect(s.phase).toBe('battle');
+    completeRecruit(s);
+    step(s, [], 1 / 60);
+    expect(s.phase).toBe('victory');
   });
 });

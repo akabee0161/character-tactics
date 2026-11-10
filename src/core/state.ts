@@ -43,7 +43,7 @@ type MakeUnitArgs = {
   growth: GrowthDef;
 };
 
-function makeUnit(a: MakeUnitArgs): Unit {
+export function makeUnit(a: MakeUnitArgs): Unit {
   const statBonus = { ...(a.bonus ?? NO_BONUS) };
   const { maxHp, power, guard, speed } = statsForLevel(a.def, a.level, a.growth, statBonus);
   const enemyDef = 'bowDamageCap' in a.def ? a.def : null;

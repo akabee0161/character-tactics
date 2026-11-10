@@ -9,8 +9,9 @@ import {
   cellIndexAt, computeFlowField, distance, flowDirection, hasClearPath, isFullSpeedLine, resolveMoveDest,
   slideStep, speedAt,
 } from './field';
-import { updateVillages } from './events';
-import { dropUnitField, fieldToStatic, fieldToUnit } from './fields';
+import { updatePersuasions, updateVillages } from './events';
+import { fieldToStatic, fieldToUnit } from './fields';
+import { cleanupRetired } from './retire';
 import { awardXpForEvents } from './growth';
 import { updateObjectives } from './objectives';
 import { spawnProjectile, updateProjectiles } from './projectiles';
@@ -113,9 +114,11 @@ export function step(state: BattleState, commands: SimCommand[], dt: number): vo
   updateProjectiles(state, dt);
   resolveAttacks(state, dt);
   resolveRemoval(state);
+  updatePersuasions(state);
   updateVillages(state);
   awardXpForEvents(state);
-  updateObjectives(state);
+  // 加入の会話が立った tick では勝敗を決めない（会話の後の tick で決める）
+  if (state.pendingRecruit === null) updateObjectives(state);
   accumulate(state.counters, state.events);
 }
 
@@ -417,17 +420,7 @@ function resolveRemoval(state: BattleState): void {
       state.events.push({ type: 'unitRetired', uid: u.uid, defId: u.defId });
     }
 
-    if (u.retired) {
-      dropUnitField(state.fields, u.uid);
-      u.pendingHit = null;
-      u.engagedWith = null;
-      u.closingOn = null;
-      u.goalField = null;
-      u.goalPos = null;
-      for (const other of state.units) {
-        if (other.engagedWith === u.uid) other.engagedWith = null;
-      }
-    }
+    if (u.retired) cleanupRetired(state, u);
   }
 }
 
