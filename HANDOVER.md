@@ -7,10 +7,10 @@
 2. ステージの難易度の調整
 3. 敵の絵
 4. 各ステージのタイル
-段階: 設計の相談
+段階: 実装計画
 次にやること:
-- 設計書 docs/superpowers/specs/2026-11-10-recruit-and-village-design.md を依頼者が確認する
-- 承認後に実装計画を書く
+- 実装計画 docs/superpowers/plans/2026-11-10-recruit-and-village.md を依頼者が確認する
+- 承認後に Task 1 から実装する
 
 ## Generated: 2026-10-05（ユニット生成で出てきた課題の片付けを終えた時点）。2026-10-06 に `atk_hit` の確認、PR #30 の CodeRabbit の指摘への対応、PR #30 のマージを追記
 
