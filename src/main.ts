@@ -2,6 +2,7 @@ import { imageUrls, loadRegistry } from './engine/loader';
 import { makeImageCache } from './render/images';
 import { lookupDef, skillParam } from './engine/registry';
 import { completeRecruit } from './core/events';
+import { MAX_PARTY } from './core/constants';
 import { pickDialogue, pickRecruitTalk, pickStageIntro, pickStageOutro } from './core/dialogue';
 import { SKILL_EFFECT_IDS } from './core/skills';
 import { beginBattle, canPlaceAt, createBattleState, placeUnit } from './core/state';
@@ -295,8 +296,8 @@ function beginMapPointer(state: BattleState, p: Vec2, ev: PointerEvent): void {
   if (pointerStart !== null) return; // 別の指のジェスチャが進行中は新しいジェスチャを始めない
   // drawBottomBar と同じ無フィルタ配列でインデックスを解決する。playerUnits() は retired を
   // 除外して再インデックスするため、これと混ぜるとポートレートの見た目とタップ対象がずれる
-  const portraitUnits = state.units.filter((u) => u.side === 'player').slice(0, 4);
-  for (let i = 0; i < 4; i++) {
+  const portraitUnits = state.units.filter((u) => u.side === 'player').slice(0, MAX_PARTY);
+  for (let i = 0; i < MAX_PARTY; i++) {
     if (!hitRect(portraitSlot(i), p)) continue;
     pointerStart = null;
     const unit = portraitUnits[i];

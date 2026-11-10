@@ -1,4 +1,6 @@
 import { lookupDef, skillParam } from '../engine/registry';
+import { MAX_PARTY } from '../core/constants';
+import { partyIds } from '../core/party';
 import { titlesOf, xpToNext } from '../core/progress';
 import { DEFAULT_SKILL_COOLDOWN } from '../core/skills';
 import type { ImageCache } from '../render/images';
@@ -8,7 +10,7 @@ import { LOGICAL_H, LOGICAL_W, mapToLogical } from '../render/viewport';
 import {
   BOTTOM_PANEL_Y, BTN, FACE_PX, MESSAGE_BAR, SPEECH_BODY_X, SPEECH_FONT_PX, SPEECH_LINE_H,
   SPEECH_MAX_LINES, STAGE_LIST_VIEW, TALK_BODY_X, TALK_FONT, TALK_LINE_H, TALK_PAD, TALK_WINDOW,
-  hpBarIn, portraitSlot, roleBadgeIn, rosterSlot, speechLines, stageListContentH, stageSlot,
+  hpBarIn, portraitSlot, resultSlot, roleBadgeIn, rosterSlot, speechLines, stageListContentH, stageSlot,
 } from './layout';
 import { currentSpeaker, pageCount, visibleLines } from './talk';
 import { isStageUnlocked } from './flow';
@@ -135,17 +137,18 @@ function drawRoster(
   ctx: CanvasRenderingContext2D, reg: Registry, save: SaveData, images: ImageCache,
 ): void {
   ctx.font = '18px sans-serif';
-  const ids = [...reg.units.keys()];
+  const ids = partyIds(reg, save.members);
   ids.forEach((id, i) => {
     const r = rosterSlot(i);
     panel(ctx, r, '#18222c');
     const def = reg.units.get(id)!;
     drawFace(ctx, { x: r.x + 28, y: r.y + 32 }, FACE_PX.small / 2, def, images);
     ctx.fillStyle = INK;
-    ctx.fillText(`${def.name} Lv${save.units[id]!.level}`, r.x + 56, r.y + 26);
+    // 列が狭いので、はみ出す分は maxWidth で縮める
+    ctx.fillText(`${def.name} Lv${save.units[id]!.level}`, r.x + 56, r.y + 26, r.w - 64);
     const own = titlesOf(reg, save.titles, id);
     ctx.fillStyle = '#9fb3c4';
-    ctx.fillText(own.map((t) => t.label).join('、'), r.x + 56, r.y + 50);
+    ctx.fillText(own.map((t) => t.label).join('、'), r.x + 56, r.y + 50, r.w - 64);
   });
 }
 
@@ -185,25 +188,15 @@ export function drawBottomBar(
 
   state.units
     .filter((u) => u.side === 'player')
-    .slice(0, 4)
+    .slice(0, MAX_PARTY)
     .forEach((unit, i) => {
       const r = portraitSlot(i);
       panel(ctx, r, selected === unit.uid ? '#3a5f7d' : '#18222c');
 
       const def = lookupDef(reg, unit.defId) ?? FALLBACK_DEF;
       ctx.globalAlpha = unit.retired ? 0.4 : 1;
-      drawFace(ctx, { x: r.x + 22, y: r.y + 24 }, FACE_PX.small / 2, def, images);
-
-      ctx.fillStyle = INK;
-      ctx.font = '18px sans-serif';
-      ctx.fillText(def.name, r.x + 42, r.y + 26);
-
-      // レベルは枠の右上。名前の右は roleBadgeIn と重なる
-      ctx.font = '14px sans-serif';
-      ctx.textAlign = 'right';
-      ctx.fillText(`Lv${unit.level}`, r.x + r.w - 8, r.y + 18);
-      ctx.textAlign = 'left';
-      ctx.font = '18px sans-serif';
+      const fh = FACE_PX.panel / 2;
+      drawFace(ctx, { x: r.x + 4 + fh, y: r.y + 6 + fh }, fh, def, images);
 
       drawRoleBadge(ctx, roleBadgeIn(r), def, images);
 
@@ -220,9 +213,10 @@ export function drawBottomBar(
         const remaining = Math.max(0, unit.skillCooldownUntil - state.time);
         const ratio = total > 0 ? 1 - remaining / total : 1;
         ctx.fillStyle = '#000';
-        ctx.fillRect(r.x + 8, r.y + 70, 113, 5);
+        const gy = bar.y + bar.h + 1;
+        ctx.fillRect(bar.x, gy, bar.w, 5);
         ctx.fillStyle = '#ffd479';
-        ctx.fillRect(r.x + 8, r.y + 70, 113 * Math.max(0, Math.min(1, ratio)), 5);
+        ctx.fillRect(bar.x, gy, bar.w * Math.max(0, Math.min(1, ratio)), 5);
 
         // 押せば技が出る状態を縁で示す。押せない理由を文字で出す代わり
         // 配置フェーズは全員 time===0 かつクールダウン未消化で「発動可能」に見えてしまうため、戦闘フェーズ限定にする
@@ -238,8 +232,10 @@ export function drawBottomBar(
 
       if (unit.retired) {
         ctx.fillStyle = '#ff9a9a';
-        ctx.font = '14px sans-serif';
-        ctx.fillText('倒れた', r.x + 42, r.y + 50);
+        ctx.font = '12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('倒れた', r.x + r.w / 2, r.y + r.h - 3);
+        ctx.textAlign = 'left';
       }
 
       if (escorts.has(unit.defId)) {
@@ -337,30 +333,31 @@ export function drawResult(
   ctx.textAlign = 'left';
 
   ctx.font = '19px sans-serif';
-  gains.forEach((g, i) => {
-    const y = 180 + i * 56;
+  gains.slice(0, MAX_PARTY).forEach((g, i) => {
+    const r = resultSlot(i);
     const def = lookupDef(reg, g.id) ?? { ...FALLBACK_DEF, name: g.id };
-    drawFace(ctx, { x: 40, y: y - 6 }, FACE_PX.small / 2, def, images);
+    drawFace(ctx, { x: r.x + 20, y: r.y + r.h / 2 }, FACE_PX.small / 2, def, images);
     ctx.fillStyle = INK;
-    ctx.fillText(def.name, 66, y);
+    ctx.font = '19px sans-serif';
+    ctx.fillText(def.name, r.x + 44, r.y + 24, r.w - 48);
     ctx.fillStyle = g.joined || g.leveledUp ? '#ffd479' : '#9fb3c4';
-    ctx.font = '17px sans-serif';
+    ctx.font = '16px sans-serif';
+    // 枠は 240px。長い行は maxWidth で縮めて枠からはみ出さない
     ctx.fillText(
       g.joined
         ? '仲間に 加わった！'
         : g.leveledUp
         ? `レベルアップ！ Lv${g.before.level} → Lv${g.after.level}`
         : `Lv${g.after.level} (${g.after.xp}/${xpToNext(g.after.level, reg.growth.xpPerLevel)})`,
-      66, y + 24,
+      r.x + 44, r.y + 46, r.w - 48,
     );
-    ctx.font = '19px sans-serif';
   });
 
   if (newTitles.length > 0) {
     ctx.fillStyle = '#ffd479';
     ctx.font = '22px sans-serif';
     const label = (id: string): string => reg.titles.find((t) => t.id === id)?.label ?? id;
-    ctx.fillText(`称号 ゲット: ${newTitles.map(label).join('、')}`, 40, 560);
+    ctx.fillText(`称号 ゲット: ${newTitles.map(label).join('、')}`, 40, 450);
   }
 
   button(ctx, BTN.next, '次へ', true, true);

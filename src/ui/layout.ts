@@ -48,35 +48,40 @@ export function stageListContentH(count: number): number {
   return last.y + last.h - STAGE_LIST_VIEW.y;
 }
 
-/** ステージ選択の下に出す仲間の一覧。名前と称号を並べるので1列にする */
+/** ステージ選択の下に出す仲間の一覧。2列×4行（最大 8 人） */
 export function rosterSlot(index: number): Rect {
-  return { x: 20, y: 640 + index * 72, w: 500, h: 64 };
+  return { x: 20 + (index % 2) * 254, y: 640 + Math.floor(index / 2) * 72, w: 246, h: 64 };
 }
 
-/** 戦闘中の下パネルのポートレート。4枠を横に並べる */
+/** リザルトの仲間の行。2列×4行（最大 8 人）。称号の行は y 450 */
+export function resultSlot(index: number): Rect {
+  return { x: 20 + (index % 2) * 260, y: 150 + Math.floor(index / 2) * 64, w: 240, h: 56 };
+}
+
+/** 戦闘中の下パネルのポートレート。8枠を 1 段に並べる */
 export function portraitSlot(index: number): Rect {
-  return { x: 6 + index * 133, y: 858, w: 129, h: 80 };
+  return { x: 4 + index * 66, y: 858, w: 64, h: 80 };
 }
 
 /**
  * 顔の枠の直径。顔は 64px のドット絵で、大きい枠（会話・セリフ欄）は等倍、
  * 小さい枠（仲間一覧・リザルト・下のバー）は半分で描く（README「アセットの大きさの規約」）
  */
-export const FACE_PX = { large: 64, small: 32 } as const;
+export const FACE_PX = { large: 64, small: 32, panel: 40 } as const;
 
 /**
  * ポートレートの中でクラス（役割）を出す場所。
  * 画像・プレースホルダの文字・テストの3者が必ずこの1本を見る。
  * 別々に持つと、画像を入れたときだけ位置がずれる。
- * 高さは 16px のアイコンを2倍にした 32px
+ * 16px のアイコンを等倍で、枠の右上に置く
  */
 export function roleBadgeIn(slot: Rect): Rect {
-  return { x: slot.x + 42, y: slot.y + 30, w: 84, h: 32 };
+  return { x: slot.x + slot.w - 20, y: slot.y + 6, w: 16, h: 16 };
 }
 
-/** ポートレートの HP バー。クラスの枠の下、技のゲージ（slot.y + 70）の上に置く */
+/** ポートレートの HP バー。顔の下に置く。技のゲージは 1px 下 */
 export function hpBarIn(slot: Rect): Rect {
-  return { x: slot.x + 8, y: slot.y + 62, w: 113, h: 7 };
+  return { x: slot.x + 6, y: slot.y + 56, w: slot.w - 12, h: 7 };
 }
 
 export const SPEECH_FONT_PX = 18;
