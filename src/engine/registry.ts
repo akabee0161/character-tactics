@@ -1,3 +1,4 @@
+import { fillNames } from '../core/names';
 import {
   validateBondsFile, validateEnemyDef, validateGrowthFile, validateLinesFile, validateSkillsFile,
   validateStageDef, validateTitlesFile, validateUnitDef,
@@ -231,6 +232,31 @@ export function buildRegistry(
       errors.push({ file: 'assets/bonds.json', path: `[${i}].b`, reason: `units に ない id: ${b.b}` });
     }
   });
+
+  if (errors.length > 0) return { ok: false, errors };
+
+  // 3) 本文の {id} を名前にする（他の置き換えに左右されないよう、元の名前を引く）
+  const originalEnemyNames = new Map([...reg.enemies].map(([id, d]) => [id, d.name]));
+  const nameOf = (id: string): string | null =>
+    reg.units.get(id)?.name ?? originalEnemyNames.get(id) ?? null;
+  const fill = (file: string, path: string, text: string): string => {
+    const r = fillNames(text, nameOf);
+    for (const id of r.unknown) errors.push({ file, path, reason: `しらない なまえの id: ${id}` });
+    return r.text;
+  };
+
+  for (const [k, v] of reg.lines) reg.lines.set(k, fill('assets/lines', k, v));
+  for (const stage of reg.stages) {
+    const file = `assets/stages/${stage.id}.json`;
+    for (const kind of ['intro', 'outro'] as const) {
+      stage[kind]?.forEach((line, i) => {
+        if (line.text !== null) line.text = fill(file, `${kind}[${i}].text`, line.text);
+      });
+    }
+  }
+  for (const [id, def] of reg.enemies) {
+    def.name = fill(`assets/enemies/${id}.json`, 'name', def.name);
+  }
 
   return errors.length > 0 ? { ok: false, errors } : { ok: true, value: reg };
 }

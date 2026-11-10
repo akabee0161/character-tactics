@@ -356,6 +356,55 @@ describe('legend の タイルの そんざい', () => {
   });
 });
 
+describe('本文の {id} の置き換え', () => {
+  it('lines の {id} を名前にする', () => {
+    const r = buildRegistry(files({ 'assets/lines/common.json': { x: '{roran}が 来た' } }), KNOWN_SKILLS);
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value.lines.get('x')).toBe('ロランが 来た');
+  });
+
+  it('知らない id は エラー', () => {
+    const r = buildRegistry(files({ 'assets/lines/common.json': { x: '{nobody}が 来た' } }), KNOWN_SKILLS);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors[0]?.reason).toBe('しらない なまえの id: nobody');
+  });
+
+  it('intro と outro の text を名前にする', () => {
+    const r = buildRegistry(
+      files({
+        'assets/stages/stage1.json': {
+          ...STAGE,
+          intro: [{ speaker: null, text: '{ines}が いる' }],
+          outro: [{ speaker: 'roran', text: '{roran}だ' }],
+        },
+      }),
+      KNOWN_SKILLS,
+    );
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.value.stages[0]?.intro?.[0]?.text).toBe('イネスが いる');
+    expect(r.value.stages[0]?.outro?.[0]?.text).toBe('ロランだ');
+  });
+
+  it('敵の name の {id} を味方の名前にする', () => {
+    const r = buildRegistry(
+      files({ 'assets/enemies/narazumono.json': { ...ENEMY, name: '{ines}の かげ' } }),
+      KNOWN_SKILLS,
+    );
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value.enemies.get('narazumono')?.name).toBe('イネスの かげ');
+  });
+
+  it('敵の id も {id} で引ける', () => {
+    const r = buildRegistry(
+      files({ 'assets/lines/common.json': { x: '{narazumono}だ' } }),
+      KNOWN_SKILLS,
+    );
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value.lines.get('x')).toBe('ならずものだ');
+  });
+});
+
 describe('実アセットのステージ', () => {
   it('10本ある', () => {
     expect(testRegistry().stages.length).toBe(10);
