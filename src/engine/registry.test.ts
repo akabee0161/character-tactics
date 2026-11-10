@@ -421,3 +421,95 @@ describe('実アセットのステージ', () => {
     expect(stages[stages.length - 1]!.id).toBe('stage3');
   });
 });
+
+describe('buildRegistry: joins / persuasions / villages', () => {
+  const ALLY5 = { ...INES, id: 'ally05', name: 'ごにん' };
+  const ALLY6 = { ...INES, id: 'ally06', name: 'ろくにん' };
+  const FOE6 = { ...ENEMY, id: 'ally06-foe', name: 'ろくの てき' };
+  const TALK = [{ speaker: 'roran', text: '{ally05}、よろしく' }];
+  const stageWith = (extra: Record<string, unknown>, id = 'stage1', order = 10) => ({
+    ...STAGE, id, order, ...extra,
+  });
+  const base = (extra: Record<string, unknown>, more: Record<string, unknown> = {}) =>
+    buildRegistry(files({
+      'assets/units/ally05.json': ALLY5,
+      'assets/units/ally06.json': ALLY6,
+      'assets/enemies/ally06-foe.json': FOE6,
+      'assets/stages/stage1.json': stageWith(extra),
+      ...more,
+    }), KNOWN_SKILLS);
+  const reasons = (r: ReturnType<typeof buildRegistry>) => (r.ok ? [] : r.errors.map((e) => `${e.path}: ${e.reason}`));
+
+  it('正しく書けば通り、talk と村の text の {id} が名前になる', () => {
+    const r = base({
+      joins: [{ unitId: 'ally05', level: 2, talk: TALK }],
+      villages: [{ id: 'v1', col: 0, row: 0, text: '{ally05}が いる', effect: { type: 'heal' } }],
+    });
+    expect(reasons(r)).toEqual([]);
+    if (!r.ok) return;
+    expect(r.value.stages[0]!.joins[0]!.talk[0]!.text).toBe('ごにん、よろしく');
+    expect(r.value.stages[0]!.villages[0]!.text).toBe('ごにんが いる');
+  });
+
+  it('persuasions と recruit の村の talk の {id} も名前になる', () => {
+    const r = base({
+      persuasions: [{
+        unitId: 'ally06', level: 1, talk: TALK, foeId: 'ally06-foe',
+        pos: { x: 80, y: 48 }, ai: { kind: 'aggressive' }, persuader: 'roran',
+      }],
+      villages: [{ id: 'v1', col: 0, row: 0, effect: { type: 'recruit', unitId: 'ally05', level: 1, talk: TALK } }],
+    });
+    expect(reasons(r)).toEqual([]);
+    if (!r.ok) return;
+    expect(r.value.stages[0]!.persuasions[0]!.talk[0]!.text).toBe('ごにん、よろしく');
+    const e = r.value.stages[0]!.villages[0]!.effect;
+    expect(e.type === 'recruit' && e.recruit.talk[0]!.text).toBe('ごにん、よろしく');
+  });
+
+  it('同じ unitId を 2 か所で加えるとエラー', () => {
+    const r = base({
+      joins: [{ unitId: 'ally05', level: 2, talk: TALK }],
+      villages: [{ id: 'v1', col: 0, row: 0, effect: { type: 'recruit', unitId: 'ally05', level: 1, talk: TALK } }],
+    });
+    expect(reasons(r).some((s) => s.includes('1 か所'))).toBe(true);
+  });
+
+  it('別のステージで二重に加えてもエラー', () => {
+    const r = base(
+      { joins: [{ unitId: 'ally05', level: 2, talk: TALK }] },
+      { 'assets/stages/stage2.json': stageWith({ joins: [{ unitId: 'ally05', level: 2, talk: TALK }] }, 'stage2', 20) },
+    );
+    expect(r.ok).toBe(false);
+  });
+
+  it('roster にいる仲間を加えるとエラー', () => {
+    const r = base({ joins: [{ unitId: 'roran', level: 2, talk: TALK }] });
+    expect(reasons(r).some((s) => s.includes('roster'))).toBe(true);
+  });
+
+  it('知らない unitId・foeId・persuader・speaker がエラー', () => {
+    const r = base({
+      joins: [{ unitId: 'nobody', level: 1, talk: [{ speaker: 'ghost', text: 'x' }] }],
+      persuasions: [{
+        unitId: 'ally06', level: 1, talk: TALK, foeId: 'nofoe',
+        pos: { x: 80, y: 48 }, ai: { kind: 'aggressive' }, persuader: 'noone',
+      }],
+    });
+    const rs = reasons(r).join('\n');
+    expect(rs).toContain('joins[0].unitId');
+    expect(rs).toContain('joins[0].talk[0].speaker');
+    expect(rs).toContain('persuasions[0].foeId');
+    expect(rs).toContain('persuasions[0].persuader');
+  });
+
+  it('roster と加入しうる仲間の合計が 8 人を超えるとエラー', () => {
+    const extra: Record<string, unknown> = {};
+    const joins: unknown[] = [];
+    for (let i = 0; i < 8; i++) {
+      extra[`assets/units/x${i}.json`] = { ...INES, id: `x${i}`, name: `x${i}` };
+      joins.push({ unitId: `x${i}`, level: 1, talk: TALK });
+    }
+    const r = base({ joins }, extra);
+    expect(reasons(r).some((s) => s.includes('8'))).toBe(true);
+  });
+});

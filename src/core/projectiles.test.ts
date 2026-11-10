@@ -11,6 +11,9 @@ const STAGE: StageDef = {
   roster: ['roran', 'ines', 'mist', 'gau'],
   enemies: [{ defId: 'narazumono', pos: { x: 216, y: 16 }, ai: { kind: 'aggressive' } }],
   spawners: [],
+  joins: [],
+  persuasions: [],
+  villages: [],
   victory: { type: 'reach', pos: { x: 304, y: 80 }, radius: 20, by: 'any' },
   defeat: [{ type: 'unitLost', defIds: ['roran'] }],
 };

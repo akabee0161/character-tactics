@@ -21,3 +21,12 @@ export const RANGE_EPS = 1e-6;
 
 /** 近接の味方が、移動の指示が無いときに自分から敵へ詰め寄る距離（2マス） */
 export const AUTO_CLOSE_RANGE = 64;
+
+/** 仲間の人数の上限。出撃も、加入しうる仲間をふくめた全員もこの数まで */
+export const MAX_PARTY = 8;
+
+/** 説得が始まる距離（2マス）。決められた仲間がこの距離以内に入った敵に話しかける */
+export const PERSUADE_RANGE = 64;
+
+/** 村の外枠からこの幅だけ外に出ても、訪れたことにする（px） */
+export const VISIT_MARGIN = 10;

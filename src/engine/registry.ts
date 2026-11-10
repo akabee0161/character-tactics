@@ -1,10 +1,11 @@
+import { MAX_PARTY } from '../core/constants';
 import { fillNames } from '../core/names';
 import {
   validateBondsFile, validateEnemyDef, validateGrowthFile, validateLinesFile, validateSkillsFile,
   validateStageDef, validateTitlesFile, validateUnitDef,
 } from './schema';
 import type {
-  BondDef, EnemyDef, GrowthDef, IntroLine, SkillDef, Sprites, StageDef, TitleDef, UnitDef, Validated,
+  BondDef, EnemyDef, GrowthDef, IntroLine, RecruitDef, SkillDef, Sprites, StageDef, TitleDef, UnitDef, Validated,
   ValidationError,
 } from './schema';
 
@@ -170,6 +171,11 @@ export function buildRegistry(
   for (const [id, def] of reg.units) checkSprites(`assets/units/${id}.json`, def.sprites);
   for (const [id, def] of reg.enemies) checkSprites(`assets/enemies/${id}.json`, def.sprites);
 
+  // 全ステージの roster の和集合と、加わる仲間（1 人が加わるのは全ステージを通して 1 か所だけ）
+  const rosterAll = new Set<string>();
+  for (const stage of reg.stages) for (const id of stage.roster) rosterAll.add(id);
+  const recruitedAt = new Map<string, string>();
+
   for (const stage of reg.stages) {
     const file = `assets/stages/${stage.id}.json`;
     const roster = new Set(stage.roster);
@@ -204,7 +210,7 @@ export function buildRegistry(
         }
       });
     });
-    const checkTalk = (kind: 'intro' | 'outro', lines: IntroLine[] | undefined): void => {
+    const checkLines = (kind: string, lines: IntroLine[] | undefined): void => {
       lines?.forEach((line, i) => {
         if (line.speaker !== null && lookupDef(reg, line.speaker) === null) {
           errors.push({ file, path: `${kind}[${i}].speaker`, reason: `しらない はなして: ${line.speaker}` });
@@ -214,8 +220,46 @@ export function buildRegistry(
         }
       });
     };
-    checkTalk('intro', stage.intro);
-    checkTalk('outro', stage.outro);
+    checkLines('intro', stage.intro);
+    checkLines('outro', stage.outro);
+
+    const checkRecruit = (path: string, r: RecruitDef): void => {
+      if (!reg.units.has(r.unitId)) {
+        errors.push({ file, path: `${path}.unitId`, reason: `units に ない id: ${r.unitId}` });
+      } else if (rosterAll.has(r.unitId)) {
+        errors.push({ file, path: `${path}.unitId`, reason: `roster に いる なかまは くわえられない: ${r.unitId}` });
+      }
+      const at = recruitedAt.get(r.unitId);
+      if (at !== undefined) {
+        errors.push({
+          file, path: `${path}.unitId`,
+          reason: `なかまに くわわるのは 1 か所だけ: ${r.unitId}（${at} でも くわわる）`,
+        });
+      } else {
+        recruitedAt.set(r.unitId, `${stage.id} ${path}`);
+      }
+      checkLines(`${path}.talk`, r.talk);
+    };
+    stage.joins.forEach((j, i) => checkRecruit(`joins[${i}]`, j));
+    stage.persuasions.forEach((p, i) => {
+      checkRecruit(`persuasions[${i}]`, p);
+      if (!reg.enemies.has(p.foeId)) {
+        errors.push({ file, path: `persuasions[${i}].foeId`, reason: `enemies に ない id: ${p.foeId}` });
+      }
+      if (!reg.units.has(p.persuader)) {
+        errors.push({ file, path: `persuasions[${i}].persuader`, reason: `units に ない id: ${p.persuader}` });
+      }
+    });
+    stage.villages.forEach((v, i) => {
+      if (v.effect.type === 'recruit') checkRecruit(`villages[${i}].effect`, v.effect.recruit);
+    });
+  }
+
+  if (recruitedAt.size + rosterAll.size > MAX_PARTY) {
+    errors.push({
+      file: 'assets/stages/', path: 'roster',
+      reason: `roster の なかま（${rosterAll.size}）と くわわる なかま（${recruitedAt.size}）の ごうけいが ${MAX_PARTY} 人を こえている`,
+    });
   }
 
   reg.titles.forEach((t, i) => {
@@ -248,11 +292,19 @@ export function buildRegistry(
   for (const [k, v] of reg.lines) reg.lines.set(k, fill('assets/lines', k, v));
   for (const stage of reg.stages) {
     const file = `assets/stages/${stage.id}.json`;
-    for (const kind of ['intro', 'outro'] as const) {
-      stage[kind]?.forEach((line, i) => {
+    const fillLines = (kind: string, lines: IntroLine[] | undefined): void => {
+      lines?.forEach((line, i) => {
         if (line.text !== null) line.text = fill(file, `${kind}[${i}].text`, line.text);
       });
-    }
+    };
+    fillLines('intro', stage.intro);
+    fillLines('outro', stage.outro);
+    stage.joins.forEach((j, i) => fillLines(`joins[${i}].talk`, j.talk));
+    stage.persuasions.forEach((p, i) => fillLines(`persuasions[${i}].talk`, p.talk));
+    stage.villages.forEach((v, i) => {
+      if (v.text !== null) v.text = fill(file, `villages[${i}].text`, v.text);
+      if (v.effect.type === 'recruit') fillLines(`villages[${i}].effect.talk`, v.effect.recruit.talk);
+    });
   }
   for (const [id, def] of reg.enemies) {
     def.name = fill(`assets/enemies/${id}.json`, 'name', def.name);
