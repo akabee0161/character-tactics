@@ -71,7 +71,7 @@ export function drawTitle(ctx: CanvasRenderingContext2D, hasSave: boolean): void
   ctx.textAlign = 'center';
   ctx.fillText('砦の 仲間たち', LOGICAL_W / 2, 260);
   ctx.font = '22px sans-serif';
-  ctx.fillText('4人の 仲間で', LOGICAL_W / 2, 320);
+  ctx.fillText('仲間と ともに', LOGICAL_W / 2, 320);
   ctx.fillText('敵の 本拠地へ 攻めこもう', LOGICAL_W / 2, 352);
   ctx.textAlign = 'left';
   button(ctx, BTN.titleNew, '最初から', true, true);

@@ -127,14 +127,15 @@ function drawVisitedVillages(ctx: CanvasRenderingContext2D, state: BattleState):
   }
 }
 
-/** 説得できる敵の頭上（絵の上端の 4px 上）に、黄色の吹き出し（12x10px、黒い点 3 つ）を出す */
+/** 説得できる敵の頭上の右寄り（絵の上端の 4px 上）に、黄色の吹き出し（12x10px、黒い点 3 つ）を出す */
 function drawPersuasionMarks(ctx: CanvasRenderingContext2D, reg: Registry, state: BattleState): void {
   for (const u of state.units) {
     if (u.side !== 'enemy' || u.persuasion === null || u.retired || u.hp <= 0) continue;
     const def = defOf(reg, u.defId);
     const p = bodyCenter(mapToLogical(u.pos), def, UNIT_R);
     const half = drawHalf(def, UNIT_R);
-    const x = Math.round(p.x - 6);
+    // HPバー（幅 26）と「！」（中央）に重ならないよう、HPバーの右隣に置く
+    const x = Math.round(p.x + 15);
     const y = Math.round(p.y - half - 4 - 10);
     ctx.fillStyle = '#ffd479';
     ctx.fillRect(x, y, 12, 8);
@@ -482,7 +483,7 @@ function drawTopBar(ctx: CanvasRenderingContext2D, state: BattleState): void {
   ctx.fillText(state.stage.name, 16, MAP_ORIGIN.y / 2);
 }
 
-/** 4人ぶんの移動先を常に出す。誰がどこへ向かっているかを盤面だけで読めるようにする */
+/** 出撃している全員ぶんの移動先を常に出す。誰がどこへ向かっているかを盤面だけで読めるようにする */
 export function drawGoalMarkers(
   ctx: CanvasRenderingContext2D,
   reg: Registry,

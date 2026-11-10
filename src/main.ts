@@ -418,6 +418,7 @@ function update(realDt: number): void {
   }
   if (battle.pendingRecruit !== null) {
     accumulator = 0;
+    pendingSkill = null; // 会話のあとに、前のタップで構えた必殺技が勝手に出ないようにする
     clearSpeech(speech);
     resetAnim(anim);
     talk = makeTalkState(
