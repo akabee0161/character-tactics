@@ -51,8 +51,18 @@ function placeAll(s: BattleState, pos: { x: number; y: number }): void {
 describe('isVisiting', () => {
   const v = village({ type: 'talk' });
   it('村のマスの四角を少し広げた中なら訪れている', () => {
-    expect(isVisiting(32, { x: 150, y: 176 }, v)).toBe(true);
-    expect(isVisiting(32, { x: 149, y: 176 }, v)).toBe(false);
+    expect(isVisiting(32, { x: 142, y: 176 }, v)).toBe(true);
+    expect(isVisiting(32, { x: 141, y: 176 }, v)).toBe(false);
+  });
+
+  it('隣のマスの中心（縁から 16px）に立てば訪れ、2 マス離れた中心（縁から 48px）では訪れない', () => {
+    // 村は (5,5) のマス（x 160〜192, y 160〜192）。隣のマスの中心は x=144 / 208、y=144 / 208
+    expect(isVisiting(32, { x: 144, y: 176 }, v)).toBe(true);
+    expect(isVisiting(32, { x: 208, y: 176 }, v)).toBe(true);
+    expect(isVisiting(32, { x: 176, y: 144 }, v)).toBe(true);
+    expect(isVisiting(32, { x: 176, y: 208 }, v)).toBe(true);
+    expect(isVisiting(32, { x: 112, y: 176 }, v)).toBe(false);
+    expect(isVisiting(32, { x: 240, y: 176 }, v)).toBe(false);
   });
 });
 

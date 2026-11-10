@@ -28,5 +28,8 @@ export const MAX_PARTY = 8;
 /** 説得が始まる距離（2マス）。決められた仲間がこの距離以内に入った敵に話しかける */
 export const PERSUADE_RANGE = 64;
 
-/** 村の外枠からこの幅だけ外に出ても、訪れたことにする（px） */
-export const VISIT_MARGIN = 10;
+/**
+ * 村の外枠からこの幅だけ外に出ても、訪れたことにする（px）。
+ * 村のマスをタップすると、ユニットは隣の歩けるマスの中心（縁から 16px）へ向かうので、それに 2px の余裕を足した
+ */
+export const VISIT_MARGIN = 18;
