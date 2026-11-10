@@ -9,6 +9,7 @@ import {
   cellIndexAt, computeFlowField, distance, flowDirection, hasClearPath, isFullSpeedLine, resolveMoveDest,
   slideStep, speedAt,
 } from './field';
+import { updateVillages } from './events';
 import { dropUnitField, fieldToStatic, fieldToUnit } from './fields';
 import { awardXpForEvents } from './growth';
 import { updateObjectives } from './objectives';
@@ -94,6 +95,8 @@ function runSpawns(state: BattleState): void {
 
 export function step(state: BattleState, commands: SimCommand[], dt: number): void {
   state.events = [];
+  // 加わる会話の間は戦闘を止める
+  if (state.pendingRecruit !== null) return;
   if (state.phase !== 'battle') return;
 
   state.time += dt;
@@ -110,6 +113,7 @@ export function step(state: BattleState, commands: SimCommand[], dt: number): vo
   updateProjectiles(state, dt);
   resolveAttacks(state, dt);
   resolveRemoval(state);
+  updateVillages(state);
   awardXpForEvents(state);
   updateObjectives(state);
   accumulate(state.counters, state.events);

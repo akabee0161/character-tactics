@@ -193,3 +193,17 @@ describe('pickStageOutro', () => {
     expect(pickStageOutro(reg, { ...reg.stages[0]!, outro: undefined })).toEqual([]);
   });
 });
+
+describe('village', () => {
+  it('村のセリフは一番先に出る', () => {
+    const reg = testRegistry();
+    const events: SimEvent[] = [
+      { type: 'unitRetired', uid: 'p2', defId: 'ines' },
+      { type: 'villageVisited', uid: 'p1', defId: 'gau', villageId: 'v1', text: 'むらだ' },
+    ];
+    const out = pickDialogue(reg, events);
+    expect(out[0]).toEqual({
+      uid: 'p1', speaker: { side: 'ally', id: 'gau' }, lineId: 'village:v1', text: 'むらだ',
+    });
+  });
+});

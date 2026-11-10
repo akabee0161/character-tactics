@@ -130,7 +130,8 @@ export type SimEvent =
   | { type: 'unitRetired'; uid: string; defId: string }
   | { type: 'bondSupport'; targetUid: string; targetDefId: string; supporterUids: string[]; pos: Vec2 }
   | { type: 'levelUp'; uid: string; defId: string; level: number }
-  | { type: 'enemySpawned'; uid: string; defId: string; pos: Vec2 };
+  | { type: 'enemySpawned'; uid: string; defId: string; pos: Vec2 }
+  | { type: 'villageVisited'; uid: string; defId: string; villageId: string; text: string };
 
 /** 攻撃を出した時点で固定される攻撃側の値。近接も飛翔体も同じものを通す */
 export type HitSource = {
