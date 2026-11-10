@@ -7,10 +7,10 @@
 2. ステージの難易度の調整
 3. 敵の絵
 4. 各ステージのタイル
-段階: 実装計画
+段階: 実装（12 タスク中 1）
 次にやること:
-- 実装計画 docs/superpowers/plans/2026-11-10-recruit-and-village.md を依頼者が確認する
-- 承認後に Task 1 から実装する
+- 実装計画 docs/superpowers/plans/2026-11-10-recruit-and-village.md の Task 2（能力値の上乗せ）から続ける
+- 全タスクを終えたら最終レビューにかける
 
 ## Generated: 2026-10-05（ユニット生成で出てきた課題の片付けを終えた時点）。2026-10-06 に `atk_hit` の確認、PR #30 の CodeRabbit の指摘への対応、PR #30 のマージを追記
 
