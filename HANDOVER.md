@@ -7,9 +7,9 @@
 2. ステージの難易度の調整
 3. 敵の絵
 4. 各ステージのタイル
-段階: 実装（12 タスク中 4）
+段階: 実装（12 タスク中 5）
 次にやること:
-- 実装計画 docs/superpowers/plans/2026-11-10-recruit-and-village.md の Task 5（ステージの joins・persuasions・villages の検証）から続ける
+- 実装計画 docs/superpowers/plans/2026-11-10-recruit-and-village.md の Task 6（出撃メンバー・開始位置・クリア時の書き戻し）から続ける
 - 全タスクを終えたら最終レビューにかける
 
 ## Generated: 2026-10-05（ユニット生成で出てきた課題の片付けを終えた時点）。2026-10-06 に `atk_hit` の確認、PR #30 の CodeRabbit の指摘への対応、PR #30 のマージを追記
