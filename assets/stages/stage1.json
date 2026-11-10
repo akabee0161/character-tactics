@@ -60,5 +60,8 @@
   ],
   "outro": [
     { "speaker": "roran", "text": "よし、無事辿り着いた。次に進もう！" }
+  ],
+  "villages": [
+    {"id": "v1", "col": 3, "row": 4, "text": "村の 人が 『ガルムの 砦は 北だよ』と 教えてくれた", "effect": {"type": "talk"}}
   ]
 }

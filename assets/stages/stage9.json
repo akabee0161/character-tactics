@@ -54,9 +54,13 @@
   "intro": [
     { "text": "たき火がいくつもともっている。" },
     { "speaker": "gau", "text": "見張りだらけだ。\n一度気づかれたら全部こちらに来るぞ。" },
-    { "speaker": "mist", "text": "できるだけ見つからないように進みたいですね。"}
+    { "speaker": "mist", "text": "できるだけ見つからないように進みたいですね。"},
+    {"speaker": "gau", "text": "野営地に 昔 世話に なった やつが いるらしい"}
   ],
   "outro": [
     { "speaker": "roran", "text": "次はガルムの本拠地だ。" }
+  ],
+  "persuasions": [
+    {"unitId": "ally08", "level": 5, "foeId": "ally08-foe", "pos": {"x": 240, "y": 368}, "ai": {"kind": "sentry", "sightRange": 90}, "persuader": "gau", "talk": [{"speaker": "gau", "text": "{ally08}！ こんな ところで 何してるんだ"}, {"speaker": "ally08", "text": "{gau}……！ もう ガルムの 手下は やめる。\n力を 貸すよ！"}, {"text": "{ally08}が 仲間に 加わった！"}]}
   ]
 }

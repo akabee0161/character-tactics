@@ -53,5 +53,8 @@
   "outro": [
     { "speaker": "gau", "text": "砦を抜けたぞ！" },
     { "speaker": "ines", "text": "見張りはもういない。\n先を急ぎましょう。" }
+  ],
+  "joins": [
+    {"unitId": "ally05", "level": 2, "talk": [{"speaker": "ally05", "text": "砦の 見張りに 追い出されて 困っていたんだ。\n俺も 連れて いってくれ！"}, {"speaker": "roran", "text": "心強いよ。よろしく、{ally05}！"}, {"text": "{ally05}が 仲間に 加わった！"}]}
   ]
 }
