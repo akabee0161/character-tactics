@@ -970,3 +970,38 @@ describe('森', () => {
     expect(unitOf(s, 'roran').pos).toEqual(dest);
   });
 });
+
+describe('引きつける', () => {
+  it('引きつけている味方を、範囲の敵が追う', () => {
+    const { state: s } = fresh(AI_STAGE);
+    const tank = unitOf(s, 'roran');
+    const other = unitOf(s, 'ines');
+    tank.pos = { x: 250, y: 200 };
+    other.pos = { x: 300, y: 200 };
+    const foe = spawnEnemy(s, 'narazumono', { x: 320, y: 200 });
+    step(s, [], 0.1);
+    expect(foe.ai!.targetUid).toBe(other.uid);
+
+    tank.tauntUntil = s.time + 5;
+    step(s, [], 0.1);
+    expect(foe.ai!.mode).toBe('chase');
+    expect(foe.ai!.targetUid).toBe(tank.uid);
+    expect(foe.goalPos).toEqual(tank.pos);
+
+    s.time = tank.tauntUntil + 0.1;
+    step(s, [], 0.1);
+    expect(foe.ai!.targetUid).toBe(other.uid);
+  });
+
+  it('範囲の外の敵は引きつけられない', () => {
+    const { state: s } = fresh(AI_STAGE);
+    const tank = unitOf(s, 'roran');
+    const other = unitOf(s, 'ines');
+    tank.pos = { x: 100, y: 200 };
+    other.pos = { x: 300, y: 200 };
+    tank.tauntUntil = s.time + 5;
+    const foe = spawnEnemy(s, 'narazumono', { x: 320, y: 200 });
+    step(s, [], 0.1);
+    expect(foe.ai!.targetUid).toBe(other.uid);
+  });
+});

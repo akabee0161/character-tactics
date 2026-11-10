@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { beginBattle, createBattleState } from './state';
 import { isFunbaruActive } from './combat';
 import { canUseSkill, useSkill, FUNBARU_DURATION, OMAJINAI_HEAL, KAKENUKERU_DAMAGE, SKILL_EFFECTS, SKILL_EFFECT_IDS } from './skills';
+import { attackPower } from './sim';
 import { testRegistry } from './testing';
 import { NO_BONUS } from './types';
 import type { BattleState, CharProgress, StageDef, Unit } from './types';
@@ -309,5 +310,120 @@ describe('SKILL_EFFECTS', () => {
     useSkill(s, roran.uid);
     expect(unitOf(s, 'roran').skillCooldownUntil)
       .toBe(s.time + s.reg.skills.get('funbaru')!.params.cooldown!);
+  });
+});
+
+describe('火の雨', () => {
+  it('火の雨は半径の内側の敵だけに当たる', () => {
+    const s = fresh();
+    const caster = unitOf(s, 'ines');
+    caster.skillId = 'hinoame';
+    const a = addEnemy(s, 200, 208);
+    const b = addEnemy(s, 230, 208);
+    const far = addEnemy(s, 260, 208);
+    expect(useSkill(s, caster.uid, { x: 200, y: 208 })).toBe(true);
+    expect(a.hp).toBe(6);
+    expect(b.hp).toBe(6);
+    expect(far.hp).toBe(12);
+    expect(s.events).toContainEqual(expect.objectContaining({ type: 'skill', skillId: 'hinoame', hits: 2 }));
+  });
+
+  it('火の雨は行き先が無いと出ない', () => {
+    const s = fresh();
+    const caster = unitOf(s, 'ines');
+    caster.skillId = 'hinoame';
+    expect(useSkill(s, caster.uid)).toBe(false);
+    expect(canUseSkill(s, caster.uid)).toBe(true);
+  });
+});
+
+describe('突き', () => {
+  it('突きは前の一直線の敵に当たる', () => {
+    const s = fresh();
+    const lancer = unitOf(s, 'roran');
+    lancer.skillId = 'tsuki';
+    lancer.pos = { x: 80, y: 208 };
+    const near = addEnemy(s, 120, 208);
+    const far = addEnemy(s, 155, 208);
+    const aside = addEnemy(s, 120, 238);
+    lancer.engagedWith = near.uid;
+    expect(useSkill(s, lancer.uid)).toBe(true);
+    expect(near.hp).toBe(5);
+    expect(far.hp).toBe(5);
+    expect(aside.hp).toBe(12);
+    expect(near.lastHitBy).toBe(lancer.uid);
+    expect(unitOf(s, 'roran').pos).toEqual({ x: 80, y: 208 });
+    expect(s.events).toContainEqual(expect.objectContaining({ type: 'skill', skillId: 'tsuki', hits: 2 }));
+  });
+
+  it('交戦中でなければ、長さの内で最寄りの敵の向きへ突く', () => {
+    const s = fresh();
+    const lancer = unitOf(s, 'roran');
+    lancer.skillId = 'tsuki';
+    lancer.pos = { x: 80, y: 208 };
+    const north = addEnemy(s, 80, 208 - 70);
+    const east = addEnemy(s, 80 + 40, 208);
+    expect(useSkill(s, lancer.uid)).toBe(true);
+    expect(east.hp).toBe(5);
+    expect(north.hp).toBe(12);
+  });
+
+  it('突きは相手がいないと出ない', () => {
+    const s = fresh();
+    const lancer = unitOf(s, 'roran');
+    lancer.skillId = 'tsuki';
+    lancer.pos = { x: 80, y: 208 };
+    addEnemy(s, 80 + 200, 208);
+    expect(useSkill(s, lancer.uid)).toBe(false);
+    expect(canUseSkill(s, lancer.uid)).toBe(true);
+  });
+});
+
+describe('引きつける', () => {
+  it('引きつけると tauntUntil が付き、範囲の敵の数を返す', () => {
+    const s = fresh();
+    const tank = unitOf(s, 'roran');
+    tank.skillId = 'hikitsukeru';
+    tank.pos = { x: 80, y: 208 };
+    addEnemy(s, 150, 208);
+    addEnemy(s, 400, 208);
+    expect(useSkill(s, tank.uid)).toBe(true);
+    expect(tank.tauntUntil).toBe(s.time + 6);
+    expect(s.events).toContainEqual(expect.objectContaining({ type: 'skill', skillId: 'hikitsukeru', hits: 1 }));
+  });
+});
+
+describe('はげます', () => {
+  it('はげますは範囲の味方の攻撃力を上げ、時間で切れる', () => {
+    const s = fresh();
+    const caster = unitOf(s, 'mist');
+    caster.skillId = 'hagemasu';
+    caster.pos = { x: 80, y: 208 };
+    const near = unitOf(s, 'roran');
+    near.pos = { x: 140, y: 208 };
+    const far = unitOf(s, 'gau');
+    far.pos = { x: 600, y: 208 };
+    const retired = unitOf(s, 'ines');
+    retired.pos = { x: 100, y: 208 };
+    retired.retired = true;
+    const base = attackPower(near, s.time);
+    expect(useSkill(s, caster.uid)).toBe(true);
+    expect(attackPower(near, s.time)).toBe(base + 2);
+    expect(attackPower(caster, s.time)).toBe(attackPower(caster, s.time + 100) + 2);
+    expect(attackPower(far, s.time)).toBe(far.power + far.stagePower);
+    expect(retired.cheerUntil).toBe(-1);
+    expect(attackPower(near, s.time + 8)).toBe(base);
+    expect(s.events).toContainEqual(expect.objectContaining({ type: 'skill', skillId: 'hagemasu', hits: 2 }));
+  });
+
+  it('重ねがけせず上書きする', () => {
+    const s = fresh();
+    const caster = unitOf(s, 'mist');
+    caster.skillId = 'hagemasu';
+    caster.cheerUntil = s.time + 1;
+    caster.cheerPower = 9;
+    useSkill(s, caster.uid);
+    expect(caster.cheerPower).toBe(2);
+    expect(caster.cheerUntil).toBe(s.time + 8);
   });
 });

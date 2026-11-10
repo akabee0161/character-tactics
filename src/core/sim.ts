@@ -14,7 +14,8 @@ import { awardXpForEvents } from './growth';
 import { updateObjectives } from './objectives';
 import { spawnProjectile, updateProjectiles } from './projectiles';
 import { separatedStep } from './separation';
-import { useSkill } from './skills';
+import { skillParam } from '../engine/registry';
+import { HIKITSUKERU_RANGE, useSkill } from './skills';
 import { dueSpawns } from './spawns';
 import { makeEnemyUnit } from './state';
 import type { BattleState, FlowField, HitSource, Unit, Vec2 } from './types';
@@ -60,6 +61,22 @@ function updateAi(state: BattleState): void {
   }
 }
 
+/** 引きつけている味方が範囲にいる敵は、その味方（複数なら最寄り）を追う。AI の選び方より優先する */
+function applyTaunts(state: BattleState): void {
+  const range = skillParam(state.reg, 'hikitsukeru', 'range', HIKITSUKERU_RANGE);
+  const taunters = playerUnits(state).filter((p) => p.hp > 0 && p.tauntUntil > state.time);
+  if (taunters.length === 0) return;
+  for (const u of state.units) {
+    if (u.retired || u.hp <= 0 || u.side !== 'enemy' || u.controller !== 'ai' || u.ai === null) continue;
+    const target = nearestWithin(u.pos, taunters, range);
+    if (!target) continue;
+    if (u.ai.mode !== 'chase') u.ai.spottedAt = state.time;
+    u.ai.mode = 'chase';
+    u.ai.targetUid = target.uid;
+    u.goalPos = { ...target.pos };
+  }
+}
+
 /** 時間湧き。湧いた敵は aggressive 固定でプレイヤーを追う */
 function runSpawns(state: BattleState): void {
   for (const due of dueSpawns(state.stage.spawners, state.spawnCounts, state.time)) {
@@ -84,6 +101,7 @@ export function step(state: BattleState, commands: SimCommand[], dt: number): vo
 
   const movedThisTick = applyCommands(state, commands);
   updateAi(state);
+  applyTaunts(state);
   updateEngagements(state, movedThisTick);
   updateAutoClose(state);
   moveUnits(state, dt);
