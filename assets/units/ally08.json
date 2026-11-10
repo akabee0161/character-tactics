@@ -1,0 +1,35 @@
+{
+  "id": "ally08",
+  "name": "ノエル",
+  "role": "応援",
+  "combat": true,
+  "maxHp": 20,
+  "power": 4,
+  "guard": 2,
+  "attack": "melee",
+  "range": 24,
+  "attackInterval": 1.6,
+  "speed": 65,
+  "skillId": "hagemasu",
+  "color": "#5ab0b8",
+  "sprites": {
+    "role": "role-ouen.png",
+    "face": "ally08-face.png",
+    "map": {
+      "sheet": "ally08-map.png",
+      "frame": 32,
+      "idle": {
+        "frames": 2,
+        "fps": 4
+      },
+      "walk": {
+        "frames": 4,
+        "fps": 8
+      },
+      "attack": {
+        "frames": 3,
+        "fps": 6
+      }
+    }
+  }
+}

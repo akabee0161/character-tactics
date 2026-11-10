@@ -1,0 +1,35 @@
+{
+  "id": "ally05",
+  "name": "ボルグ",
+  "role": "盾",
+  "combat": true,
+  "maxHp": 36,
+  "power": 5,
+  "guard": 6,
+  "attack": "melee",
+  "range": 24,
+  "attackInterval": 1.8,
+  "speed": 45,
+  "skillId": "hikitsukeru",
+  "color": "#7a8a9a",
+  "sprites": {
+    "role": "role-tate.png",
+    "face": "ally05-face.png",
+    "map": {
+      "sheet": "ally05-map.png",
+      "frame": 32,
+      "idle": {
+        "frames": 2,
+        "fps": 4
+      },
+      "walk": {
+        "frames": 4,
+        "fps": 8
+      },
+      "attack": {
+        "frames": 3,
+        "fps": 6
+      }
+    }
+  }
+}

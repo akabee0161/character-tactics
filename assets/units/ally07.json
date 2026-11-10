@@ -1,0 +1,35 @@
+{
+  "id": "ally07",
+  "name": "リュカ",
+  "role": "槍",
+  "combat": true,
+  "maxHp": 24,
+  "power": 7,
+  "guard": 3,
+  "attack": "melee",
+  "range": 36,
+  "attackInterval": 1.7,
+  "speed": 60,
+  "skillId": "tsuki",
+  "color": "#c85a5a",
+  "sprites": {
+    "role": "role-yari.png",
+    "face": "ally07-face.png",
+    "map": {
+      "sheet": "ally07-map.png",
+      "frame": 32,
+      "idle": {
+        "frames": 2,
+        "fps": 4
+      },
+      "walk": {
+        "frames": 4,
+        "fps": 8
+      },
+      "attack": {
+        "frames": 3,
+        "fps": 6
+      }
+    }
+  }
+}
