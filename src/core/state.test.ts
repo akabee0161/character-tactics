@@ -24,7 +24,9 @@ function unitOf(s: BattleState, defId: string) {
 describe('statsForLevel', () => {
   it('レベル1 は基礎値どおり', () => {
     const reg = testRegistry();
-    expect(statsForLevel(reg.units.get('roran')!, 1, reg.growth)).toEqual({ maxHp: 30, power: 6 });
+    expect(statsForLevel(reg.units.get('roran')!, 1, reg.growth)).toEqual({
+      maxHp: 30, power: 6, guard: reg.units.get('roran')!.guard, speed: reg.units.get('roran')!.speed,
+    });
   });
 
   it('HP は1レベルごとに+1', () => {
@@ -40,7 +42,16 @@ describe('statsForLevel', () => {
 
   it('上限レベルでも現状の上限とほぼ同じ強さ', () => {
     const reg = testRegistry();
-    expect(statsForLevel(reg.units.get('roran')!, 12, reg.growth)).toEqual({ maxHp: 41, power: 9 });
+    expect(statsForLevel(reg.units.get('roran')!, 12, reg.growth)).toEqual({
+      maxHp: 41, power: 9, guard: reg.units.get('roran')!.guard, speed: reg.units.get('roran')!.speed,
+    });
+  });
+
+  it('上乗せが能力値に入る', () => {
+    const reg = testRegistry();
+    const def = reg.units.get('roran')!;
+    const s = statsForLevel(def, 1, reg.growth, { maxHp: 3, power: 1, guard: 2, speed: 5 });
+    expect(s).toEqual({ maxHp: def.maxHp + 3, power: def.power + 1, guard: def.guard + 2, speed: def.speed + 5 });
   });
 });
 

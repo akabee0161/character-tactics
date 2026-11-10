@@ -3,6 +3,7 @@ import { beginBattle, createBattleState } from './state';
 import { isFunbaruActive } from './combat';
 import { canUseSkill, useSkill, FUNBARU_DURATION, OMAJINAI_HEAL, KAKENUKERU_DAMAGE, SKILL_EFFECTS, SKILL_EFFECT_IDS } from './skills';
 import { testRegistry } from './testing';
+import { NO_BONUS } from './types';
 import type { BattleState, CharProgress, StageDef, Unit } from './types';
 
 function fresh(stage?: StageDef): BattleState {
@@ -23,6 +24,7 @@ function addEnemy(s: BattleState, x: number, y: number, hp = 12): Unit {
     attack: def.attack, range: def.range, attackInterval: def.attackInterval, speed: def.speed,
     bowDamageCap: def.bowDamageCap, skillId: def.skillId,
     level: 1, xp: 0,
+    statBonus: { ...NO_BONUS }, stagePower: 0, cheerUntil: -1, cheerPower: 0, tauntUntil: -1, persuasion: null,
     goalPos: null, goalField: null, engagedWith: null, closingOn: null, attackCooldown: 0, retired: false,
     windup: 0, pendingHit: null,
     ai: { def: { kind: 'aggressive' }, mode: 'idle', targetUid: null, home: { x, y }, spottedAt: null },

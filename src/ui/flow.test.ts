@@ -36,6 +36,7 @@ const battleWith = (over: BattleOver = {}): BattleState => {
     level: p!.level,
     xp: p!.xp,
     retired: p!.retired ?? true,
+    statBonus: { maxHp: 0, power: 0, guard: 0, speed: 0 },
   }));
   return { units, counters } as unknown as BattleState;
 };

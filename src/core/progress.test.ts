@@ -24,6 +24,12 @@ describe('applyXp', () => {
     clearXp: 10,
   });
 
+  it('applyXp は bonus を残す', () => {
+    const bonus = { maxHp: 3, power: 1, guard: 2, speed: 0 };
+    expect(applyXp({ level: 1, xp: 0, bonus }, 100, growth()).bonus).toEqual(bonus);
+    expect(applyXp({ level: 12, xp: 0, bonus }, 100, growth()).bonus).toEqual(bonus);
+  });
+
   it('必要量に届けばレベルが上がる', () => {
     expect(applyXp({ level: 1, xp: 0 }, 12, growth())).toEqual({ level: 2, xp: 0 });
   });

@@ -19,6 +19,11 @@ import { dueSpawns } from './spawns';
 import { makeEnemyUnit } from './state';
 import type { BattleState, FlowField, HitSource, Unit, Vec2 } from './types';
 
+/** 攻撃を出す時点の攻撃力。村の攻撃力アップ（ステージの間だけ）とはげますの間の加算を含む */
+export function attackPower(u: Unit, time: number): number {
+  return u.power + u.stagePower + (time < u.cheerUntil ? u.cheerPower : 0);
+}
+
 export function playerUnits(state: BattleState): Unit[] {
   return state.units.filter((u) => u.side === 'player' && !u.retired);
 }
@@ -348,7 +353,7 @@ function resolveAttacks(state: BattleState, dt: number): void {
 
     const source: HitSource = {
       uid: u.uid, defId: u.defId, attack: u.attack, pos: { ...u.pos },
-      neraiuchi: u.neraiuchiArmed, power: u.power, bondBonus: bonus,
+      neraiuchi: u.neraiuchiArmed, power: attackPower(u, state.time), bondBonus: bonus,
     };
     u.neraiuchiArmed = false;
     u.attackCooldown = interval;

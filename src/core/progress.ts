@@ -9,7 +9,7 @@ export function xpToNext(level: number, xpPerLevel: number): number {
 export function applyXp(p: CharProgress, gained: number, growth: GrowthDef): CharProgress {
   let level = p.level;
   let xp = p.xp;
-  if (level >= growth.maxLevel) return { level, xp };
+  if (level >= growth.maxLevel) return { ...p, level, xp };
 
   xp += gained;
   while (level < growth.maxLevel && xp >= xpToNext(level, growth.xpPerLevel)) {
@@ -17,7 +17,7 @@ export function applyXp(p: CharProgress, gained: number, growth: GrowthDef): Cha
     level += 1;
   }
   if (level >= growth.maxLevel) xp = 0;
-  return { level, xp };
+  return { ...p, level, xp };
 }
 
 export function earnedTitles(reg: Registry, counters: Record<string, number>): string[] {

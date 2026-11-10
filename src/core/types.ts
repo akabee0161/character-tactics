@@ -23,7 +23,11 @@ export type FlowField = {
 
 import type { Rng } from './rng';
 
-export type CharProgress = { level: number; xp: number };
+export type StatKey = 'maxHp' | 'power' | 'guard' | 'speed';
+export type StatBonus = Record<StatKey, number>;
+export const NO_BONUS: StatBonus = { maxHp: 0, power: 0, guard: 0, speed: 0 };
+
+export type CharProgress = { level: number; xp: number; bonus?: StatBonus };
 
 export type AiState = {
   def: AiDef;
@@ -60,6 +64,18 @@ export type Unit = {
 
   level: number;
   xp: number;
+
+  /** 村で上げた能力値の上乗せ。レベルアップで消えない（statsForLevel に渡す） */
+  statBonus: StatBonus;
+  /** 攻撃力アップの村の加算。そのステージの間だけ */
+  stagePower: number;
+  /** はげますの効果。シム時刻 cheerUntil 未満の間 cheerPower を攻撃力に足す */
+  cheerUntil: number;
+  cheerPower: number;
+  /** 引きつけるの効果。シム時刻 tauntUntil 未満の間有効 */
+  tauntUntil: number;
+  /** 説得の相手なら stage.persuasions の添字 */
+  persuasion: number | null;
 
   goalPos: Vec2 | null;
   goalField: FlowField | null;

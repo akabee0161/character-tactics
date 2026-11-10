@@ -3,19 +3,22 @@ import { makeFieldCache } from './fields';
 import { makeRng } from './rng';
 import type { Registry } from '../engine/registry';
 import type { AiDef, EnemyDef, GrowthDef, StageDef, UnitDef } from '../engine/schema';
-import type { BattleState, CharProgress, Grid, Unit, Vec2 } from './types';
+import { NO_BONUS } from './types';
+import type { BattleState, CharProgress, Grid, StatBonus, Unit, Vec2 } from './types';
 
 /**
  * レベルからステータスを出す。HP は毎レベル、攻撃力は levelsPerPower レベルごとに上がる。
  * 攻撃力を小数にしないのは computeDamage が整数前提で組まれているため
  */
 export function statsForLevel(
-  def: UnitDef | EnemyDef, level: number, growth: GrowthDef,
-): { maxHp: number; power: number } {
+  def: UnitDef | EnemyDef, level: number, growth: GrowthDef, bonus: StatBonus = NO_BONUS,
+): { maxHp: number; power: number; guard: number; speed: number } {
   const steps = Math.max(0, level - 1);
   return {
-    maxHp: def.maxHp + steps * growth.hpPerLevel,
-    power: def.power + Math.floor(steps / growth.levelsPerPower),
+    maxHp: def.maxHp + steps * growth.hpPerLevel + bonus.maxHp,
+    power: def.power + Math.floor(steps / growth.levelsPerPower) + bonus.power,
+    guard: def.guard + bonus.guard,
+    speed: def.speed + bonus.speed,
   };
 }
 
@@ -33,12 +36,14 @@ type MakeUnitArgs = {
   pos: Vec2;
   level: number;
   xp: number;
+  bonus?: StatBonus;
   ai: AiDef | null;
   growth: GrowthDef;
 };
 
 function makeUnit(a: MakeUnitArgs): Unit {
-  const { maxHp, power } = statsForLevel(a.def, a.level, a.growth);
+  const statBonus = { ...(a.bonus ?? NO_BONUS) };
+  const { maxHp, power, guard, speed } = statsForLevel(a.def, a.level, a.growth, statBonus);
   const enemyDef = 'bowDamageCap' in a.def ? a.def : null;
   return {
     uid: a.uid,
@@ -48,14 +53,15 @@ function makeUnit(a: MakeUnitArgs): Unit {
     combat: a.def.combat,
     pos: { ...a.pos },
     hp: maxHp, maxHp, power,
-    guard: a.def.guard,
+    guard,
     attack: a.def.attack,
     range: a.def.range,
     attackInterval: a.def.attackInterval,
-    speed: a.def.speed,
+    speed,
     bowDamageCap: enemyDef?.bowDamageCap ?? null,
     skillId: a.def.skillId,
     level: a.level, xp: a.xp,
+    statBonus, stagePower: 0, cheerUntil: -1, cheerPower: 0, tauntUntil: -1, persuasion: null,
     goalPos: null, goalField: null, engagedWith: null, closingOn: null, attackCooldown: 0, retired: false,
     windup: windupOf(a.def), pendingHit: null,
     ai: a.ai === null
@@ -91,7 +97,7 @@ export function createBattleState(
     const start = stage.placement.starts[i % stage.placement.starts.length]!;
     return makeUnit({
       uid: `p${i + 1}`, def, side: 'player', controller: 'player', pos: start,
-      level: progress[defId]?.level ?? 1, xp: progress[defId]?.xp ?? 0, ai: null,
+      level: progress[defId]?.level ?? 1, xp: progress[defId]?.xp ?? 0, bonus: progress[defId]?.bonus, ai: null,
       growth: reg.growth,
     });
   });

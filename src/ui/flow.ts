@@ -1,7 +1,7 @@
 import { mergeCounters } from '../core/counters';
 import { applyXp, earnedTitles } from '../core/progress';
 import type { Registry } from '../engine/registry';
-import type { BattleState, CharProgress } from '../core/types';
+import type { BattleState, CharProgress, StatBonus } from '../core/types';
 import type { SaveData } from '../save/save';
 
 export function isStageUnlocked(reg: Registry, save: SaveData, index: number): boolean {
@@ -28,6 +28,10 @@ export type XpGain = {
   leveledUp: boolean;
 };
 
+function hasBonus(b: StatBonus): boolean {
+  return b.maxHp > 0 || b.power > 0 || b.guard > 0 || b.speed > 0;
+}
+
 export type StageResult = { save: SaveData; gains: XpGain[]; newTitles: string[] };
 
 export function applyStageClear(
@@ -44,9 +48,10 @@ export function applyStageClear(
   for (const u of battle.units) {
     if (u.side !== 'player') continue;
     const before = save.units[u.defId] ?? { level: 1, xp: 0 };
-    const after = u.retired
-      ? { level: u.level, xp: u.xp }
-      : applyXp({ level: u.level, xp: u.xp }, reg.growth.clearXp, reg.growth);
+    const base: CharProgress = hasBonus(u.statBonus)
+      ? { level: u.level, xp: u.xp, bonus: { ...u.statBonus } }
+      : { level: u.level, xp: u.xp };
+    const after = u.retired ? base : applyXp(base, reg.growth.clearXp, reg.growth);
     units[u.defId] = after;
     gains.push({ id: u.defId, before, after, leveledUp: after.level > before.level });
   }

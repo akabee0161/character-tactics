@@ -149,3 +149,47 @@ describe('writeSave', () => {
     expect(SAVE_KEY).toBe('character-tactics/save');
   });
 });
+
+describe('members / claimed / bonus', () => {
+  const reg = testRegistry();
+  const load = (raw: object) => loadSave(memoryStorage(JSON.stringify(raw)), reg)!;
+
+  it('新しいセーブは members・claimed が空', () => {
+    expect(newSave(reg).members).toEqual([]);
+    expect(newSave(reg).claimed).toEqual([]);
+  });
+
+  it('members・claimed・bonus が往復する', () => {
+    const bonus = { maxHp: 3, power: 1, guard: 2, speed: 0 };
+    const raw = { ...newSave(reg), members: ['gau'], claimed: ['village:a'] };
+    raw.units = { ...raw.units, roran: { level: 2, xp: 1, bonus } };
+    const loaded = load(raw);
+    expect(loaded.members).toEqual(['gau']);
+    expect(loaded.claimed).toEqual(['village:a']);
+    expect(loaded.units.roran).toEqual({ level: 2, xp: 1, bonus });
+  });
+
+  it('壊れた bonus は捨てる（負の数・小数・欠け）', () => {
+    for (const bad of [{ maxHp: -1, power: 0, guard: 0, speed: 0 }, { maxHp: 1.5, power: 0, guard: 0, speed: 0 }, { maxHp: 1 }, 'x']) {
+      const raw = { ...newSave(reg) };
+      raw.units = { ...raw.units, roran: { level: 2, xp: 1, bonus: bad } as never };
+      expect(load(raw).units.roran).toEqual({ level: 2, xp: 1 });
+    }
+  });
+
+  it('members の知らない ID と重複は捨てる', () => {
+    const loaded = load({ ...newSave(reg), members: ['gau', 'nobody', 'gau', 5] });
+    expect(loaded.members).toEqual(['gau']);
+  });
+
+  it('claimed は文字列だけ残す', () => {
+    expect(load({ ...newSave(reg), claimed: ['a', 3, null, 'b'] }).claimed).toEqual(['a', 'b']);
+  });
+
+  it('フィールドの無い古いセーブは [] になる', () => {
+    const old = { version: 2, clearedStageIds: [], units: {}, counters: {}, titles: [] };
+    const loaded = load(old);
+    expect(loaded.members).toEqual([]);
+    expect(loaded.claimed).toEqual([]);
+  });
+});

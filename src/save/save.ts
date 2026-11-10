@@ -1,5 +1,5 @@
 import type { Registry } from '../engine/registry';
-import type { CharProgress } from '../core/types';
+import type { CharProgress, StatBonus } from '../core/types';
 
 export const SAVE_KEY = 'character-tactics/save';
 export const SAVE_VERSION = 2;
@@ -15,6 +15,10 @@ export type SaveData = {
   /** 会話を最後まで読み終えたステージの id。「とばす」を出してよいかの判定に使う */
   readIntroStageIds: string[];
   units: Record<string, CharProgress>;
+  /** 後から加わった仲間の ID。加わった順 */
+  members: string[];
+  /** 受け取った一度きりのごほうびの印 */
+  claimed: string[];
   counters: Record<string, number>;
   titles: string[];
 };
@@ -28,6 +32,20 @@ function isFinitePositiveInt(v: unknown): boolean {
   return typeof v === 'number' && Number.isInteger(v) && v >= 1;
 }
 
+const BONUS_KEYS = ['maxHp', 'power', 'guard', 'speed'] as const;
+
+/** 4 つ全部が 0 以上の整数のときだけ読む。それ以外は壊れた値として捨てる */
+function readBonus(v: unknown): StatBonus | null {
+  if (!isPlainObject(v)) return null;
+  const out = { maxHp: 0, power: 0, guard: 0, speed: 0 };
+  for (const k of BONUS_KEYS) {
+    const n = v[k];
+    if (!isFiniteNonNegInt(n)) return null;
+    out[k] = n as number;
+  }
+  return out;
+}
+
 function isPlainObject(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null && !Array.isArray(v);
 }
@@ -37,7 +55,7 @@ export function newSave(reg: Registry): SaveData {
   for (const id of reg.units.keys()) units[id] = { level: 1, xp: 0 };
   return {
     version: SAVE_VERSION, clearedStageIds: [], readIntroStageIds: [],
-    units, counters: {}, titles: [],
+    units, members: [], claimed: [], counters: {}, titles: [],
   };
 }
 
@@ -53,7 +71,10 @@ function reconcile(raw: Record<string, unknown>, reg: Registry): SaveData {
   for (const id of reg.units.keys()) {
     const p = rawUnits[id];
     if (!isPlainObject(p) || !isFinitePositiveInt(p.level) || !isFiniteNonNegInt(p.xp)) continue;
-    save.units[id] = { level: p.level as number, xp: p.xp as number };
+    const bonus = readBonus(p.bonus);
+    save.units[id] = bonus
+      ? { level: p.level as number, xp: p.xp as number, bonus }
+      : { level: p.level as number, xp: p.xp as number };
   }
 
   if (Array.isArray(raw.clearedStageIds)) {
@@ -70,6 +91,20 @@ function reconcile(raw: Record<string, unknown>, reg: Registry): SaveData {
     save.readIntroStageIds = raw.readIntroStageIds.filter(
       (id): id is string => typeof id === 'string' && known.has(id),
     );
+  }
+
+  // 旧セーブにこの 2 つは無い。[] のまま残る（SAVE_VERSION は上げない）
+  if (Array.isArray(raw.members)) {
+    const seen = new Set<string>();
+    for (const id of raw.members) {
+      if (typeof id === 'string' && reg.units.has(id) && !seen.has(id)) {
+        seen.add(id);
+        save.members.push(id);
+      }
+    }
+  }
+  if (Array.isArray(raw.claimed)) {
+    save.claimed = raw.claimed.filter((id): id is string => typeof id === 'string');
   }
 
   if (Array.isArray(raw.titles)) {

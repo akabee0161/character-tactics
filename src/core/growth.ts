@@ -18,10 +18,12 @@ export function awardXp(state: BattleState, unit: Unit, amount: number): void {
 
   const def = state.reg.units.get(unit.defId) ?? state.reg.enemies.get(unit.defId);
   if (!def) return;
-  const stats = statsForLevel(def, after.level, state.reg.growth);
+  const stats = statsForLevel(def, after.level, state.reg.growth, unit.statBonus);
   const gainedMaxHp = stats.maxHp - unit.maxHp;
   unit.maxHp = stats.maxHp;
   unit.power = stats.power;
+  unit.guard = stats.guard;
+  unit.speed = stats.speed;
   unit.hp = Math.min(unit.maxHp, unit.hp + Math.max(0, gainedMaxHp));
 
   state.events.push({ type: 'levelUp', uid: unit.uid, defId: unit.defId, level: after.level });

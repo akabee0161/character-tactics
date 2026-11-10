@@ -3,6 +3,7 @@ import { step } from './sim';
 import { applyXp } from './progress';
 import { beginBattle, createBattleState } from './state';
 import { instantAttacks, testRegistry } from './testing';
+import { NO_BONUS } from './types';
 import type { StageDef, Unit } from './types';
 import type { BattleState, CharProgress, Vec2 } from './types';
 
@@ -47,6 +48,7 @@ function spawnEnemy(s: BattleState, defId: string, pos: Vec2, hp?: number): Unit
     attack: def.attack, range: def.range, attackInterval: def.attackInterval, speed: def.speed,
     bowDamageCap: def.bowDamageCap, skillId: def.skillId,
     level: 1, xp: 0,
+    statBonus: { ...NO_BONUS }, stagePower: 0, cheerUntil: -1, cheerPower: 0, tauntUntil: -1, persuasion: null,
     goalPos: null, goalField: null, engagedWith: null, closingOn: null, attackCooldown: 0, retired: false,
     windup: 0, pendingHit: null,
     ai: { def: { kind: 'aggressive' }, mode: 'idle', targetUid: null, home: { ...pos }, spottedAt: null },
@@ -86,6 +88,23 @@ describe('攻撃の解決', () => {
     expect(e.hp).toBe(12);      // 交戦成立の直後はまだ攻撃していない
     step(s, [], 1.7);
     expect(e.hp).toBe(12 - 5);  // ロラン 力6 - 守り1
+  });
+
+  it('攻撃力アップとはげますがダメージに乗る', () => {
+    const hitDamage = (setup: (u: Unit) => void): number => {
+      const s = fresh();
+      const roran = unitOf(s, 'roran');
+      roran.pos = { x: 16, y: 16 };
+      setup(roran);
+      const e = spawnEnemy(s, 'narazumono', { x: 30, y: 16 });
+      step(s, [], 0.01);
+      step(s, [], 1.7);
+      return 12 - e.hp;
+    };
+    const base = hitDamage(() => {});
+    expect(hitDamage((u) => { u.stagePower = 2; })).toBe(base + 2);
+    expect(hitDamage((u) => { u.cheerUntil = 100; u.cheerPower = 3; })).toBe(base + 3);
+    expect(hitDamage((u) => { u.cheerUntil = 1; u.cheerPower = 3; })).toBe(base);
   });
 
   it('攻撃間隔が来るまでは追加ダメージが入らない', () => {

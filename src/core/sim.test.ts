@@ -6,6 +6,7 @@ import { distance, fitsAt, isWalkableAt, speedAt } from './field';
 import { hostilesOf, step } from './sim';
 import { beginBattle, createBattleState } from './state';
 import { instantAttacks, testRegistry } from './testing';
+import { NO_BONUS } from './types';
 import type { AiDef, BattleState, CharProgress, StageDef, Unit, Vec2 } from './types';
 
 function makeTestUnit(s: BattleState, def: EnemyDef, pos: Vec2, ai: AiDef): Unit {
@@ -16,6 +17,7 @@ function makeTestUnit(s: BattleState, def: EnemyDef, pos: Vec2, ai: AiDef): Unit
     attack: def.attack, range: def.range, attackInterval: def.attackInterval, speed: def.speed,
     bowDamageCap: def.bowDamageCap, skillId: def.skillId,
     level: 1, xp: 0,
+    statBonus: { ...NO_BONUS }, stagePower: 0, cheerUntil: -1, cheerPower: 0, tauntUntil: -1, persuasion: null,
     goalPos: null, goalField: null, engagedWith: null, closingOn: null, attackCooldown: 0, retired: false,
     windup: 0, pendingHit: null,
     ai: { def: ai, mode: 'idle', targetUid: null, home: { ...pos }, spottedAt: null },
@@ -79,6 +81,7 @@ function spawnEnemy(s: BattleState, defId: string, pos: { x: number; y: number }
     attack: def.attack, range: def.range, attackInterval: def.attackInterval, speed: def.speed,
     bowDamageCap: def.bowDamageCap, skillId: def.skillId,
     level: 1, xp: 0,
+    statBonus: { ...NO_BONUS }, stagePower: 0, cheerUntil: -1, cheerPower: 0, tauntUntil: -1, persuasion: null,
     goalPos: null, goalField: null, engagedWith: null, closingOn: null, attackCooldown: 0, retired: false,
     windup: 0, pendingHit: null,
     ai: { def: { kind: 'aggressive' }, mode: 'idle', targetUid: null, home: { ...pos }, spottedAt: null },

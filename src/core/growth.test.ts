@@ -45,6 +45,20 @@ describe('awardXp', () => {
     expect(u.power).toBe(statsForLevel(def, 2, s.reg.growth).power);
   });
 
+  it('レベルアップしても上乗せが残る', () => {
+    const s = fresh();
+    const u = playerOf(s, 'roran');
+    const def = s.reg.units.get('roran')!;
+    u.statBonus = { maxHp: 3, power: 1, guard: 2, speed: 0 };
+    u.maxHp += 3; u.power += 1; u.guard += 2;
+    awardXp(s, u, xpToNext(1, s.reg.growth.xpPerLevel));
+    expect(u.level).toBe(2);
+    expect(u.maxHp).toBe(statsForLevel(def, 2, s.reg.growth, u.statBonus).maxHp);
+    expect(u.power).toBe(statsForLevel(def, 2, s.reg.growth, u.statBonus).power);
+    expect(u.guard).toBe(def.guard + 2);
+    expect(u.speed).toBe(def.speed);
+  });
+
   it('ふえた さいだい HP の ぶんだけ いまの HP も ふえる', () => {
     const s = fresh();
     const u = playerOf(s, 'roran');
