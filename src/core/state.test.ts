@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { cellIndexAt } from './field';
 import { fieldToStatic } from './fields';
-import { beginBattle, canPlaceAt, createBattleState, placeUnit, statsForLevel, windupOf } from './state';
+import { beginBattle, canPlaceAt, createBattleState, placeUnit, startPositions, statsForLevel, windupOf } from './state';
 import { testRegistry } from './testing';
 import type { Registry } from '../engine/registry';
 import type { StageDef } from '../engine/schema';
@@ -218,13 +218,14 @@ describe('windupOf', () => {
 describe('出撃メンバーと開始位置', () => {
   const base = testRegistry();
   const NEW_IDS = ['ally05', 'ally06', 'ally07', 'ally08'];
+  const ALL_IDS = [...NEW_IDS, 'ally09', 'ally10'];
   const talk = [{ speaker: 'roran', text: 'よろしく' }] as unknown as StageDef['joins'][number]['talk'];
   const recruitOf = (unitId: string) => ({ unitId, level: 2, talk });
   /** 新しい 4 人を足した登録簿。4 人は stage[0] の joins に書かれているので「加入しうる仲間」になる */
   function reg8() {
     const units = new Map(base.units);
-    for (const id of NEW_IDS) units.set(id, { ...base.units.get('roran')!, id });
-    const stage = { ...base.stages[0]!, joins: NEW_IDS.map(recruitOf) };
+    for (const id of ALL_IDS) units.set(id, { ...base.units.get('roran')!, id });
+    const stage = { ...base.stages[0]!, joins: ALL_IDS.map(recruitOf) };
     const reg: Registry = { ...base, units, stages: [stage, ...base.stages.slice(1)] };
     return { reg, stage };
   }
@@ -248,13 +249,24 @@ describe('出撃メンバーと開始位置', () => {
 
   it('出撃は 8 人まで', () => {
     const { reg, stage } = reg8();
-    const s = createBattleState(reg, stage, party([...NEW_IDS, 'ally05', 'ally06']), 1);
-    expect(players(s)).toHaveLength(8);
-    const s2 = createBattleState(reg, { ...stage, joins: NEW_IDS.map(recruitOf) }, party(['ally05', 'ally06', 'ally07', 'ally08']), 1);
+    // roster 4 人の上に members が 6 人。超えた分は出撃しない
+    const s = createBattleState(reg, { ...stage, joins: [] }, party(ALL_IDS), 1);
+    expect(players(s).map((u) => u.defId)).toEqual([...stage.roster, ...NEW_IDS]);
+    // 8 人そろっているとき、開始時の加入は加えず joined にも入れない
+    const s2 = createBattleState(reg, { ...stage, joins: [recruitOf('ally09')] }, party(NEW_IDS), 1);
     expect(players(s2)).toHaveLength(8);
-    const s3 = createBattleState(reg, { ...stage, roster: [...stage.roster, 'ally05', 'ally06', 'ally07', 'ally08'], joins: [recruitOf('roran')] }, party([]), 1);
-    expect(players(s3)).toHaveLength(8);
-    expect(s3.joined).toEqual([]);
+    expect(players(s2).map((u) => u.defId)).not.toContain('ally09');
+    expect(s2.joined).toEqual([]);
+  });
+
+  it('開始位置: starts が足りないと近いマスで補い、補えなければ starts を繰り返す', () => {
+    const { stage, state } = fresh();
+    const n = stage.placement.starts.length;
+    const pos = startPositions(stage, state.grid, n + 2);
+    expect(pos.slice(0, n)).toEqual(stage.placement.starts);
+    expect(pos).toHaveLength(n + 2);
+    const none = startPositions({ ...stage, placement: { ...stage.placement, minY: 99999 } }, state.grid, n + 1);
+    expect(none[n]).toEqual(stage.placement.starts[0]);
   });
 
   it('加入済みの説得の相手は出てこない', () => {
