@@ -165,7 +165,7 @@ function toLogical(ev: PointerEvent): Vec2 {
 function beginStage(index: number): void {
   stageIndex = index;
   stageId = registry.stages[index]!.id;
-  battle = createBattleState(registry, registry.stages[index]!, save.units, Date.now() % 100000);
+  battle = createBattleState(registry, registry.stages[index]!, save, Date.now() % 100000);
   escorts = new Set(escortDefIds(battle.stage));
   selected = null;
   pendingSkill = null;

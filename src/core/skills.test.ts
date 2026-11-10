@@ -11,7 +11,7 @@ function fresh(stage?: StageDef): BattleState {
   const reg = testRegistry();
   const progress: Record<string, CharProgress> = {};
   for (const id of reg.units.keys()) progress[id] = { level: 1, xp: 0 };
-  const s = createBattleState(reg, stage ?? reg.stages[0]!, progress, 1);
+  const s = createBattleState(reg, stage ?? reg.stages[0]!, { units: progress, members: [], claimed: [] }, 1);
   beginBattle(s);
   return s;
 }

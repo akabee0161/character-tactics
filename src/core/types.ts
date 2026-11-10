@@ -2,7 +2,7 @@ export type { AttackKind, Vec2 } from '../engine/schema';
 export type { AiDef, DefeatCond, EnemyPlacement, Legend, StageDef, VictoryCond } from '../engine/schema';
 
 import type { Registry } from '../engine/registry';
-import type { AiDef, AttackKind, StageDef, Vec2 } from '../engine/schema';
+import type { AiDef, AttackKind, RecruitDef, StageDef, Vec2 } from '../engine/schema';
 import type { FieldCache } from './fields';
 
 export type Grid = {
@@ -28,6 +28,12 @@ export type StatBonus = Record<StatKey, number>;
 export const NO_BONUS: StatBonus = { maxHp: 0, power: 0, guard: 0, speed: 0 };
 
 export type CharProgress = { level: number; xp: number; bonus?: StatBonus };
+
+/** 出撃の元になる進行。SaveData はこれを満たす */
+export type PartyProgress = { units: Record<string, CharProgress>; members: string[]; claimed: string[] };
+
+/** 加わる会話の待ち。foeUid は説得の相手の uid（村や開始時の加入なら null） */
+export type PendingRecruit = { recruit: RecruitDef; pos: Vec2; foeUid: string | null };
 
 export type AiState = {
   def: AiDef;
@@ -173,4 +179,14 @@ export type BattleState = {
   spawnCounts: number[];
   projectiles: Projectile[];
   nextProjectileId: number;
+  /** このステージで加わった仲間の ID（クリアしたときだけセーブに残る） */
+  joined: string[];
+  /** このステージで受け取った一度きりのごほうびの印 */
+  claimed: string[];
+  /** 訪れた村の id */
+  visited: string[];
+  pendingRecruit: PendingRecruit | null;
+  nextPlayerUid: number;
+  /** 開始時点のセーブの claimed */
+  claimedBefore: ReadonlySet<string>;
 };

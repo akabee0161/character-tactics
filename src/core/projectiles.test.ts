@@ -23,7 +23,7 @@ const LV1: Record<string, CharProgress> = {
 };
 
 function fresh(): { state: BattleState; shooter: Unit; target: Unit } {
-  const state = createBattleState(testRegistry(), STAGE, LV1, 42);
+  const state = createBattleState(testRegistry(), STAGE, { units: LV1, members: [], claimed: [] }, 42);
   beginBattle(state);
   const shooter = state.units.find((u) => u.defId === 'ines')!;
   const target = state.units.find((u) => u.side === 'enemy')!;

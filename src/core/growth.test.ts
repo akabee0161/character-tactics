@@ -10,7 +10,7 @@ function fresh(): BattleState {
   const reg = testRegistry();
   const progress: Record<string, { level: number; xp: number }> = {};
   for (const id of reg.units.keys()) progress[id] = { level: 1, xp: 0 };
-  const s = createBattleState(reg, reg.stages[0]!, progress, 1);
+  const s = createBattleState(reg, reg.stages[0]!, { units: progress, members: [], claimed: [] }, 1);
   beginBattle(s);
   return s;
 }
@@ -123,7 +123,7 @@ describe('awardXpForEvents', () => {
     const stage = reg.stages[0]!;
     const progress: Record<string, CharProgress> = {};
     for (const id of reg.units.keys()) progress[id] = { level: 1, xp: 0 };
-    const state = createBattleState(reg, stage, progress, 1);
+    const state = createBattleState(reg, stage, { units: progress, members: [], claimed: [] }, 1);
     beginBattle(state);
     return state;
   }

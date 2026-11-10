@@ -64,7 +64,7 @@ const AI_STAGE: StageDef = {
 };
 
 function fresh(stage: StageDef = STAGE): { stage: StageDef; state: BattleState } {
-  const state = createBattleState(testRegistry(), stage, LV1, 42);
+  const state = createBattleState(testRegistry(), stage, { units: LV1, members: [], claimed: [] }, 42);
   beginBattle(state);
   instantAttacks(state);
   // 邪魔にならない場所へ全員どける
@@ -363,7 +363,7 @@ describe('ウェーブの さくじょ', () => {
     const stage = reg.stages[0]!;
     const progress: Record<string, CharProgress> = {};
     for (const id of reg.units.keys()) progress[id] = { level: 1, xp: 0 };
-    return { stage, state: createBattleState(reg, stage, progress, 1) };
+    return { stage, state: createBattleState(reg, stage, { units: progress, members: [], claimed: [] }, 1) };
   }
 
   it('step は battle フェーズでだけ すすむ', () => {
@@ -537,7 +537,7 @@ describe('時間湧き', () => {
     if (!stage) throw new Error('spawners を持つステージが assets に無い');
     const progress: Record<string, CharProgress> = {};
     for (const id of reg.units.keys()) progress[id] = { level: 1, xp: 0 };
-    const state = createBattleState(reg, stage, progress, 1);
+    const state = createBattleState(reg, stage, { units: progress, members: [], claimed: [] }, 1);
     beginBattle(state);
     return { stage, state };
   }

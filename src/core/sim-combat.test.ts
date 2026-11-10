@@ -29,7 +29,7 @@ const LV1: Record<string, CharProgress> = {
 };
 
 function fresh(stage: StageDef = STAGE): BattleState {
-  const s = createBattleState(testRegistry(), stage, LV1, 42);
+  const s = createBattleState(testRegistry(), stage, { units: LV1, members: [], claimed: [] }, 42);
   beginBattle(s);
   instantAttacks(s);
   for (const u of s.units) if (u.side === 'player') u.pos = { x: 16, y: 300 }; // マップ外の遠くへ退避

@@ -26,6 +26,8 @@ export type XpGain = {
   before: CharProgress;
   after: CharProgress;
   leveledUp: boolean;
+  /** このステージで仲間に加わった（リザルトで「仲間に 加わった！」と出す） */
+  joined: boolean;
 };
 
 function hasBonus(b: StatBonus): boolean {
@@ -53,7 +55,7 @@ export function applyStageClear(
       : { level: u.level, xp: u.xp };
     const after = u.retired ? base : applyXp(base, reg.growth.clearXp, reg.growth);
     units[u.defId] = after;
-    gains.push({ id: u.defId, before, after, leveledUp: after.level > before.level });
+    gains.push({ id: u.defId, before, after, leveledUp: after.level > before.level, joined: battle.joined.includes(u.defId) });
   }
 
   const counters = mergeCounters(save.counters, battle.counters, reg.titles);
@@ -67,6 +69,8 @@ export function applyStageClear(
         ? save.clearedStageIds
         : [...save.clearedStageIds, stageId],
       units, counters, titles: allTitles,
+      members: [...save.members, ...battle.joined.filter((id) => !save.members.includes(id))],
+      claimed: [...save.claimed, ...battle.claimed.filter((id) => !save.claimed.includes(id))],
     },
     gains, newTitles,
   };
