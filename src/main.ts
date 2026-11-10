@@ -1,7 +1,8 @@
 import { imageUrls, loadRegistry } from './engine/loader';
 import { makeImageCache } from './render/images';
 import { lookupDef, skillParam } from './engine/registry';
-import { pickDialogue, pickStageIntro, pickStageOutro } from './core/dialogue';
+import { completeRecruit } from './core/events';
+import { pickDialogue, pickRecruitTalk, pickStageIntro, pickStageOutro } from './core/dialogue';
 import { SKILL_EFFECT_IDS } from './core/skills';
 import { beginBattle, canPlaceAt, createBattleState, placeUnit } from './core/state';
 import { playerUnits, step } from './core/sim';
@@ -37,7 +38,7 @@ import type { BattleState, Unit, Vec2 } from './core/types';
 
 const FIXED_DT = 1 / 60;
 
-type Phase = 'title' | 'select' | 'talk' | 'placement' | 'battle' | 'outro' | 'result' | 'defeat';
+type Phase = 'title' | 'select' | 'talk' | 'placement' | 'battle' | 'event' | 'outro' | 'result' | 'defeat';
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const stageBox = document.getElementById('stage') as HTMLElement;
@@ -177,7 +178,7 @@ function beginStage(index: number): void {
   commands.length = 0;
   accumulator = 0;
   talk = makeTalkState(
-    pickStageIntro(registry, battle.stage), talkMeasure, talkMaxWidth, TALK_MAX_LINES,
+    pickStageIntro(registry, battle.stage, save.members), talkMeasure, talkMaxWidth, TALK_MAX_LINES,
   );
   phase = talk.done ? 'placement' : 'talk';
 }
@@ -190,6 +191,13 @@ function endTalk(): void {
     hasSave = writeSave(window.localStorage, save) || hasSave;
   }
   phase = 'placement';
+}
+
+/** 加入の会話を終える。仲間を足して戦闘へ戻る */
+function endRecruitTalk(state: BattleState): void {
+  completeRecruit(state);
+  talk = null;
+  phase = 'battle';
 }
 
 /** 勝利の後始末。会話があってもなくても、必ずここを1度だけ通す */
@@ -227,6 +235,14 @@ function onPointerDown(ev: PointerEvent): void {
       if (hasReadIntro(save, stageId) && hitRect(BTN.skip, p)) skipTalk(talk);
       else advanceTalk(talk, talkMeasure, talkMaxWidth, TALK_MAX_LINES);
       if (talk.done) endTalk();
+      return;
+    }
+
+    case 'event': {
+      // 加入の会話。「飛ばす」は無く、タップは必ず 1 行進むだけ
+      if (!talk || !battle) return;
+      advanceTalk(talk, talkMeasure, talkMaxWidth, TALK_MAX_LINES);
+      if (talk.done) endRecruitTalk(battle);
       return;
     }
 
@@ -381,7 +397,7 @@ function update(realDt: number): void {
   // 一時停止とスロー再生は戦闘中だけ。会話や画面遷移まで止めると操作できなくなる
   const dt = debugMode && phase === 'battle' ? simDt(debugClock, realDt, FIXED_DT) : realDt;
   tickEffects(effects, dt);
-  if ((phase === 'talk' || phase === 'outro') && talk) {
+  if ((phase === 'talk' || phase === 'outro' || phase === 'event') && talk) {
     tickTalk(talk, dt);
     return;
   }
@@ -397,6 +413,18 @@ function update(realDt: number): void {
     spawnEffects(effects, battle.events);
     noteAttacks(anim, battle.events, battle.time, attackDuration);
     pushSpeech(speech, pickDialogue(battle.reg, battle.events));
+    if (battle.pendingRecruit !== null) break; // 加入の会話の間は戦闘を止める
+  }
+  if (battle.pendingRecruit !== null) {
+    accumulator = 0;
+    clearSpeech(speech);
+    resetAnim(anim);
+    talk = makeTalkState(
+      pickRecruitTalk(registry, battle.pendingRecruit.recruit), talkMeasure, talkMaxWidth, TALK_MAX_LINES,
+    );
+    if (talk.done) endRecruitTalk(battle);
+    else phase = 'event';
+    return;
   }
   updateMotion(anim, battle.units, battle.time);
 
@@ -440,6 +468,12 @@ function render(): void {
       if (battle && talk) {
         drawBattle(ctx, registry, battle, null, effects, escorts, images, anim);
         drawTalk(ctx, registry, talk, save.clearedStageIds.includes(stageId), images);
+      }
+      break;
+    case 'event':
+      if (battle && talk) {
+        drawBattle(ctx, registry, battle, null, effects, escorts, images, anim);
+        drawTalk(ctx, registry, talk, false, images);
       }
       break;
     case 'placement':

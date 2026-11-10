@@ -343,10 +343,12 @@ export function drawResult(
     drawFace(ctx, { x: 40, y: y - 6 }, FACE_PX.small / 2, def, images);
     ctx.fillStyle = INK;
     ctx.fillText(def.name, 66, y);
-    ctx.fillStyle = g.leveledUp ? '#ffd479' : '#9fb3c4';
+    ctx.fillStyle = g.joined || g.leveledUp ? '#ffd479' : '#9fb3c4';
     ctx.font = '17px sans-serif';
     ctx.fillText(
-      g.leveledUp
+      g.joined
+        ? '仲間に 加わった！'
+        : g.leveledUp
         ? `レベルアップ！ Lv${g.before.level} → Lv${g.after.level}`
         : `Lv${g.after.level} (${g.after.xp}/${xpToNext(g.after.level, reg.growth.xpPerLevel)})`,
       66, y + 24,
