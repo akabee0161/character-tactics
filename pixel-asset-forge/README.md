@@ -295,6 +295,7 @@ cat sheets/roran.txt
 ガウも全24コマを、芯・短剣・短剣の拳・空き手の拳で組んでいる（`compose/gau.json`、部品は `assets/part/` の `body/gau/core_*`・`equip/dagger/dagger_<向き>_<状態>`・`fist/gau/`）。
 短剣の敵4体（`compose/dagger-{bandit,knight,horn,thug}.json`）は、敵の男性の芯（`body/enemy_male/core_*`）に、目・服・頭の部品とガウの短剣・拳を重ねて組む。設定は `checks/dagger-*.json`。
 斧の敵7体（`compose/axe-*.json`）は、男性2体が敵の男性の芯、女性5体が敵の女性の芯（`body/enemy_female/core_*`）に、目・服・頭（女性は長い髪 `hair/{A,B,C}/` の前と後ろも）と、斧（`equip/axe/{male,female}/`）・斧を握る拳（`fist/enemy_{male,female}/axe_hand_*`）・空き手の拳（男性はガウの `fist/gau/free_hand_*`、女性は `fist/enemy_female/free_hand_*`）を重ねて組む。設定は `checks/axe-*.json`。
+弓の敵3体（`compose/bow-{thug,bandit-a-f,horn-b-f}.json`）は、元の敵（`dagger-thug`・`axe-bandit-a-f`・`axe-horn-b-f`）と同じ目・服・頭・髪に、イネスの弓（`equip/bow/`）・矢（`equip/arrow/`）と、敵の肌の色の弓の拳・矢の拳（`fist/enemy_female/{bow,arrow}_hand_*`。画素はイネスの拳と同じ。男性の `bow-thug` もこの拳を使う）を、イネスの重なり順で重ねて組む。攻撃は `atk_wind`・`atk_hit`（引き絞った絵）の2枚。設定は `checks/bow-*.json`。
 
 ```sh
 .venv/bin/python tools/compose.py compose/ines.json --check     # 全32コマが部品から再現できる
@@ -372,12 +373,12 @@ forge をゲームリポジトリへコピーして使うときは、ゲーム�
 ```
 
 - レシピは `enemy/<id>.json`（キー: `id` `name` `archetype` `body` `recolor` `frames`）。`id` はファイル名と同じ
-- `archetype` は `dagger` `axe` `spear`（シート定義はどれも `sheets/gau.txt`）。`body` は `male` か `female`
-- `frames` は元のコマの置き場（リポジトリからの相対パス）。今の16体（男性8・女性8）は `assets/unit/<id>`
-  （部品で組んだコマ）を指す。`axe` `spear` では必須。
+- `archetype` は `dagger` `axe` `spear` `shield` `bow` `staff`（シート定義はどれも `sheets/gau.txt`）。`body` は `male` か `female`
+- `frames` は元のコマの置き場（リポジトリからの相対パス）。今の21体（男性11・女性10）は `assets/unit/<id>`
+  （部品で組んだコマ）を指す。`dagger` 以外では必須。
   書かなければ `dagger` の `male` は `assets/unit/gau/`、`female` は `assets/unit/dagger-female/`
   （`--colours` が比べるのもこの2つ。短剣の女性の元のコマはまだ無いので、今は置き場が無いと言って止まる）
-- 16体のコマはすべて部品から `compose/<id>.json` で組む（短剣の4体・斧の7体は 2026-11-03、槍の5体は 2026-11-05）。
+- 21体のコマはすべて部品から `compose/<id>.json` で組む（短剣の4体・斧の7体は 2026-11-03、槍の5体は 2026-11-05、盾持ちの2体・弓の3体は 2026-11-11）。
   `tools/compose.py compose/<id>.json --force` で組み、`tools/unit_rules.py checks/<id>.json` で確かめる。
   女性の id は `<男性の id>-<髪 a・b・c>-f`（a 前髪ありのロング・b 前髪なしのロング・c ポニーテール）。
   前に使っていた生成スクリプト `gen/enemy/` は、腕・袖つきの古い作り方で、2026-11-05 に消した

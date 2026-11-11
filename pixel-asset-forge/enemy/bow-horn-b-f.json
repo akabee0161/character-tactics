@@ -1,0 +1,12 @@
+{
+  "id": "bow-horn-b-f",
+  "name": "角付きの兜（弓・女・前髪なしのロング）",
+  "archetype": "bow",
+  "body": "female",
+  "frames": "assets/unit/bow-horn-b-f",
+  "recolor": {
+    "clothes_dark_hi": "leaf_hi",
+    "clothes_dark_base": "leaf_base",
+    "clothes_dark_shadow": "leaf_shadow"
+  }
+}

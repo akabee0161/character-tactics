@@ -1,0 +1,12 @@
+{
+  "id": "bow-bandit-a-f",
+  "name": "眼帯のバンダナ（弓・女・前髪ありのロング）",
+  "archetype": "bow",
+  "body": "female",
+  "frames": "assets/unit/bow-bandit-a-f",
+  "recolor": {
+    "clothes_dark_hi": "dirt_hi",
+    "clothes_dark_base": "dirt_base",
+    "clothes_dark_shadow": "dirt_shadow"
+  }
+}

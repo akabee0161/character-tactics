@@ -1,0 +1,95 @@
+{
+  "unit": "bow-horn-b-f",
+  "compose": "compose/bow-horn-b-f.json",
+  "body": "female",
+  "head_chars": "",
+  "items": "klmstuw",
+  "parts": {
+    "eye_E2": {
+      "eye": true
+    },
+    "hair_B": {
+      "head": true
+    },
+    "hair_B_back": {},
+    "head_horn_female": {
+      "head": true
+    },
+    "cloth_tatter_female": {},
+    "bow": {
+      "moves": true,
+      "open_chars": "s"
+    },
+    "arrow": {
+      "blade": "t",
+      "moves": true
+    },
+    "bow_hand": {
+      "fist": true,
+      "grips": "bow",
+      "fist_sizes": [
+        "2x2"
+      ]
+    },
+    "arrow_hand": {
+      "fist": true,
+      "grips": "arrow",
+      "fist_sizes": [
+        "2x2"
+      ],
+      "moves": true
+    }
+  },
+  "orders": {
+    "down": [
+      "hair_B_back",
+      "CORE",
+      "eye_E2",
+      "cloth_tatter_female",
+      "hair_B",
+      "head_horn_female",
+      "bow",
+      "arrow",
+      "bow_hand",
+      "arrow_hand"
+    ],
+    "up": [
+      "hair_B_back",
+      "arrow",
+      "arrow_hand",
+      "bow",
+      "bow_hand",
+      "CORE",
+      "eye_E2",
+      "cloth_tatter_female",
+      "hair_B",
+      "head_horn_female"
+    ],
+    "left": [
+      "arrow",
+      "arrow_hand",
+      "bow",
+      "bow_hand",
+      "hair_B_back",
+      "CORE",
+      "eye_E2",
+      "cloth_tatter_female",
+      "hair_B",
+      "head_horn_female"
+    ],
+    "right": [
+      "hair_B_back",
+      "CORE",
+      "eye_E2",
+      "cloth_tatter_female",
+      "hair_B",
+      "head_horn_female",
+      "bow",
+      "bow_hand",
+      "arrow",
+      "arrow_hand"
+    ]
+  },
+  "weapon_check": null,
+  "exceptions": []
+}

@@ -1,0 +1,12 @@
+{
+  "id": "bow-thug",
+  "name": "素の髪のごろつき（弓）",
+  "archetype": "bow",
+  "body": "male",
+  "frames": "assets/unit/bow-thug",
+  "recolor": {
+    "clothes_dark_hi": "orchid_base",
+    "clothes_dark_base": "orchid_shadow",
+    "clothes_dark_shadow": "orchid_dark"
+  }
+}

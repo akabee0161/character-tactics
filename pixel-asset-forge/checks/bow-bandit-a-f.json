@@ -1,0 +1,100 @@
+{
+  "unit": "bow-bandit-a-f",
+  "compose": "compose/bow-bandit-a-f.json",
+  "body": "female",
+  "head_chars": "",
+  "items": "klmstuw",
+  "parts": {
+    "eye_E5": {
+      "eye": true
+    },
+    "hair_A": {
+      "head": true
+    },
+    "hair_A_back": {},
+    "head_bandana_female": {
+      "head": true
+    },
+    "cloth_belt_female": {},
+    "cloth_tatter_female": {},
+    "bow": {
+      "moves": true,
+      "open_chars": "s"
+    },
+    "arrow": {
+      "blade": "t",
+      "moves": true
+    },
+    "bow_hand": {
+      "fist": true,
+      "grips": "bow",
+      "fist_sizes": [
+        "2x2"
+      ]
+    },
+    "arrow_hand": {
+      "fist": true,
+      "grips": "arrow",
+      "fist_sizes": [
+        "2x2"
+      ],
+      "moves": true
+    }
+  },
+  "orders": {
+    "down": [
+      "hair_A_back",
+      "CORE",
+      "eye_E5",
+      "cloth_belt_female",
+      "cloth_tatter_female",
+      "hair_A",
+      "head_bandana_female",
+      "bow",
+      "arrow",
+      "bow_hand",
+      "arrow_hand"
+    ],
+    "up": [
+      "hair_A_back",
+      "arrow",
+      "arrow_hand",
+      "bow",
+      "bow_hand",
+      "CORE",
+      "eye_E5",
+      "cloth_belt_female",
+      "cloth_tatter_female",
+      "hair_A",
+      "head_bandana_female"
+    ],
+    "left": [
+      "arrow",
+      "arrow_hand",
+      "bow",
+      "bow_hand",
+      "hair_A_back",
+      "CORE",
+      "eye_E5",
+      "cloth_belt_female",
+      "cloth_tatter_female",
+      "hair_A",
+      "head_bandana_female"
+    ],
+    "right": [
+      "hair_A_back",
+      "CORE",
+      "eye_E5",
+      "cloth_belt_female",
+      "cloth_tatter_female",
+      "hair_A",
+      "head_bandana_female",
+      "bow",
+      "bow_hand",
+      "arrow",
+      "arrow_hand"
+    ]
+  },
+  "weapon_check": null,
+  "exceptions": []
+}
