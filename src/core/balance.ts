@@ -6,6 +6,7 @@
  * - 生きている敵がいる間、生きている味方全員が、その味方から見て最寄りの敵の位置へ move する
  *   （歩きながら攻撃する移動なので、詰めながら戦う）。ゴールへは向かわない。
  *   目標（敵の uid・村・ゴール）が変わったときと、60 tick ごとに出し直す。
+ *   ただし交戦中（engagedWith あり）の味方には出さない（move は交戦を解き、攻撃のクールダウンを振り出しに戻すため）。
  * - 説得の相手（persuasion が付いた生きている敵）は、persuader の defId を持つ生きている味方 1 人
  *   （先に並んだ方）だけが目標にし、ほかの味方の最寄りの敵の候補から外す。説得の相手以外の敵がいなくなれば、
  *   全員が相手へ向かう。persuader が死んでいる（いない）ときは普通の敵として扱う。
@@ -131,7 +132,9 @@ export function botCommands(
   for (const u of state.units) {
     if (u.side !== 'player' || !alive(u)) continue;
     const t = state.time < (delays.get(u.uid) ?? 0) ? null : targetFor(u);
-    if (t) {
+    // 交戦中に move を出すと交戦が解け、再び成立するたびに攻撃のクールダウンが振り出しに戻って攻撃できなくなる。
+    // 交戦中は出さない（相手が倒れて交戦が解けたら、次の tick で新しい目標へ出す）
+    if (t && u.engagedWith === null) {
       const mem = memory.get(u.uid);
       if (!mem || mem.key !== t.key || tick - mem.tick >= MOVE_REISSUE_TICKS) {
         cmds.push({ type: 'move', uid: u.uid, dest: t.dest });
