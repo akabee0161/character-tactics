@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { newSave } from '../save/save';
 import {
-  BATTLE_DT, BATTLE_TIME_LIMIT, MAX_ATTEMPTS, TARGET_BANDS, formatTable, measure, playThrough, runBattle,
+  BATTLE_DT, BATTLE_TIME_LIMIT, botCommands, MAX_ATTEMPTS, TARGET_BANDS, formatTable, measure, playThrough, runBattle,
 } from './balance';
 import type { StageStat } from './balance';
+import { step } from './sim';
+import { beginBattle, createBattleState } from './state';
 import { testRegistry } from './testing';
 
 const reg = testRegistry();
@@ -35,6 +37,43 @@ describe('runBattle', () => {
     expect(out.state.joined).toContain('ally05');
     expect(out.deployed).toBe(5);
   });
+
+  it('敵が残っている間は、全員の move の目的地が敵の位置のどれかになる', () => {
+    const state = createBattleState(reg, stage('stage1'), newSave(reg), 1);
+    beginBattle(state);
+    const memory = new Map();
+    let checked = 0;
+    for (let tick = 0; tick < 600 && state.phase === 'battle'; tick++) {
+      const enemies = state.units.filter((u) => u.side === 'enemy' && !u.retired && u.hp > 0);
+      const cmds = botCommands(state, tick, memory);
+      if (enemies.length > 0) {
+        for (const c of cmds) {
+          if (c.type !== 'move') continue;
+          checked++;
+          expect(enemies.some((e) => e.pos.x === c.dest.x && e.pos.y === c.dest.y)).toBe(true);
+        }
+      }
+      step(state, cmds, BATTLE_DT);
+    }
+    expect(checked).toBeGreaterThan(0);
+  });
+
+  it('ステージ2は走り抜けず、敵を倒すぶん時間がかかる（20秒超）', () => {
+    for (const seed of [1, 2, 3, 4, 5]) {
+      const out = runBattle(reg, stage('stage2'), { ...newSave(reg), members: [] }, seed);
+      expect(out.seconds).toBeGreaterThan(20);
+    }
+  }, 60_000);
+
+  it('ステージ7で ally06 が説得で加わる', () => {
+    const joined = [1, 2, 3, 4, 5].map((seed) => runBattle(reg, stage('stage7'), newSave(reg), seed).state.joined);
+    expect(joined.some((j) => j.includes('ally06'))).toBe(true);
+  }, 60_000);
+
+  it('ステージ9で ally08 が説得で加わる', () => {
+    const joined = [1, 2, 3, 4, 5].map((seed) => runBattle(reg, stage('stage9'), newSave(reg), seed).state.joined);
+    expect(joined.some((j) => j.includes('ally08'))).toBe(true);
+  }, 60_000);
 });
 
 describe('playThrough', () => {

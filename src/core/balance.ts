@@ -1,13 +1,19 @@
 /**
  * ステージの難易度を測るボットと、通しの実行・集計（純ロジック。window などには触れない）。
  *
- * ボットの動かし方（のちに表の数字を読む人のため）:
+ * ボットの動かし方（のちに表の数字を読む人のため）。「敵を全部倒してからゴールへ」:
  * - 配置は placement.starts のまま（createBattleState が決める）。
- * - 毎 tick、生きている味方全員にゴール（victory.pos）への move を出す。目的地が前回と同じなら
- *   60 tick ごとにだけ出し直す。敵との交戦は止まって戦うだけで、ボットは避けも退きもしない。
- * - 加入の村（recruit）があり、その unitId がまだ仲間にいなければ、最も speed が高い生きている
- *   味方 1 人（同じ speed なら先に並んだ方）を村のマスの中心へ向かわせる（歩けないマスなので
- *   resolveMoveDest が最寄りの歩けるマスに置き換える）。村を訪れたあと（state.visited）はゴールへ向かう。
+ * - 生きている敵がいる間、生きている味方全員が、その味方から見て最寄りの敵の位置へ move する
+ *   （歩きながら攻撃する移動なので、詰めながら戦う）。ゴールへは向かわない。
+ *   目標（敵の uid・村・ゴール）が変わったときと、60 tick ごとに出し直す。
+ * - 説得の相手（persuasion が付いた生きている敵）は、persuader の defId を持つ生きている味方 1 人
+ *   （先に並んだ方）だけが目標にし、ほかの味方の最寄りの敵の候補から外す。説得の相手以外の敵がいなくなれば、
+ *   全員が相手へ向かう。persuader が死んでいる（いない）ときは普通の敵として扱う。
+ * - 敵が 0 体で、spawners に湧き残り（spawnCounts[i] < total）があれば、その場に留まる（move を出さない）。
+ *   湧き残りも無く敵が全滅したら、全員がゴール（victory.pos）へ move する。
+ * - 加入の村（recruit）があり、その unitId がまだ仲間にいなければ、最も speed が高い生きている味方 1 人
+ *   （同じ speed なら先に並んだ方）を、敵より先に村のマスの中心へ向かわせる（歩けないマスなので
+ *   resolveMoveDest が最寄りの歩けるマスに置き換える）。村を訪れた（state.visited）後は上の動きに戻る。
  * - 必殺技は canUseSkill が真のとき即座に出す。needsDest が 1 のものは、最寄りの生きている敵
  *   （距離が同じなら先に並んだ方）の位置を dest にする。敵がいなければ needsDest のものは出さない。
  *   本物のゲーム（main.ts）と同じく、skill コマンドとして step に渡す。
@@ -68,38 +74,67 @@ function fastestPlayer(state: BattleState): Unit | null {
   return best;
 }
 
-function nearestEnemyPos(state: BattleState, from: Vec2): Vec2 | null {
+type MoveMemory = Map<string, { key: string; tick: number }>;
+
+function nearestOf(from: Vec2, units: Unit[]): Unit | null {
   let best: Unit | null = null;
   let bestD = Infinity;
-  for (const e of state.units) {
-    if (e.side !== 'enemy' || !alive(e)) continue;
+  for (const e of units) {
     const d = distance(from, e.pos);
     if (d < bestD) { best = e; bestD = d; }
   }
-  return best ? { ...best.pos } : null;
+  return best;
 }
 
-type MoveMemory = Map<string, { key: string; tick: number }>;
+/** 説得できる相手（persuader が生きている）。persuader の生きている味方（先に並んだ方）と対にして返す */
+function persuadePairs(state: BattleState, enemies: Unit[]): { foe: Unit; persuader: Unit }[] {
+  const pairs: { foe: Unit; persuader: Unit }[] = [];
+  for (const foe of enemies) {
+    if (foe.persuasion === null) continue;
+    const def = state.stage.persuasions[foe.persuasion];
+    if (!def) continue;
+    const persuader = state.units.find((u) => u.side === 'player' && alive(u) && u.defId === def.persuader);
+    if (persuader) pairs.push({ foe, persuader });
+  }
+  return pairs;
+}
 
-function botCommands(state: BattleState, tick: number, memory: MoveMemory): SimCommand[] {
+type Target = { key: string; dest: Vec2 } | null;
+
+export function botCommands(state: BattleState, tick: number, memory: MoveMemory = new Map()): SimCommand[] {
   const cmds: SimCommand[] = [];
-  const goal = state.stage.victory.pos;
+  const enemies = state.units.filter((u) => u.side === 'enemy' && alive(u));
+  const pairs = persuadePairs(state, enemies);
+  const persuadable = new Set(pairs.map((p) => p.foe.uid));
+  const normal = enemies.filter((e) => !persuadable.has(e.uid));
   const village = pendingVillageCenter(state);
   const visitor = village ? fastestPlayer(state) : null;
+  const spawnsLeft = state.stage.spawners.some((sp, i) => (state.spawnCounts[i] ?? 0) < sp.total);
+
+  const targetFor = (u: Unit): Target => {
+    if (visitor && u.uid === visitor.uid) return { key: 'village', dest: village! };
+    const mine = pairs.find((p) => p.persuader.uid === u.uid);
+    if (mine) return { key: mine.foe.uid, dest: { ...mine.foe.pos } };
+    const foe = nearestOf(u.pos, normal) ?? nearestOf(u.pos, enemies);
+    if (foe) return { key: foe.uid, dest: { ...foe.pos } };
+    if (spawnsLeft) return null;
+    return { key: 'goal', dest: { ...state.stage.victory.pos } };
+  };
 
   for (const u of state.units) {
     if (u.side !== 'player' || !alive(u)) continue;
-    const dest = visitor && u.uid === visitor.uid ? village! : goal;
-    const key = `${dest.x},${dest.y}`;
-    const mem = memory.get(u.uid);
-    if (!mem || mem.key !== key || tick - mem.tick >= MOVE_REISSUE_TICKS) {
-      cmds.push({ type: 'move', uid: u.uid, dest: { ...dest } });
-      memory.set(u.uid, { key, tick });
+    const t = targetFor(u);
+    if (t) {
+      const mem = memory.get(u.uid);
+      if (!mem || mem.key !== t.key || tick - mem.tick >= MOVE_REISSUE_TICKS) {
+        cmds.push({ type: 'move', uid: u.uid, dest: t.dest });
+        memory.set(u.uid, { key: t.key, tick });
+      }
     }
     if (u.skillId !== null && canUseSkill(state, u.uid)) {
       if (skillParam(state.reg, u.skillId, 'needsDest', 0) === 1) {
-        const target = nearestEnemyPos(state, u.pos);
-        if (target) cmds.push({ type: 'skill', uid: u.uid, dest: target });
+        const target = nearestOf(u.pos, enemies);
+        if (target) cmds.push({ type: 'skill', uid: u.uid, dest: { ...target.pos } });
       } else {
         cmds.push({ type: 'skill', uid: u.uid });
       }
