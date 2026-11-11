@@ -6,6 +6,7 @@ import { distance, fitsAt, isWalkableAt, speedAt } from './field';
 import { hostilesOf, step } from './sim';
 import { beginBattle, createBattleState } from './state';
 import { instantAttacks, testRegistry } from './testing';
+import { NO_BONUS } from './types';
 import type { AiDef, BattleState, CharProgress, StageDef, Unit, Vec2 } from './types';
 
 function makeTestUnit(s: BattleState, def: EnemyDef, pos: Vec2, ai: AiDef): Unit {
@@ -16,6 +17,7 @@ function makeTestUnit(s: BattleState, def: EnemyDef, pos: Vec2, ai: AiDef): Unit
     attack: def.attack, range: def.range, attackInterval: def.attackInterval, speed: def.speed,
     bowDamageCap: def.bowDamageCap, skillId: def.skillId,
     level: 1, xp: 0,
+    statBonus: { ...NO_BONUS }, stagePower: 0, cheerUntil: -1, cheerPower: 0, tauntUntil: -1, persuasion: null,
     goalPos: null, goalField: null, engagedWith: null, closingOn: null, attackCooldown: 0, retired: false,
     windup: 0, pendingHit: null,
     ai: { def: ai, mode: 'idle', targetUid: null, home: { ...pos }, spottedAt: null },
@@ -33,6 +35,9 @@ const STAGE: StageDef = {
   roster: ['roran', 'ines', 'mist', 'gau'],
   enemies: [{ defId: 'narazumono', pos: { x: 304, y: 16 }, ai: { kind: 'aggressive' } }],
   spawners: [],
+  joins: [],
+  persuasions: [],
+  villages: [],
   victory: { type: 'reach', pos: { x: 304, y: 16 }, radius: 40, by: 'any' },
   defeat: [{ type: 'unitLost', defIds: ['roran'] }],
 };
@@ -51,12 +56,15 @@ const AI_STAGE: StageDef = {
   roster: ['roran', 'ines', 'mist', 'gau'],
   enemies: [],
   spawners: [],
+  joins: [],
+  persuasions: [],
+  villages: [],
   victory: { type: 'reach', pos: { x: 848, y: 240 }, radius: 40, by: 'any' },
   defeat: [{ type: 'unitLost', defIds: ['roran'] }],
 };
 
 function fresh(stage: StageDef = STAGE): { stage: StageDef; state: BattleState } {
-  const state = createBattleState(testRegistry(), stage, LV1, 42);
+  const state = createBattleState(testRegistry(), stage, { units: LV1, members: [], claimed: [] }, 42);
   beginBattle(state);
   instantAttacks(state);
   // 邪魔にならない場所へ全員どける
@@ -79,6 +87,7 @@ function spawnEnemy(s: BattleState, defId: string, pos: { x: number; y: number }
     attack: def.attack, range: def.range, attackInterval: def.attackInterval, speed: def.speed,
     bowDamageCap: def.bowDamageCap, skillId: def.skillId,
     level: 1, xp: 0,
+    statBonus: { ...NO_BONUS }, stagePower: 0, cheerUntil: -1, cheerPower: 0, tauntUntil: -1, persuasion: null,
     goalPos: null, goalField: null, engagedWith: null, closingOn: null, attackCooldown: 0, retired: false,
     windup: 0, pendingHit: null,
     ai: { def: { kind: 'aggressive' }, mode: 'idle', targetUid: null, home: { ...pos }, spottedAt: null },
@@ -354,7 +363,7 @@ describe('ウェーブの さくじょ', () => {
     const stage = reg.stages[0]!;
     const progress: Record<string, CharProgress> = {};
     for (const id of reg.units.keys()) progress[id] = { level: 1, xp: 0 };
-    return { stage, state: createBattleState(reg, stage, progress, 1) };
+    return { stage, state: createBattleState(reg, stage, { units: progress, members: [], claimed: [] }, 1) };
   }
 
   it('step は battle フェーズでだけ すすむ', () => {
@@ -528,7 +537,7 @@ describe('時間湧き', () => {
     if (!stage) throw new Error('spawners を持つステージが assets に無い');
     const progress: Record<string, CharProgress> = {};
     for (const id of reg.units.keys()) progress[id] = { level: 1, xp: 0 };
-    const state = createBattleState(reg, stage, progress, 1);
+    const state = createBattleState(reg, stage, { units: progress, members: [], claimed: [] }, 1);
     beginBattle(state);
     return { stage, state };
   }
@@ -965,5 +974,40 @@ describe('森', () => {
     step(s, [{ type: 'move', uid: roran.uid, dest }], 0.1);
     for (let i = 0; i < 600 && unitOf(s, 'roran').goalPos; i++) step(s, [], 0.1);
     expect(unitOf(s, 'roran').pos).toEqual(dest);
+  });
+});
+
+describe('引きつける', () => {
+  it('引きつけている味方を、範囲の敵が追う', () => {
+    const { state: s } = fresh(AI_STAGE);
+    const tank = unitOf(s, 'roran');
+    const other = unitOf(s, 'ines');
+    tank.pos = { x: 250, y: 200 };
+    other.pos = { x: 300, y: 200 };
+    const foe = spawnEnemy(s, 'narazumono', { x: 320, y: 200 });
+    step(s, [], 0.1);
+    expect(foe.ai!.targetUid).toBe(other.uid);
+
+    tank.tauntUntil = s.time + 5;
+    step(s, [], 0.1);
+    expect(foe.ai!.mode).toBe('chase');
+    expect(foe.ai!.targetUid).toBe(tank.uid);
+    expect(foe.goalPos).toEqual(tank.pos);
+
+    s.time = tank.tauntUntil + 0.1;
+    step(s, [], 0.1);
+    expect(foe.ai!.targetUid).toBe(other.uid);
+  });
+
+  it('範囲の外の敵は引きつけられない', () => {
+    const { state: s } = fresh(AI_STAGE);
+    const tank = unitOf(s, 'roran');
+    const other = unitOf(s, 'ines');
+    tank.pos = { x: 100, y: 200 };
+    other.pos = { x: 300, y: 200 };
+    tank.tauntUntil = s.time + 5;
+    const foe = spawnEnemy(s, 'narazumono', { x: 320, y: 200 });
+    step(s, [], 0.1);
+    expect(foe.ai!.targetUid).toBe(other.uid);
   });
 });

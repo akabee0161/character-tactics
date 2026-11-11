@@ -77,11 +77,13 @@ export function drawBattle(
   ctx.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
 
   drawTerrain(ctx, state, images);
+  drawVisitedVillages(ctx, state);
   drawVictoryMarker(ctx, state.stage);
   drawGoalMarkers(ctx, reg, state, selected);
   drawBonds(ctx, state);
   drawUnits(ctx, reg, state, selected, effects, images, anim);
   drawAlertMarks(ctx, reg, state);
+  drawPersuasionMarks(ctx, reg, state);
   drawProjectiles(ctx, state);
   drawEscortMarks(ctx, state, escorts);
   drawEffects(ctx, effects);
@@ -111,6 +113,36 @@ function drawTerrain(ctx: CanvasRenderingContext2D, state: BattleState, images: 
     // legend の無いステージと、タイルの読み込み前は単色
     ctx.fillStyle = grid.walkable[i] ? COLORS.ground : COLORS.rock;
     ctx.fillRect(p.x, p.y, grid.cell, grid.cell);
+  }
+}
+
+/** 訪れた村のマスを暗くして、もう用が済んだと分かるようにする */
+function drawVisitedVillages(ctx: CanvasRenderingContext2D, state: BattleState): void {
+  const { grid, stage } = state;
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+  for (const v of stage.villages) {
+    if (!state.visited.includes(v.id)) continue;
+    const p = mapToLogical({ x: v.col * grid.cell, y: v.row * grid.cell });
+    ctx.fillRect(p.x, p.y, grid.cell, grid.cell);
+  }
+}
+
+/** 説得できる敵の頭上の右寄り（絵の上端の 4px 上）に、黄色の吹き出し（12x10px、黒い点 3 つ）を出す */
+function drawPersuasionMarks(ctx: CanvasRenderingContext2D, reg: Registry, state: BattleState): void {
+  for (const u of state.units) {
+    if (u.side !== 'enemy' || u.persuasion === null || u.retired || u.hp <= 0) continue;
+    const def = defOf(reg, u.defId);
+    const p = bodyCenter(mapToLogical(u.pos), def, UNIT_R);
+    const half = drawHalf(def, UNIT_R);
+    // HPバー（幅 26）と「！」（中央）に重ならないよう、HPバーの右隣に置く
+    // 画面の右端でクリップしないよう、吹き出し（幅 12）が収まる位置までに抑える
+    const x = Math.min(Math.round(p.x + 15), LOGICAL_W - 12);
+    const y = Math.round(p.y - half - 4 - 10);
+    ctx.fillStyle = '#ffd479';
+    ctx.fillRect(x, y, 12, 8);
+    ctx.fillRect(x + 2, y + 8, 3, 2); // 吹き出しの尾
+    ctx.fillStyle = '#000';
+    for (const dx of [2, 5, 8]) ctx.fillRect(x + dx, y + 3, 2, 2);
   }
 }
 
@@ -452,7 +484,7 @@ function drawTopBar(ctx: CanvasRenderingContext2D, state: BattleState): void {
   ctx.fillText(state.stage.name, 16, MAP_ORIGIN.y / 2);
 }
 
-/** 4人ぶんの移動先を常に出す。誰がどこへ向かっているかを盤面だけで読めるようにする */
+/** 出撃している全員ぶんの移動先を常に出す。誰がどこへ向かっているかを盤面だけで読めるようにする */
 export function drawGoalMarkers(
   ctx: CanvasRenderingContext2D,
   reg: Registry,

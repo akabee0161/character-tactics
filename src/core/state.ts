@@ -1,21 +1,26 @@
-import { fitsAt, makeGrid } from './field';
+import { cellCenter, fitsAt, makeGrid } from './field';
+import { MAX_PARTY } from './constants';
+import { partyIds } from './party';
 import { makeFieldCache } from './fields';
 import { makeRng } from './rng';
 import type { Registry } from '../engine/registry';
 import type { AiDef, EnemyDef, GrowthDef, StageDef, UnitDef } from '../engine/schema';
-import type { BattleState, CharProgress, Grid, Unit, Vec2 } from './types';
+import { NO_BONUS } from './types';
+import type { BattleState, Grid, PartyProgress, StatBonus, Unit, Vec2 } from './types';
 
 /**
  * レベルからステータスを出す。HP は毎レベル、攻撃力は levelsPerPower レベルごとに上がる。
  * 攻撃力を小数にしないのは computeDamage が整数前提で組まれているため
  */
 export function statsForLevel(
-  def: UnitDef | EnemyDef, level: number, growth: GrowthDef,
-): { maxHp: number; power: number } {
+  def: UnitDef | EnemyDef, level: number, growth: GrowthDef, bonus: StatBonus = NO_BONUS,
+): { maxHp: number; power: number; guard: number; speed: number } {
   const steps = Math.max(0, level - 1);
   return {
-    maxHp: def.maxHp + steps * growth.hpPerLevel,
-    power: def.power + Math.floor(steps / growth.levelsPerPower),
+    maxHp: def.maxHp + steps * growth.hpPerLevel + bonus.maxHp,
+    power: def.power + Math.floor(steps / growth.levelsPerPower) + bonus.power,
+    guard: def.guard + bonus.guard,
+    speed: def.speed + bonus.speed,
   };
 }
 
@@ -33,12 +38,14 @@ type MakeUnitArgs = {
   pos: Vec2;
   level: number;
   xp: number;
+  bonus?: StatBonus;
   ai: AiDef | null;
   growth: GrowthDef;
 };
 
-function makeUnit(a: MakeUnitArgs): Unit {
-  const { maxHp, power } = statsForLevel(a.def, a.level, a.growth);
+export function makeUnit(a: MakeUnitArgs): Unit {
+  const statBonus = { ...(a.bonus ?? NO_BONUS) };
+  const { maxHp, power, guard, speed } = statsForLevel(a.def, a.level, a.growth, statBonus);
   const enemyDef = 'bowDamageCap' in a.def ? a.def : null;
   return {
     uid: a.uid,
@@ -48,14 +55,15 @@ function makeUnit(a: MakeUnitArgs): Unit {
     combat: a.def.combat,
     pos: { ...a.pos },
     hp: maxHp, maxHp, power,
-    guard: a.def.guard,
+    guard,
     attack: a.def.attack,
     range: a.def.range,
     attackInterval: a.def.attackInterval,
-    speed: a.def.speed,
+    speed,
     bowDamageCap: enemyDef?.bowDamageCap ?? null,
     skillId: a.def.skillId,
     level: a.level, xp: a.xp,
+    statBonus, stagePower: 0, cheerUntil: -1, cheerPower: 0, tauntUntil: -1, persuasion: null,
     goalPos: null, goalField: null, engagedWith: null, closingOn: null, attackCooldown: 0, retired: false,
     windup: windupOf(a.def), pendingHit: null,
     ai: a.ai === null
@@ -77,28 +85,86 @@ export function makeEnemyUnit(
   });
 }
 
+const START_SPACING = 32;
+
+/**
+ * 出撃する味方の開始位置。先頭から placement.starts を使い、足りない分は
+ * 配置できるマス（minY 以降）の中心を starts[0] に近い順に見て、選んだ位置から 32px 以上離れたものを足す。
+ * それでも足りなければ starts を繰り返す
+ */
+export function startPositions(stage: StageDef, grid: Grid, count: number): Vec2[] {
+  const starts = stage.placement.starts;
+  const out: Vec2[] = starts.slice(0, count).map((p) => ({ ...p }));
+  if (out.length < count) {
+    const anchor = starts[0]!;
+    const cells: Vec2[] = [];
+    for (let i = 0; i < grid.cols * grid.rows; i++) {
+      const c = cellCenter(grid, i);
+      if (c.y >= stage.placement.minY && fitsAt(grid, c)) cells.push(c);
+    }
+    cells.sort((a, b) => Math.hypot(a.x - anchor.x, a.y - anchor.y) - Math.hypot(b.x - anchor.x, b.y - anchor.y));
+    for (const c of cells) {
+      if (out.length >= count) break;
+      if (out.every((p) => Math.hypot(p.x - c.x, p.y - c.y) >= START_SPACING)) out.push(c);
+    }
+  }
+  for (let i = 0; out.length < count; i++) out.push({ ...starts[i % starts.length]! });
+  return out;
+}
+
 export function createBattleState(
   reg: Registry,
   stage: StageDef,
-  progress: Record<string, CharProgress>,
+  party: PartyProgress,
   seed: number,
 ): BattleState {
   const grid = makeGrid(stage.cell, stage.mapRows, stage.legend);
 
-  const roster = stage.roster.map((defId, i) => {
-    const def = reg.units.get(defId);
-    if (!def) throw new Error(`roster に しらない ユニット: ${defId}`);
-    const start = stage.placement.starts[i % stage.placement.starts.length]!;
-    return makeUnit({
-      uid: `p${i + 1}`, def, side: 'player', controller: 'player', pos: start,
-      level: progress[defId]?.level ?? 1, xp: progress[defId]?.xp ?? 0, ai: null,
-      growth: reg.growth,
-    });
+  // 味方の並び: roster、続けて加わった仲間、続けて開始時の加入（MAX_PARTY で切る）
+  const entries: { defId: string; level: number; xp: number; bonus?: StatBonus }[] = [];
+  const have = new Set<string>();
+  const addEntry = (defId: string, level: number, xp: number, bonus?: StatBonus): void => {
+    if (have.has(defId) || entries.length >= MAX_PARTY) return;
+    have.add(defId);
+    entries.push({ defId, level, xp, bonus });
+  };
+  const progressOf = (defId: string) => ({
+    level: party.units[defId]?.level ?? 1, xp: party.units[defId]?.xp ?? 0, bonus: party.units[defId]?.bonus,
   });
+  for (const defId of stage.roster) {
+    if (!reg.units.has(defId)) throw new Error(`roster に しらない ユニット: ${defId}`);
+    const p = progressOf(defId);
+    addEntry(defId, p.level, p.xp, p.bonus);
+  }
+  // roster に無いのに出るのは、加わった仲間（members）だけ。加入しうる仲間でない units は roster が決める
+  for (const defId of partyIds(reg, party.members).filter((id) => party.members.includes(id))) {
+    const p = progressOf(defId);
+    addEntry(defId, p.level, p.xp, p.bonus);
+  }
+  const joined: string[] = [];
+  for (const j of stage.joins) {
+    if (party.members.includes(j.unitId) || have.has(j.unitId)) continue;
+    if (!reg.units.has(j.unitId)) throw new Error(`joins に しらない ユニット: ${j.unitId}`);
+    if (entries.length >= MAX_PARTY) continue;
+    addEntry(j.unitId, j.level, 0);
+    joined.push(j.unitId);
+  }
+
+  const starts = startPositions(stage, grid, entries.length);
+  const roster = entries.map((e, i) => makeUnit({
+    uid: `p${i + 1}`, def: reg.units.get(e.defId)!, side: 'player', controller: 'player', pos: starts[i]!,
+    level: e.level, xp: e.xp, bonus: e.bonus, ai: null, growth: reg.growth,
+  }));
 
   let nextEnemyUid = 1;
   const enemies = stage.enemies.map((placement) =>
     makeEnemyUnit(reg, `e${nextEnemyUid++}`, placement.defId, placement.pos, placement.ai));
+  stage.persuasions.forEach((p, i) => {
+    if (party.members.includes(p.unitId)) return;
+    const foe = makeEnemyUnit(reg, `e${nextEnemyUid++}`, p.foeId, p.pos, p.ai);
+    foe.persuasion = i;
+    enemies.push(foe);
+  });
 
   return {
     reg,
@@ -116,6 +182,12 @@ export function createBattleState(
     spawnCounts: stage.spawners.map(() => 0),
     projectiles: [],
     nextProjectileId: 1,
+    joined,
+    claimed: [],
+    visited: [],
+    pendingRecruit: null,
+    nextPlayerUid: roster.length + 1,
+    claimedBefore: new Set(party.claimed),
   };
 }
 

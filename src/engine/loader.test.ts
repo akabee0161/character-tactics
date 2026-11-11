@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { assetFiles, loadRegistry } from './loader';
 import { makeGrid, computeFlowField, cellIndexAt, isWalkableAt } from '../core/field';
 
-const KNOWN_SKILLS = ['funbaru', 'neraiuchi', 'omajinai', 'kakenukeru'];
+const KNOWN_SKILLS = ['funbaru', 'neraiuchi', 'omajinai', 'kakenukeru', 'hikitsukeru', 'hinoame', 'tsuki', 'hagemasu'];
 
 describe('assetFiles', () => {
   it('assets/ の JSON を すべて 拾う', () => {
@@ -20,10 +20,10 @@ describe('loadRegistry', () => {
     if (!r.ok) {
       throw new Error(r.errors.map((e) => `${e.file} ${e.path}: ${e.reason}`).join('\n'));
     }
-    expect(r.value.units.size).toBe(4);
-    expect(r.value.enemies.size).toBe(5);
+    expect(r.value.units.size).toBe(8);
+    expect(r.value.enemies.size).toBe(7);
     expect(r.value.stages.length).toBe(10);
-    expect(r.value.skills.size).toBe(4);
+    expect(r.value.skills.size).toBe(8);
     expect(r.value.titles.length).toBe(5);
     expect(r.value.bonds.length).toBe(3);
   });

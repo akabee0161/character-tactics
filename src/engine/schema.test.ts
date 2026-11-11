@@ -826,3 +826,120 @@ describe('validateGrowthFile', () => {
     expect(validateGrowthFile('assets/growth.json', o).ok).toBe(false);
   });
 });
+
+describe('validateStageDef: joins / persuasions / villages', () => {
+  const TALK = [{ speaker: 'roran', text: 'よろしく' }];
+  const WIDE = {
+    ...VALID_STAGE,
+    mapRows: ['########', '#......#', '#.#....#', '#......#', '#......#', '########'],
+    placement: { minY: 96, starts: [{ x: 48, y: 112 }] },
+    enemies: [],
+  };
+  const FULL = {
+    ...WIDE,
+    joins: [{ unitId: 'ally05', level: 2, talk: TALK }],
+    persuasions: [{
+      unitId: 'ally06', level: 3, talk: TALK, foeId: 'ally06-foe',
+      pos: { x: 80, y: 48 }, ai: { kind: 'aggressive' }, persuader: 'mist',
+    }],
+    villages: [
+      { id: 'v1', col: 2, row: 2, text: '休めそうだ', effect: { type: 'heal' } },
+      { id: 'v2', col: 1, row: 1, effect: { type: 'recruit', unitId: 'ally07', level: 1, talk: TALK } },
+    ],
+  };
+  // v2 は歩けるマスなので、本物のテストは壁のマスに置く
+  const OK = {
+    ...FULL,
+    villages: [
+      { id: 'v1', col: 2, row: 2, text: '休めそうだ', effect: { type: 'heal' } },
+      { id: 'v2', col: 0, row: 0, effect: { type: 'recruit', unitId: 'ally07', level: 1, talk: TALK } },
+    ],
+  };
+
+  it('正しい 3 項目を読める', () => {
+    const r = validateStageDef('stages/x.json', OK);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.value.joins).toEqual([{ unitId: 'ally05', level: 2, talk: [{ speaker: 'roran', text: 'よろしく', lineId: null }] }]);
+    expect(r.value.persuasions[0]!.foeId).toBe('ally06-foe');
+    expect(r.value.persuasions[0]!.persuader).toBe('mist');
+    expect(r.value.villages[0]).toEqual({ id: 'v1', col: 2, row: 2, text: '休めそうだ', effect: { type: 'heal' } });
+    const v2 = r.value.villages[1]!;
+    expect(v2.text).toBeNull();
+    expect(v2.effect.type === 'recruit' && v2.effect.recruit.unitId).toBe('ally07');
+  });
+
+  it('省略すると空の配列になる', () => {
+    const r = validateStageDef('stages/x.json', VALID_STAGE);
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.value.joins).toEqual([]);
+      expect(r.value.persuasions).toEqual([]);
+      expect(r.value.villages).toEqual([]);
+    }
+  });
+
+  const withVillage = (v: unknown) => validateStageDef('stages/x.json', { ...WIDE, villages: [v] });
+
+  it('歩けるマスに村を置くとエラー', () => {
+    const r = withVillage({ id: 'v1', col: 1, row: 1, text: 'x', effect: { type: 'heal' } });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors.some((e) => e.path === 'villages[0]' && e.reason.includes('とおれない'))).toBe(true);
+  });
+
+  it('マップの外の村はエラー', () => {
+    expect(withVillage({ id: 'v1', col: 99, row: 0, text: 'x', effect: { type: 'heal' } }).ok).toBe(false);
+  });
+
+  it('recruit の村に text を書くとエラー', () => {
+    const r = withVillage({
+      id: 'v1', col: 0, row: 0, text: 'x',
+      effect: { type: 'recruit', unitId: 'ally07', level: 1, talk: TALK },
+    });
+    expect(r.ok).toBe(false);
+  });
+
+  it('recruit 以外の村は text が必須', () => {
+    expect(withVillage({ id: 'v1', col: 0, row: 0, effect: { type: 'heal' } }).ok).toBe(false);
+  });
+
+  it('stat の stat が luck ならエラー', () => {
+    const r = withVillage({ id: 'v1', col: 0, row: 0, text: 'x', effect: { type: 'stat', stat: 'luck', amount: 1 } });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors.some((e) => e.path === 'villages[0].effect.stat')).toBe(true);
+  });
+
+  it('amount は 1 以上の整数、effect.type は 6 つのどれか', () => {
+    expect(withVillage({ id: 'v1', col: 0, row: 0, text: 'x', effect: { type: 'xp', amount: 0 } }).ok).toBe(false);
+    expect(withVillage({ id: 'v1', col: 0, row: 0, text: 'x', effect: { type: 'powerUp', amount: 1.5 } }).ok).toBe(false);
+    expect(withVillage({ id: 'v1', col: 0, row: 0, text: 'x', effect: { type: 'magic' } }).ok).toBe(false);
+    expect(withVillage({ id: 'v1', col: 0, row: 0, text: 'x', effect: { type: 'stat', stat: 'guard', amount: 2 } }).ok).toBe(true);
+  });
+
+  it('村の id の重複・同じマスの重複を弾く', () => {
+    const a = { id: 'v1', col: 0, row: 0, text: 'x', effect: { type: 'heal' } };
+    const dupId = validateStageDef('stages/x.json', { ...WIDE, villages: [a, { ...a, col: 1, row: 0 }] });
+    expect(dupId.ok).toBe(false);
+    const dupCell = validateStageDef('stages/x.json', { ...WIDE, villages: [a, { ...a, id: 'v2' }] });
+    expect(dupCell.ok).toBe(false);
+  });
+
+  it('level は 1 以上の整数', () => {
+    for (const level of [0, 1.5]) {
+      const r = validateStageDef('stages/x.json', { ...WIDE, joins: [{ unitId: 'ally05', level, talk: TALK }] });
+      expect(r.ok).toBe(false);
+    }
+  });
+
+  it('persuasions の pos が線より下だとエラー', () => {
+    const p = { ...OK.persuasions[0]!, pos: { x: 80, y: 144 } };
+    const r = validateStageDef('stages/x.json', { ...OK, persuasions: [p] });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors.some((e) => e.path === 'persuasions[0].pos')).toBe(true);
+  });
+
+  it('persuasions の pos が壁にかかるとエラー', () => {
+    const p = { ...OK.persuasions[0]!, pos: { x: 80, y: 80 } };
+    expect(validateStageDef('stages/x.json', { ...OK, persuasions: [p] }).ok).toBe(false);
+  });
+});

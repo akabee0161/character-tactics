@@ -11,6 +11,9 @@ const STAGE: StageDef = {
   roster: ['roran', 'ines', 'mist', 'gau'],
   enemies: [{ defId: 'narazumono', pos: { x: 216, y: 16 }, ai: { kind: 'aggressive' } }],
   spawners: [],
+  joins: [],
+  persuasions: [],
+  villages: [],
   victory: { type: 'reach', pos: { x: 304, y: 80 }, radius: 20, by: 'any' },
   defeat: [{ type: 'unitLost', defIds: ['roran'] }],
 };
@@ -20,7 +23,7 @@ const LV1: Record<string, CharProgress> = {
 };
 
 function fresh(): { state: BattleState; shooter: Unit; target: Unit } {
-  const state = createBattleState(testRegistry(), STAGE, LV1, 42);
+  const state = createBattleState(testRegistry(), STAGE, { units: LV1, members: [], claimed: [] }, 42);
   beginBattle(state);
   const shooter = state.units.find((u) => u.defId === 'ines')!;
   const target = state.units.find((u) => u.side === 'enemy')!;

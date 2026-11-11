@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 // 仮アセットの生成器。本番の絵が揃ったら、このファイルごと消してよい。
-// 使い方: node tools/gen-placeholder-sprites.mjs
+// 使い方: node tools/gen-placeholder-sprites.mjs <ID>...  （例: ally05 role-yari）
+// 引数に並べた ID の絵だけを書く。引数が無ければ何も書かずに 1 で終わる
+// （全部を書き直すと、今の本番の絵を仮の絵で上書きしてしまうため）
 import { deflateSync } from 'node:zlib';
 import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -89,6 +91,8 @@ const WEAPON = {
   dagger: { w: 0.07, h: 0.18, col: STEEL },
   sword:  { w: 0.08, h: 0.28, col: STEEL },
   club:   { w: 0.12, h: 0.30, col: [122, 92, 66] },
+  spear:  { w: 0.06, h: 0.40, col: STEEL },
+  flag:   { w: 0.18, h: 0.22, col: [220, 200, 90] },
 };
 
 // ---- 1コマ ----
@@ -204,6 +208,10 @@ const CHARS = [
   { id: 'tatemochi', color: '#6b6b7a', weapon: 'shield', frame: 32 },
   { id: 'yumihei', color: '#7a6a3a', weapon: 'bow', frame: 32 },
   { id: 'majinaishi', color: '#6a4a8a', weapon: 'staff', frame: 32 },
+  { id: 'ally05', color: '#7a8a9a', weapon: 'shield', frame: 32 },
+  { id: 'ally06', color: '#8a5ac8', weapon: 'staff', frame: 32 },
+  { id: 'ally07', color: '#c85a5a', weapon: 'spear', frame: 32 },
+  { id: 'ally08', color: '#5ab0b8', weapon: 'flag', frame: 32 },
 ];
 
 const ROLES = [
@@ -214,15 +222,32 @@ const ROLES = [
   ['role-teki', 'sword', '#b03a3a'],
   ['role-teki-yumi', 'bow', '#7a6a3a'],
   ['role-teki-mahou', 'staff', '#6a4a8a'],
+  ['role-yari', 'spear', '#c85a5a'],
+  ['role-ouen', 'flag', '#5ab0b8'],
 ];
 
+const ids = process.argv.slice(2);
+if (ids.length === 0) {
+  console.error('使い方: node tools/gen-placeholder-sprites.mjs <ID>...  （例: ally05 role-yari）');
+  console.error('引数が無いときは何も書きません（今の絵を上書きしないため）');
+  process.exit(1);
+}
+const known = new Set([...CHARS.map((d) => d.id), ...ROLES.map(([n]) => n)]);
+const unknown = ids.filter((id) => !known.has(id));
+if (unknown.length > 0) {
+  console.error(`知らない ID です: ${unknown.join(' ')}`);
+  process.exit(1);
+}
+
 for (const def of CHARS) {
+  if (!ids.includes(def.id)) continue;
   const sheet = sheetFor(def);
   writeFileSync(join(OUT, `${def.id}-map.png`), encodePng(sheet));
   writeFileSync(join(OUT, `${def.id}-face.png`), encodePng(faceFor(def)));
   console.log(`${def.id}-map.png ${sheet.w}x${sheet.h}`);
 }
 for (const [name, weapon, color] of ROLES) {
+  if (!ids.includes(name)) continue;
   writeFileSync(join(OUT, `${name}.png`), encodePng(roleFor(weapon, color)));
   console.log(`${name}.png 64x64`);
 }

@@ -1,0 +1,35 @@
+{
+  "id": "ally06",
+  "name": "セラ",
+  "role": "魔法",
+  "combat": true,
+  "maxHp": 18,
+  "power": 8,
+  "guard": 1,
+  "attack": "magic",
+  "range": 140,
+  "attackInterval": 2.6,
+  "speed": 55,
+  "skillId": "hinoame",
+  "color": "#8a5ac8",
+  "sprites": {
+    "role": "role-mahou.png",
+    "face": "ally06-face.png",
+    "map": {
+      "sheet": "ally06-map.png",
+      "frame": 32,
+      "idle": {
+        "frames": 2,
+        "fps": 4
+      },
+      "walk": {
+        "frames": 4,
+        "fps": 8
+      },
+      "attack": {
+        "frames": 3,
+        "fps": 6
+      }
+    }
+  }
+}

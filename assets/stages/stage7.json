@@ -52,9 +52,13 @@
   "intro": [
     { "text": "塔の 中は うす暗く、風の 音だけが する。" },
     { "speaker": "mist", "text": "魔法の気配がする…。\n遠距離攻撃に気を付けましょう。" },
-    { "speaker": "roran", "text": "一気に近づくぞ。\n止まっていると遠くから攻撃される！" }
+    { "speaker": "roran", "text": "一気に近づくぞ。\n止まっていると遠くから攻撃される！" },
+    {"speaker": "mist", "text": "塔に いる 魔法使いの 女の子……\n昔の 友だちかも しれません"}
   ],
   "outro": [
     { "speaker": "roran", "text": "まだ先がある！進むぞ！" }
+  ],
+  "persuasions": [
+    {"unitId": "ally06", "level": 4, "foeId": "ally06-foe", "pos": {"x": 304, "y": 176}, "ai": {"kind": "sentry", "sightRange": 150}, "persuader": "mist", "talk": [{"speaker": "mist", "text": "{ally06}、私です。{mist}です"}, {"speaker": "ally06", "text": "{mist}……？ 私、だまされて いたのね。\n一緒に 戦わせて！"}, {"text": "{ally06}が 仲間に 加わった！"}]}
   ]
 }

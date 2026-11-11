@@ -9,15 +9,23 @@ import {
   cellIndexAt, computeFlowField, distance, flowDirection, hasClearPath, isFullSpeedLine, resolveMoveDest,
   slideStep, speedAt,
 } from './field';
-import { dropUnitField, fieldToStatic, fieldToUnit } from './fields';
+import { updatePersuasions, updateVillages } from './events';
+import { fieldToStatic, fieldToUnit } from './fields';
+import { cleanupRetired } from './retire';
 import { awardXpForEvents } from './growth';
 import { updateObjectives } from './objectives';
 import { spawnProjectile, updateProjectiles } from './projectiles';
 import { separatedStep } from './separation';
-import { useSkill } from './skills';
+import { skillParam } from '../engine/registry';
+import { HIKITSUKERU_RANGE, useSkill } from './skills';
 import { dueSpawns } from './spawns';
 import { makeEnemyUnit } from './state';
 import type { BattleState, FlowField, HitSource, Unit, Vec2 } from './types';
+
+/** 攻撃を出す時点の攻撃力。村の攻撃力アップ（ステージの間だけ）とはげますの間の加算を含む */
+export function attackPower(u: Unit, time: number): number {
+  return u.power + u.stagePower + (time < u.cheerUntil ? u.cheerPower : 0);
+}
 
 export function playerUnits(state: BattleState): Unit[] {
   return state.units.filter((u) => u.side === 'player' && !u.retired);
@@ -55,6 +63,22 @@ function updateAi(state: BattleState): void {
   }
 }
 
+/** 引きつけている味方が範囲にいる敵は、その味方（複数なら最寄り）を追う。AI の選び方より優先する */
+function applyTaunts(state: BattleState): void {
+  const range = skillParam(state.reg, 'hikitsukeru', 'range', HIKITSUKERU_RANGE);
+  const taunters = playerUnits(state).filter((p) => p.hp > 0 && p.tauntUntil > state.time);
+  if (taunters.length === 0) return;
+  for (const u of state.units) {
+    if (u.retired || u.hp <= 0 || u.side !== 'enemy' || u.controller !== 'ai' || u.ai === null) continue;
+    const target = nearestWithin(u.pos, taunters, range);
+    if (!target) continue;
+    if (u.ai.mode !== 'chase') u.ai.spottedAt = state.time;
+    u.ai.mode = 'chase';
+    u.ai.targetUid = target.uid;
+    u.goalPos = { ...target.pos };
+  }
+}
+
 /** 時間湧き。湧いた敵は aggressive 固定でプレイヤーを追う */
 function runSpawns(state: BattleState): void {
   for (const due of dueSpawns(state.stage.spawners, state.spawnCounts, state.time)) {
@@ -72,6 +96,8 @@ function runSpawns(state: BattleState): void {
 
 export function step(state: BattleState, commands: SimCommand[], dt: number): void {
   state.events = [];
+  // 加わる会話の間は戦闘を止める
+  if (state.pendingRecruit !== null) return;
   if (state.phase !== 'battle') return;
 
   state.time += dt;
@@ -79,6 +105,7 @@ export function step(state: BattleState, commands: SimCommand[], dt: number): vo
 
   const movedThisTick = applyCommands(state, commands);
   updateAi(state);
+  applyTaunts(state);
   updateEngagements(state, movedThisTick);
   updateAutoClose(state);
   moveUnits(state, dt);
@@ -87,8 +114,11 @@ export function step(state: BattleState, commands: SimCommand[], dt: number): vo
   updateProjectiles(state, dt);
   resolveAttacks(state, dt);
   resolveRemoval(state);
+  updatePersuasions(state);
+  updateVillages(state);
   awardXpForEvents(state);
-  updateObjectives(state);
+  // 加入の会話が立った tick では勝敗を決めない（会話の後の tick で決める）
+  if (state.pendingRecruit === null) updateObjectives(state);
   accumulate(state.counters, state.events);
 }
 
@@ -348,7 +378,7 @@ function resolveAttacks(state: BattleState, dt: number): void {
 
     const source: HitSource = {
       uid: u.uid, defId: u.defId, attack: u.attack, pos: { ...u.pos },
-      neraiuchi: u.neraiuchiArmed, power: u.power, bondBonus: bonus,
+      neraiuchi: u.neraiuchiArmed, power: attackPower(u, state.time), bondBonus: bonus,
     };
     u.neraiuchiArmed = false;
     u.attackCooldown = interval;
@@ -390,17 +420,7 @@ function resolveRemoval(state: BattleState): void {
       state.events.push({ type: 'unitRetired', uid: u.uid, defId: u.defId });
     }
 
-    if (u.retired) {
-      dropUnitField(state.fields, u.uid);
-      u.pendingHit = null;
-      u.engagedWith = null;
-      u.closingOn = null;
-      u.goalField = null;
-      u.goalPos = null;
-      for (const other of state.units) {
-        if (other.engagedWith === u.uid) other.engagedWith = null;
-      }
-    }
+    if (u.retired) cleanupRetired(state, u);
   }
 }
 

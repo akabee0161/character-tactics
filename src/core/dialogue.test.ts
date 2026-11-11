@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { pickDialogue, pickStageIntro, pickStageOutro } from './dialogue';
+import { pickDialogue, pickRecruitTalk, pickStageIntro, pickStageOutro } from './dialogue';
 import { testRegistry } from './testing';
 import type { SimEvent } from './types';
 import type { StageDef } from '../engine/schema';
@@ -154,7 +154,7 @@ describe('pickStageIntro', () => {
 
   it('lineId を ひいて text に する', () => {
     const stage = { intro: [{ speaker: 'roran', text: null, lineId: 'stage:stage1:roran' }] } as unknown as StageDef;
-    const r = pickStageIntro(reg, stage);
+    const r = pickStageIntro(reg, stage, []);
     expect(r).toHaveLength(1);
     expect(r[0]!.speaker).toBe('roran');
     expect(r[0]!.text).toBe(reg.lines.get('stage:stage1:roran'));
@@ -162,16 +162,48 @@ describe('pickStageIntro', () => {
 
   it('text の ちょくがきを そのまま つかう', () => {
     const stage = { intro: [{ speaker: 'gau', text: 'いくぞー', lineId: null }] } as unknown as StageDef;
-    expect(pickStageIntro(reg, stage)).toEqual([{ speaker: 'gau', text: 'いくぞー' }]);
+    expect(pickStageIntro(reg, stage, [])).toEqual([{ speaker: 'gau', text: 'いくぞー' }]);
   });
 
   it('speaker が null なら 地の文に なる', () => {
     const stage = { intro: [{ speaker: null, text: 'しずかだ。', lineId: null }] } as unknown as StageDef;
-    expect(pickStageIntro(reg, stage)).toEqual([{ speaker: null, text: 'しずかだ。' }]);
+    expect(pickStageIntro(reg, stage, [])).toEqual([{ speaker: null, text: 'しずかだ。' }]);
   });
 
   it('intro が なければ からの はいれつ', () => {
-    expect(pickStageIntro(reg, {} as unknown as StageDef)).toEqual([]);
+    expect(pickStageIntro(reg, {} as unknown as StageDef, [])).toEqual([]);
+  });
+});
+
+describe('加入の会話', () => {
+  const reg = testRegistry();
+  const join = { unitId: 'gau', level: 1, talk: [{ speaker: 'gau', text: 'おれも {gau} だ', lineId: null }] };
+  const stage = {
+    intro: [{ speaker: null, text: 'はじまり', lineId: null }], joins: [join],
+  } as unknown as StageDef;
+
+  it('開始時の加入の会話が intro の後に続く', () => {
+    expect(pickStageIntro(reg, stage, [])).toEqual([
+      { speaker: null, text: 'はじまり' },
+      { speaker: 'gau', text: 'おれも {gau} だ' },
+    ]);
+  });
+
+  it('加入済みなら続かない', () => {
+    expect(pickStageIntro(reg, stage, ['gau'])).toEqual([{ speaker: null, text: 'はじまり' }]);
+  });
+
+  it('加入の会話の {id} が名前になっている', () => {
+    for (const st of reg.stages) {
+      const villages = st.villages.flatMap((v) => (v.effect.type === 'recruit' ? [v.effect.recruit] : []));
+      for (const r of [...st.joins, ...st.persuasions, ...villages]) {
+        for (const l of pickRecruitTalk(reg, r)) expect(l.text, `${st.id}/${r.unitId}`).not.toMatch(/\{[^}]*\}/);
+      }
+    }
+  });
+
+  it('pickRecruitTalk は talk の行を返す', () => {
+    expect(pickRecruitTalk(reg, join)).toEqual([{ speaker: 'gau', text: 'おれも {gau} だ' }]);
   });
 });
 
@@ -191,5 +223,19 @@ describe('pickStageOutro', () => {
   it('outro が なければ からの はいれつ', () => {
     const reg = testRegistry();
     expect(pickStageOutro(reg, { ...reg.stages[0]!, outro: undefined })).toEqual([]);
+  });
+});
+
+describe('village', () => {
+  it('村のセリフは一番先に出る', () => {
+    const reg = testRegistry();
+    const events: SimEvent[] = [
+      { type: 'unitRetired', uid: 'p2', defId: 'ines' },
+      { type: 'villageVisited', uid: 'p1', defId: 'gau', villageId: 'v1', text: 'むらだ' },
+    ];
+    const out = pickDialogue(reg, events);
+    expect(out[0]).toEqual({
+      uid: 'p1', speaker: { side: 'ally', id: 'gau' }, lineId: 'village:v1', text: 'むらだ',
+    });
   });
 });

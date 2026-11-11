@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyStageClear, hasReadIntro, isStageUnlocked, markIntroRead } from './flow';
+import { applyStageClear, canSkipIntro, hasReadIntro, isStageUnlocked, markIntroRead } from './flow';
 import { applyXp } from '../core/progress';
 import { newSave } from '../save/save';
 import { beginBattle, createBattleState } from '../core/state';
@@ -36,8 +36,9 @@ const battleWith = (over: BattleOver = {}): BattleState => {
     level: p!.level,
     xp: p!.xp,
     retired: p!.retired ?? true,
+    statBonus: { maxHp: 0, power: 0, guard: 0, speed: 0 },
   }));
-  return { units, counters } as unknown as BattleState;
+  return { units, counters, joined: [], claimed: [] } as unknown as BattleState;
 };
 
 /** クリアボーナスのテスト用に、実際の Unit(retired: false がデフォルト)を持つ BattleState を組む */
@@ -45,7 +46,7 @@ function freshBattle(reg: Registry): BattleState {
   const stage = reg.stages[0]!;
   const progress: Record<string, CharProgress> = {};
   for (const id of reg.units.keys()) progress[id] = { level: 1, xp: 0 };
-  const state = createBattleState(reg, stage, progress, 1);
+  const state = createBattleState(reg, stage, { units: progress, members: [], claimed: [] }, 1);
   beginBattle(state);
   return state;
 }
@@ -207,5 +208,64 @@ describe('既読の きろく', () => {
     const before = newSave(reg);
     markIntroRead(before, 'stage1');
     expect(before.readIntroStageIds).toEqual([]);
+  });
+});
+
+describe('applyStageClear: 加入と印と上乗せ', () => {
+  it('クリアで加入と印と上乗せが残る', () => {
+    const reg = testRegistry();
+    const state = freshBattle(reg);
+    state.joined = ['ally05'];
+    state.claimed = ['village:v1'];
+    const roran = state.units.find((u) => u.defId === 'roran')!;
+    roran.statBonus = { maxHp: 3, power: 0, guard: 1, speed: 0 };
+    const r = applyStageClear(reg, newSave(reg), state.stage.id, state);
+    expect(r.save.members).toEqual(['ally05']);
+    expect(r.save.claimed).toEqual(['village:v1']);
+    expect(r.save.units.roran!.bonus).toEqual({ maxHp: 3, power: 0, guard: 1, speed: 0 });
+    expect(r.save.units.ines!.bonus).toBeUndefined();
+  });
+
+  it('2 回クリアしても members が重ならない', () => {
+    const reg = testRegistry();
+    const state = freshBattle(reg);
+    state.joined = ['ally05'];
+    state.claimed = ['village:v1'];
+    const first = applyStageClear(reg, newSave(reg), state.stage.id, state);
+    const second = applyStageClear(reg, first.save, state.stage.id, state);
+    expect(second.save.members).toEqual(['ally05']);
+    expect(second.save.claimed).toEqual(['village:v1']);
+  });
+
+  it('XpGain の joined は battle.joined の仲間だけ true', () => {
+    const reg = testRegistry();
+    const state = freshBattle(reg);
+    state.joined = ['gau'];
+    const r = applyStageClear(reg, newSave(reg), state.stage.id, state);
+    expect(r.gains.find((g) => g.id === 'gau')!.joined).toBe(true);
+    expect(r.gains.find((g) => g.id === 'roran')!.joined).toBe(false);
+  });
+});
+
+describe('canSkipIntro', () => {
+  const reg = testRegistry();
+  const base = reg.stages[0]!;
+  const join = { unitId: 'ally05', level: 1, talk: [] };
+  const stage = { ...base, joins: [join] };
+
+  it('既読でも、開始時の加入の会話が未読（まだ仲間でない）なら飛ばせない', () => {
+    const s = markIntroRead(newSave(reg), stage.id);
+    expect(canSkipIntro(s, stage)).toBe(false);
+  });
+
+  it('既読で加入済みなら飛ばせる。未読なら飛ばせない', () => {
+    const read = markIntroRead(newSave(reg), stage.id);
+    expect(canSkipIntro({ ...read, members: ['ally05'] }, stage)).toBe(true);
+    expect(canSkipIntro({ ...newSave(reg), members: ['ally05'] }, stage)).toBe(false);
+  });
+
+  it('加入の会話が無いステージは既読だけで飛ばせる', () => {
+    const s = markIntroRead(newSave(reg), base.id);
+    expect(canSkipIntro(s, { ...base, joins: [] })).toBe(true);
   });
 });

@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import { MAX_PARTY } from './constants';
 import { cellIndexAt } from './field';
 import { fieldToStatic } from './fields';
-import { beginBattle, canPlaceAt, createBattleState, placeUnit, statsForLevel, windupOf } from './state';
+import { beginBattle, canPlaceAt, createBattleState, placeUnit, startPositions, statsForLevel, windupOf } from './state';
 import { testRegistry } from './testing';
 import type { Registry } from '../engine/registry';
 import type { StageDef } from '../engine/schema';
@@ -12,7 +13,7 @@ function fresh(): { reg: Registry; stage: StageDef; state: BattleState } {
   const stage = reg.stages[0]!;
   const progress: Record<string, CharProgress> = {};
   for (const id of reg.units.keys()) progress[id] = { level: 1, xp: 0 };
-  return { reg, stage, state: createBattleState(reg, stage, progress, 1) };
+  return { reg, stage, state: createBattleState(reg, stage, { units: progress, members: [], claimed: [] }, 1) };
 }
 
 function unitOf(s: BattleState, defId: string) {
@@ -24,7 +25,9 @@ function unitOf(s: BattleState, defId: string) {
 describe('statsForLevel', () => {
   it('レベル1 は基礎値どおり', () => {
     const reg = testRegistry();
-    expect(statsForLevel(reg.units.get('roran')!, 1, reg.growth)).toEqual({ maxHp: 30, power: 6 });
+    expect(statsForLevel(reg.units.get('roran')!, 1, reg.growth)).toEqual({
+      maxHp: 30, power: 6, guard: reg.units.get('roran')!.guard, speed: reg.units.get('roran')!.speed,
+    });
   });
 
   it('HP は1レベルごとに+1', () => {
@@ -40,7 +43,16 @@ describe('statsForLevel', () => {
 
   it('上限レベルでも現状の上限とほぼ同じ強さ', () => {
     const reg = testRegistry();
-    expect(statsForLevel(reg.units.get('roran')!, 12, reg.growth)).toEqual({ maxHp: 41, power: 9 });
+    expect(statsForLevel(reg.units.get('roran')!, 12, reg.growth)).toEqual({
+      maxHp: 41, power: 9, guard: reg.units.get('roran')!.guard, speed: reg.units.get('roran')!.speed,
+    });
+  });
+
+  it('上乗せが能力値に入る', () => {
+    const reg = testRegistry();
+    const def = reg.units.get('roran')!;
+    const s = statsForLevel(def, 1, reg.growth, { maxHp: 3, power: 1, guard: 2, speed: 5 });
+    expect(s).toEqual({ maxHp: def.maxHp + 3, power: def.power + 1, guard: def.guard + 2, speed: def.speed + 5 });
   });
 });
 
@@ -93,7 +105,7 @@ describe('createBattleState: ステージからの はいち', () => {
     const stage = reg.stages[0]!;
     const progress: Record<string, CharProgress> = { roran: { level: 3, xp: 0 } };
     for (const id of reg.units.keys()) progress[id] ??= { level: 1, xp: 0 };
-    const state = createBattleState(reg, stage, progress, 1);
+    const state = createBattleState(reg, stage, { units: progress, members: [], claimed: [] }, 1);
     const roran = unitOf(state, 'roran');
     expect(roran.maxHp).toBe(32);
     expect(roran.hp).toBe(32);
@@ -201,5 +213,100 @@ describe('windupOf', () => {
   it('シートが無ければ 0（即時）', () => {
     const def = { ...testRegistry().units.get('roran')!, sprites: { role: null, face: null, map: null } };
     expect(windupOf(def)).toBe(0);
+  });
+});
+
+describe('出撃メンバーと開始位置', () => {
+  const base = testRegistry();
+  // roster に足して MAX_PARTY を 2 人超えるだけの仲間 id（MAX_PARTY・roster の人数に依存しない）
+  const ALL_IDS = Array.from({ length: MAX_PARTY + 2 }, (_, i) => `ally${String(i + 5).padStart(2, '0')}`);
+  const NEW_IDS = ALL_IDS.slice(0, 4);
+  const talk = [{ speaker: 'roran', text: 'よろしく' }] as unknown as StageDef['joins'][number]['talk'];
+  const recruitOf = (unitId: string) => ({ unitId, level: 2, talk });
+  /** 新しい 4 人を足した登録簿。4 人は stage[0] の joins に書かれているので「加入しうる仲間」になる */
+  function reg8() {
+    const units = new Map(base.units);
+    for (const id of ALL_IDS) units.set(id, { ...base.units.get('roran')!, id });
+    const stage = { ...base.stages[0]!, joins: ALL_IDS.map(recruitOf) };
+    const reg: Registry = { ...base, units, stages: [stage, ...base.stages.slice(1)] };
+    return { reg, stage };
+  }
+  const party = (members: string[]) => ({ units: {}, members, claimed: [] as string[] });
+  const players = (s: BattleState) => s.units.filter((u) => u.side === 'player');
+
+  it('加わった仲間が roster の後ろに並ぶ', () => {
+    const { reg, stage } = reg8();
+    const s = createBattleState(reg, { ...stage, joins: [] }, party(['ally05']), 1);
+    expect(players(s).map((u) => u.defId)).toEqual([...stage.roster, 'ally05']);
+    expect(s.joined).toEqual([]);
+  });
+
+  it('開始時の加入は加入済みなら入らない', () => {
+    const { reg, stage } = reg8();
+    const s = createBattleState(reg, { ...stage, joins: [recruitOf('ally05'), recruitOf('ally06')] }, party(['ally05']), 1);
+    expect(players(s).map((u) => u.defId)).toEqual([...stage.roster, 'ally05', 'ally06']);
+    expect(s.joined).toEqual(['ally06']);
+    expect(players(s).find((u) => u.defId === 'ally06')!.level).toBe(2);
+  });
+
+  it('出撃は 8 人まで', () => {
+    const { reg, stage } = reg8();
+    // roster の上に members が MAX_PARTY 人超えるほどいる。超えた分は出撃しない
+    const room = ALL_IDS.slice(0, MAX_PARTY - stage.roster.length);
+    const s = createBattleState(reg, { ...stage, joins: [] }, party(ALL_IDS), 1);
+    expect(players(s).map((u) => u.defId)).toEqual([...stage.roster, ...room]);
+    expect(players(s)).toHaveLength(MAX_PARTY);
+    // MAX_PARTY 人そろっているとき、開始時の加入は加えず joined にも入れない
+    const extra = ALL_IDS[ALL_IDS.length - 1]!;
+    const s2 = createBattleState(reg, { ...stage, joins: [recruitOf(extra)] }, party(room), 1);
+    expect(players(s2)).toHaveLength(MAX_PARTY);
+    expect(players(s2).map((u) => u.defId)).not.toContain(extra);
+    expect(s2.joined).toEqual([]);
+  });
+
+  it('開始位置: starts が足りないと近いマスで補い、補えなければ starts を繰り返す', () => {
+    const { stage, state } = fresh();
+    const n = stage.placement.starts.length;
+    const pos = startPositions(stage, state.grid, n + 2);
+    expect(pos.slice(0, n)).toEqual(stage.placement.starts);
+    expect(pos).toHaveLength(n + 2);
+    const none = startPositions({ ...stage, placement: { ...stage.placement, minY: 99999 } }, state.grid, n + 1);
+    expect(none[n]).toEqual(stage.placement.starts[0]);
+  });
+
+  it('加入済みの説得の相手は出てこない', () => {
+    const { reg, stage } = reg8();
+    const foeId = stage.enemies[0]!.defId;
+    const pers = { ...recruitOf('ally05'), foeId, pos: stage.enemies[0]!.pos, ai: stage.enemies[0]!.ai, persuader: 'roran' };
+    const before = stage.enemies.length;
+    const s = createBattleState(reg, { ...stage, joins: [], persuasions: [pers] }, party([]), 1);
+    const foes = s.units.filter((u) => u.side === 'enemy');
+    expect(foes).toHaveLength(before + 1);
+    expect(foes.filter((u) => u.persuasion === 0)).toHaveLength(1);
+    const s2 = createBattleState(reg, { ...stage, joins: [], persuasions: [pers] }, party(['ally05']), 1);
+    expect(s2.units.filter((u) => u.side === 'enemy')).toHaveLength(before);
+  });
+
+  it('開始位置が重ならない', () => {
+    const { reg, stage } = reg8();
+    const s = createBattleState(reg, stage, party(NEW_IDS), 1);
+    const ps = players(s);
+    expect(ps).toHaveLength(8);
+    for (const u of ps) expect(canPlaceAt(s.stage, s.grid, u.pos)).toBe(true);
+    for (let i = 0; i < ps.length; i++) {
+      for (let j = i + 1; j < ps.length; j++) {
+        expect(Math.hypot(ps[i]!.pos.x - ps[j]!.pos.x, ps[i]!.pos.y - ps[j]!.pos.y)).toBeGreaterThanOrEqual(24);
+      }
+    }
+  });
+
+  it('新しい状態の項目が初期化される', () => {
+    const s = createBattleState(base, base.stages[0]!, { units: {}, members: [], claimed: ['x'] }, 1);
+    expect(s.joined).toEqual([]);
+    expect(s.claimed).toEqual([]);
+    expect(s.visited).toEqual([]);
+    expect(s.pendingRecruit).toBeNull();
+    expect(s.nextPlayerUid).toBe(s.units.filter((u) => u.side === 'player').length + 1);
+    expect(s.claimedBefore.has('x')).toBe(true);
   });
 });

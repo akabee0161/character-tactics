@@ -1,7 +1,8 @@
 import { mergeCounters } from '../core/counters';
 import { applyXp, earnedTitles } from '../core/progress';
 import type { Registry } from '../engine/registry';
-import type { BattleState, CharProgress } from '../core/types';
+import type { StageDef } from '../engine/schema';
+import type { BattleState,CharProgress, StatBonus } from '../core/types';
 import type { SaveData } from '../save/save';
 
 export function isStageUnlocked(reg: Registry, save: SaveData, index: number): boolean {
@@ -15,6 +16,14 @@ export function hasReadIntro(save: SaveData, stageId: string): boolean {
   return save.readIntroStageIds.includes(stageId);
 }
 
+/**
+ * 導入の会話の「とばす」を出せるか。既読で、かつ開始時の加入の会話（joins）がすべて読み終わっている（仲間になっている）こと。
+ * 未読の加入の会話は導入につながっているので、飛ばすと仲間の加入を見ずに済んでしまう
+ */
+export function canSkipIntro(save: SaveData, stage: StageDef): boolean {
+  return hasReadIntro(save, stage.id) && stage.joins.every((j) => save.members.includes(j.unitId));
+}
+
 /** 変化がなければ同じ参照を返す。呼び出し側が無駄な writeSave をしなくて済む */
 export function markIntroRead(save: SaveData, stageId: string): SaveData {
   if (save.readIntroStageIds.includes(stageId)) return save;
@@ -26,7 +35,13 @@ export type XpGain = {
   before: CharProgress;
   after: CharProgress;
   leveledUp: boolean;
+  /** このステージで仲間に加わった（リザルトで「仲間に 加わった！」と出す） */
+  joined: boolean;
 };
+
+function hasBonus(b: StatBonus): boolean {
+  return b.maxHp > 0 || b.power > 0 || b.guard > 0 || b.speed > 0;
+}
 
 export type StageResult = { save: SaveData; gains: XpGain[]; newTitles: string[] };
 
@@ -44,11 +59,12 @@ export function applyStageClear(
   for (const u of battle.units) {
     if (u.side !== 'player') continue;
     const before = save.units[u.defId] ?? { level: 1, xp: 0 };
-    const after = u.retired
-      ? { level: u.level, xp: u.xp }
-      : applyXp({ level: u.level, xp: u.xp }, reg.growth.clearXp, reg.growth);
+    const base: CharProgress = hasBonus(u.statBonus)
+      ? { level: u.level, xp: u.xp, bonus: { ...u.statBonus } }
+      : { level: u.level, xp: u.xp };
+    const after = u.retired ? base : applyXp(base, reg.growth.clearXp, reg.growth);
     units[u.defId] = after;
-    gains.push({ id: u.defId, before, after, leveledUp: after.level > before.level });
+    gains.push({ id: u.defId, before, after, leveledUp: after.level > before.level, joined: battle.joined.includes(u.defId) });
   }
 
   const counters = mergeCounters(save.counters, battle.counters, reg.titles);
@@ -62,6 +78,8 @@ export function applyStageClear(
         ? save.clearedStageIds
         : [...save.clearedStageIds, stageId],
       units, counters, titles: allTitles,
+      members: [...save.members, ...battle.joined.filter((id) => !save.members.includes(id))],
+      claimed: [...save.claimed, ...battle.claimed.filter((id) => !save.claimed.includes(id))],
     },
     gains, newTitles,
   };

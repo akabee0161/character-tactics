@@ -1,3 +1,4 @@
+export type StatKey = 'maxHp' | 'power' | 'guard' | 'speed';
 import { footCorners } from './footprint';
 
 export type Vec2 = { x: number; y: number };
@@ -411,6 +412,27 @@ export type IntroLine = {
   lineId: string | null;
 };
 
+/** 仲間が加わるときの定義。talk は加わる会話（intro と同じ行） */
+export type RecruitDef = { unitId: string; level: number; talk: IntroLine[] };
+
+/** 説得の相手。普通の敵として置かれ、persuader が 2 マス以内に入ると会話が始まる */
+export type PersuasionDef = RecruitDef & { foeId: string; pos: Vec2; ai: AiDef; persuader: string };
+
+export const STAT_KEYS: readonly StatKey[] = ['maxHp', 'power', 'guard', 'speed'];
+
+export const VILLAGE_EFFECT_TYPES = ['talk', 'heal', 'powerUp', 'xp', 'stat', 'recruit'] as const;
+
+export type VillageEffect =
+  | { type: 'talk' }
+  | { type: 'heal' }
+  | { type: 'powerUp'; amount: number }
+  | { type: 'xp'; amount: number }
+  | { type: 'stat'; stat: StatKey; amount: number }
+  | { type: 'recruit'; recruit: RecruitDef };
+
+/** recruit の村は text が null（会話が text の代わり）。それ以外は必ず text がある */
+export type VillageDef = { id: string; col: number; row: number; text: string | null; effect: VillageEffect };
+
 /**
  * legend の speed の下限。これより遅いマスは事実上通れないので walkable: false を使う。
  * フローフィールドの距離（Int32Array）もあふれない: 1歩のコストは最大 DIAG_COST / 0.1 = 140 で、
@@ -457,6 +479,10 @@ export type StageDef = {
   defeat: DefeatCond[];
   intro?: IntroLine[];
   outro?: IntroLine[];
+  /** 開始時にすでに加わっている仲間 */
+  joins: RecruitDef[];
+  persuasions: PersuasionDef[];
+  villages: VillageDef[];
 };
 
 function readMapRows(ctx: Ctx, v: unknown, legend: Legend): string[] {
@@ -673,6 +699,130 @@ function readIntroLine(ctx: Ctx, path: string, v: unknown): IntroLine {
   };
 }
 
+function readTalk(ctx: Ctx, path: string, v: unknown): IntroLine[] {
+  const arr = requireArray(ctx, path, v, { min: 1 }) ?? [];
+  return arr.map((item, i) => readIntroLine(ctx, `${path}[${i}]`, item));
+}
+
+function readRecruit(ctx: Ctx, path: string, o: Record<string, unknown>): RecruitDef {
+  return {
+    unitId: requireString(ctx, `${path}.unitId`, o.unitId) ?? '',
+    level: requireNumber(ctx, `${path}.level`, o.level, { min: 1, int: true }) ?? 1,
+    talk: readTalk(ctx, `${path}.talk`, o.talk),
+  };
+}
+
+function readJoins(ctx: Ctx, v: unknown): RecruitDef[] {
+  if (v === undefined) return [];
+  const arr = requireArray(ctx, 'joins', v) ?? [];
+  const out: RecruitDef[] = [];
+  arr.forEach((item, i) => {
+    const o = requireObject(ctx, `joins[${i}]`, item);
+    if (o) out.push(readRecruit(ctx, `joins[${i}]`, o));
+  });
+  return out;
+}
+
+function readPersuasions(
+  ctx: Ctx,
+  v: unknown,
+  checkWalkable: (path: string, pos: Vec2) => void,
+  checkAboveLine: (path: string, pos: Vec2) => void,
+): PersuasionDef[] {
+  if (v === undefined) return [];
+  const arr = requireArray(ctx, 'persuasions', v) ?? [];
+  const out: PersuasionDef[] = [];
+  arr.forEach((item, i) => {
+    const path = `persuasions[${i}]`;
+    const o = requireObject(ctx, path, item);
+    if (!o) return;
+    const pos = requireVec2(ctx, `${path}.pos`, o.pos) ?? { x: 0, y: 0 };
+    checkWalkable(`${path}.pos`, pos);
+    checkAboveLine(`${path}.pos`, pos);
+    const ai = readAiDef(ctx, `${path}.ai`, o.ai);
+    if (ai.kind === 'guard') checkWalkable(`${path}.ai.post`, ai.post);
+    out.push({
+      ...readRecruit(ctx, path, o),
+      foeId: requireString(ctx, `${path}.foeId`, o.foeId) ?? '',
+      pos,
+      ai,
+      persuader: requireString(ctx, `${path}.persuader`, o.persuader) ?? '',
+    });
+  });
+  return out;
+}
+
+function readVillageEffect(ctx: Ctx, path: string, v: unknown): VillageEffect {
+  const o = requireObject(ctx, path, v);
+  if (!o) return { type: 'talk' };
+  const type = requireEnum(ctx, `${path}.type`, o.type, VILLAGE_EFFECT_TYPES);
+  const amount = (): number =>
+    requireNumber(ctx, `${path}.amount`, o.amount, { min: 1, int: true }) ?? 1;
+  switch (type) {
+    case 'heal':
+      return { type: 'heal' };
+    case 'powerUp':
+      return { type: 'powerUp', amount: amount() };
+    case 'xp':
+      return { type: 'xp', amount: amount() };
+    case 'stat':
+      return {
+        type: 'stat',
+        stat: requireEnum(ctx, `${path}.stat`, o.stat, STAT_KEYS) ?? 'maxHp',
+        amount: amount(),
+      };
+    case 'recruit':
+      return { type: 'recruit', recruit: readRecruit(ctx, path, o) };
+    default:
+      // 'talk' と、未知の type（エラーは積まれている）
+      return { type: 'talk' };
+  }
+}
+
+function readVillages(
+  ctx: Ctx,
+  v: unknown,
+  isBlockedCell: (col: number, row: number) => boolean | null,
+): VillageDef[] {
+  if (v === undefined) return [];
+  const arr = requireArray(ctx, 'villages', v) ?? [];
+  const out: VillageDef[] = [];
+  const ids = new Set<string>();
+  const cells = new Set<string>();
+  arr.forEach((item, i) => {
+    const path = `villages[${i}]`;
+    const o = requireObject(ctx, path, item);
+    if (!o) return;
+    const id = requireString(ctx, `${path}.id`, o.id) ?? '';
+    if (id !== '') {
+      if (ids.has(id)) fail(ctx, `${path}.id`, `id が じゅうふくしている: ${id}`);
+      ids.add(id);
+    }
+    const colRaw = requireNumber(ctx, `${path}.col`, o.col, { min: 0, int: true });
+    const rowRaw = requireNumber(ctx, `${path}.row`, o.row, { min: 0, int: true });
+    const col = colRaw ?? 0;
+    const row = rowRaw ?? 0;
+    // col / row が不正なときは、すでにその報告が出ているので、マスについての報告を重ねない
+    if (colRaw !== null && rowRaw !== null) {
+      const blocked = isBlockedCell(col, row);
+      if (blocked === null) fail(ctx, path, 'マップの そとに おけない');
+      else if (!blocked) fail(ctx, path, '村は とおれない マスに おく');
+      const key = `${col},${row}`;
+      if (cells.has(key)) fail(ctx, path, `おなじ マスに 村が ふたつ ある: ${key}`);
+      cells.add(key);
+    }
+    const effect = readVillageEffect(ctx, `${path}.effect`, o.effect);
+    let text: string | null = null;
+    if (effect.type === 'recruit') {
+      if (o.text !== undefined) fail(ctx, `${path}.text`, 'recruit の村には text を かかない（talk を つかう）');
+    } else {
+      text = requireString(ctx, `${path}.text`, o.text);
+    }
+    out.push({ id, col, row, text, effect });
+  });
+  return out;
+}
+
 export function validateStageDef(file: string, raw: unknown): Validated<StageDef> {
   const ctx = makeCtx(file);
   const o = requireObject(ctx, '', raw);
@@ -693,6 +843,13 @@ export function validateStageDef(file: string, raw: unknown): Validated<StageDef
     if (!footCorners(pos).every((c) => isWalkableCell(cell, mapRows, effectiveLegend, c))) {
       fail(ctx, path, '足元が 通れない マスに かかる');
     }
+  };
+
+  // 村のマス。マップの外なら null、通れないマスなら true、通れるマスなら false
+  const isBlockedCell = (col: number, row: number): boolean | null => {
+    const line = mapRows[row];
+    if (line === undefined || col >= line.length) return null;
+    return effectiveLegend[line[col]!]?.walkable === false;
   };
 
   const placement = readPlacement(ctx, o.placement, mapRows, cell, checkWalkable);
@@ -734,6 +891,9 @@ export function validateStageDef(file: string, raw: unknown): Validated<StageDef
     spawners: readSpawners(ctx, o.spawners, checkWalkable, checkAboveLine),
     victory: readVictory(ctx, o.victory),
     defeat: readDefeat(ctx, o.defeat),
+    joins: readJoins(ctx, o.joins),
+    persuasions: readPersuasions(ctx, o.persuasions, checkWalkable, checkAboveLine),
+    villages: readVillages(ctx, o.villages, isBlockedCell),
   };
 
   if (legend !== undefined) stage.legend = legend;

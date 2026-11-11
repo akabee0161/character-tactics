@@ -1,11 +1,11 @@
 import type { Registry } from '../engine/registry';
-import type { IntroLine } from '../engine/schema';
+import type { IntroLine, RecruitDef } from '../engine/schema';
 import type { Speaker, SimEvent, StageDef } from './types';
 
 export type DialogueRequest = { uid: string; speaker: Speaker; lineId: string; text: string };
 
 /** 小さいほど先に表示する */
-const PRIORITY = ['rival', 'first', 'skill', 'levelup', 'pinch', 'win', 'retire'] as const;
+const PRIORITY = ['village', 'rival', 'first', 'skill', 'levelup', 'pinch', 'win', 'retire'] as const;
 
 function ally(id: string): Speaker {
   return { side: 'ally', id };
@@ -51,6 +51,9 @@ export function pickDialogue(reg: Registry, events: SimEvent[]): DialogueRequest
       case 'unitRetired':
         push('retire', make(reg, ev.uid, ally(ev.defId), `retire:${ev.defId}`));
         break;
+      case 'villageVisited':
+        push('village', { uid: ev.uid, speaker: ally(ev.defId), lineId: `village:${ev.villageId}`, text: ev.text });
+        break;
       default:
         break;
     }
@@ -77,9 +80,18 @@ function pickTalk(reg: Registry, lines: IntroLine[] | undefined): TalkLine[] {
   return out;
 }
 
-/** ステージ開始時の会話 */
-export function pickStageIntro(reg: Registry, stage: StageDef): TalkLine[] {
-  return pickTalk(reg, stage.intro);
+/** 加わる会話 */
+export function pickRecruitTalk(reg: Registry, recruit: RecruitDef): TalkLine[] {
+  return pickTalk(reg, recruit.talk);
+}
+
+/** ステージ開始時の会話。intro の後に、まだ仲間でない joins の加入の会話が続く */
+export function pickStageIntro(reg: Registry, stage: StageDef, members: readonly string[]): TalkLine[] {
+  const out = pickTalk(reg, stage.intro);
+  for (const j of stage.joins ?? []) {
+    if (!members.includes(j.unitId)) out.push(...pickRecruitTalk(reg, j));
+  }
+  return out;
 }
 
 /** 敵の本拠地に到達したときの会話 */

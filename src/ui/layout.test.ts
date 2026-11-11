@@ -3,9 +3,10 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   BOTTOM_PANEL_Y, BTN, FACE_PX, MESSAGE_BAR, SPEECH_BODY_X, SPEECH_MAX_LINES, TALK_WINDOW,
-  hpBarIn, portraitSlot, roleBadgeIn, rosterSlot, speechLines, stageSlot,
+  hpBarIn, portraitSlot, resultSlot, roleBadgeIn, rosterSlot, speechLines, stageSlot,
   STAGE_LIST_VIEW, stageListContentH,
 } from './layout';
+import { MAX_PARTY } from '../core/constants';
 import { LOGICAL_H, LOGICAL_W, MAP_ORIGIN } from '../render/viewport';
 import { testRegistry } from '../core/testing';
 
@@ -34,14 +35,12 @@ describe('たてがたの レイアウト', () => {
     expect(BOTTOM_PANEL_Y).toBe(MAP_ORIGIN.y + 23 * 32);
   });
 
-  it('ポートレート 4まいが がめんに おさまる', () => {
-    for (let i = 0; i < 4; i++) expect(inScreen(portraitSlot(i))).toBe(true);
-  });
-
-  it('ポートレートどうしが かさならない', () => {
-    for (let i = 1; i < 4; i++) {
+  it('8 枠とも画面に収まり重ならない', () => {
+    for (let i = 0; i < MAX_PARTY; i++) expect(inScreen(portraitSlot(i))).toBe(true);
+    for (let i = 1; i < MAX_PARTY; i++) {
       const prev = portraitSlot(i - 1);
       expect(portraitSlot(i).x).toBeGreaterThanOrEqual(prev.x + prev.w);
+      expect(portraitSlot(i).y).toBe(prev.y);
     }
   });
 
@@ -60,10 +59,21 @@ describe('たてがたの レイアウト', () => {
     for (let i = 0; i < 6; i++) expect(inScreen(stageSlot(i))).toBe(true);
   });
 
-  it('ロスターは 1れつ で ならぶ', () => {
-    for (let i = 0; i < 4; i++) expect(inScreen(rosterSlot(i))).toBe(true);
-    expect(rosterSlot(1).x).toBe(rosterSlot(0).x);
-    expect(rosterSlot(1).y).toBeGreaterThan(rosterSlot(0).y);
+  it('仲間の一覧 8 人が画面に収まる（2 列）', () => {
+    for (let i = 0; i < MAX_PARTY; i++) expect(inScreen(rosterSlot(i))).toBe(true);
+    expect(rosterSlot(1).y).toBe(rosterSlot(0).y);
+    expect(rosterSlot(1).x).toBeGreaterThanOrEqual(rosterSlot(0).x + rosterSlot(0).w);
+    expect(rosterSlot(2).y).toBeGreaterThanOrEqual(rosterSlot(0).y + rosterSlot(0).h);
+  });
+
+  it('リザルトの 8 行が次へのボタン（BTN.next）にかからない', () => {
+    for (let i = 0; i < MAX_PARTY; i++) {
+      const r = resultSlot(i);
+      expect(inScreen(r)).toBe(true);
+      expect(r.y + r.h).toBeLessThanOrEqual(BTN.next.y);
+    }
+    expect(resultSlot(7).y + resultSlot(7).h).toBeLessThanOrEqual(450);
+    expect(resultSlot(1).x).toBeGreaterThanOrEqual(resultSlot(0).x + resultSlot(0).w);
   });
 
   it('クラスの わくは ポートレートの なかに ある', () => {
@@ -80,8 +90,16 @@ describe('たてがたの レイアウト', () => {
     expect(roleBadgeIn(slot).y + roleBadgeIn(slot).h).toBeLessThanOrEqual(hpBarIn(slot).y);
   });
 
-  it('クラスの わくは 16px の絵を 2倍にした 32px', () => {
-    expect(roleBadgeIn(portraitSlot(0)).h).toBe(32);
+  it('クラスの わくは 16px の角', () => {
+    expect(roleBadgeIn(portraitSlot(0)).h).toBe(16);
+    expect(roleBadgeIn(portraitSlot(0)).w).toBe(16);
+  });
+
+  it('顔（40px）は枠の内側で、HPバーの上', () => {
+    const slot = portraitSlot(0);
+    expect(FACE_PX.panel).toBe(40);
+    expect(slot.x + 4 + FACE_PX.panel).toBeLessThanOrEqual(slot.x + slot.w);
+    expect(slot.y + 6 + FACE_PX.panel).toBeLessThanOrEqual(hpBarIn(slot).y);
   });
 
   it('HPバーは ポートレートの なかに ある', () => {
@@ -94,8 +112,8 @@ describe('たてがたの レイアウト', () => {
 
   it('HPバーは 技の ゲージと かさならない', () => {
     const slot = portraitSlot(0);
-    // drawBottomBar は技のゲージを slot.y + 70 に描く
-    expect(hpBarIn(slot).y + hpBarIn(slot).h).toBeLessThanOrEqual(slot.y + 70);
+    // 技のゲージは HP バーの 1px 下、高さ 5。枠の内側に収まる
+    expect(hpBarIn(slot).y + hpBarIn(slot).h + 1 + 5).toBeLessThanOrEqual(slot.y + slot.h);
   });
 });
 

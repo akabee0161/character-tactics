@@ -2,5 +2,9 @@
   { "id": "funbaru",    "label": "踏ん張る",   "params": { "duration": 5, "cooldown": 15 } },
   { "id": "neraiuchi",  "label": "狙い撃ち", "params": { "cooldown": 12 } },
   { "id": "omajinai",   "label": "おまじない", "params": { "heal": 12, "range": 200, "cooldown": 10 } },
-  { "id": "kakenukeru", "label": "駆け抜ける", "params": { "damage": 5, "needsDest": 1, "cooldown": 8 } }
+  { "id": "kakenukeru", "label": "駆け抜ける", "params": { "damage": 5, "needsDest": 1, "cooldown": 8 } },
+  { "id": "hikitsukeru", "label": "引きつける", "params": { "range": 96, "duration": 6, "cooldown": 16 } },
+  { "id": "hinoame",    "label": "火の雨", "params": { "radius": 48, "damage": 6, "needsDest": 1, "cooldown": 14 } },
+  { "id": "tsuki",      "label": "突き", "params": { "length": 80, "damage": 7, "cooldown": 9 } },
+  { "id": "hagemasu",   "label": "はげます", "params": { "range": 120, "power": 2, "duration": 8, "cooldown": 15 } }
 ]

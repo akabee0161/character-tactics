@@ -1,8 +1,8 @@
-export type { AttackKind, Vec2 } from '../engine/schema';
+export type { AttackKind, StatKey, Vec2 } from '../engine/schema';
 export type { AiDef, DefeatCond, EnemyPlacement, Legend, StageDef, VictoryCond } from '../engine/schema';
 
 import type { Registry } from '../engine/registry';
-import type { AiDef, AttackKind, StageDef, Vec2 } from '../engine/schema';
+import type { AiDef, AttackKind, RecruitDef, StageDef, StatKey, Vec2 } from '../engine/schema';
 import type { FieldCache } from './fields';
 
 export type Grid = {
@@ -23,7 +23,16 @@ export type FlowField = {
 
 import type { Rng } from './rng';
 
-export type CharProgress = { level: number; xp: number };
+export type StatBonus = Record<StatKey, number>;
+export const NO_BONUS: StatBonus = Object.freeze({ maxHp: 0, power: 0, guard: 0, speed: 0 });
+
+export type CharProgress = { level: number; xp: number; bonus?: StatBonus };
+
+/** 出撃の元になる進行。SaveData はこれを満たす */
+export type PartyProgress = { units: Record<string, CharProgress>; members: string[]; claimed: string[] };
+
+/** 加わる会話の待ち。foeUid は説得の相手の uid（村や開始時の加入なら null） */
+export type PendingRecruit = { recruit: RecruitDef; pos: Vec2; foeUid: string | null };
 
 export type AiState = {
   def: AiDef;
@@ -60,6 +69,18 @@ export type Unit = {
 
   level: number;
   xp: number;
+
+  /** 村で上げた能力値の上乗せ。レベルアップで消えない（statsForLevel に渡す） */
+  statBonus: StatBonus;
+  /** 攻撃力アップの村の加算。そのステージの間だけ */
+  stagePower: number;
+  /** はげますの効果。シム時刻 cheerUntil 未満の間 cheerPower を攻撃力に足す */
+  cheerUntil: number;
+  cheerPower: number;
+  /** 引きつけるの効果。シム時刻 tauntUntil 未満の間有効 */
+  tauntUntil: number;
+  /** 説得の相手なら stage.persuasions の添字 */
+  persuasion: number | null;
 
   goalPos: Vec2 | null;
   goalField: FlowField | null;
@@ -108,7 +129,8 @@ export type SimEvent =
   | { type: 'unitRetired'; uid: string; defId: string }
   | { type: 'bondSupport'; targetUid: string; targetDefId: string; supporterUids: string[]; pos: Vec2 }
   | { type: 'levelUp'; uid: string; defId: string; level: number }
-  | { type: 'enemySpawned'; uid: string; defId: string; pos: Vec2 };
+  | { type: 'enemySpawned'; uid: string; defId: string; pos: Vec2 }
+  | { type: 'villageVisited'; uid: string; defId: string; villageId: string; text: string };
 
 /** 攻撃を出した時点で固定される攻撃側の値。近接も飛翔体も同じものを通す */
 export type HitSource = {
@@ -157,4 +179,14 @@ export type BattleState = {
   spawnCounts: number[];
   projectiles: Projectile[];
   nextProjectileId: number;
+  /** このステージで加わった仲間の ID（クリアしたときだけセーブに残る） */
+  joined: string[];
+  /** このステージで受け取った一度きりのごほうびの印 */
+  claimed: string[];
+  /** 訪れた村の id */
+  visited: string[];
+  pendingRecruit: PendingRecruit | null;
+  nextPlayerUid: number;
+  /** 開始時点のセーブの claimed */
+  claimedBefore: ReadonlySet<string>;
 };
