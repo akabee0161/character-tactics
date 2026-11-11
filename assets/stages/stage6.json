@@ -52,10 +52,10 @@
     { "defId": "narazumono", "pos": { "x": 368, "y": 208 }, "ai": { "kind": "sentry", "sightRange": 100 } },
     { "defId": "narazumono", "pos": { "x": 144, "y": 400 }, "ai": { "kind": "sentry", "sightRange": 100 } },
     { "defId": "narazumono", "pos": { "x": 336, "y": 400 }, "ai": { "kind": "sentry", "sightRange": 100 } },
-    { "defId": "yumihei", "pos": { "x": 144, "y": 336 }, "ai": { "kind": "aggressive" } },
-    { "defId": "tatemochi", "pos": { "x": 368, "y": 100 }, "ai": { "kind": "sentry", "sightRange": 110 } },
-    { "defId": "tatemochi", "pos": { "x": 112, "y": 100 }, "ai": { "kind": "sentry", "sightRange": 110 } },
-    { "defId": "yumihei", "pos": { "x": 336, "y": 336 }, "ai": { "kind": "aggressive" } },
+    { "defId": "yumihei",    "pos": { "x": 144, "y": 336 }, "ai": { "kind": "aggressive" } },
+    { "defId": "tatemochi",  "pos": { "x": 368, "y": 100 }, "ai": { "kind": "sentry", "sightRange": 110 } },
+    { "defId": "tatemochi",  "pos": { "x": 112, "y": 100 }, "ai": { "kind": "sentry", "sightRange": 110 } },
+    { "defId": "yumihei",    "pos": { "x": 336, "y": 336 }, "ai": { "kind": "aggressive" } },
     { "defId": "narazumono", "pos": { "x": 240, "y": 400 }, "ai": { "kind": "sentry", "sightRange": 100 } }
   ],
   "spawners": [

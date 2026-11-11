@@ -52,8 +52,8 @@
     { "defId": "narazumono", "pos": { "x": 336, "y": 240 }, "ai": { "kind": "sentry", "sightRange": 90 } },
     { "defId": "yumihei",    "pos": { "x": 240, "y": 144 }, "ai": { "kind": "sentry", "sightRange": 130 } },
     { "defId": "narazumono", "pos": { "x": 240, "y": 432 }, "ai": { "kind": "sentry", "sightRange": 90 } },
-    { "defId": "tatemochi", "pos": { "x": 336, "y": 336 }, "ai": { "kind": "sentry", "sightRange": 110 } },
-    { "defId": "yumihei", "pos": { "x": 336, "y": 144 }, "ai": { "kind": "sentry", "sightRange": 130 } },
+    { "defId": "tatemochi",  "pos": { "x": 336, "y": 336 }, "ai": { "kind": "sentry", "sightRange": 110 } },
+    { "defId": "yumihei",    "pos": { "x": 336, "y": 144 }, "ai": { "kind": "sentry", "sightRange": 130 } },
     { "defId": "narazumono", "pos": { "x": 208, "y": 432 }, "ai": { "kind": "sentry", "sightRange": 110 } }
   ],
   "victory": { "type": "reach", "pos": { "x": 240, "y": 48 }, "radius": 40, "by": "any" },
