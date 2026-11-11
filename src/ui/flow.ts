@@ -1,7 +1,8 @@
 import { mergeCounters } from '../core/counters';
 import { applyXp, earnedTitles } from '../core/progress';
 import type { Registry } from '../engine/registry';
-import type { BattleState, CharProgress, StatBonus } from '../core/types';
+import type { StageDef } from '../engine/schema';
+import type { BattleState,CharProgress, StatBonus } from '../core/types';
 import type { SaveData } from '../save/save';
 
 export function isStageUnlocked(reg: Registry, save: SaveData, index: number): boolean {
@@ -13,6 +14,14 @@ export function isStageUnlocked(reg: Registry, save: SaveData, index: number): b
 
 export function hasReadIntro(save: SaveData, stageId: string): boolean {
   return save.readIntroStageIds.includes(stageId);
+}
+
+/**
+ * 導入の会話の「とばす」を出せるか。既読で、かつ開始時の加入の会話（joins）がすべて読み終わっている（仲間になっている）こと。
+ * 未読の加入の会話は導入につながっているので、飛ばすと仲間の加入を見ずに済んでしまう
+ */
+export function canSkipIntro(save: SaveData, stage: StageDef): boolean {
+  return hasReadIntro(save, stage.id) && stage.joins.every((j) => save.members.includes(j.unitId));
 }
 
 /** 変化がなければ同じ参照を返す。呼び出し側が無駄な writeSave をしなくて済む */

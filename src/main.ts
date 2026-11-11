@@ -17,7 +17,7 @@ import { makeAnimStore, noteAttacks, resetAnim, updateMotion } from './render/an
 import { LOGICAL_H, LOGICAL_W, computeViewport, fitCanvas, logicalToMap, screenToLogical } from './render/viewport';
 import { debugKey, debugLabel, isDebugMode, makeDebugClock, simDt } from './ui/debug';
 import { clearSpeech, makeSpeechState, pushSpeech, tickSpeech } from './ui/speech';
-import { applyStageClear, hasReadIntro, isStageUnlocked, markIntroRead } from './ui/flow';
+import { applyStageClear, canSkipIntro, isStageUnlocked, markIntroRead } from './ui/flow';
 import { hitRect, pickUnit } from './ui/hit';
 import { resolveMapGesture } from './ui/input';
 import type { PointerStart } from './ui/input';
@@ -233,7 +233,7 @@ function onPointerDown(ev: PointerEvent): void {
 
     case 'talk': {
       if (!talk) return;
-      if (hasReadIntro(save, stageId) && hitRect(BTN.skip, p)) skipTalk(talk);
+      if (battle && canSkipIntro(save, battle.stage) && hitRect(BTN.skip, p)) skipTalk(talk);
       else advanceTalk(talk, talkMeasure, talkMaxWidth, TALK_MAX_LINES);
       if (talk.done) endTalk();
       return;
@@ -463,7 +463,7 @@ function render(): void {
     case 'talk':
       if (battle && talk) {
         drawBattle(ctx, registry, battle, null, effects, escorts, images, anim);
-        drawTalk(ctx, registry, talk, hasReadIntro(save, stageId), images);
+        drawTalk(ctx, registry, talk, canSkipIntro(save, battle.stage), images);
       }
       break;
     case 'outro':

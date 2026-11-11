@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyStageClear, hasReadIntro, isStageUnlocked, markIntroRead } from './flow';
+import { applyStageClear, canSkipIntro, hasReadIntro, isStageUnlocked, markIntroRead } from './flow';
 import { applyXp } from '../core/progress';
 import { newSave } from '../save/save';
 import { beginBattle, createBattleState } from '../core/state';
@@ -244,5 +244,28 @@ describe('applyStageClear: 加入と印と上乗せ', () => {
     const r = applyStageClear(reg, newSave(reg), state.stage.id, state);
     expect(r.gains.find((g) => g.id === 'gau')!.joined).toBe(true);
     expect(r.gains.find((g) => g.id === 'roran')!.joined).toBe(false);
+  });
+});
+
+describe('canSkipIntro', () => {
+  const reg = testRegistry();
+  const base = reg.stages[0]!;
+  const join = { unitId: 'ally05', level: 1, talk: [] };
+  const stage = { ...base, joins: [join] };
+
+  it('既読でも、開始時の加入の会話が未読（まだ仲間でない）なら飛ばせない', () => {
+    const s = markIntroRead(newSave(reg), stage.id);
+    expect(canSkipIntro(s, stage)).toBe(false);
+  });
+
+  it('既読で加入済みなら飛ばせる。未読なら飛ばせない', () => {
+    const read = markIntroRead(newSave(reg), stage.id);
+    expect(canSkipIntro({ ...read, members: ['ally05'] }, stage)).toBe(true);
+    expect(canSkipIntro({ ...newSave(reg), members: ['ally05'] }, stage)).toBe(false);
+  });
+
+  it('加入の会話が無いステージは既読だけで飛ばせる', () => {
+    const s = markIntroRead(newSave(reg), base.id);
+    expect(canSkipIntro(s, { ...base, joins: [] })).toBe(true);
   });
 });
