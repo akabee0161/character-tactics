@@ -78,6 +78,23 @@ class GalleryMainTest(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertIn("テストの敵", self.out.read_text(encoding="utf-8"))
 
+    def test_first_moves_the_named_enemy_after_the_refs(self):
+        tmp = Path(self._tmp.name)
+        (tmp / "enemy" / "zz-enemy.json").write_text(
+            '{"id": "zz-enemy", "name": "後ろの敵", "archetype": "dagger", "body": "male",'
+            ' "recolor": {"clothes_dark_hi": "dirt_hi"}}', encoding="utf-8")
+        Image.new("RGBA", (128, 384)).save(tmp / "sheets" / "zz-enemy.png")
+        ref = tmp / "ref.png"
+        Image.new("RGBA", (128, 384)).save(ref)
+        code = self.enemy_gallery.main([str(self.out), "--ref", f"{ref}:味方", "--first", "zz-enemy"])
+        self.assertEqual(code, 0)
+        page = self.out.read_text(encoding="utf-8")
+        self.assertLess(page.index("味方"), page.index("後ろの敵"))
+        self.assertLess(page.index("後ろの敵"), page.index("テストの敵"))
+
+    def test_first_with_unknown_id_fails(self):
+        self.assertEqual(self.enemy_gallery.main([str(self.out), "--first", "nope"]), 2)
+
 
 if __name__ == "__main__":
     unittest.main()

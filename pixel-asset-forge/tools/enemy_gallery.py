@@ -121,6 +121,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("out", type=Path, help="書き出す HTML")
     parser.add_argument("--ref", action="append", default=[], metavar="PNG:名前", help="比較用に先頭へ足すシート（味方など）")
+    parser.add_argument("--first", action="append", default=[], metavar="ID", help="この敵を --ref の次（敵の先頭）に並べる（新しく組んだ敵を先に見せる）")
     args = parser.parse_args(argv)
     try:
         entries: list[tuple[str, str, Path]] = []
@@ -136,6 +137,16 @@ def main(argv: list[str] | None = None) -> int:
             if not png.is_file():
                 raise EnemyError(f"{png} が無い（先に tools/enemy_build.py --all）")
             entries.append((recipe.id, recipe.name, png))
+        if args.first:
+            ids = [e[0] for e in entries]
+            unknown = [i for i in args.first if i not in ids]
+            if unknown:
+                raise EnemyError(f"--first の id が無い: {', '.join(unknown)}")
+            head = [e for e in entries[: len(args.ref)]]
+            body = entries[len(args.ref):]
+            firsts = [e for i in args.first for e in body if e[0] == i]
+            rest = [e for e in body if e[0] not in args.first]
+            entries = head + firsts + rest
         if not entries:
             raise EnemyError("並べるシートが無い")
         args.out.parent.mkdir(parents=True, exist_ok=True)
