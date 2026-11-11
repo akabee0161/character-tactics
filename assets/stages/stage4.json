@@ -48,7 +48,13 @@
     { "defId": "narazumono", "pos": { "x": 240, "y": 400 }, "ai": { "kind": "sentry", "sightRange": 100 } },
     { "defId": "yumihei",    "pos": { "x": 176, "y": 272 }, "ai": { "kind": "sentry", "sightRange": 130 } },
     { "defId": "yumihei",    "pos": { "x": 272, "y": 272 }, "ai": { "kind": "sentry", "sightRange": 130 } },
-    { "defId": "tatemochi",  "pos": { "x": 240, "y": 144 }, "ai": { "kind": "aggressive" } }
+    { "defId": "tatemochi",  "pos": { "x": 240, "y": 144 }, "ai": { "kind": "aggressive" } },
+    { "defId": "narazumono", "pos": { "x": 336, "y": 464 }, "ai": { "kind": "sentry", "sightRange": 100 } },
+    { "defId": "tatemochi",  "pos": { "x": 144, "y": 320 }, "ai": { "kind": "sentry", "sightRange": 110 } },
+    { "defId": "yumihei",    "pos": { "x": 336, "y": 176 }, "ai": { "kind": "sentry", "sightRange": 130 } },
+    { "defId": "narazumono", "pos": { "x": 144, "y": 464 }, "ai": { "kind": "sentry", "sightRange": 100 } },
+    { "defId": "yumihei",    "pos": { "x": 144, "y": 176 }, "ai": { "kind": "sentry", "sightRange": 130 } },
+    { "defId": "narazumono", "pos": { "x": 336, "y": 320 }, "ai": { "kind": "sentry", "sightRange": 110 } }
   ],
   "victory": { "type": "reach", "pos": { "x": 240, "y": 48 }, "radius": 40, "by": "any" },
   "defeat": [{ "type": "unitLost", "defIds": ["roran"] }],

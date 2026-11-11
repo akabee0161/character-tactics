@@ -46,10 +46,17 @@
   "enemies": [
     { "defId": "narazumono", "pos": { "x": 240, "y": 432 }, "ai": { "kind": "sentry", "sightRange": 100 } },
     { "defId": "tatemochi",  "pos": { "x": 240, "y": 368 }, "ai": { "kind": "guard", "post": { "x": 240, "y": 368 }, "leash": 140, "sightRange": 120 } },
-    { "defId": "yumihei",    "pos": { "x": 272, "y": 272 }, "ai": { "kind": "sentry", "sightRange": 130 } },
+    { "defId": "yumihei",    "pos": { "x": 272, "y": 272 }, "ai": { "kind": "aggressive" } },
     { "defId": "tatemochi",  "pos": { "x": 240, "y": 224 }, "ai": { "kind": "guard", "post": { "x": 240, "y": 224 }, "leash": 140, "sightRange": 120 } },
     { "defId": "narazumono", "pos": { "x": 144, "y": 208 }, "ai": { "kind": "sentry", "sightRange": 100 } },
-    { "defId": "narazumono", "pos": { "x": 368, "y": 208 }, "ai": { "kind": "sentry", "sightRange": 100 } }
+    { "defId": "narazumono", "pos": { "x": 368, "y": 208 }, "ai": { "kind": "sentry", "sightRange": 100 } },
+    { "defId": "narazumono", "pos": { "x": 144, "y": 400 }, "ai": { "kind": "sentry", "sightRange": 100 } },
+    { "defId": "narazumono", "pos": { "x": 336, "y": 400 }, "ai": { "kind": "sentry", "sightRange": 100 } },
+    { "defId": "yumihei",    "pos": { "x": 144, "y": 336 }, "ai": { "kind": "aggressive" } },
+    { "defId": "tatemochi",  "pos": { "x": 368, "y": 100 }, "ai": { "kind": "sentry", "sightRange": 110 } },
+    { "defId": "tatemochi",  "pos": { "x": 112, "y": 100 }, "ai": { "kind": "sentry", "sightRange": 110 } },
+    { "defId": "yumihei",    "pos": { "x": 336, "y": 336 }, "ai": { "kind": "aggressive" } },
+    { "defId": "narazumono", "pos": { "x": 240, "y": 400 }, "ai": { "kind": "sentry", "sightRange": 100 } }
   ],
   "spawners": [
     { "defId": "narazumono", "pos": { "x": 240, "y": 80 }, "firstAfter": 25, "every": 18, "total": 3 }
