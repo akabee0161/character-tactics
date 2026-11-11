@@ -1,0 +1,11 @@
+{
+  "id": "staff-a-f",
+  "name": "まじない師の見た目（杖・女・前髪ありのロング）",
+  "archetype": "staff",
+  "body": "female",
+  "frames": "assets/unit/staff-a-f",
+  "recolor": {
+    "robe_black_hi": "roof_base",
+    "robe_black_base": "roof_shadow"
+  }
+}

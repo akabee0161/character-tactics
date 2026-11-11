@@ -296,6 +296,7 @@ cat sheets/roran.txt
 短剣の敵4体（`compose/dagger-{bandit,knight,horn,thug}.json`）は、敵の男性の芯（`body/enemy_male/core_*`）に、目・服・頭の部品とガウの短剣・拳を重ねて組む。設定は `checks/dagger-*.json`。
 斧の敵7体（`compose/axe-*.json`）は、男性2体が敵の男性の芯、女性5体が敵の女性の芯（`body/enemy_female/core_*`）に、目・服・頭（女性は長い髪 `hair/{A,B,C}/` の前と後ろも）と、斧（`equip/axe/{male,female}/`）・斧を握る拳（`fist/enemy_{male,female}/axe_hand_*`）・空き手の拳（男性はガウの `fist/gau/free_hand_*`、女性は `fist/enemy_female/free_hand_*`）を重ねて組む。設定は `checks/axe-*.json`。
 弓の敵3体（`compose/bow-{thug,bandit-a-f,horn-b-f}.json`）は、元の敵（`dagger-thug`・`axe-bandit-a-f`・`axe-horn-b-f`）と同じ目・服・頭・髪に、イネスの弓（`equip/bow/`）・矢（`equip/arrow/`）と、敵の肌の色の弓の拳・矢の拳（`fist/enemy_female/{bow,arrow}_hand_*`。画素はイネスの拳と同じ。男性の `bow-thug` もこの拳を使う）を、イネスの重なり順で重ねて組む。攻撃は `atk_wind`・`atk_hit`（引き絞った絵）の2枚。設定は `checks/bow-*.json`。
+杖の敵3体（`compose/staff-{a,b,c}-f.json`）は、ミストの組み方（`compose/mist.json`）から、芯を敵の女性の芯（`body/enemy_female/core_*`。ミストの芯と画素が同じで肌の色だけ違う）に、魔女の帽子とミストの髪を長い髪 `hair/{A,B,C}/` の前と後ろに換えて組む。目 `eye/E0`・ローブ `cloth/robe`・杖 `equip/staff/` はミストと同じで、拳は敵の肌の色の杖の拳（`fist/enemy_female/staff_hand_*`。画素はミストの杖の拳と同じ）と空き手（`fist/enemy_female/free_hand_*`）。重なり順はミストの順に、後ろ髪を斧の女性の敵と同じ位置で足した。ローブの色はレシピの `recolor` で瓦の赤（`roof_base`・`roof_shadow`）に換えて、味方のミストの黒いローブと見分ける。設定は `checks/staff-*.json`。
 
 ```sh
 .venv/bin/python tools/compose.py compose/ines.json --check     # 全32コマが部品から再現できる
@@ -374,13 +375,14 @@ forge をゲームリポジトリへコピーして使うときは、ゲーム�
 
 - レシピは `enemy/<id>.json`（キー: `id` `name` `archetype` `body` `recolor` `frames`）。`id` はファイル名と同じ
 - `archetype` は `dagger` `axe` `spear` `shield` `bow` `staff`（シート定義はどれも `sheets/gau.txt`）。`body` は `male` か `female`
-- `frames` は元のコマの置き場（リポジトリからの相対パス）。今の21体（男性11・女性10）は `assets/unit/<id>`
+- `frames` は元のコマの置き場（リポジトリからの相対パス）。今の24体（男性11・女性13）は `assets/unit/<id>`
   （部品で組んだコマ）を指す。`dagger` 以外では必須。
   書かなければ `dagger` の `male` は `assets/unit/gau/`、`female` は `assets/unit/dagger-female/`
   （`--colours` が比べるのもこの2つ。短剣の女性の元のコマはまだ無いので、今は置き場が無いと言って止まる）
-- 21体のコマはすべて部品から `compose/<id>.json` で組む（短剣の4体・斧の7体は 2026-11-03、槍の5体は 2026-11-05、盾持ちの2体・弓の3体は 2026-11-11）。
+- 24体のコマはすべて部品から `compose/<id>.json` で組む（短剣の4体・斧の7体は 2026-11-03、槍の5体は 2026-11-05、盾持ちの2体・弓の3体・杖の3体は 2026-11-11）。
   `tools/compose.py compose/<id>.json --force` で組み、`tools/unit_rules.py checks/<id>.json` で確かめる。
   女性の id は `<男性の id>-<髪 a・b・c>-f`（a 前髪ありのロング・b 前髪なしのロング・c ポニーテール）。
+  杖の3体は男性がいないので `staff-<髪 a・b・c>-f`。
   前に使っていた生成スクリプト `gen/enemy/` は、腕・袖つきの古い作り方で、2026-11-05 に消した
 - `recolor` は「元のコマが使う用途の色 → 置き換え後の**色見本**」。元のコマが使わない名前は止める。
   そのため `build/enemy/<id>/*.txt`（色替え後のコマ）の `map` は色見本の名前になり、用途の色としては検査されない
