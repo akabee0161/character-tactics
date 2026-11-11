@@ -58,6 +58,11 @@ describe('runBattle', () => {
     expect(checked).toBeGreaterThan(0);
   });
 
+  it('ステージ2は seed が違えば seconds が全部同じにはならない', () => {
+    const secs = [1, 2, 3, 4, 5, 6, 7, 8].map((seed) => runBattle(reg, stage('stage2'), { ...newSave(reg), members: [] }, seed).seconds);
+    expect(new Set(secs).size).toBeGreaterThan(1);
+  }, 60_000);
+
   it('ステージ2は走り抜けず、敵を倒すぶん時間がかかる（20秒超）', () => {
     for (const seed of [1, 2, 3, 4, 5]) {
       const out = runBattle(reg, stage('stage2'), { ...newSave(reg), members: [] }, seed);

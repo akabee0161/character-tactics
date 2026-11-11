@@ -17,6 +17,9 @@
  * - 必殺技は canUseSkill が真のとき即座に出す。needsDest が 1 のものは、最寄りの生きている敵
  *   （距離が同じなら先に並んだ方）の位置を dest にする。敵がいなければ needsDest のものは出さない。
  *   本物のゲーム（main.ts）と同じく、skill コマンドとして step に渡す。
+ * - 揺らぎ（seed は runBattle だけが使う。sim 本体は乱数を使わないため、ボット側で入れる）:
+ *   beginBattle の前に、開始位置への味方の割り当て順を seed でシャッフルして置き直す（置けなければ置き直さない）。
+ *   味方 1 人ごとに 0〜1.5 秒（seed から決める）が過ぎるまで、その人に move を出さない（必殺技は出す）。
  * - pendingRecruit が立ったら、次の tick の前に completeRecruit を呼ぶ（本物は会話のあとに呼ぶ）。
  * - 乱数は使わない。1 戦は戦闘時間 BATTLE_TIME_LIMIT 秒まで。超えたら timeout（負け扱い）。
  * 通し・集計の決まりは各関数のコメントを参照。
@@ -29,16 +32,18 @@ import { newSave } from '../save/save';
 import type { SaveData } from '../save/save';
 import { completeRecruit } from './events';
 import { distance } from './field';
+import { makeRng, nextFloat } from './rng';
 import { step } from './sim';
 import type { SimCommand } from './sim';
 import { canUseSkill } from './skills';
-import { beginBattle, createBattleState } from './state';
+import { beginBattle, createBattleState, placeUnit } from './state';
 import type { BattleState, PartyProgress, Unit, Vec2 } from './types';
 
 export const BATTLE_DT = 1 / 60;
 export const BATTLE_TIME_LIMIT = 300; // 秒
 export const MAX_ATTEMPTS = 5;
 const MOVE_REISSUE_TICKS = 60;
+const MAX_REACTION_DELAY = 1.5; // 秒
 
 export type BattleOutcome = {
   result: 'victory' | 'defeat' | 'timeout';
@@ -101,7 +106,9 @@ function persuadePairs(state: BattleState, enemies: Unit[]): { foe: Unit; persua
 
 type Target = { key: string; dest: Vec2 } | null;
 
-export function botCommands(state: BattleState, tick: number, memory: MoveMemory = new Map()): SimCommand[] {
+export function botCommands(
+  state: BattleState, tick: number, memory: MoveMemory = new Map(), delays: Map<string, number> = new Map(),
+): SimCommand[] {
   const cmds: SimCommand[] = [];
   const enemies = state.units.filter((u) => u.side === 'enemy' && alive(u));
   const pairs = persuadePairs(state, enemies);
@@ -123,7 +130,7 @@ export function botCommands(state: BattleState, tick: number, memory: MoveMemory
 
   for (const u of state.units) {
     if (u.side !== 'player' || !alive(u)) continue;
-    const t = targetFor(u);
+    const t = state.time < (delays.get(u.uid) ?? 0) ? null : targetFor(u);
     if (t) {
       const mem = memory.get(u.uid);
       if (!mem || mem.key !== t.key || tick - mem.tick >= MOVE_REISSUE_TICKS) {
@@ -145,6 +152,18 @@ export function botCommands(state: BattleState, tick: number, memory: MoveMemory
 
 export function runBattle(reg: Registry, stage: StageDef, party: PartyProgress, seed: number): BattleOutcome {
   const state = createBattleState(reg, stage, party, seed);
+  const rng = makeRng(seed);
+  const players = state.units.filter((u) => u.side === 'player');
+  const spots = players.map((u) => ({ ...u.pos }));
+  for (let i = spots.length - 1; i > 0; i--) {
+    const j = Math.floor(nextFloat(rng) * (i + 1));
+    [spots[i], spots[j]] = [spots[j]!, spots[i]!];
+  }
+  const delays = new Map<string, number>();
+  players.forEach((u, i) => {
+    placeUnit(state, u.uid, spots[i]!);
+    delays.set(u.uid, nextFloat(rng) * MAX_REACTION_DELAY);
+  });
   beginBattle(state);
   const memory: MoveMemory = new Map();
   let tick = 0;
@@ -154,15 +173,15 @@ export function runBattle(reg: Registry, stage: StageDef, party: PartyProgress, 
     if (state.phase === 'victory') { result = 'victory'; break; }
     if (state.phase === 'defeat') { result = 'defeat'; break; }
     if (state.time >= BATTLE_TIME_LIMIT) break;
-    step(state, botCommands(state, tick, memory), BATTLE_DT);
+    step(state, botCommands(state, tick, memory, delays), BATTLE_DT);
     tick++;
   }
-  const players = state.units.filter((u) => u.side === 'player');
+  const finalPlayers = state.units.filter((u) => u.side === 'player');
   return {
     result,
     seconds: state.time,
-    deployed: players.length,
-    survivors: players.filter(alive).length,
+    deployed: finalPlayers.length,
+    survivors: finalPlayers.filter(alive).length,
     state,
   };
 }
