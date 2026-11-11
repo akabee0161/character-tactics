@@ -88,7 +88,8 @@ export function drawRoleBadge(
   if (img === null) {
     ctx.fillStyle = '#ffd479';
     ctx.font = '14px sans-serif';
-    ctx.fillText(def.role, rect.x, rect.y + 18);
+    // 長い役割名が枠（rect の幅）からはみ出さないよう、maxWidth で縮める
+    ctx.fillText(def.role, rect.x, rect.y + 18, rect.w);
     return;
   }
   ctx.drawImage(img, rect.x, rect.y, rect.h, rect.h);

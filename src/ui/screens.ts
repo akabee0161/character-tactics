@@ -145,8 +145,10 @@ function drawRoster(
     drawFace(ctx, { x: r.x + 28, y: r.y + 32 }, FACE_PX.small / 2, def, images);
     ctx.fillStyle = INK;
     // 列が狭いので、はみ出す分は maxWidth で縮める
-    ctx.fillText(`${def.name} Lv${save.units[id]!.level}`, r.x + 56, r.y + 26, r.w - 64);
     const own = titlesOf(reg, save.titles, id);
+    // 称号の行が無いときは、名前の行を顔（枠の縦中央）にそろえる
+    const nameY = own.length > 0 ? r.y + 26 : r.y + r.h / 2 + 6;
+    ctx.fillText(`${def.name} Lv${save.units[id]!.level}`, r.x + 56, nameY, r.w - 64);
     ctx.fillStyle = '#9fb3c4';
     ctx.fillText(own.map((t) => t.label).join('、'), r.x + 56, r.y + 50, r.w - 64);
   });
@@ -241,9 +243,10 @@ export function drawBottomBar(
       if (escorts.has(unit.defId)) {
         ctx.fillStyle = '#ffd479';
         ctx.beginPath();
-        ctx.moveTo(r.x + 8, r.y + 10);
-        ctx.lineTo(r.x + 2, r.y + 20);
-        ctx.lineTo(r.x + 14, r.y + 20);
+        // 顔（左上 40px）・クラス（右上）・HP バー（下）に重ならない、顔の右横に置く
+        ctx.moveTo(r.x + 53, r.y + 30);
+        ctx.lineTo(r.x + 47, r.y + 42);
+        ctx.lineTo(r.x + 59, r.y + 42);
         ctx.closePath();
         ctx.fill();
       }
@@ -357,7 +360,7 @@ export function drawResult(
     ctx.fillStyle = '#ffd479';
     ctx.font = '22px sans-serif';
     const label = (id: string): string => reg.titles.find((t) => t.id === id)?.label ?? id;
-    ctx.fillText(`称号 ゲット: ${newTitles.map(label).join('、')}`, 40, 450);
+    ctx.fillText(`称号 ゲット: ${newTitles.map(label).join('、')}`, 40, 450, LOGICAL_W - 80);
   }
 
   button(ctx, BTN.next, '次へ', true, true);

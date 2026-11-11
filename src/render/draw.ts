@@ -135,7 +135,8 @@ function drawPersuasionMarks(ctx: CanvasRenderingContext2D, reg: Registry, state
     const p = bodyCenter(mapToLogical(u.pos), def, UNIT_R);
     const half = drawHalf(def, UNIT_R);
     // HPバー（幅 26）と「！」（中央）に重ならないよう、HPバーの右隣に置く
-    const x = Math.round(p.x + 15);
+    // 画面の右端でクリップしないよう、吹き出し（幅 12）が収まる位置までに抑える
+    const x = Math.min(Math.round(p.x + 15), LOGICAL_W - 12);
     const y = Math.round(p.y - half - 4 - 10);
     ctx.fillStyle = '#ffd479';
     ctx.fillRect(x, y, 12, 8);
