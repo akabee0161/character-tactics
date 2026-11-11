@@ -1,8 +1,8 @@
-export type { AttackKind, Vec2 } from '../engine/schema';
+export type { AttackKind, StatKey, Vec2 } from '../engine/schema';
 export type { AiDef, DefeatCond, EnemyPlacement, Legend, StageDef, VictoryCond } from '../engine/schema';
 
 import type { Registry } from '../engine/registry';
-import type { AiDef, AttackKind, RecruitDef, StageDef, Vec2 } from '../engine/schema';
+import type { AiDef, AttackKind, RecruitDef, StageDef, StatKey, Vec2 } from '../engine/schema';
 import type { FieldCache } from './fields';
 
 export type Grid = {
@@ -23,7 +23,6 @@ export type FlowField = {
 
 import type { Rng } from './rng';
 
-export type StatKey = 'maxHp' | 'power' | 'guard' | 'speed';
 export type StatBonus = Record<StatKey, number>;
 export const NO_BONUS: StatBonus = Object.freeze({ maxHp: 0, power: 0, guard: 0, speed: 0 });
 

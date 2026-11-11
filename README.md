@@ -107,7 +107,7 @@ URL に `?debug` を付けると、戦闘中だけ次の操作ができる（攻
 | `src/core/spawns.ts` | 時間湧きの判定（純関数） |
 | `src/core/events.ts` | 村の訪問と説得の判定、加入の完了 |
 | `src/core/party.ts` | 出撃できる仲間の並び（加入しうる仲間は加わるまで出ない。最大 8 人） |
-| `src/core/names.ts` | 本文の `{<ユニットID>}` を名前に置き換える |
+| `src/engine/names.ts` | 本文の `{<ユニットID>}` を名前に置き換える |
 | `src/render/` | Canvas2D 描画 |
 | `src/render/images.ts` | 画像の読み込みとキャッシュ |
 | `src/render/sprites.ts` | 画像とプレースホルダを1本にまとめた描画 |

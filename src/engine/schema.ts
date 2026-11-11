@@ -1,4 +1,4 @@
-import type { StatKey } from '../core/types';
+export type StatKey = 'maxHp' | 'power' | 'guard' | 'speed';
 import { footCorners } from './footprint';
 
 export type Vec2 = { x: number; y: number };

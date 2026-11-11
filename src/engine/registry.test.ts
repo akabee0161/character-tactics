@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { testRegistry } from '../core/testing';
-import { MAX_PARTY } from '../core/constants';
+import { MAX_PARTY } from './limits';
 import { buildRegistry, lookupDef, skillParam } from './registry';
 
 const UNIT = {

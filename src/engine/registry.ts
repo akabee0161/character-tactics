@@ -1,5 +1,5 @@
-import { MAX_PARTY } from '../core/constants';
-import { fillNames } from '../core/names';
+import { MAX_PARTY } from './limits';
+import { fillNames } from './names';
 import {
   validateBondsFile, validateEnemyDef, validateGrowthFile, validateLinesFile, validateSkillsFile,
   validateStageDef, validateTitlesFile, validateUnitDef,
