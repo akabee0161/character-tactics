@@ -172,8 +172,12 @@ uv python install 3.14   # 初回だけ
 uv venv --python 3.14 pixel-asset-forge/.venv   # 初回だけ
 uv pip install --python pixel-asset-forge/.venv/bin/python -r pixel-asset-forge/requirements.txt   # 初回だけ
 cd pixel-asset-forge
-.venv/bin/python -c "import sys; sys.path.insert(0,'tools'); import export; raise SystemExit(export.build())"   # build/ を空にして、タイル・セット・味方のシートを作る
-.venv/bin/python tools/enemy_build.py --all   # 敵のシートを build/sheets/ に足す（build/ を空にした後に流す）
+# 1 段目: build/ を空にして、タイル・セット・味方のシートを作る
+# 2 段目: 敵のシートを build/sheets/ に足す（build/ を空にした後に流す）
+# 3 段目: assets/images/ へ書き出す
+# 前の段が失敗したら次の段へ進まないよう、&& でつなぐ
+.venv/bin/python -c "import sys; sys.path.insert(0,'tools'); import export; raise SystemExit(export.build())" &&
+.venv/bin/python tools/enemy_build.py --all &&
 .venv/bin/python -c "import sys; sys.path.insert(0,'tools'); import export; from pathlib import Path; export.export(Path('../sprites.json'), Path('../assets/images'))"
 ```
 
