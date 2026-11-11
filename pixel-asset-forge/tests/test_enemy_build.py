@@ -129,8 +129,8 @@ class RecipeTest(unittest.TestCase):
             load_recipe(path, PALETTE)
 
     def test_unknown_archetype_and_body(self):
-        with self.assertRaisesRegex(EnemyError, "archetype"):
-            load_recipe(self.write(self.good(archetype="staff")), PALETTE)
+        with self.assertRaisesRegex(EnemyError, "archetype は dagger, axe, spear, shield, bow, staff のどれか"):
+            load_recipe(self.write(self.good(archetype="sword")), PALETTE)
         with self.assertRaisesRegex(EnemyError, "body"):
             load_recipe(self.write(self.good(body="other")), PALETTE)
 
@@ -167,6 +167,22 @@ class RecipeTest(unittest.TestCase):
         for archetype in ("axe", "spear"):
             with self.assertRaisesRegex(EnemyError, "frames で置き場を指す"):
                 load_recipe(self.write(self.good(archetype=archetype)), PALETTE)
+
+    def test_shield_bow_and_staff_need_frames(self):
+        for archetype in ("shield", "bow", "staff"):
+            with self.assertRaisesRegex(EnemyError, "frames で置き場を指す"):
+                load_recipe(self.write(self.good(archetype=archetype)), PALETTE)
+
+    def test_shield_bow_and_staff_are_read_with_frames(self):
+        (self.dir / "frames").mkdir()
+        for archetype in ("shield", "bow", "staff"):
+            name = f"{archetype}-test-m"
+            recipe = load_recipe(self.write(self.good(id=name, archetype=archetype, frames="frames"), name=f"{name}.json"),
+                                 PALETTE)
+            self.assertEqual((recipe.archetype, recipe.frames), (archetype, "frames"))
+            source, sheet_def = source_paths(recipe, self.dir)
+            self.assertEqual(source, self.dir / "frames")
+            self.assertEqual(sheet_def, self.dir / "sheets" / "gau.txt")
 
     def test_frames_must_stay_inside_the_repository(self):
         for bad in ("/tmp/x", "../x", "cand/../../x", ""):
