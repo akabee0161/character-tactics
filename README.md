@@ -171,8 +171,12 @@ Python は 3.14 を使う（3.10 では forge のテストが落ちる）。venv
 uv python install 3.14   # 初回だけ
 uv venv --python 3.14 pixel-asset-forge/.venv   # 初回だけ
 uv pip install --python pixel-asset-forge/.venv/bin/python -r pixel-asset-forge/requirements.txt   # 初回だけ
-pixel-asset-forge/.venv/bin/python pixel-asset-forge/tools/export.py sprites.json assets/images
+cd pixel-asset-forge
+.venv/bin/python tools/enemy_build.py --all   # 敵のシートを build/ に作る
+.venv/bin/python -c "import sys; sys.path.insert(0,'tools'); import export; from pathlib import Path; export.export(Path('../sprites.json'), Path('../assets/images'))"
 ```
+
+`sprites.json` に敵のシートを含むので、書き出しは上の 2 段で行う（`enemy_build.py --all` で敵のシートを作り、続けて `export.export()` を直接呼ぶ）。`export.py sprites.json assets/images` をそのまま流すと、`export.py` が最初に `build/` を消して `enemy_build.py` は実行しないため、敵のシートが無く必ず失敗する。
 
 `export.py` は書き出しの前に `build/` を空にして、forge の全アセットを描き直す。`sprites.json` に書いていない絵でも、1枚でも検査に通らなければ `FAIL` で止まり、何も書き出さない（原因の `FAIL` の行は標準エラーに出る。`2>&1 >/dev/null` を付けると原因の行だけが見える）。
 
@@ -197,7 +201,7 @@ python3 tools/anim-page.py assets/units/roran.json out/anim/roran.html
 - **本拠地に到達したときの会話** — ステージの `outro` に書く。書き方は `intro` と同じ
 - **味方・同行 NPC** — `assets/units/<id>.json`。`combat: false` にすると攻撃しない同行者になる
 - **敵** — `assets/enemies/<id>.json`。1 ステージの敵は、時間湧き（`spawners` の `total`）を含めて 16 体まで（`npm test` が見る）。説得の相手は数えない（`npm test` が数えるのは `enemies` と `spawners` の `total` の合計。説得の相手を入れると戦場に 17 体になるステージがある）。難易度を調整したときは、敵の 1 発で満タンの仲間が倒れない（攻撃力 16 以下）ことを決まりにした（根拠: 最も打たれ弱い ally06 が HP18・守り1 で、攻撃力 16 なら 15 ダメージで 1 発では倒れない。仲間を足したら見直す）。こちらはテストでは見ていない
-- **敵の見た目** — 見た目ごとに別の ID の定義を持つ（今は 22 個。ならず者 14・盾持ち 2・弓兵 3・まじない師 3）。同じ種類は `kind` を同じにし、強さの数値・攻撃の型・`role`・`face` を揃える（揃っているかは `src/engine/enemy-looks.test.ts` が見る）。初対面の会話とセリフの鍵は `kind` で見る。forge の絵を書き出すときの注意: `pixel-asset-forge/tools/export.py` は実行の最初に `build/` を消すので、`enemy_build.py --all` の直後に流すと敵のシートが消えて失敗する。今回は `pixel-asset-forge/` で `enemy_build.py --all` を実行した後、`.venv/bin/python -c "import sys; sys.path.insert(0,'tools'); import export; from pathlib import Path; export.export(Path('../sprites.json'), Path('../assets/images'))"` で `export.export()` を直接呼んで書き出した（書き出した PNG に差分は出ないことを確かめた）
+- **敵の見た目** — 見た目ごとに別の ID の定義を持つ（今は 22 個。ならず者 14・盾持ち 2・弓兵 3・まじない師 3）。同じ種類は `kind` を同じにし、強さの数値・攻撃の型・`role`・`face` を揃える（揃っているかは `src/engine/enemy-looks.test.ts` が見る）。初対面の会話とセリフの鍵は `kind` で見る。forge の絵の書き出しは「ドット絵の作りかた」の 2 段の手順で行う（`export.py` の単独実行は敵のシートが消えて失敗する）。ステージへの割り当ては、盾持ち・弓兵・まじない師はステージ番号でずらした巡回、ならず者はステージ 1 から `enemies` の出てくる順にステージをまたいで 14 通りを続けて巡回する（同じステージで同じ ID は 2 回出ない）
 - **時間湧きの敵** — ステージの `spawners` に `{ "defId": ..., "pos": ..., "firstAfter": 20, "every": 15, "total": 3 }` を並べる。`firstAfter` 秒後に1体目、以降 `every` 秒ごとに1体、合計 `total` 体まで湧く。湧いた敵の AI は `aggressive` 固定。総数上限は必須（上限がないと持久戦で詰む）
 - **ユニットの絵** — `assets/images/` に PNG を置き、`assets/units/<id>.json`（敵は `assets/enemies/<id>.json`）の `sprites` に書く。`role` はクラスアイコン、`face` は顔（下パネル・ステージ選択・会話・リザルト）。大きさは「アセットの大きさの規約」、`map` はフィールド上の姿。`map` だけはスプライトシートで、`{ "sheet": "<file>.png", "frame": 32, "idle": { "frames": 2, "fps": 4 }, "walk": {...}, "attack": {...} }` の形。シートは**列 = コマ、行 = 12（3状態 × 4方向）**で、行番号 = 状態index × 4 + 方向index、状態は `idle, walk, attack`、方向は `down, up, left, right` の順。コマは正方形。列数は最大コマ数にそろえ、余りは透明のまま置く。`map` が `null` のあいだは色つきの丸だけが出る（クラス名の文字は `role` が `null` のときに出る別のフォールバックで、`map` とは無関係）。`frame` と各状態の `frames` は1以上の整数、`fps` は1以上の数値であること。実寸と JSON が食い違うと `npm test` が落ちる（`src/engine/sheet-size.test.ts`）。コマの**下から 2px 上の行（32px のコマなら y=30）が足元**で、そこがユニットの位置に来るように描く（pixel-asset-forge の `unit` 規約と同じ）。HPバー・旗・リングは絵の中心を基準に置く
 - **仮の絵の作り直し** — 今の仮の絵は、味方（ally05〜08）と説得の相手（ally06-foe・ally08-foe）の分だけ（敵の絵は forge で組んだ本番の絵）。`node tools/gen-placeholder-sprites.mjs ally05 role-yari ...`。引数に書いた ID の絵だけを書く（引数なしでは何も書かずに終わる。全部を書き直すと今の本番の絵を仮の絵で上書きするため）。本番の絵が揃ったらこの生成器は消してよい。差し替えは PNG を上書きするだけで、コマ数を変えるときだけ JSON の数値を直す

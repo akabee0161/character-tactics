@@ -426,7 +426,7 @@ types/<type>/SPEC.md       型ごとの機械的な規約（寸法・構成・�
 types/<type>/reference/    合格済みのお手本。絵柄はここで揃える（`unit` は `reference/` を持たない。手本は `assets/unit/roran/`（剣と盾）・`assets/unit/ines/`（弓）・`assets/unit/gau/`（短剣）・`assets/unit/mist/`（杖）・`assets/unit/garum/`（48px。大きな剣と盾）、土台は `types/unit/base/` の素体）
 types/unit/base/           unit の素体（4方向）。新しい unit を複製して作る土台
 assets/<type>/<name>.txt   アセットの元テキスト（これが正）
-assets/unit/<unit>/        unit のコマ。味方4体と、部品で組んだ敵16体（`assets/unit/<敵の id>/`）
+assets/unit/<unit>/        unit のコマ。味方4体と、部品で組んだ敵24体（既存 16 ＋新しい 8）（`assets/unit/<敵の id>/`）
 assets/part/<種類>/<名前>/  unit の部品。種類は equip・fist・body・head・hair・eye・cloth（`types/unit/SPEC.md`）
 compose/<unit>.json        部品の組み立て方（tools/compose.py が読む）
 enemy/<id>.json            敵のレシピ（tools/enemy_build.py が読む）
@@ -448,7 +448,7 @@ seed/face32.py             リポジトリ化前の原型。もう使ってい�
 | `face`（顔グラ） | reference 1点（`knight`） | 32x32 | [`types/face/SPEC.md`](types/face/SPEC.md) |
 | `item`（小物） | 3点（`chest`・`sword`・`bow`） | 16x16 | [`types/item/SPEC.md`](types/item/SPEC.md) |
 | `tile`（マップ） | 77点（草原57・城内20）。うち12点は物のセット3つ（村・岩・木）の部品 | 16x16（セットは 32x32） | [`types/tile/SPEC.md`](types/tile/SPEC.md) |
-| `unit`（マップ上のキャラ） | 4体（ロラン・ガウ・ミスト 24コマ、イネス 32コマ）＋素体 `male_*`・`female_*` 4方向ずつ。ほかに敵16体（24コマずつ。部品で生成し、`enemy_build.py` で色替えする）とボスのガルム（24コマ） | 32x32（ガルムだけ 48x48） | [`types/unit/SPEC.md`](types/unit/SPEC.md) |
+| `unit`（マップ上のキャラ） | 4体（ロラン・ガウ・ミスト 24コマ、イネス 32コマ）＋素体 `male_*`・`female_*` 4方向ずつ。ほかに敵24体（既存 16 ＋新しい 8。24コマずつ。部品で生成し、`enemy_build.py` で色替えする）とボスのガルム（24コマ） | 32x32（ガルムだけ 48x48） | [`types/unit/SPEC.md`](types/unit/SPEC.md) |
 
 **「正」はテキストで、PNG は生成物。** 絵を変えるときに編集するのは `assets/**/*.txt` だけで、
 PNG を直接編集しない。

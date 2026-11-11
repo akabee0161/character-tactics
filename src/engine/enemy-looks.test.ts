@@ -12,7 +12,9 @@ function loadAll(): EnemyDef[] {
     if (!name.endsWith('.json')) continue;
     const file = join(DIR, name);
     const r = validateEnemyDef(file, JSON.parse(readFileSync(file, 'utf8')));
-    if (!r.ok) throw new Error(`${file} の 検証に 失敗`);
+    if (!r.ok) {
+      throw new Error(`${file} の 検証に 失敗: ${JSON.stringify(r.errors)}`);
+    }
     out.push(r.value);
   }
   return out;
@@ -98,10 +100,23 @@ describe('ステージへの割り当て', () => {
     }
   });
 
-  it('ならず者は同じ見た目が 2 体並ばない', () => {
+  it.each(['narazumono', 'tatemochi', 'yumihei', 'majinaishi'])('%s は同じ見た目が 2 体並ばない', (kind) => {
     for (const f of stageFiles) {
-      const ids = load(f).enemies.map((e) => e.defId).filter((id) => kindById.get(id) === 'narazumono');
+      const ids = load(f).enemies.map((e) => e.defId).filter((id) => kindById.get(id) === kind);
       for (let i = 1; i < ids.length; i++) expect(ids[i], `${f} ${i}`).not.toBe(ids[i - 1]);
+    }
+  });
+
+  it('定義が存在する見た目はどれも、いずれかのステージに出る', () => {
+    const used = new Set<string>();
+    for (const f of stageFiles) {
+      const s = load(f);
+      for (const e of s.enemies) used.add(e.defId);
+      for (const sp of s.spawners ?? []) used.add(sp.defId);
+    }
+    for (const d of DEFS) {
+      if (d.id === 'ally06-foe' || d.id === 'ally08-foe') continue; // 説得の相手は persuasions で出る
+      expect(used.has(d.id), `${d.id} がどのステージにも出ない`).toBe(true);
     }
   });
 
