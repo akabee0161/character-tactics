@@ -1,0 +1,12 @@
+{
+  "id": "shield-spear-knight",
+  "name": "フルフェイス（槍・盾）",
+  "archetype": "shield",
+  "body": "male",
+  "frames": "assets/unit/shield-spear-knight",
+  "recolor": {
+    "clothes_dark_hi": "floor_base",
+    "clothes_dark_base": "floor_shadow",
+    "clothes_dark_shadow": "floor_dark"
+  }
+}

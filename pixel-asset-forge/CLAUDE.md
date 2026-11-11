@@ -75,6 +75,7 @@
 (set -e; for u in bandit knight horn thug; do .venv/bin/python tools/compose.py compose/dagger-$u.json --check; done)  # 短剣の敵4体も全24コマが部品から再現できる
 (set -e; for u in bandit horn bandit-a-f bandit-b-f bandit-c-f horn-b-f horn-c-f; do .venv/bin/python tools/compose.py compose/axe-$u.json --check; done)  # 斧の敵7体も全24コマが部品から再現できる
 (set -e; for u in knight thug thug-a-f thug-b-f thug-c-f; do .venv/bin/python tools/compose.py compose/spear-$u.json --check; done)  # 槍の敵5体も全24コマが部品から再現できる
+(set -e; for u in dagger spear; do .venv/bin/python tools/compose.py compose/shield-$u-knight.json --check; done)  # 盾持ちの敵2体（盾は assets/part/equip/shield/enemy_male/。文字を h g i にして短剣・槍の m n s とぶつからないようにした）も全24コマが部品から再現できる
 # gen/*_layers.py --export は描き直す前の書き出しに一度だけ使った。古い色の名前のままで今は使えず（落ち方は ISSUES.md）、直しても描き直した部品を上書きするので実行しない（ISSUES.md「gen/*.py が古い色の名前で書かれていて動かない」）（新しいユニットは tools/parts_export.py で同じ形の定義を書く）
 .venv/bin/python tools/compose_page.py --help  # 部品と組んだ結果を層の順に並べる確認ページ（--dirs down,right のようにカンマ区切り）
 .venv/bin/python tools/phone_sheet.py order compose/gau.json build/phone  # スマホで見る PNG（部品を奥→手前。今の絵と案を並べる diff・cmp もある。--help）

@@ -1,0 +1,88 @@
+{
+  "unit": "shield-spear-knight",
+  "compose": "compose/shield-spear-knight.json",
+  "body": "male",
+  "head_chars": "",
+  "items": "stlmnghi",
+  "parts": {
+    "spear": {
+      "weapon": true,
+      "blade": "st",
+      "moves": true
+    },
+    "spear_hand": {
+      "fist": true,
+      "grips": "spear",
+      "fist_sizes": [
+        "3x2",
+        "2x3"
+      ],
+      "moves": true
+    },
+    "eye_E0": {
+      "eye": true
+    },
+    "head_full": {
+      "head": true
+    },
+    "cloth_belt": {},
+    "shield": {
+      "fixed": true
+    },
+    "shield_hand": {
+      "fist": true,
+      "grips": "shield",
+      "fist_sizes": [
+        "3x2"
+      ]
+    }
+  },
+  "orders": {
+    "down": [
+      "CORE",
+      "eye_E0",
+      "cloth_belt",
+      "head_full",
+      "shield_hand",
+      "shield",
+      "spear",
+      "spear_hand"
+    ],
+    "up": [
+      "spear",
+      "shield",
+      "spear_hand",
+      "shield_hand",
+      "CORE",
+      "eye_E0",
+      "cloth_belt",
+      "head_full"
+    ],
+    "left": [
+      "spear",
+      "spear_hand",
+      "CORE",
+      "eye_E0",
+      "cloth_belt",
+      "head_full",
+      "shield_hand",
+      "shield"
+    ],
+    "right": [
+      "shield_hand",
+      "shield",
+      "CORE",
+      "eye_E0",
+      "cloth_belt",
+      "head_full",
+      "spear",
+      "spear_hand"
+    ]
+  },
+  "weapon_check": {
+    "depth": [
+      "down"
+    ]
+  },
+  "exceptions": []
+}
