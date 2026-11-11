@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { testRegistry } from '../core/testing';
+import { MAX_PARTY } from '../core/constants';
 import { buildRegistry, lookupDef, skillParam } from './registry';
 
 const UNIT = {
@@ -369,6 +370,26 @@ describe('本文の {id} の置き換え', () => {
     if (!r.ok) expect(r.errors[0]?.reason).toBe('しらない なまえの id: nobody');
   });
 
+  it('intro・outro・敵の名前の知らない id もエラー（出どころのパスつき）', () => {
+    const r = buildRegistry(
+      files({
+        'assets/stages/stage1.json': {
+          ...STAGE,
+          intro: [{ speaker: null, text: '{nobody1}が いる' }],
+          outro: [{ speaker: 'roran', text: '{nobody2}だ' }],
+        },
+        'assets/enemies/narazumono.json': { ...ENEMY, name: '{nobody3}の かげ' },
+      }),
+      KNOWN_SKILLS,
+    );
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    const got = r.errors.map((e) => `${e.path}: ${e.reason}`);
+    expect(got).toContain('intro[0].text: しらない なまえの id: nobody1');
+    expect(got).toContain('outro[0].text: しらない なまえの id: nobody2');
+    expect(got).toContain('name: しらない なまえの id: nobody3');
+  });
+
   it('intro と outro の text を名前にする', () => {
     const r = buildRegistry(
       files({
@@ -505,11 +526,11 @@ describe('buildRegistry: joins / persuasions / villages', () => {
   it('roster と加入しうる仲間の合計が 8 人を超えるとエラー', () => {
     const extra: Record<string, unknown> = {};
     const joins: unknown[] = [];
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < MAX_PARTY; i++) {
       extra[`assets/units/x${i}.json`] = { ...INES, id: `x${i}`, name: `x${i}` };
       joins.push({ unitId: `x${i}`, level: 1, talk: TALK });
     }
     const r = base({ joins }, extra);
-    expect(reasons(r).some((s) => s.includes('8'))).toBe(true);
+    expect(reasons(r).some((s) => s.includes(`${MAX_PARTY} 人を こえている`))).toBe(true);
   });
 });

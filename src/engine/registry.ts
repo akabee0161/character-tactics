@@ -289,6 +289,7 @@ export function buildRegistry(
     return r.text;
   };
 
+  // 以降の書き換えは buildRegistry が読み込みで作った新しいオブジェクト（入力の files とは共有しない）なので安全
   for (const [k, v] of reg.lines) reg.lines.set(k, fill('assets/lines', k, v));
   for (const stage of reg.stages) {
     const file = `assets/stages/${stage.id}.json`;

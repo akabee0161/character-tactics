@@ -93,7 +93,7 @@ describe('攻撃の解決', () => {
     expect(e.hp).toBe(12 - 5);  // ロラン 力6 - 守り1
   });
 
-  it('攻撃力アップとはげますがダメージに乗る', () => {
+  describe('攻撃力アップとはげますがダメージに乗る', () => {
     const hitDamage = (setup: (u: Unit) => void): number => {
       const s = fresh();
       const roran = unitOf(s, 'roran');
@@ -102,12 +102,21 @@ describe('攻撃の解決', () => {
       const e = spawnEnemy(s, 'narazumono', { x: 30, y: 16 });
       step(s, [], 0.01);
       step(s, [], 1.7);
-      return 12 - e.hp;
+      return e.maxHp - e.hp;
     };
     const base = hitDamage(() => {});
-    expect(hitDamage((u) => { u.stagePower = 2; })).toBe(base + 2);
-    expect(hitDamage((u) => { u.cheerUntil = 100; u.cheerPower = 3; })).toBe(base + 3);
-    expect(hitDamage((u) => { u.cheerUntil = 1; u.cheerPower = 3; })).toBe(base);
+
+    it('そのステージの攻撃力アップ（stagePower）が乗る', () => {
+      expect(hitDamage((u) => { u.stagePower = 2; })).toBe(base + 2);
+    });
+
+    it('はげまし（cheerPower）が効いている間は乗る', () => {
+      expect(hitDamage((u) => { u.cheerUntil = 100; u.cheerPower = 3; })).toBe(base + 3);
+    });
+
+    it('はげましが切れていれば乗らない', () => {
+      expect(hitDamage((u) => { u.cheerUntil = 1; u.cheerPower = 3; })).toBe(base);
+    });
   });
 
   it('攻撃間隔が来るまでは追加ダメージが入らない', () => {

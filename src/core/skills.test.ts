@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { beginBattle, createBattleState } from './state';
 import { isFunbaruActive } from './combat';
-import { canUseSkill, useSkill, FUNBARU_DURATION, OMAJINAI_HEAL, KAKENUKERU_DAMAGE, SKILL_EFFECTS, SKILL_EFFECT_IDS } from './skills';
+import { canUseSkill, useSkill, FUNBARU_DURATION, OMAJINAI_HEAL, KAKENUKERU_DAMAGE, TSUKI_DAMAGE, SKILL_EFFECTS, SKILL_EFFECT_IDS } from './skills';
 import { attackPower } from './sim';
 import { testRegistry } from './testing';
 import { NO_BONUS } from './types';
@@ -178,8 +178,8 @@ describe('かけぬける', () => {
     const offPath = addEnemy(s, 160, 272);
     expect(useSkill(s, gau.uid, { x: 260, y: 208 })).toBe(true);
     expect(unitOf(s, 'gau').pos).toEqual({ x: 260, y: 208 });
-    expect(onPath.hp).toBe(12 - KAKENUKERU_DAMAGE);
-    expect(offPath.hp).toBe(12);
+    expect(onPath.hp).toBe(onPath.maxHp - KAKENUKERU_DAMAGE);
+    expect(offPath.hp).toBe(offPath.maxHp);
     expect(s.events).toContainEqual({
       type: 'skill', uid: gau.uid, defId: 'gau', skillId: 'kakenukeru', hits: 1,
       fromPos: { x: 80, y: 208 }, toPos: { x: 260, y: 208 },
@@ -324,7 +324,7 @@ describe('火の雨', () => {
     expect(useSkill(s, caster.uid, { x: 200, y: 208 })).toBe(true);
     expect(a.hp).toBe(6);
     expect(b.hp).toBe(6);
-    expect(far.hp).toBe(12);
+    expect(far.hp).toBe(far.maxHp);
     expect(s.events).toContainEqual(expect.objectContaining({ type: 'skill', skillId: 'hinoame', hits: 2 }));
   });
 
@@ -348,9 +348,9 @@ describe('突き', () => {
     const aside = addEnemy(s, 120, 238);
     lancer.engagedWith = near.uid;
     expect(useSkill(s, lancer.uid)).toBe(true);
-    expect(near.hp).toBe(5);
-    expect(far.hp).toBe(5);
-    expect(aside.hp).toBe(12);
+    expect(near.hp).toBe(near.maxHp - TSUKI_DAMAGE);
+    expect(far.hp).toBe(far.maxHp - TSUKI_DAMAGE);
+    expect(aside.hp).toBe(aside.maxHp);
     expect(near.lastHitBy).toBe(lancer.uid);
     expect(unitOf(s, 'roran').pos).toEqual({ x: 80, y: 208 });
     expect(s.events).toContainEqual(expect.objectContaining({ type: 'skill', skillId: 'tsuki', hits: 2 }));
@@ -364,8 +364,19 @@ describe('突き', () => {
     const north = addEnemy(s, 80, 208 - 70);
     const east = addEnemy(s, 80 + 40, 208);
     expect(useSkill(s, lancer.uid)).toBe(true);
-    expect(east.hp).toBe(5);
-    expect(north.hp).toBe(12);
+    expect(east.hp).toBe(east.maxHp - TSUKI_DAMAGE);
+    expect(north.hp).toBe(north.maxHp);
+  });
+
+  it('相手と完全に同じ位置にいて向きが決まらないときは出ない（d === 0 の境界）', () => {
+    const s = fresh();
+    const lancer = unitOf(s, 'roran');
+    lancer.skillId = 'tsuki';
+    lancer.pos = { x: 80, y: 208 };
+    const same = addEnemy(s, 80, 208);
+    lancer.engagedWith = same.uid;
+    expect(useSkill(s, lancer.uid)).toBe(false);
+    expect(same.hp).toBe(same.maxHp);
   });
 
   it('突きは相手がいないと出ない', () => {

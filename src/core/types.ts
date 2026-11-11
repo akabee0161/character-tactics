@@ -25,7 +25,7 @@ import type { Rng } from './rng';
 
 export type StatKey = 'maxHp' | 'power' | 'guard' | 'speed';
 export type StatBonus = Record<StatKey, number>;
-export const NO_BONUS: StatBonus = { maxHp: 0, power: 0, guard: 0, speed: 0 };
+export const NO_BONUS: StatBonus = Object.freeze({ maxHp: 0, power: 0, guard: 0, speed: 0 });
 
 export type CharProgress = { level: number; xp: number; bonus?: StatBonus };
 

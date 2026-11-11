@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { MAX_PARTY } from './constants';
 import { cellIndexAt } from './field';
 import { fieldToStatic } from './fields';
 import { beginBattle, canPlaceAt, createBattleState, placeUnit, startPositions, statsForLevel, windupOf } from './state';
@@ -217,8 +218,9 @@ describe('windupOf', () => {
 
 describe('出撃メンバーと開始位置', () => {
   const base = testRegistry();
-  const NEW_IDS = ['ally05', 'ally06', 'ally07', 'ally08'];
-  const ALL_IDS = [...NEW_IDS, 'ally09', 'ally10'];
+  // roster に足して MAX_PARTY を 2 人超えるだけの仲間 id（MAX_PARTY・roster の人数に依存しない）
+  const ALL_IDS = Array.from({ length: MAX_PARTY + 2 }, (_, i) => `ally${String(i + 5).padStart(2, '0')}`);
+  const NEW_IDS = ALL_IDS.slice(0, 4);
   const talk = [{ speaker: 'roran', text: 'よろしく' }] as unknown as StageDef['joins'][number]['talk'];
   const recruitOf = (unitId: string) => ({ unitId, level: 2, talk });
   /** 新しい 4 人を足した登録簿。4 人は stage[0] の joins に書かれているので「加入しうる仲間」になる */
@@ -249,13 +251,16 @@ describe('出撃メンバーと開始位置', () => {
 
   it('出撃は 8 人まで', () => {
     const { reg, stage } = reg8();
-    // roster 4 人の上に members が 6 人。超えた分は出撃しない
+    // roster の上に members が MAX_PARTY 人超えるほどいる。超えた分は出撃しない
+    const room = ALL_IDS.slice(0, MAX_PARTY - stage.roster.length);
     const s = createBattleState(reg, { ...stage, joins: [] }, party(ALL_IDS), 1);
-    expect(players(s).map((u) => u.defId)).toEqual([...stage.roster, ...NEW_IDS]);
-    // 8 人そろっているとき、開始時の加入は加えず joined にも入れない
-    const s2 = createBattleState(reg, { ...stage, joins: [recruitOf('ally09')] }, party(NEW_IDS), 1);
-    expect(players(s2)).toHaveLength(8);
-    expect(players(s2).map((u) => u.defId)).not.toContain('ally09');
+    expect(players(s).map((u) => u.defId)).toEqual([...stage.roster, ...room]);
+    expect(players(s)).toHaveLength(MAX_PARTY);
+    // MAX_PARTY 人そろっているとき、開始時の加入は加えず joined にも入れない
+    const extra = ALL_IDS[ALL_IDS.length - 1]!;
+    const s2 = createBattleState(reg, { ...stage, joins: [recruitOf(extra)] }, party(room), 1);
+    expect(players(s2)).toHaveLength(MAX_PARTY);
+    expect(players(s2).map((u) => u.defId)).not.toContain(extra);
     expect(s2.joined).toEqual([]);
   });
 

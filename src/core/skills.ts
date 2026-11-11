@@ -123,6 +123,7 @@ export const SKILL_EFFECTS: Record<string, SkillEffect> = {
     const target = engaged ?? nearestWithin(self.pos, hostiles, length);
     if (!target) return null;
     const d = distance(self.pos, target.pos);
+    // 重なっていて向きが決まらないときは出さない（0 で割らない）
     if (d === 0) return null;
     const to = {
       x: self.pos.x + ((target.pos.x - self.pos.x) / d) * length,

@@ -798,14 +798,19 @@ function readVillages(
       if (ids.has(id)) fail(ctx, `${path}.id`, `id が じゅうふくしている: ${id}`);
       ids.add(id);
     }
-    const col = requireNumber(ctx, `${path}.col`, o.col, { min: 0, int: true }) ?? 0;
-    const row = requireNumber(ctx, `${path}.row`, o.row, { min: 0, int: true }) ?? 0;
-    const blocked = isBlockedCell(col, row);
-    if (blocked === null) fail(ctx, path, 'マップの そとに おけない');
-    else if (!blocked) fail(ctx, path, '村は とおれない マスに おく');
-    const key = `${col},${row}`;
-    if (cells.has(key)) fail(ctx, path, `おなじ マスに 村が ふたつ ある: ${key}`);
-    cells.add(key);
+    const colRaw = requireNumber(ctx, `${path}.col`, o.col, { min: 0, int: true });
+    const rowRaw = requireNumber(ctx, `${path}.row`, o.row, { min: 0, int: true });
+    const col = colRaw ?? 0;
+    const row = rowRaw ?? 0;
+    // col / row が不正なときは、すでにその報告が出ているので、マスについての報告を重ねない
+    if (colRaw !== null && rowRaw !== null) {
+      const blocked = isBlockedCell(col, row);
+      if (blocked === null) fail(ctx, path, 'マップの そとに おけない');
+      else if (!blocked) fail(ctx, path, '村は とおれない マスに おく');
+      const key = `${col},${row}`;
+      if (cells.has(key)) fail(ctx, path, `おなじ マスに 村が ふたつ ある: ${key}`);
+      cells.add(key);
+    }
     const effect = readVillageEffect(ctx, `${path}.effect`, o.effect);
     let text: string | null = null;
     if (effect.type === 'recruit') {
