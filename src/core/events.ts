@@ -27,7 +27,8 @@ function applyVillage(state: BattleState, u: Unit, v: VillageDef): void {
   const key = rewardKey(state.stage.id, v.id);
   const effect = v.effect;
   const taken = state.claimed.includes(key) || state.claimedBefore.has(key);
-  let text = v.text ?? VILLAGE_DONE_TEXT;
+  // 文が無い村（加入の村で text なし）は、初回に文を出さない。受け取り済みのときだけ VILLAGE_DONE_TEXT
+  let text: string | null = v.text;
 
   switch (effect.type) {
     case 'talk':
@@ -60,12 +61,14 @@ function applyVillage(state: BattleState, u: Unit, v: VillageDef): void {
         state.pendingRecruit = { recruit: effect.recruit, pos: { ...pos }, foeUid: null };
         return;
       }
-      state.events.push({
-        type: 'villageVisited', uid: u.uid, defId: u.defId, villageId: v.id, text: VILLAGE_DONE_TEXT,
-      });
+      // すでに仲間のとき。村に文があればそれを出し、無ければ何も出さない
+      if (text !== null) {
+        state.events.push({ type: 'villageVisited', uid: u.uid, defId: u.defId, villageId: v.id, text });
+      }
       return;
     }
   }
+  if (text === null) return;
   state.events.push({ type: 'villageVisited', uid: u.uid, defId: u.defId, villageId: v.id, text });
 }
 
@@ -73,6 +76,8 @@ function applyVillage(state: BattleState, u: Unit, v: VillageDef): void {
 export function updateVillages(state: BattleState): void {
   for (const v of state.stage.villages) {
     if (state.visited.includes(v.id)) continue;
+    // 加入の会話が始まっている間は、加入の村を訪れ済みにしない（会話が終わった tick に改めて始める）
+    if (v.effect.type === 'recruit' && state.pendingRecruit !== null) continue;
     const visitor = state.units.find(
       (u) => u.side === 'player' && !u.retired && u.hp > 0 && isVisiting(state.grid.cell, u.pos, v),
     );
@@ -88,6 +93,8 @@ export function updateVillages(state: BattleState): void {
  */
 export function updatePersuasions(state: BattleState): void {
   if (state.pendingRecruit !== null) return;
+  // 仲間がすでに MAX_PARTY 人なら説得を始めない（相手は普通の敵のまま）
+  if (state.units.filter((u) => u.side === 'player' && !u.retired).length >= MAX_PARTY) return;
   for (const foe of state.units) {
     if (foe.side !== 'enemy' || foe.persuasion === null || foe.retired || foe.hp <= 0) continue;
     const def = state.stage.persuasions[foe.persuasion];

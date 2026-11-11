@@ -209,13 +209,35 @@ describe('updateVillages', () => {
     expect(s.time).toBe(time);
   });
 
-  it('加入済みの仲間の村は pendingRecruit を立てず、文だけ出す', () => {
+  it('加入済みの仲間の村は pendingRecruit を立てない。text があればその文を出し、無ければ何も出さない', () => {
     const s = fresh([{ ...village(recruit('roran')), text: null }]);
     placeAll(s, FAR);
     players(s)[0]!.pos = { ...NEAR };
     updateVillages(s);
     expect(s.pendingRecruit).toBeNull();
-    expect(s.events[0]).toMatchObject({ type: 'villageVisited', text: VILLAGE_DONE_TEXT });
+    expect(s.visited).toEqual(['v1']);
+    expect(s.events).toEqual([]);
+
+    const s2 = fresh([{ ...village(recruit('roran')), text: 'もう 仲間だ' }]);
+    placeAll(s2, FAR);
+    players(s2)[0]!.pos = { ...NEAR };
+    updateVillages(s2);
+    expect(s2.events[0]).toMatchObject({ type: 'villageVisited', text: 'もう 仲間だ' });
+  });
+
+  it('加入の会話の間は加入の村を訪れ済みにせず、会話が終わった次の tick で加入が始まる', () => {
+    const s = fresh([{ ...village(recruit('ghost')), text: null }]);
+    placeAll(s, FAR);
+    players(s)[0]!.pos = { ...NEAR };
+    const other = { recruit: { unitId: 'ally05', level: 1, talk: [] }, pos: { x: 1, y: 2 }, foeUid: null };
+    s.pendingRecruit = other;
+    updateVillages(s);
+    expect(s.visited).toEqual([]);
+    expect(s.pendingRecruit).toBe(other);
+    s.pendingRecruit = null;
+    updateVillages(s);
+    expect(s.visited).toEqual(['v1']);
+    expect(s.pendingRecruit!.recruit.unitId).toBe('ghost');
   });
 });
 
@@ -269,6 +291,15 @@ describe('updatePersuasions', () => {
     expect(s.pendingRecruit).toBeNull();
     foe.hp = foe.maxHp;
     foe.retired = true;
+    updatePersuasions(s);
+    expect(s.pendingRecruit).toBeNull();
+  });
+
+  it('味方が MAX_PARTY 人いれば説得を始めない', () => {
+    const { s } = withPersuasion();
+    roranOf(s).pos = { x: 310, y: 300 };
+    const base = players(s)[0]!;
+    while (players(s).length < MAX_PARTY) s.units.push({ ...base, uid: `x${s.units.length}`, pos: { ...FAR } });
     updatePersuasions(s);
     expect(s.pendingRecruit).toBeNull();
   });
