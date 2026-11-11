@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
 import { validateEnemyDef } from './schema';
 import type { EnemyDef } from './schema';
@@ -70,6 +71,58 @@ describe('敵の見た目ごとの定義', () => {
       expect(d, id).toBeDefined();
       expect(d?.kind, id).toBeUndefined();
       expect(d?.sprites.map?.sheet, id).toBe(sheet);
+    }
+  });
+});
+
+describe('ステージへの割り当て', () => {
+  const STAGE_DIR = 'assets/stages';
+  const BASES = ['narazumono', 'tatemochi', 'yumihei', 'majinaishi', 'garum'];
+  type StageJson = {
+    enemies: { defId: string; pos: unknown; ai: unknown }[];
+    spawners?: { defId: string }[];
+  };
+  const stageFiles = readdirSync(STAGE_DIR).filter((f) => f.endsWith('.json'));
+  const kindById = new Map(DEFS.map((d) => [d.id, kindOf(d)]));
+  const load = (f: string): StageJson => JSON.parse(readFileSync(join(STAGE_DIR, f), 'utf8')) as StageJson;
+
+  it('2 体以上いる種類は、2 つ以上の見た目で出る', () => {
+    for (const f of stageFiles) {
+      const byKind = new Map<string, string[]>();
+      for (const e of load(f).enemies) {
+        const k = kindById.get(e.defId) ?? e.defId;
+        byKind.set(k, [...(byKind.get(k) ?? []), e.defId]);
+      }
+      for (const [k, ids] of byKind) {
+        if (ids.length >= 2) expect(new Set(ids).size, `${f} ${k}`).toBeGreaterThanOrEqual(2);
+      }
+    }
+  });
+
+  it('ならず者は同じ見た目が 2 体並ばない', () => {
+    for (const f of stageFiles) {
+      const ids = load(f).enemies.map((e) => e.defId).filter((id) => kindById.get(id) === 'narazumono');
+      for (let i = 1; i < ids.length; i++) expect(ids[i], `${f} ${i}`).not.toBe(ids[i - 1]);
+    }
+  });
+
+  it('時間湧きの defId は 1 つ目の見た目のまま', () => {
+    for (const f of stageFiles) {
+      for (const s of load(f).spawners ?? []) expect(BASES, `${f} ${s.defId}`).toContain(s.defId);
+    }
+  });
+
+  it('敵の位置・AI・数はステージごとに変わらない', () => {
+    for (const f of stageFiles) {
+      const before = JSON.parse(
+        execFileSync('git', ['show', `main:${STAGE_DIR}/${f}`], { encoding: 'utf8' }),
+      ) as StageJson;
+      const now = load(f);
+      expect(now.enemies.length, f).toBe(before.enemies.length);
+      now.enemies.forEach((e, i) => {
+        expect(e.pos, `${f} ${i}`).toEqual(before.enemies[i]!.pos);
+        expect(e.ai, `${f} ${i}`).toEqual(before.enemies[i]!.ai);
+      });
     }
   });
 });

@@ -238,6 +238,7 @@ describe('step: 交戦の成立と解除', () => {
   it('kind が同じ別の defId の敵とは、続けて戦っても初対面は 1 回', () => {
     const { state: s } = fresh();
     const base = s.reg.enemies.get('narazumono')!;
+    const base2 = s.reg.enemies.get('narazumono-2');
     // レジストリは全テストで共有なので、書き換えたら必ず戻す
     try {
       s.reg.enemies.set('narazumono', { ...base, kind: 'narazumono' });
@@ -245,7 +246,8 @@ describe('step: 交戦の成立と解除', () => {
       expectSharedKindFirstMeetingOnce(s);
     } finally {
       s.reg.enemies.set('narazumono', base);
-      s.reg.enemies.delete('narazumono-2');
+      if (base2) s.reg.enemies.set('narazumono-2', base2);
+      else s.reg.enemies.delete('narazumono-2');
     }
   });
 

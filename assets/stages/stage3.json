@@ -40,17 +40,17 @@
   "roster": ["roran", "ines", "mist", "gau"],
   "enemies": [
     { "defId": "tatemochi",  "pos": { "x": 176, "y": 496 }, "ai": { "kind": "aggressive" } },
-    { "defId": "tatemochi",  "pos": { "x": 368, "y": 496 }, "ai": { "kind": "aggressive" } },
+    { "defId": "tatemochi-2",  "pos": { "x": 368, "y": 496 }, "ai": { "kind": "aggressive" } },
     { "defId": "tatemochi",  "pos": { "x": 176, "y": 304 }, "ai": { "kind": "guard", "post": { "x": 176, "y": 272 }, "leash": 140, "sightRange": 120 } },
-    { "defId": "tatemochi",  "pos": { "x": 336, "y": 304 }, "ai": { "kind": "guard", "post": { "x": 336, "y": 272 }, "leash": 140, "sightRange": 120 } },
+    { "defId": "tatemochi-2",  "pos": { "x": 336, "y": 304 }, "ai": { "kind": "guard", "post": { "x": 336, "y": 272 }, "leash": 140, "sightRange": 120 } },
     { "defId": "garum",      "pos": { "x": 240, "y": 112 }, "ai": { "kind": "aggressive" } },
-    { "defId": "majinaishi", "pos": { "x": 176, "y": 208 }, "ai": { "kind": "aggressive" } },
+    { "defId": "majinaishi-3", "pos": { "x": 176, "y": 208 }, "ai": { "kind": "aggressive" } },
     { "defId": "majinaishi", "pos": { "x": 304, "y": 208 }, "ai": { "kind": "aggressive" } },
-    { "defId": "majinaishi", "pos": { "x": 240, "y": 240 }, "ai": { "kind": "aggressive" } },
-    { "defId": "majinaishi", "pos": { "x": 240, "y": 400 }, "ai": { "kind": "aggressive" } },
+    { "defId": "majinaishi-2", "pos": { "x": 240, "y": 240 }, "ai": { "kind": "aggressive" } },
+    { "defId": "majinaishi-3", "pos": { "x": 240, "y": 400 }, "ai": { "kind": "aggressive" } },
     { "defId": "majinaishi", "pos": { "x": 112, "y": 400 }, "ai": { "kind": "aggressive" } },
-    { "defId": "majinaishi", "pos": { "x": 368, "y": 400 }, "ai": { "kind": "aggressive" } },
-    { "defId": "majinaishi", "pos": { "x": 240, "y": 480 }, "ai": { "kind": "aggressive" } }
+    { "defId": "majinaishi-2", "pos": { "x": 368, "y": 400 }, "ai": { "kind": "aggressive" } },
+    { "defId": "majinaishi-3", "pos": { "x": 240, "y": 480 }, "ai": { "kind": "aggressive" } }
   ],
   "spawners": [
     { "defId": "narazumono", "pos": { "x": 80, "y": 80 }, "firstAfter": 15, "every": 12, "total": 4 }
