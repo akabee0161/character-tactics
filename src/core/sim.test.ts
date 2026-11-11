@@ -270,7 +270,7 @@ describe('step: 交戦の成立と解除', () => {
 
   it('kind が無い敵は defId のまま初対面になる', () => {
     const { state: s } = fresh();
-    expect(s.reg.enemies.get('narazumono')!.kind).toBeUndefined();
+    expect(s.reg.enemies.get('ally06-foe')!.kind).toBeUndefined();
     expect(s.reg.enemies.get('garum')!.kind).toBeUndefined();
     const roran = unitOf(s, 'roran');
     for (const u of s.units) if (u.side === 'player' && u !== roran) u.pos = { x: 900, y: 900 };
@@ -283,11 +283,11 @@ describe('step: 交戦の成立と解除', () => {
     collect();
     e1.pos = { x: 900, y: 900 };
     step(s, [], 0.1);
-    spawnEnemy(s, 'narazumono', { x: 30, y: 80 });
+    spawnEnemy(s, 'ally06-foe', { x: 30, y: 80 });
     step(s, [], 0.1);
     collect();
     expect(engages.map((e) => e.firstMeeting)).toEqual([true, true]);
-    expect(engages.map((e) => e.targetDefId)).toEqual(['garum', 'narazumono']);
+    expect(engages.map((e) => e.targetDefId)).toEqual(['garum', 'ally06-foe']);
   });
 
   it('イネスは 160px 離れていても交戦できる', () => {

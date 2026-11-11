@@ -1,5 +1,5 @@
 {
-  "id": "yumihei", "name": "弓兵", "role": "敵",
+  "id": "yumihei", "kind": "yumihei", "name": "弓兵", "role": "敵",
   "combat": true,
   "maxHp": 10, "power": 11, "guard": 0,
   "attack": "bow", "range": 120,
