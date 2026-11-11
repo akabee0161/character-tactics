@@ -238,8 +238,18 @@ describe('step: 交戦の成立と解除', () => {
   it('kind が同じ別の defId の敵とは、続けて戦っても初対面は 1 回', () => {
     const { state: s } = fresh();
     const base = s.reg.enemies.get('narazumono')!;
-    s.reg.enemies.set('narazumono', { ...base, kind: 'narazumono' });
-    s.reg.enemies.set('narazumono-2', { ...base, id: 'narazumono-2', kind: 'narazumono' });
+    // レジストリは全テストで共有なので、書き換えたら必ず戻す
+    try {
+      s.reg.enemies.set('narazumono', { ...base, kind: 'narazumono' });
+      s.reg.enemies.set('narazumono-2', { ...base, id: 'narazumono-2', kind: 'narazumono' });
+      expectSharedKindFirstMeetingOnce(s);
+    } finally {
+      s.reg.enemies.set('narazumono', base);
+      s.reg.enemies.delete('narazumono-2');
+    }
+  });
+
+  function expectSharedKindFirstMeetingOnce(s: BattleState): void {
     const roran = unitOf(s, 'roran');
     for (const u of s.units) if (u.side === 'player' && u !== roran) u.pos = { x: 900, y: 900 };
     const engages: Extract<typeof s.events[number], { type: 'engage' }>[] = [];
@@ -256,10 +266,12 @@ describe('step: 交戦の成立と解除', () => {
     collect();
     expect(engages.map((e) => e.firstMeeting)).toEqual([true, false]);
     expect(engages.map((e) => e.targetDefId)).toEqual(['narazumono', 'narazumono']);
-  });
+  }
 
   it('kind が無い敵は defId のまま初対面になる', () => {
     const { state: s } = fresh();
+    expect(s.reg.enemies.get('narazumono')!.kind).toBeUndefined();
+    expect(s.reg.enemies.get('garum')!.kind).toBeUndefined();
     const roran = unitOf(s, 'roran');
     for (const u of s.units) if (u.side === 'player' && u !== roran) u.pos = { x: 900, y: 900 };
     const engages: Extract<typeof s.events[number], { type: 'engage' }>[] = [];
