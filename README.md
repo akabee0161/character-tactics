@@ -68,6 +68,7 @@ npm run balance # ステージの難易度を測る（下の「難易度を測�
 - 1 ステージで負けたら、同じ編成のまま最大 5 回まで挑み直す。表の「1回目の勝率」は、1 回目で勝った通しの割合（そのステージに到達した通しに対する %）。ほかに出撃人数の平均・生き残りの平均が出る
 - 目標の帯（`TARGET_BANDS`）の外には「帯の外」と出る。`--check` を付けると、帯の外が 1 つでもあれば終了コード 1（引数の不正やアセットの読み込み失敗は 2）
 - ボットは人より下手（状況を見て退いたり必殺技を温存したりしない）なので、数字は人が遊ぶより厳しめに出る
+- 目標の帯の表と、調整ごとの測定結果・最終の判定は `docs/superpowers/specs/2026-11-11-difficulty-tuning-results.md` にある
 
 ### 描画と入力をブラウザで確認する
 
@@ -195,7 +196,7 @@ python3 tools/anim-page.py assets/units/roran.json out/anim/roran.html
 - **ステージ開始時の会話** — ステージの `intro` に書く。`speaker` を省略すると地の文になり、本文は `text` に直書きするか `lineId` で `assets/lines/` を参照する（両方書いても、どちらも書かなくてもエラー）
 - **本拠地に到達したときの会話** — ステージの `outro` に書く。書き方は `intro` と同じ
 - **味方・同行 NPC** — `assets/units/<id>.json`。`combat: false` にすると攻撃しない同行者になる
-- **敵** — `assets/enemies/<id>.json`
+- **敵** — `assets/enemies/<id>.json`。1 ステージの敵は、時間湧き（`spawners` の `total`）を含めて 16 体まで（`npm test` が見る）。難易度を調整したときは、敵の 1 発で満タンの仲間が倒れない（攻撃力 16 以下）ことを決まりにした。こちらはテストでは見ていない
 - **時間湧きの敵** — ステージの `spawners` に `{ "defId": ..., "pos": ..., "firstAfter": 20, "every": 15, "total": 3 }` を並べる。`firstAfter` 秒後に1体目、以降 `every` 秒ごとに1体、合計 `total` 体まで湧く。湧いた敵の AI は `aggressive` 固定。総数上限は必須（上限がないと持久戦で詰む）
 - **ユニットの絵** — `assets/images/` に PNG を置き、`assets/units/<id>.json`（敵は `assets/enemies/<id>.json`）の `sprites` に書く。`role` はクラスアイコン、`face` は顔（下パネル・ステージ選択・会話・リザルト）。大きさは「アセットの大きさの規約」、`map` はフィールド上の姿。`map` だけはスプライトシートで、`{ "sheet": "<file>.png", "frame": 32, "idle": { "frames": 2, "fps": 4 }, "walk": {...}, "attack": {...} }` の形。シートは**列 = コマ、行 = 12（3状態 × 4方向）**で、行番号 = 状態index × 4 + 方向index、状態は `idle, walk, attack`、方向は `down, up, left, right` の順。コマは正方形。列数は最大コマ数にそろえ、余りは透明のまま置く。`map` が `null` のあいだは色つきの丸だけが出る（クラス名の文字は `role` が `null` のときに出る別のフォールバックで、`map` とは無関係）。`frame` と各状態の `frames` は1以上の整数、`fps` は1以上の数値であること。実寸と JSON が食い違うと `npm test` が落ちる（`src/engine/sheet-size.test.ts`）。コマの**下から 2px 上の行（32px のコマなら y=30）が足元**で、そこがユニットの位置に来るように描く（pixel-asset-forge の `unit` 規約と同じ）。HPバー・旗・リングは絵の中心を基準に置く
 - **仮の絵の作り直し** — `node tools/gen-placeholder-sprites.mjs ally05 role-yari ...`。引数に書いた ID の絵だけを書く（引数なしでは何も書かずに終わる。全部を書き直すと今の本番の絵を仮の絵で上書きするため）。本番の絵が揃ったらこの生成器は消してよい。差し替えは PNG を上書きするだけで、コマ数を変えるときだけ JSON の数値を直す

@@ -44,18 +44,20 @@
   },
   "roster": ["roran", "ines", "mist", "gau"],
   "enemies": [
-    { "defId": "narazumono", "pos": { "x": 208, "y": 448 }, "ai": { "kind": "sentry", "sightRange": 100 } },
-    { "defId": "narazumono", "pos": { "x": 272, "y": 448 }, "ai": { "kind": "sentry", "sightRange": 100 } },
-    { "defId": "yumihei",    "pos": { "x": 144, "y": 288 }, "ai": { "kind": "sentry", "sightRange": 130 } },
-    { "defId": "narazumono", "pos": { "x": 240, "y": 288 }, "ai": { "kind": "sentry", "sightRange": 100 } },
-    { "defId": "yumihei",    "pos": { "x": 368, "y": 288 }, "ai": { "kind": "sentry", "sightRange": 130 } },
-    { "defId": "tatemochi",  "pos": { "x": 176, "y": 160 }, "ai": { "kind": "guard", "post": { "x": 176, "y": 160 }, "leash": 150, "sightRange": 120 } },
-    { "defId": "majinaishi", "pos": { "x": 240, "y": 128 }, "ai": { "kind": "sentry", "sightRange": 150 } },
-    { "defId": "tatemochi",  "pos": { "x": 336, "y": 160 }, "ai": { "kind": "guard", "post": { "x": 336, "y": 160 }, "leash": 150, "sightRange": 120 } }
+    {"defId": "tatemochi", "pos": {"x": 208, "y": 448}, "ai": {"kind": "aggressive"}},
+    {"defId": "tatemochi", "pos": {"x": 272, "y": 448}, "ai": {"kind": "aggressive"}},
+    {"defId": "majinaishi", "pos": {"x": 144, "y": 288}, "ai": {"kind": "aggressive"}},
+    {"defId": "tatemochi", "pos": {"x": 240, "y": 288}, "ai": {"kind": "aggressive"}},
+    {"defId": "majinaishi", "pos": {"x": 368, "y": 288}, "ai": {"kind": "aggressive"}},
+    {"defId": "tatemochi", "pos": {"x": 176, "y": 160}, "ai": {"kind": "aggressive"}},
+    {"defId": "majinaishi", "pos": {"x": 240, "y": 128}, "ai": {"kind": "aggressive"}},
+    {"defId": "tatemochi", "pos": {"x": 336, "y": 160}, "ai": {"kind": "aggressive"}},
+    {"defId": "majinaishi", "pos": {"x": 80, "y": 288}, "ai": {"kind": "aggressive"}},
+    {"defId": "majinaishi", "pos": {"x": 432, "y": 288}, "ai": {"kind": "aggressive"}}
   ],
   "spawners": [
-    { "defId": "narazumono", "pos": { "x": 80, "y": 80 },  "firstAfter": 20, "every": 14, "total": 3 },
-    { "defId": "narazumono", "pos": { "x": 432, "y": 80 }, "firstAfter": 26, "every": 14, "total": 3 }
+    {"defId": "narazumono", "pos": {"x": 80, "y": 80}, "firstAfter": 8, "every": 10, "total": 3},
+    {"defId": "majinaishi", "pos": {"x": 432, "y": 80}, "firstAfter": 12, "every": 10, "total": 3}
   ],
   "victory": { "type": "reach", "pos": { "x": 240, "y": 48 }, "radius": 40, "by": "any" },
   "defeat": [{ "type": "unitLost", "defIds": ["roran"] }],
