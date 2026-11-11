@@ -8,7 +8,7 @@ let check = false;
 for (const a of process.argv.slice(2)) {
   if (a === '--') continue;
   if (a === '--check') check = true;
-  else if (/^[1-9][0-9]*$/.test(a)) seeds = Number(a);
+  else if (/^[1-9][0-9]*$/.test(a) && Number.isSafeInteger(Number(a))) seeds = Number(a);
   else {
     console.error(`引数が不正です: ${a}\n使い方: npm run balance [-- <シード数（正の整数）>] [--check]`);
     process.exit(2);
