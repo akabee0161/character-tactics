@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { newSave } from '../save/save';
 import {
-  BATTLE_DT, BATTLE_TIME_LIMIT, botCommands, MAX_ATTEMPTS, TARGET_BANDS, formatTable, measure, playThrough, runBattle,
+  BATTLE_DT, BATTLE_TIME_LIMIT, botCommands, MAX_ATTEMPTS, TARGET_BANDS, formatTable, isOutOfBand, measure, playThrough, runBattle,
 } from './balance';
 import type { StageStat } from './balance';
 import { step } from './sim';
 import { beginBattle, createBattleState } from './state';
+import type { BattleState } from './types';
 import { testRegistry } from './testing';
 
 const reg = testRegistry();
@@ -114,6 +115,11 @@ describe('measure', () => {
 });
 
 describe('TARGET_BANDS / formatTable', () => {
+  it('isOutOfBand は帯の端を含み、外を真にする', () => {
+    const row = (r: number): StageStat => ({ stageId: 'stage1', name: '', reached: 1, firstTryRate: r, avgDeployed: 0, avgSurvivors: 0 });
+    expect([row(90), row(100), row(89.9)].map(isOutOfBand)).toEqual([false, false, true]);
+  });
+
   it('キーがステージの id と一致する', () => {
     expect(Object.keys(TARGET_BANDS).sort()).toEqual(reg.stages.map((s) => s.id).sort());
   });
@@ -128,5 +134,66 @@ describe('TARGET_BANDS / formatTable', () => {
     const l2 = lines.find((l) => l.includes('stage2'))!;
     expect(l1).not.toContain('帯の外');
     expect(l2).toContain('帯の外');
+  });
+});
+
+describe('botCommands の動き', () => {
+  const battleOf = (s: StageDefLike): BattleState => {
+    const state = createBattleState(reg, s, newSave(reg), 1);
+    beginBattle(state);
+    return state;
+  };
+  type StageDefLike = ReturnType<typeof stage>;
+  const moves = (cmds: ReturnType<typeof botCommands>) => cmds.flatMap((c) => (c.type === 'move' ? [c] : []));
+  const players = (state: BattleState) => state.units.filter((u) => u.side === 'player');
+  const spawnerOnly = (): StageDefLike => ({
+    ...stage('stage1'),
+    enemies: [],
+    spawners: [{ defId: 'narazumono', pos: { x: 48, y: 208 }, firstAfter: 9999, every: 15, total: 1 }],
+  });
+
+  it('交戦中（engagedWith あり）の味方には move を出さない', () => {
+    const state = battleOf(stage('stage1'));
+    const [engaged, ...others] = players(state);
+    engaged!.engagedWith = state.units.find((u) => u.side === 'enemy')!.uid;
+    const ms = moves(botCommands(state, 0));
+    expect(ms.some((c) => c.uid === engaged!.uid)).toBe(false);
+    for (const o of others) expect(ms.some((c) => c.uid === o.uid)).toBe(true);
+  });
+
+  it('敵がいなくても湧き残りがあれば move を出さず、時間切れになる', () => {
+    const s = spawnerOnly();
+    expect(moves(botCommands(battleOf(s), 0))).toEqual([]);
+    const out = runBattle(reg, s, newSave(reg), 1);
+    expect(out.result).toBe('timeout');
+    expect(out.seconds).toBeGreaterThanOrEqual(BATTLE_TIME_LIMIT);
+    expect(out.seconds).toBeLessThanOrEqual(BATTLE_TIME_LIMIT + BATTLE_DT);
+  }, 60_000);
+
+  it('敵が 0 体で湧き残りも無ければ、全員がゴールへ move する', () => {
+    const s = { ...stage('stage1'), enemies: [], spawners: [] };
+    const state = battleOf(s);
+    const ms = moves(botCommands(state, 0));
+    expect(ms.length).toBe(players(state).length);
+    for (const c of ms) expect(c.dest).toEqual(s.victory.pos);
+  });
+
+  it('反応の遅れが過ぎるまで move は出さないが、必殺技は出す', () => {
+    const state = battleOf(stage('stage1'));
+    const delays = new Map(players(state).map((u) => [u.uid, 1.0]));
+    const early = botCommands(state, 0, new Map(), delays);
+    expect(moves(early)).toEqual([]);
+    expect(early.some((c) => c.type === 'skill')).toBe(true);
+    state.time = 1.0;
+    expect(moves(botCommands(state, 0, new Map(), delays)).length).toBe(players(state).length);
+  });
+
+  it('他の敵が残っている間は、説得の相手へは persuader の味方だけが向かう', () => {
+    const state = battleOf(stage('stage7'));
+    const foe = state.units.find((u) => u.side === 'enemy' && u.persuasion !== null)!;
+    const persuader = players(state).find((u) => u.defId === 'mist')!;
+    expect(state.units.some((u) => u.side === 'enemy' && u.persuasion === null)).toBe(true);
+    const toFoe = moves(botCommands(state, 0)).filter((c) => c.dest.x === foe.pos.x && c.dest.y === foe.pos.y);
+    expect(toFoe.map((c) => c.uid)).toEqual([persuader.uid]);
   });
 });

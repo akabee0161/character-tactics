@@ -19,7 +19,7 @@
  *   （距離が同じなら先に並んだ方）の位置を dest にする。敵がいなければ needsDest のものは出さない。
  *   本物のゲーム（main.ts）と同じく、skill コマンドとして step に渡す。
  * - 揺らぎ（seed は runBattle だけが使う。sim 本体は乱数を使わないため、ボット側で入れる）:
- *   beginBattle の前に、開始位置への味方の割り当て順を seed でシャッフルして置き直す（置けなければ置き直さない）。
+ *   beginBattle の前に、開始位置への味方の割り当て順を seed でシャッフルして置き直す（開始位置はすべて置ける位置なので必ず置ける。置けなければ例外）。
  *   味方 1 人ごとに 0〜1.5 秒（seed から決める）が過ぎるまで、その人に move を出さない（必殺技は出す）。
  * - pendingRecruit が立ったら、次の tick の前に completeRecruit を呼ぶ（本物は会話のあとに呼ぶ）。
  * - 乱数は使わない。1 戦は戦闘時間 BATTLE_TIME_LIMIT 秒まで。超えたら timeout（負け扱い）。
@@ -164,7 +164,9 @@ export function runBattle(reg: Registry, stage: StageDef, party: PartyProgress, 
   }
   const delays = new Map<string, number>();
   players.forEach((u, i) => {
-    placeUnit(state, u.uid, spots[i]!);
+    if (!placeUnit(state, u.uid, spots[i]!)) {
+      throw new Error(`開始位置に置けません: ${stage.id} ${u.defId} (${spots[i]!.x}, ${spots[i]!.y})`);
+    }
     delays.set(u.uid, nextFloat(rng) * MAX_REACTION_DELAY);
   });
   beginBattle(state);
@@ -267,6 +269,12 @@ export const TARGET_BANDS: Record<string, [number, number]> = {
   stage10: [45, 70],
 };
 
+/** 1 回目の勝率が目標の帯の外か（帯が決まっていないステージは外でない） */
+export function isOutOfBand(s: StageStat): boolean {
+  const band = TARGET_BANDS[s.stageId];
+  return band ? s.firstTryRate < band[0] || s.firstTryRate > band[1] : false;
+}
+
 export function formatTable(stats: StageStat[]): string {
   const lines = [
     '| ステージ | 名前 | 到達 | 1回目の勝率(%) | 目標(%) | 出撃(平均) | 生き残り(平均) | 判定 |',
@@ -274,10 +282,9 @@ export function formatTable(stats: StageStat[]): string {
   ];
   for (const s of stats) {
     const band = TARGET_BANDS[s.stageId];
-    const out = band ? s.firstTryRate < band[0] || s.firstTryRate > band[1] : false;
     lines.push(
       `| ${s.stageId} | ${s.name} | ${s.reached} | ${s.firstTryRate.toFixed(1)} | ${band ? `${band[0]}〜${band[1]}` : '-'}`
-      + ` | ${s.avgDeployed.toFixed(1)} | ${s.avgSurvivors.toFixed(1)} | ${out ? '帯の外' : ''} |`,
+      + ` | ${s.avgDeployed.toFixed(1)} | ${s.avgSurvivors.toFixed(1)} | ${isOutOfBand(s) ? '帯の外' : ''} |`,
     );
   }
   return lines.join('\n');

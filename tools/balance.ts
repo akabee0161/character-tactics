@@ -1,7 +1,7 @@
 // ステージの難易度を測る CLI。使い方: npm run balance [-- <シード数（既定 40）>] [--check]
 import { loadRegistry } from '../src/engine/loader';
 import { SKILL_EFFECT_IDS } from '../src/core/skills';
-import { formatTable, measure, TARGET_BANDS } from '../src/core/balance';
+import { formatTable, isOutOfBand, measure } from '../src/core/balance';
 
 let seeds = 40;
 let check = false;
@@ -23,8 +23,4 @@ if (!r.ok) {
 
 const stats = measure(r.value, seeds);
 console.log(formatTable(stats));
-const out = stats.some((s) => {
-  const b = TARGET_BANDS[s.stageId];
-  return b ? s.firstTryRate < b[0] || s.firstTryRate > b[1] : false;
-});
-if (check && out) process.exit(1);
+if (check && stats.some(isOutOfBand)) process.exit(1);
