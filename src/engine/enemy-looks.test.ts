@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
-import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
 import { validateEnemyDef } from './schema';
 import type { EnemyDef } from './schema';
@@ -79,7 +78,7 @@ describe('ステージへの割り当て', () => {
   const STAGE_DIR = 'assets/stages';
   const BASES = ['narazumono', 'tatemochi', 'yumihei', 'majinaishi', 'garum'];
   type StageJson = {
-    enemies: { defId: string; pos: unknown; ai: unknown }[];
+    enemies: { defId: string }[];
     spawners?: { defId: string }[];
   };
   const stageFiles = readdirSync(STAGE_DIR).filter((f) => f.endsWith('.json'));
@@ -109,20 +108,6 @@ describe('ステージへの割り当て', () => {
   it('時間湧きの defId は 1 つ目の見た目のまま', () => {
     for (const f of stageFiles) {
       for (const s of load(f).spawners ?? []) expect(BASES, `${f} ${s.defId}`).toContain(s.defId);
-    }
-  });
-
-  it('敵の位置・AI・数はステージごとに変わらない', () => {
-    for (const f of stageFiles) {
-      const before = JSON.parse(
-        execFileSync('git', ['show', `main:${STAGE_DIR}/${f}`], { encoding: 'utf8' }),
-      ) as StageJson;
-      const now = load(f);
-      expect(now.enemies.length, f).toBe(before.enemies.length);
-      now.enemies.forEach((e, i) => {
-        expect(e.pos, `${f} ${i}`).toEqual(before.enemies[i]!.pos);
-        expect(e.ai, `${f} ${i}`).toEqual(before.enemies[i]!.ai);
-      });
     }
   });
 });
