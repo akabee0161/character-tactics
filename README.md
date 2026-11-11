@@ -101,13 +101,13 @@ URL に `?debug` を付けると、戦闘中だけ次の操作ができる（攻
 | `assets/` | ステージ・ユニット・敵・スキル・称号・セリフの定義（JSON）。ロジックを置かない |
 | `assets/images/` | ユニットの絵（PNG）。`sprites` から名前で参照する |
 | `src/engine/` | 定義の型検証・読み込み・索引。`core` を知らない |
+| `src/engine/names.ts` | 本文の `{<ユニットID>}` を名前に置き換える |
 | `src/core/` | 描画・DOM に依存しない純ロジック |
 | `src/core/damage.ts` | 命中1回ぶんの解決。近接も飛翔体の着弾も通る |
 | `src/core/projectiles.ts` | 飛翔体の生成・移動・命中 |
 | `src/core/spawns.ts` | 時間湧きの判定（純関数） |
 | `src/core/events.ts` | 村の訪問と説得の判定、加入の完了 |
 | `src/core/party.ts` | 出撃できる仲間の並び（加入しうる仲間は加わるまで出ない。最大 8 人） |
-| `src/engine/names.ts` | 本文の `{<ユニットID>}` を名前に置き換える |
 | `src/render/` | Canvas2D 描画 |
 | `src/render/images.ts` | 画像の読み込みとキャッシュ |
 | `src/render/sprites.ts` | 画像とプレースホルダを1本にまとめた描画 |
