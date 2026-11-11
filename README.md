@@ -172,11 +172,12 @@ uv python install 3.14   # 初回だけ
 uv venv --python 3.14 pixel-asset-forge/.venv   # 初回だけ
 uv pip install --python pixel-asset-forge/.venv/bin/python -r pixel-asset-forge/requirements.txt   # 初回だけ
 cd pixel-asset-forge
-.venv/bin/python tools/enemy_build.py --all   # 敵のシートを build/ に作る
+.venv/bin/python -c "import sys; sys.path.insert(0,'tools'); import export; raise SystemExit(export.build())"   # build/ を空にして、タイル・セット・味方のシートを作る
+.venv/bin/python tools/enemy_build.py --all   # 敵のシートを build/sheets/ に足す（build/ を空にした後に流す）
 .venv/bin/python -c "import sys; sys.path.insert(0,'tools'); import export; from pathlib import Path; export.export(Path('../sprites.json'), Path('../assets/images'))"
 ```
 
-`sprites.json` に敵のシートを含むので、書き出しは上の 2 段で行う（`enemy_build.py --all` で敵のシートを作り、続けて `export.export()` を直接呼ぶ）。`export.py sprites.json assets/images` をそのまま流すと、`export.py` が最初に `build/` を消して `enemy_build.py` は実行しないため、敵のシートが無く必ず失敗する。
+`sprites.json` に敵のシートを含むので、書き出しは上の 3 段で行う（`export.build()` で `build/` を作り直し、`enemy_build.py --all` で敵のシートを足し、`export.export()` で書き出す）。順序を入れ替えない: `enemy_build.py` を先に流すと `export.build()` が敵のシートを消し、`export.build()` を省くと `build/` が空のときにタイル・セット・味方のシートが無い。`export.py sprites.json assets/images` をそのまま流すと、`export.py` が最初に `build/` を消して `enemy_build.py` は実行しないため、敵のシートが無く必ず失敗する。
 
 `export.py` は書き出しの前に `build/` を空にして、forge の全アセットを描き直す。`sprites.json` に書いていない絵でも、1枚でも検査に通らなければ `FAIL` で止まり、何も書き出さない（原因の `FAIL` の行は標準エラーに出る。`2>&1 >/dev/null` を付けると原因の行だけが見える）。
 

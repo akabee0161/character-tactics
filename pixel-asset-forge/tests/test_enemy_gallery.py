@@ -92,6 +92,12 @@ class GalleryMainTest(unittest.TestCase):
         self.assertLess(page.index("味方"), page.index("後ろの敵"))
         self.assertLess(page.index("後ろの敵"), page.index("テストの敵"))
 
+    def test_first_does_not_accept_the_name_of_a_ref(self):
+        ref = Path(self._tmp.name) / "ref-only.png"
+        Image.new("RGBA", (128, 384)).save(ref)
+        code = self.enemy_gallery.main([str(self.out), "--ref", f"{ref}:味方", "--first", "ref-only"])
+        self.assertEqual(code, 2)
+
     def test_first_with_unknown_id_fails(self):
         self.assertEqual(self.enemy_gallery.main([str(self.out), "--first", "nope"]), 2)
 

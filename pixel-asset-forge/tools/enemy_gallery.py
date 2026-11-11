@@ -138,12 +138,12 @@ def main(argv: list[str] | None = None) -> int:
                 raise EnemyError(f"{png} が無い（先に tools/enemy_build.py --all）")
             entries.append((recipe.id, recipe.name, png))
         if args.first:
-            ids = [e[0] for e in entries]
-            unknown = [i for i in args.first if i not in ids]
-            if unknown:
-                raise EnemyError(f"--first の id が無い: {', '.join(unknown)}")
-            head = [e for e in entries[: len(args.ref)]]
+            head = entries[: len(args.ref)]
             body = entries[len(args.ref):]
+            body_ids = {e[0] for e in body}
+            unknown = [i for i in args.first if i not in body_ids]
+            if unknown:
+                raise EnemyError(f"--first の id が敵の定義に無い: {', '.join(unknown)}")
             firsts = [e for i in args.first for e in body if e[0] == i]
             rest = [e for e in body if e[0] not in args.first]
             entries = head + firsts + rest
