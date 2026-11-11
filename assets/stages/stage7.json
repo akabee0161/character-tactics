@@ -45,7 +45,13 @@
     { "defId": "majinaishi", "pos": { "x": 240, "y": 304 }, "ai": { "kind": "sentry", "sightRange": 150 } },
     { "defId": "yumihei",    "pos": { "x": 176, "y": 240 }, "ai": { "kind": "sentry", "sightRange": 130 } },
     { "defId": "yumihei",    "pos": { "x": 336, "y": 240 }, "ai": { "kind": "sentry", "sightRange": 130 } },
-    { "defId": "majinaishi", "pos": { "x": 240, "y": 176 }, "ai": { "kind": "sentry", "sightRange": 150 } }
+    { "defId": "majinaishi", "pos": { "x": 240, "y": 176 }, "ai": { "kind": "sentry", "sightRange": 150 } },
+    { "defId": "narazumono", "pos": { "x": 176, "y": 480 }, "ai": { "kind": "aggressive" } },
+    { "defId": "narazumono", "pos": { "x": 304, "y": 480 }, "ai": { "kind": "aggressive" } },
+    { "defId": "narazumono", "pos": { "x": 176, "y": 304 }, "ai": { "kind": "sentry", "sightRange": 100 } },
+    { "defId": "narazumono", "pos": { "x": 304, "y": 304 }, "ai": { "kind": "sentry", "sightRange": 100 } },
+    { "defId": "narazumono", "pos": { "x": 240, "y": 208 }, "ai": { "kind": "sentry", "sightRange": 100 } },
+    { "defId": "narazumono", "pos": { "x": 80, "y": 368 }, "ai": { "kind": "sentry", "sightRange": 100 } }
   ],
   "victory": { "type": "reach", "pos": { "x": 240, "y": 48 }, "radius": 40, "by": "any" },
   "defeat": [{ "type": "unitLost", "defIds": ["roran"] }],
@@ -59,6 +65,6 @@
     { "speaker": "roran", "text": "まだ先がある！進むぞ！" }
   ],
   "persuasions": [
-    {"unitId": "ally06", "level": 4, "foeId": "ally06-foe", "pos": {"x": 304, "y": 176}, "ai": {"kind": "sentry", "sightRange": 150}, "persuader": "mist", "talk": [{"speaker": "mist", "text": "{ally06}、私です。{mist}です"}, {"speaker": "ally06", "text": "{mist}……？ 私、だまされて いたのね。\n一緒に 戦わせて！"}, {"text": "{ally06}が 仲間に 加わった！"}]}
+    {"unitId": "ally06", "level": 4, "foeId": "ally06-foe", "pos": {"x": 448, "y": 496}, "ai": {"kind": "sentry", "sightRange": 150}, "persuader": "mist", "talk": [{"speaker": "mist", "text": "{ally06}、私です。{mist}です"}, {"speaker": "ally06", "text": "{mist}……？ 私、だまされて いたのね。\n一緒に 戦わせて！"}, {"text": "{ally06}が 仲間に 加わった！"}]}
   ]
 }
