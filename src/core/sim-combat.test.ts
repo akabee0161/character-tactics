@@ -46,7 +46,7 @@ function spawnEnemy(s: BattleState, defId: string, pos: Vec2, hp?: number): Unit
   const def = s.reg.enemies.get(defId)!;
   const uid = `t${s.nextEnemyUid++}`;
   const u: Unit = {
-    uid, defId, side: 'enemy', controller: 'ai', combat: def.combat,
+    uid, defId, kindId: defId, side: 'enemy', controller: 'ai', combat: def.combat,
     pos: { ...pos }, hp: hp ?? def.maxHp, maxHp: def.maxHp, power: def.power, guard: def.guard,
     attack: def.attack, range: def.range, attackInterval: def.attackInterval, speed: def.speed,
     bowDamageCap: def.bowDamageCap, skillId: def.skillId,

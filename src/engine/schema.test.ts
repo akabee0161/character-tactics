@@ -167,6 +167,24 @@ describe('validateEnemyDef', () => {
     if (!r.ok) expect(r.errors[0]?.path).toBe('fleeAtHpRatio');
   });
 
+  it('kind を書いた敵の定義は kind を持つ', () => {
+    const r = validateEnemyDef('enemies/x.json', { ...VALID_ENEMY, kind: 'narazumono' });
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value.kind).toBe('narazumono');
+  });
+
+  it('kind を省略した敵の定義は kind が undefined', () => {
+    const r = validateEnemyDef('enemies/x.json', VALID_ENEMY);
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value.kind).toBeUndefined();
+  });
+
+  it('空の kind は検証エラー', () => {
+    const r = validateEnemyDef('enemies/x.json', { ...VALID_ENEMY, kind: '' });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors[0]?.path).toBe('kind');
+  });
+
   it('xpReward が欠けたら弾く', () => {
     const { xpReward: _drop, ...missing } = VALID_ENEMY;
     const r = validateEnemyDef('enemies/x.json', missing);

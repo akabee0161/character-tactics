@@ -188,6 +188,8 @@ export type EnemyDef = UnitDef & {
   bowDamageCap: number | null;
   /** この HP 割合を下回ると撤退する。null なら撤退しない */
   fleeAtHpRatio: number | null;
+  /** 敵の種類。省略時は id。初対面の判定・会話の鍵に使う（同じ種類なら defId が違っても初対面は 1 回） */
+  kind?: string;
 };
 
 function readUnitFields(ctx: Ctx, o: Record<string, unknown>): UnitDef {
@@ -227,6 +229,10 @@ export function validateEnemyDef(file: string, raw: unknown): Validated<EnemyDef
     bowDamageCap: requireNumberOrNull(ctx, 'bowDamageCap', o.bowDamageCap, { min: 1 }),
     fleeAtHpRatio: requireNumberOrNull(ctx, 'fleeAtHpRatio', o.fleeAtHpRatio, { min: 0, max: 1 }),
   };
+  if (o.kind !== undefined) {
+    const kind = requireString(ctx, 'kind', o.kind);
+    if (kind !== null) def.kind = kind;
+  }
   return finish(ctx, def);
 }
 
