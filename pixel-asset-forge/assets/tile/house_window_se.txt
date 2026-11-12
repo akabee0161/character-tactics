@@ -1,0 +1,22 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# A window in the plank wall of house_wall.
+# map: w=water_surface_base b=building_wood_base B=building_wood_hi c=building_wood_shadow
+# map: C=building_wood_dark
+CCCCCCCCBBBBBBBB
+CwwwwwwCbbbbbbbb
+CwwwwwwCbbbbbbbb
+CwwwwwwCcccccccc
+CwwwwwwCBBBBBBBB
+CwwwwwwCbbbcbbbb
+CwwwwwwCbbbcbbbb
+CCCCCCCCcccccccc
+BBBBBBBBBBBBBBBB
+BBBBBBBBbbbbbbbb
+bbbbbbcbbbbbbbbb
+cccccccccccccccc
+BBBBBBBBBBBBBBBB
+bbbbbbbbbbbbbcbb
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC

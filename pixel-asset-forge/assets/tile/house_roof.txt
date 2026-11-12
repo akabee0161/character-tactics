@@ -1,0 +1,21 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# Red roof tiles seen from above, in rows of scallops. Repeats in both directions.
+# map: y=building_roof_base Y=building_roof_hi z=building_roof_shadow
+zzzzzzzzzzzzzzzz
+zYYYyyyyzYYYyyyy
+zyyyyyyyzyyyyyyy
+zyyyyyyyzyyyyyyy
+zzzzzzzzzzzzzzzz
+yyyyzYYYyyyyzYYY
+yyyyzyyyyyyyzyyy
+yyyyzyyyyyyyzyyy
+zzzzzzzzzzzzzzzz
+zYYYyyyyzYYYyyyy
+zyyyyyyyzyyyyyyy
+zyyyyyyyzyyyyyyy
+zzzzzzzzzzzzzzzz
+yyyyzYYYyyyyzYYY
+yyyyzyyyyyyyzyyy
+yyyyzyyyyyyyzyyy

@@ -1,0 +1,23 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# A palisade seen from the front. Vertical logs with two rails. It repeats in both
+# directions, so it makes the outer fence of a post and also any run of wall.
+# map: b=building_wood_base B=building_wood_hi c=building_wood_shadow C=building_wood_dark
+# map: L=furniture_metal_hi
+CBbbCBbbCBbbCBbb
+CBbbCBbbCBbbCBbb
+CBbbCBbbCBbbCBbb
+BBBBBBBBBBBBBBBB
+ccLcccLcccLcccLc
+CCCCCCCCCCCCCCCC
+CBbbCBbbCBbbCBbb
+CBbbCBbbCBbbCBbb
+CBbbCBbbCBbbCBbb
+CBbbCBbbCBbbCBbb
+CBbbCBbbCBbbCBbb
+BBBBBBBBBBBBBBBB
+ccLcccLcccLcccLc
+CCCCCCCCCCCCCCCC
+CBbbCBbbCBbbCBbb
+CBbbCBbbCBbbCBbb

@@ -1,0 +1,4 @@
+# fence_post set. One map cell in character-tactics (32px), built from four 16px parts.
+# tools/sets.py assembles it into build/sets/fence_post.png.
+fence_post_nw  fence_post_ne
+fence_post_sw  fence_post_se
