@@ -1,0 +1,4 @@
+# pillar set. One map cell in character-tactics (32px), built from four 16px parts.
+# tools/sets.py assembles it into build/sets/pillar.png.
+pillar_nw  pillar_ne
+pillar_sw  pillar_se

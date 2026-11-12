@@ -1,0 +1,23 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# A stone pillar on the flagstones, with a capital and a base, a little under the
+# height of the cell. Its shadow falls to the lower right.
+# map: o=contour f=ground_floor_base F=ground_floor_hi S=ground_floor_shadow
+# map: D=ground_floor_dark n=building_stone_base N=building_stone_hi m=building_stone_shadow
+SSSSSSSSSSoNNnnn
+SFFFFFFFSFoNNnnn
+SFffffffSFoNNnnn
+SFffffffSFoNNnnn
+SFffffffSFoNNnnn
+SFffffffSFoNNnnn
+SFffffffSFoNNnnn
+SFffffffSFoNNnnn
+SSSSSSSSoooooooo
+FFFFSFFFoNNNNNNN
+ffffSFffonnnnnnn
+ffffSFffonnnnnnn
+ffffSFffommmmmmm
+ffffSFffoooooooo
+ffffSFfffDDDDDDD
+ffffSFffffffSFff

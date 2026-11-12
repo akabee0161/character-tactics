@@ -1,0 +1,4 @@
+# throne_hall set. One map cell in character-tactics (32px), built from four 16px parts.
+# tools/sets.py assembles it into build/sets/throne_hall.png.
+throne_hall_nw  throne_hall_ne
+throne_hall_sw  throne_hall_se

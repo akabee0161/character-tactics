@@ -1,0 +1,4 @@
+# tower_top set. One map cell in character-tactics (32px), built from four 16px parts.
+# tools/sets.py assembles it into build/sets/tower_top.png.
+tower_top_nw  tower_top_ne
+tower_top_sw  tower_top_se

@@ -1,0 +1,23 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# A magic circle laid in violet inlay on the flagstones. Walkable decoration. It
+# has no light of its own.
+# map: f=ground_floor_base F=ground_floor_hi S=ground_floor_shadow i=magic_hi
+# map: I=magic_base J=magic_shadow K=magic_dark
+SSSSSSSSSSSSSSSS
+KKKKFFFFSFFFFFFF
+IIIIKKKfSFffffff
+IIIIIIKKSFffffff
+iFfiIIIIKKffffff
+SiffffiIIKKfffff
+JIJJfffiIIKKffff
+SFifJJffiIIKffff
+SSISSJJSSiIIKSSS
+FFFISFFJFFiIKKFF
+IIIIIIiIiifiIKff
+ffffIFffiffiIKff
+ffffIFffiJfiIIKf
+ffffSIfIfJffiIKf
+JJffSIfIfJffiIKf
+JJffSFIffJffiIKf

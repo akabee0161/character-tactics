@@ -1,0 +1,3 @@
+# The village set on quarry gravel. One map cell in character-tactics (32px).
+village_gravel_nw  village_gravel_ne
+village_gravel_sw  village_gravel_se

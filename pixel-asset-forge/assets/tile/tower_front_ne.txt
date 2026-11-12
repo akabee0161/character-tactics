@@ -1,0 +1,23 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# The front of that tower. Wall masonry like wall_face, with an arrow slit, so it
+# reads as a taller block than the wall beside it.
+# map: o=contour n=building_stone_base N=building_stone_hi m=building_stone_shadow
+# map: M=building_stone_dark
+MMMMMMMMMMMMMmmM
+MnnnnnnnMnnnnmmM
+MmmmmmmmMmmmmmmM
+MmmmmmmmMmmmmmmM
+MmmmmmmmMmmmmmmM
+MmmmmmmmMmmmmmmM
+NNNNNmmmMmmmmmmM
+NNNNNmmmMmmmmmmM
+MMMMMMMMMMMMMmmM
+MMnnMnnnnnnnMmmM
+oMmmMmmmmmmmMmmM
+oMmmMmmmmmmmMmmM
+oMmmMmmmmmmmMmmM
+oMmmMmmmmmmmMmmM
+oMmmMmmmmmmmMmmM
+oMmmMmmmmmmmMmmM

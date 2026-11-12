@@ -1,0 +1,32 @@
+# The riverside family (stage 4), for tools/tilemap.py --layout.
+# One character per map cell, laid out as 2x2 of 16px tiles like the game does.
+# A river two cells wide with a single ford, gravel banks (damp gravel at the
+# water's edge), and the existing tree / rock / village sets on grass.
+# Check: the gravel and the water do not read as a grid, the ford reads as
+# walkable, and the river does not look like a canal.
+tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne
+tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se
+tree_nw tree_ne plain plain plain plain rock_nw rock_ne plain plain plain plain plain plain plain plain plain plain village_nw village_ne plain plain tree_nw tree_ne
+tree_sw tree_se plain plain plain plain rock_sw rock_se plain plain plain plain plain plain plain plain plain plain village_sw village_se plain plain tree_sw tree_se
+tree_nw tree_ne plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain rock_nw rock_ne tree_nw tree_ne
+tree_sw tree_se plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain rock_sw rock_se tree_sw tree_se
+tree_nw tree_ne plain plain plain plain gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel tree_nw tree_ne plain plain
+tree_sw tree_se plain plain plain plain gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel tree_sw tree_se plain plain
+tree_nw tree_ne plain plain gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel plain plain tree_nw tree_ne
+tree_sw tree_se plain plain gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel plain plain tree_sw tree_se
+tree_nw tree_ne plain plain gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet plain plain tree_nw tree_ne
+tree_sw tree_se plain plain gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet plain plain tree_sw tree_se
+water water water water water water water water ford ford ford ford ford ford water water water water water water water water water water
+water water water water water water water water ford ford ford ford ford ford water water water water water water water water water water
+water water water water water water water water ford ford ford ford ford ford water water water water water water water water water water
+water water water water water water water water ford ford ford ford ford ford water water water water water water water water water water
+tree_nw tree_ne plain plain gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet plain plain tree_nw tree_ne
+tree_sw tree_se plain plain gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet gravel_wet plain plain tree_sw tree_se
+tree_nw tree_ne plain plain gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel plain plain tree_nw tree_ne
+tree_sw tree_se plain plain gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel plain plain tree_sw tree_se
+tree_nw tree_ne plain plain plain plain gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel plain plain plain plain tree_nw tree_ne
+tree_sw tree_se plain plain plain plain gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel gravel plain plain plain plain tree_sw tree_se
+tree_nw tree_ne plain plain plain plain plain plain plain plain tree_nw tree_ne plain plain plain plain plain plain plain plain rock_nw rock_ne tree_nw tree_ne
+tree_sw tree_se plain plain plain plain plain plain plain plain tree_sw tree_se plain plain plain plain plain plain plain plain rock_sw rock_se tree_sw tree_se
+tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne
+tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se

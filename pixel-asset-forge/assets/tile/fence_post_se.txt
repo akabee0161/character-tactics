@@ -1,0 +1,23 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# One map cell of a fence that runs north to south. A rail with a post at each end
+# of the cell, on grass. Stacked in a column the posts make a fence line.
+# map: o=contour g=ground_grass_base a=ground_grass_hi G=ground_grass_shadow
+# map: k=ground_dirt_shadow b=building_wood_base B=building_wood_hi c=building_wood_shadow
+bckkgggggggggggg
+bckkgggggggggggg
+bckkgggggGGggggg
+bckkgggggggggGGg
+bckkgagggggggggg
+oooooagggggggggg
+BBBBoggggggggggg
+BBBBogggggggggga
+bbccoggGGggggggg
+bbccogggggggaagg
+bbccoggggggggggg
+bbccoggggggggggg
+ccccogggggGGgggg
+ooooogggaagggggg
+kkkkkkGggggggggg
+kkkkkkgggggggggg

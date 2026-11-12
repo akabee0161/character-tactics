@@ -1,0 +1,24 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# Cut stone - squared blocks stacked into a pile of three tiers and a few chips on the gravel of a quarry.
+# The ground is gravel (the same tile the game lays around it). The blocks are
+# straight-edged and chiselled, so they do not read as the boulders of the rock set.
+# map: o=contour h=ground_dirt_hi k=ground_dirt_shadow r=rock_base
+# map: R=rock_hi q=rock_shadow
+hhhhhhqhorqqqqrr
+hhhhhhhhorrrrrrr
+Roooooooorrrrrrr
+roRRRRRRoqqqqqqq
+hoRRrrrRoooooooo
+hoRRRRRRRRRRRroo
+hoRRRRRRRRRRRroo
+horrrrrrrrrrqqoo
+horrrrrrrrrrqqoo
+horrrrrrrrrrqqoo
+horqqqqrrrrrqqoo
+horrrrrrrrrrqqoo
+hoqqqqqqqqqqqqoo
+hooooooooooooooo
+rrkkkkkkkkkkkkko
+hqkkkkkkkkkkkkkk

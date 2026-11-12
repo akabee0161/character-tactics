@@ -1,0 +1,22 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# The front of that altar, below altar_top. Not walkable.
+# map: o=contour n=building_stone_base m=building_stone_shadow M=building_stone_dark
+# map: i=magic_hi I=magic_base J=magic_shadow
+nnnnnnnnnnnnnnnn
+mmmmmmmmmmmmmmmm
+MMMMMMMMMMMMMMMM
+MMMMMMMMMMMMMMMM
+MMnnnnnnnnnnnnMM
+MMmmmmmmmmmmmmMM
+MMmmmmmiImmmmmMM
+MMmmmmmiImmmmmMM
+MMmmmmmIImmmmmMM
+MMmmmmmIImmmmmMM
+MMmmmmmIJmmmmmMM
+MMmmmmmmmmmmmmMM
+MMooooooooooooMM
+MMMMMMMMMMMMMMMM
+MMMMMMMMMMMMMMMM
+oooooooooooooooo

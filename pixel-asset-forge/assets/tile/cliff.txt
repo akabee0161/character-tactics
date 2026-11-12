@@ -1,0 +1,23 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# A rough rock face, for the cliffs that wall a quarry. Blocks of rock split by
+# dark cracks, lit from the upper left. Drawn on a torus so every edge meets the
+# opposite one and it repeats without a seam. Not walkable.
+# map: r=rock_base R=rock_hi q=rock_shadow Q=rock_dark
+qQQrRqQQQQQQRrqq
+QQrqqqqQQRQQQQQQ
+rQQQqQQrqqRqQrRr
+rqqQQrrqqqqQQQrr
+qqqQRrqqqqQrRQQr
+QRqQrqqqqqQrrRQQ
+QQRQqqqqqQRrqqRq
+qQQQQQqqQrrqqqqq
+QQQrRQQQQQQQQQQQ
+QRrrrRQQrRrrrRqq
+rrrrqqRQrrrrqqqQ
+rrrqqqqQQrrqqqqQ
+QrqqqqQrQQQqqqQQ
+QQQqQQrqqRQQQQrr
+qqQQQrqqqqRQrrrr
+qqqQQQQRqqqQrrrq

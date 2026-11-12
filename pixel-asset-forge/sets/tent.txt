@@ -1,0 +1,4 @@
+# tent set. One map cell in character-tactics (32px), built from four 16px parts.
+# tools/sets.py assembles it into build/sets/tent.png.
+tent_nw  tent_ne
+tent_sw  tent_se

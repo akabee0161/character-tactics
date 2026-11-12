@@ -1,0 +1,25 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# The top of a watchtower set into a castle wall, seen from above. A crenellated
+# parapet around a small lookout floor with a red flag. It sits in the row of
+# wall_top and the tile below it is tower_front.
+# map: f=ground_floor_base S=ground_floor_shadow n=building_stone_base N=building_stone_hi
+# map: m=building_stone_shadow M=building_stone_dark u=fabric_red_base U=fabric_red_hi
+# map: v=fabric_red_shadow
+MMMMMMMMMMMMMMMM
+MNNNNNNNMNNNNNNM
+MNNNNNNNMNNNNNNM
+MnnnnnnnMnnnnmmM
+MnnnnnnnMnnnnmmM
+MnnnnnnnMnnnnmmM
+MMMMMMMMMMnnnmmM
+SSSSSSSSSMnnnmmM
+SSSSSSSSSMMMMMMM
+SffffffffMnnnmmM
+UUUUUUfffMnnnmmM
+uuuuuufffMnnnmmM
+uuuuuuSSSMnnnmmM
+uuuuuufffMnnnmmM
+vvvvvvfffMnnnmmM
+fffffffffMnnnmmM

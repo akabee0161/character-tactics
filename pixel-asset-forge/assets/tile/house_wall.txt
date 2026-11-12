@@ -1,0 +1,22 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# A plank wall for the front of a small house. Horizontal planks, lit from above.
+# Repeats in both directions.
+# map: b=building_wood_base B=building_wood_hi c=building_wood_shadow
+BBBBBBBBBBBBBBBB
+bbbcbbbbbbbbbbbb
+bbbcbbbbbbbbbbbb
+cccccccccccccccc
+BBBBBBBBBBBBBBBB
+bbbbbbbbbbbcbbbb
+bbbbbbbbbbbcbbbb
+cccccccccccccccc
+BBBBBBBBBBBBBBBB
+bbbbbbcbbbbbbbbb
+bbbbbbcbbbbbbbbb
+cccccccccccccccc
+BBBBBBBBBBBBBBBB
+bbbbbbbbbbbbbcbb
+bbbbbbbbbbbbbcbb
+cccccccccccccccc

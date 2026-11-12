@@ -1,0 +1,21 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# A door in the plank wall of house_wall.
+# map: b=building_wood_base B=building_wood_hi c=building_wood_shadow C=building_wood_dark
+BBBBBBBBBBBBBBBB
+bbbcbbbbbbbbbbbb
+bbbcbbbbbbbbbbbb
+cccccccccccccccc
+BBBBBBBBBBBBBBBB
+bbbbbbbbbbbcbbbb
+bbbbbbbbCCCCCCCC
+ccccccccCBBBBBBB
+BBBBBBBBCBBBBBBB
+bbbbbbcbCbbbbcbb
+bbbbbbcbCbbbbcbb
+ccccccccCbbbbcbb
+BBBBBBBBCbbbbcbb
+bbbbbbbbCbbbbcbb
+bbbbbbbbCbbbbcbb
+ccccccccCbbbbcbb

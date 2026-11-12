@@ -1,0 +1,23 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# The left end of the closed gate, with its stone frame on the left.
+# map: n=building_stone_base N=building_stone_hi m=building_stone_shadow M=building_stone_dark
+# map: b=building_wood_base B=building_wood_hi c=building_wood_shadow C=building_wood_dark
+# map: l=furniture_metal_base L=furniture_metal_hi j=furniture_metal_shadow
+MNnnmcBbbbbbbcBb
+MNnnmcBbbbbbbcBb
+MNnnmcBbbbbbbcBb
+MNnnmcBbbbbbbcBb
+MNnnmcBbbbbbbcBb
+MNnnmcBbbbbbbcBb
+MNnnmLLLLLLLLLLL
+MNnnmlllLlllllll
+MNnnmllljlllllll
+MNnnmjjjjjjjjjjj
+MNnnmcBbbbbbbcBb
+MNnnmcBbbbbbbcBb
+MNnnmcBbbbbbbcBb
+MNnnmcBbbbbbbcBb
+MMMMMCCCCCCCCCCC
+MMMMMCCCCCCCCCCC

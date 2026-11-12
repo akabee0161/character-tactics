@@ -1,0 +1,24 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# A red runner down a hall, 22px wide, centred on a 32px cell of flagstones, with
+# a gold lozenge every 16 rows so the motif survives stacking. It is the 32px
+# version of carpet_v.
+# map: f=ground_floor_base F=ground_floor_hi S=ground_floor_shadow D=ground_floor_dark
+# map: l=furniture_metal_base L=furniture_metal_hi u=fabric_red_base U=fabric_red_hi
+SSSSDUluuuuuuuuu
+SFFFDUluuuuuuuuu
+SFffDUluuuuuuuuu
+SFffDUluuuuuuuuu
+SFffDUluuuuuuuuu
+SFffDUluuuuuuuul
+SFffDUluuuuuuulL
+SFffDUluuuuuullL
+SSSSDUluuuuuuulL
+FFFFDUluuuuuuuul
+ffffDUluuuuuuuuu
+ffffDUluuuuuuuuu
+ffffDUluuuuuuuuu
+ffffDUluuuuuuuuu
+ffffDUluuuuuuuuu
+ffffDUluuuuuuuuu

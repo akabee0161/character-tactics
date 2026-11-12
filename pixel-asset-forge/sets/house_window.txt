@@ -1,0 +1,4 @@
+# house_window set. One map cell in character-tactics (32px), built from four 16px parts.
+# tools/sets.py assembles it into build/sets/house_window.png.
+house_window_nw  house_window_ne
+house_window_sw  house_window_se

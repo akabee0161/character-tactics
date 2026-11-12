@@ -1,0 +1,24 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# The throne at the head of a hall - gilt frame, crimson cushion - on the flagstones.
+# It is the 32px version of throne.
+# map: o=contour f=ground_floor_base F=ground_floor_hi S=ground_floor_shadow
+# map: l=furniture_metal_base L=furniture_metal_hi u=fabric_red_base U=fabric_red_hi
+# map: v=fabric_red_shadow
+lloSSSSSSSSSSSSS
+ooooooooSFFFFFFF
+LLLLLLLoSFffffff
+llllllloSFffffff
+llllllloSFffffff
+UUUUllloSFffffff
+uuuullloSFffffff
+uuuullloSFffffff
+uuuullloSSSSSSSS
+LuuullloFFFFSFFF
+LuuullloffffSFff
+uuuullloffffSFff
+uuuullloffffSFff
+uuuullloffffSFff
+uuuullloffffSFff
+vvvvllloffffSFff

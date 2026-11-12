@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { assetFiles, loadRegistry } from './loader';
 import { makeGrid, computeFlowField, cellIndexAt, isWalkableAt } from '../core/field';
+import { DEFAULT_LEGEND } from './schema';
 
 const KNOWN_SKILLS = ['funbaru', 'neraiuchi', 'omajinai', 'kakenukeru', 'hikitsukeru', 'hinoame', 'tsuki', 'hagemasu'];
 
@@ -40,7 +41,7 @@ describe('loadRegistry', () => {
       const walkable = (p: { x: number; y: number }): boolean => {
         const cx = Math.floor(p.x / stage.cell);
         const cy = Math.floor(p.y / stage.cell);
-        return stage.mapRows[cy]?.[cx] === '.';
+        return (stage.legend ?? DEFAULT_LEGEND)[stage.mapRows[cy]?.[cx] ?? '']?.walkable === true;
       };
       for (const s of stage.placement.starts) {
         expect(`${stage.id} placement ${s.x},${s.y} walkable=${walkable(s)}`)
@@ -94,7 +95,7 @@ describe('ステージの せっけい', () => {
 
   it('しょうり ちてんは はいち ちてんから あるいて たどりつける', () => {
     for (const s of reg.stages) {
-      const grid = makeGrid(s.cell, s.mapRows);
+      const grid = makeGrid(s.cell, s.mapRows, s.legend);
       const field = computeFlowField(grid, s.victory.pos);
       for (const start of s.placement.starts) {
         const i = cellIndexAt(grid, start);
@@ -105,7 +106,7 @@ describe('ステージの せっけい', () => {
 
   it('敵の はいちは しょうり ちてんから あるいて たどりつける ばしょに ある', () => {
     for (const s of reg.stages) {
-      const grid = makeGrid(s.cell, s.mapRows);
+      const grid = makeGrid(s.cell, s.mapRows, s.legend);
       const field = computeFlowField(grid, s.victory.pos);
       for (const e of s.enemies) {
         const i = cellIndexAt(grid, e.pos);
@@ -116,7 +117,7 @@ describe('ステージの せっけい', () => {
 
   it('guard の post は あるける マスに ある', () => {
     for (const s of reg.stages) {
-      const grid = makeGrid(s.cell, s.mapRows);
+      const grid = makeGrid(s.cell, s.mapRows, s.legend);
       for (const e of s.enemies) {
         if (e.ai.kind !== 'guard') continue;
         expect(`${s.id} post => ${isWalkableAt(grid, e.ai.post)}`).toContain('true');
