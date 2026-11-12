@@ -1,0 +1,4 @@
+# gate_door_r set. One map cell in character-tactics (32px), built from four 16px parts.
+# tools/sets.py assembles it into build/sets/gate_door_r.png.
+gate_door_r_nw  gate_door_r_ne
+gate_door_r_sw  gate_door_r_se

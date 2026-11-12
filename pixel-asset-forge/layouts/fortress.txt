@@ -1,0 +1,50 @@
+# The fortress family (stage 2), for tools/tilemap.py --layout. The whole stage's
+# map, one character per map cell, laid out as 2x2 of 16px tiles like the game does.
+# Check: the wall reads as a wall (top then face), the towers read as towers beside
+# the gate, the gate gap reads as a paved passage.
+wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top
+wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top wall_top
+wall_top wall_top dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt wall_top wall_top
+wall_top wall_top dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt wall_top wall_top
+wall_top wall_top dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt wall_top wall_top
+wall_top wall_top dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt wall_top wall_top
+wall_top wall_top dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt wall_top wall_top
+wall_top wall_top dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt wall_top wall_top
+wall_top wall_top dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt wall_top wall_top
+wall_top wall_top dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt wall_top wall_top
+wall_top wall_top dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt wall_top wall_top
+wall_top wall_top dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt wall_top wall_top
+wall_top wall_top dirt dirt wall_top wall_top wall_top wall_top wall_top wall_top tower_top_nw tower_top_ne floor_stone floor_stone floor_stone floor_stone floor_stone floor_stone floor_stone floor_stone tower_top_nw tower_top_ne wall_top wall_top wall_top wall_top wall_top wall_top dirt dirt wall_top wall_top
+wall_top wall_top dirt dirt wall_top wall_top wall_top wall_top wall_top wall_top tower_top_sw tower_top_se floor_stone floor_stone floor_stone floor_stone floor_stone floor_stone floor_stone floor_stone tower_top_sw tower_top_se wall_top wall_top wall_top wall_top wall_top wall_top dirt dirt wall_top wall_top
+wall_top wall_top dirt dirt wall_face wall_face wall_face wall_face wall_face wall_face tower_front_nw tower_front_ne floor_stone floor_stone floor_stone floor_stone floor_stone floor_stone floor_stone floor_stone tower_front_nw tower_front_ne wall_face wall_face wall_face wall_face wall_face wall_face dirt dirt wall_top wall_top
+wall_top wall_top dirt dirt wall_face wall_face wall_face wall_face wall_face wall_face tower_front_sw tower_front_se floor_stone floor_stone floor_stone floor_stone floor_stone floor_stone floor_stone floor_stone tower_front_sw tower_front_se wall_face wall_face wall_face wall_face wall_face wall_face dirt dirt wall_top wall_top
+wall_top wall_top dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt wall_top wall_top
+wall_top wall_top dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt wall_top wall_top
+wall_top wall_top dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt wall_top wall_top
+wall_top wall_top dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt wall_top wall_top
+wall_top wall_top dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt wall_top wall_top
+wall_top wall_top dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt wall_top wall_top
+wall_top wall_top dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt wall_top wall_top
+wall_top wall_top dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt wall_top wall_top
+wall_top wall_top dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt wall_top wall_top
+wall_top wall_top dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt wall_top wall_top
+wall_top wall_top dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt wall_top wall_top
+wall_top wall_top dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt wall_top wall_top
+wall_top wall_top dirt dirt dirt dirt dirt dirt wall_top wall_top wall_top wall_top wall_top wall_top tower_top_nw tower_top_ne floor_stone floor_stone floor_stone floor_stone tower_top_nw tower_top_ne wall_top wall_top wall_top wall_top wall_top wall_top dirt dirt wall_top wall_top
+wall_top wall_top dirt dirt dirt dirt dirt dirt wall_top wall_top wall_top wall_top wall_top wall_top tower_top_sw tower_top_se floor_stone floor_stone floor_stone floor_stone tower_top_sw tower_top_se wall_top wall_top wall_top wall_top wall_top wall_top dirt dirt wall_top wall_top
+wall_top wall_top dirt dirt dirt dirt dirt dirt wall_face wall_face wall_face wall_face wall_face wall_face tower_front_nw tower_front_ne floor_stone floor_stone floor_stone floor_stone tower_front_nw tower_front_ne wall_face wall_face wall_face wall_face wall_face wall_face dirt dirt wall_top wall_top
+wall_top wall_top dirt dirt dirt dirt dirt dirt wall_face wall_face wall_face wall_face wall_face wall_face tower_front_sw tower_front_se floor_stone floor_stone floor_stone floor_stone tower_front_sw tower_front_se wall_face wall_face wall_face wall_face wall_face wall_face dirt dirt wall_top wall_top
+tree_nw tree_ne plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain tree_nw tree_ne
+tree_sw tree_se plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain tree_sw tree_se
+tree_nw tree_ne plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain tree_nw tree_ne
+tree_sw tree_se plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain tree_sw tree_se
+tree_nw tree_ne plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain tree_nw tree_ne
+tree_sw tree_se plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain tree_sw tree_se
+tree_nw tree_ne plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain tree_nw tree_ne
+tree_sw tree_se plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain tree_sw tree_se
+tree_nw tree_ne plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain tree_nw tree_ne
+tree_sw tree_se plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain tree_sw tree_se
+tree_nw tree_ne plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain tree_nw tree_ne
+tree_sw tree_se plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain plain tree_sw tree_se
+tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne
+tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se

@@ -1,0 +1,24 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# The middle of a closed double gate. Vertical planks with two iron bands. Four of
+# these in a row, with gate_door_l and gate_door_r at the ends, make a wide gate
+# that cannot be walked through.
+# map: b=building_wood_base B=building_wood_hi c=building_wood_shadow C=building_wood_dark
+# map: l=furniture_metal_base L=furniture_metal_hi j=furniture_metal_shadow
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+cBbbbbbbcBbbbbbb
+cBbbbbbbcBbbbbbb
+cBbbbbbbcBbbbbbb
+LLLLLLLLLLLLLLLL
+lllLlllllllLllll
+llljllllllljllll
+jjjjjjjjjjjjjjjj
+cBbbbbbbcBbbbbbb
+cBbbbbbbcBbbbbbb
+cBbbbbbbcBbbbbbb
+cBbbbbbbcBbbbbbb
+cBbbbbbbcBbbbbbb
+cBbbbbbbcBbbbbbb
+cBbbbbbbcBbbbbbb
