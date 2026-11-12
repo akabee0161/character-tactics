@@ -6,6 +6,8 @@ import type { Registry } from '../engine/registry';
 import type { StageDef } from '../engine/schema';
 import { imageFor } from './images';
 import type { ImageCache } from './images';
+import { flicker, lightSources } from './lighting';
+import type { LightSource } from './lighting';
 import { alertMarks } from './objectives-view';
 import { STILL, frameFor, stateOf } from './anim';
 import type { AnimStore } from './anim';
@@ -78,10 +80,20 @@ export function drawBattle(
 
   drawTerrain(ctx, state, images);
   drawVisitedVillages(ctx, state);
-  drawVictoryMarker(ctx, state.stage);
-  drawGoalMarkers(ctx, reg, state, selected);
-  drawBonds(ctx, state);
-  drawUnits(ctx, reg, state, selected, effects, images, anim);
+  if (state.stage.darkness === undefined) {
+    drawVictoryMarker(ctx, state.stage);
+    drawGoalMarkers(ctx, reg, state, selected);
+    drawBonds(ctx, state);
+    drawUnits(ctx, reg, state, selected, effects, images, anim, 'all');
+  } else {
+    // 暗いステージ: 地形とユニットの体に膜をかけ、印・つなぐ線・HPバー・選択の輪は膜の上に描く
+    drawUnits(ctx, reg, state, selected, effects, images, anim, 'bodies');
+    drawLighting(ctx, state, performance.now());
+    drawVictoryMarker(ctx, state.stage);
+    drawGoalMarkers(ctx, reg, state, selected);
+    drawBonds(ctx, state);
+    drawUnits(ctx, reg, state, selected, effects, images, anim, 'marks');
+  }
   drawAlertMarks(ctx, reg, state);
   drawPersuasionMarks(ctx, reg, state);
   drawProjectiles(ctx, state);
@@ -277,6 +289,7 @@ function drawUnits(
   effects: EffectState,
   images: ImageCache,
   anim: AnimStore,
+  phase: 'all' | 'bodies' | 'marks',
 ): void {
   for (const unit of state.units) {
     if (unit.retired) continue;
@@ -293,14 +306,16 @@ function drawUnits(
     );
     const sheet = def.sprites.map;
     const frame = sheet === null ? STILL : frameFor(anim, unit.uid, sheet, state.time);
-    drawMapUnit(ctx, p, radius, def, images, frame);
     // 絵が入ると 22px から 32px になる。HPバーやリングはこの half を基準にする
     const half = drawHalf(def, radius);
-
-    if (unit.bowDamageCap !== null) {
-      ctx.fillStyle = '#c8ccd4';
-      ctx.fillRect(p.x - 14, p.y - 8, 5, 16);
+    if (phase !== 'marks') {
+      drawMapUnit(ctx, p, radius, def, images, frame);
+      if (unit.bowDamageCap !== null) {
+        ctx.fillStyle = '#c8ccd4';
+        ctx.fillRect(p.x - 14, p.y - 8, 5, 16);
+      }
     }
+    if (phase === 'bodies') continue;
 
     if (isAlly) {
       // 旗(キャラだとわかるように)
@@ -336,6 +351,70 @@ function drawUnits(
     const displayedHp = effects.displayedHp.get(unit.uid) ?? unit.hp;
     drawHpBar(ctx, p, half, displayedHp / unit.maxHp, isAlly ? COLORS.hpAlly : COLORS.hpEnemy);
   }
+}
+
+// 暗い膜用のオフスクリーン。マップの大きさで1枚を使い回す（毎フレーム作り直さない）
+let veil: HTMLCanvasElement | null = null;
+const lightCache = new WeakMap<StageDef, LightSource[]>();
+
+/**
+ * 暗いステージ（stage.darkness）の膜。マップの範囲だけを暗くし、明かりのまわりを放射状に抜く。
+ * 明かりは輪の大きさと明るさだけが揺れる（絵は動かない）。揺れは戦闘の時計でなく実時間で、配置中も動く
+ */
+function drawLighting(ctx: CanvasRenderingContext2D, state: BattleState, nowMs: number): void {
+  const { stage, grid } = state;
+  if (stage.darkness === undefined) return;
+  const w = grid.cols * grid.cell;
+  const h = grid.rows * grid.cell;
+  if (veil === null) veil = document.createElement('canvas');
+  if (veil.width !== w || veil.height !== h) {
+    veil.width = w;
+    veil.height = h;
+  }
+  const vctx = veil.getContext('2d');
+  if (vctx === null) return;
+  let lights = lightCache.get(stage);
+  if (lights === undefined) {
+    lights = lightSources(stage);
+    lightCache.set(stage, lights);
+  }
+
+  vctx.globalCompositeOperation = 'source-over';
+  vctx.clearRect(0, 0, w, h);
+  vctx.fillStyle = `rgba(6, 8, 24, ${stage.darkness})`;
+  vctx.fillRect(0, 0, w, h);
+  vctx.globalCompositeOperation = 'destination-out';
+  const flickers = lights.map((l) => flicker(l.radius, nowMs, Math.floor(l.y / grid.cell) * grid.cols + Math.floor(l.x / grid.cell)));
+  lights.forEach((l, i) => {
+    const f = flickers[i]!;
+    const g = vctx.createRadialGradient(l.x, l.y, 0, l.x, l.y, f.radius);
+    g.addColorStop(0, `rgba(0, 0, 0, ${f.alpha})`);
+    g.addColorStop(0.5, `rgba(0, 0, 0, ${f.alpha * 0.7})`);
+    g.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    vctx.fillStyle = g;
+    vctx.fillRect(l.x - f.radius, l.y - f.radius, f.radius * 2, f.radius * 2);
+  });
+
+  const origin = mapToLogical({ x: 0, y: 0 });
+  ctx.save();
+  // 膜はマップの範囲だけ。上下のバーの領域にはかけない
+  ctx.beginPath();
+  ctx.rect(origin.x, origin.y, w, h);
+  ctx.clip();
+  ctx.drawImage(veil, origin.x, origin.y);
+  // 明かりに暖色をうっすら足す
+  ctx.globalCompositeOperation = 'lighter';
+  lights.forEach((l, i) => {
+    const f = flickers[i]!;
+    const cx = origin.x + l.x;
+    const cy = origin.y + l.y;
+    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, f.radius);
+    g.addColorStop(0, `rgba(255, 170, 70, ${0.16 * f.alpha})`);
+    g.addColorStop(1, 'rgba(255, 170, 70, 0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(cx - f.radius, cy - f.radius, f.radius * 2, f.radius * 2);
+  });
+  ctx.restore();
 }
 
 function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void {
