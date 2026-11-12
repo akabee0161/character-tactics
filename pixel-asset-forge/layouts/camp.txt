@@ -1,0 +1,50 @@
+# The camp family (stage 9), for tools/tilemap.py --layout. The whole stage's map,
+# one character per map cell, laid out as 2x2 of 16px tiles like the game does.
+# This is the daylight picture; the game darkens it and lights the fires and lamps.
+# Check: the tent reads as a tent, the fire as a fire, the lamp as a lamp on a post.
+tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne
+tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se
+tree_nw tree_ne dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt lamp_nw lamp_ne dirt dirt dirt dirt lamp_nw lamp_ne dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt tree_nw tree_ne
+tree_sw tree_se dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt lamp_sw lamp_se dirt dirt dirt dirt lamp_sw lamp_se dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt tree_sw tree_se
+tree_nw tree_ne dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt tree_nw tree_ne
+tree_sw tree_se dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt tree_sw tree_se
+tree_nw tree_ne dirt dirt dirt dirt dirt dirt tent_nw tent_ne tent_nw tent_ne lamp_nw lamp_ne dirt dirt dirt dirt lamp_nw lamp_ne tent_nw tent_ne tent_nw tent_ne dirt dirt dirt dirt dirt dirt tree_nw tree_ne
+tree_sw tree_se dirt dirt dirt dirt dirt dirt tent_sw tent_se tent_sw tent_se lamp_sw lamp_se dirt dirt dirt dirt lamp_sw lamp_se tent_sw tent_se tent_sw tent_se dirt dirt dirt dirt dirt dirt tree_sw tree_se
+tree_nw tree_ne dirt dirt dirt dirt dirt dirt tent_nw tent_ne tent_nw tent_ne dirt dirt campfire_nw campfire_ne dirt dirt dirt dirt tent_nw tent_ne tent_nw tent_ne dirt dirt dirt dirt dirt dirt tree_nw tree_ne
+tree_sw tree_se dirt dirt dirt dirt dirt dirt tent_sw tent_se tent_sw tent_se dirt dirt campfire_sw campfire_se dirt dirt dirt dirt tent_sw tent_se tent_sw tent_se dirt dirt dirt dirt dirt dirt tree_sw tree_se
+tree_nw tree_ne dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt tree_nw tree_ne
+tree_sw tree_se dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt tree_sw tree_se
+tree_nw tree_ne dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt tree_nw tree_ne
+tree_sw tree_se dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt tree_sw tree_se
+tree_nw tree_ne dirt dirt campfire_nw campfire_ne tent_nw tent_ne tent_nw tent_ne dirt dirt dirt dirt tent_nw tent_ne tent_nw tent_ne dirt dirt dirt dirt tent_nw tent_ne tent_nw tent_ne campfire_nw campfire_ne dirt dirt tree_nw tree_ne
+tree_sw tree_se dirt dirt campfire_sw campfire_se tent_sw tent_se tent_sw tent_se dirt dirt dirt dirt tent_sw tent_se tent_sw tent_se dirt dirt dirt dirt tent_sw tent_se tent_sw tent_se campfire_sw campfire_se dirt dirt tree_sw tree_se
+tree_nw tree_ne dirt dirt dirt dirt tent_nw tent_ne tent_nw tent_ne dirt dirt dirt dirt tent_nw tent_ne tent_nw tent_ne dirt dirt dirt dirt tent_nw tent_ne tent_nw tent_ne dirt dirt dirt dirt tree_nw tree_ne
+tree_sw tree_se dirt dirt dirt dirt tent_sw tent_se tent_sw tent_se dirt dirt dirt dirt tent_sw tent_se tent_sw tent_se dirt dirt dirt dirt tent_sw tent_se tent_sw tent_se dirt dirt dirt dirt tree_sw tree_se
+tree_nw tree_ne dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt tree_nw tree_ne
+tree_sw tree_se dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt tree_sw tree_se
+tree_nw tree_ne dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt campfire_nw campfire_ne dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt tree_nw tree_ne
+tree_sw tree_se dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt campfire_sw campfire_se dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt tree_sw tree_se
+tree_nw tree_ne dirt dirt dirt dirt dirt dirt tent_nw tent_ne tent_nw tent_ne dirt dirt dirt dirt dirt dirt dirt dirt tent_nw tent_ne tent_nw tent_ne dirt dirt dirt dirt dirt dirt tree_nw tree_ne
+tree_sw tree_se dirt dirt dirt dirt dirt dirt tent_sw tent_se tent_sw tent_se dirt dirt dirt dirt dirt dirt dirt dirt tent_sw tent_se tent_sw tent_se dirt dirt dirt dirt dirt dirt tree_sw tree_se
+tree_nw tree_ne dirt dirt dirt dirt dirt dirt tent_nw tent_ne tent_nw tent_ne lamp_nw lamp_ne dirt dirt dirt dirt lamp_nw lamp_ne tent_nw tent_ne tent_nw tent_ne dirt dirt dirt dirt dirt dirt tree_nw tree_ne
+tree_sw tree_se dirt dirt dirt dirt dirt dirt tent_sw tent_se tent_sw tent_se lamp_sw lamp_se dirt dirt dirt dirt lamp_sw lamp_se tent_sw tent_se tent_sw tent_se dirt dirt dirt dirt dirt dirt tree_sw tree_se
+tree_nw tree_ne dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt tree_nw tree_ne
+tree_sw tree_se dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt tree_sw tree_se
+tree_nw tree_ne dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt tree_nw tree_ne
+tree_sw tree_se dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt tree_sw tree_se
+tree_nw tree_ne dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt tree_nw tree_ne
+tree_sw tree_se dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt tree_sw tree_se
+tree_nw tree_ne dirt dirt campfire_nw campfire_ne dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt campfire_nw campfire_ne dirt dirt tree_nw tree_ne
+tree_sw tree_se dirt dirt campfire_sw campfire_se dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt campfire_sw campfire_se dirt dirt tree_sw tree_se
+tree_nw tree_ne dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt tree_nw tree_ne
+tree_sw tree_se dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt tree_sw tree_se
+tree_nw tree_ne dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt tree_nw tree_ne
+tree_sw tree_se dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt tree_sw tree_se
+tree_nw tree_ne dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt tree_nw tree_ne
+tree_sw tree_se dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt tree_sw tree_se
+tree_nw tree_ne dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt tree_nw tree_ne
+tree_sw tree_se dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt tree_sw tree_se
+tree_nw tree_ne dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt tree_nw tree_ne
+tree_sw tree_se dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt dirt tree_sw tree_se
+tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne tree_nw tree_ne
+tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se tree_sw tree_se

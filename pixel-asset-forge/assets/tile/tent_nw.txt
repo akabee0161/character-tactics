@@ -1,0 +1,26 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# A small camp tent seen from the front, on trodden earth. Beige canvas, lit from
+# the upper left, with a dark doorway and a red pennant. One map cell is one tent,
+# so a block of 2x2 cells is a cluster of four. It is drawn in daylight colours;
+# the night is a dark veil that the game draws over the whole map.
+# map: o=contour d=ground_dirt_base h=ground_dirt_hi k=ground_dirt_shadow
+# map: f=ground_floor_base F=ground_floor_hi S=ground_floor_shadow D=ground_floor_dark
+# map: c=building_wood_shadow
+ddhhdddddddddddd
+dddddddddddddddd
+dddddddddkkddddc
+dddddddddddddkkc
+dddddhdddddddddc
+dddddhddddddddoc
+ddddddddddddddof
+hddddddddddddoFf
+dddddddkkddddoFf
+ddddddddddddoFFf
+dddddddddddoFFFf
+dddkkddddddoFFFf
+ddddddddddofFFFf
+ddddddddhhoFFFFf
+dddddkkddoFFFFFf
+ddddddddoFFFFSDD

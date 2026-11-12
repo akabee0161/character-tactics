@@ -1,0 +1,23 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# A lantern on a wooden post, on trodden earth. A small light source. The glow around
+# it is drawn by the game, not here.
+# map: o=contour d=ground_dirt_base h=ground_dirt_hi k=ground_dirt_shadow
+# map: b=building_wood_base B=building_wood_hi c=building_wood_shadow
+cohhdddddddddddd
+codddddddddddddd
+codddddddkkddddd
+codddddddddddkkd
+codddhdddddddddd
+codddhdddddddddd
+codddddddddddddd
+codddddddddddddh
+codddddkkddddddd
+coddddddddddhhdd
+codddddddddddddd
+BBBokddddddddddd
+bbbokkkkkdkkdddd
+ooookkkkkhdddddd
+kkkkkkkkkddddddd
+dddddddddddddddd

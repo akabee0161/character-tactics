@@ -1,0 +1,26 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# A campfire in a ring of stones with crossed logs, on trodden earth. The flame is
+# a still picture - the game makes the light around it breathe, not the drawing.
+# It is the light source of the camp, so the flame is the brightest thing in it.
+# map: o=contour d=ground_dirt_base h=ground_dirt_hi k=ground_dirt_shadow
+# map: D=ground_floor_dark r=rock_base R=rock_hi q=rock_shadow
+# map: b=building_wood_base B=building_wood_hi c=building_wood_shadow C=building_wood_dark
+# map: e=fire_base p=fire_deep
+ddhhddorrrppppee
+ddooooooDBppppee
+ddoRRrroDCppppee
+ddorrrroDCppppee
+ddorrqqoDkpppcpe
+ddooooooDCbbbccc
+ddddorrqDCccckkk
+hdddooooDcDDDDDD
+dddddddkorrrroRR
+ddddddddorrqqorr
+ddddddddoooooorr
+dddkkkkkkkkkkooo
+dddkkkkkkkkkkkkk
+dddkkkkkkkkkkkkk
+dddkkkkkkkkkkkkk
+dddddddddddddddd
