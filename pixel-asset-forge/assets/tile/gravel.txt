@@ -1,0 +1,23 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# A dry river bed. Pale dirt with grey stones, drawn on a torus so every edge
+# meets the opposite edge and the tile repeats without a seam or a grid.
+# map: d=ground_dirt_base h=ground_dirt_hi r=rock_base R=rock_hi
+# map: q=rock_shadow
+hhhhhhqhhhhhhhhh
+hhhhhhhhhhhhhhhh
+Rrhhhhhhhhhhhhhh
+rqhhhRrhdhhhhhhh
+hhhhhrqhhhhhhhhh
+hhhhhhhhhhhhhhhh
+hhhhhhhdhhhdhhrr
+hhhhhhrrhhhhhhhq
+hhhhhhhqhhhhhhhh
+hhhhhhhhhhhhhhrr
+hhhhhhhhhhhhhhdq
+hhhhhhhhhhhhhhhh
+hrrhhhhhhhhhhhhh
+hhqhhhhhhhhhhhhh
+hhhhhhhhhdhhhhRr
+hhhhhrrhhhhhhhrq

@@ -1,0 +1,22 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# Gravel at the water's edge. The same stones as gravel on darker, damp dirt,
+# laid next to water so the bank is a soft band instead of a straight line.
+# map: d=ground_dirt_base k=ground_dirt_shadow r=rock_base q=rock_shadow
+dddqdddddkddkdrr
+dddddddddddddddq
+kddddddddrrddddd
+rrdddddddrqddddd
+rqddddddddddkddd
+dddddddddddddddd
+dddddddddddddddd
+kddddddddddddddd
+ddddddrrdddddddd
+rrddddrqdddddddd
+dqdddddddddddddd
+dddddddddddddddd
+dkdddkdddddddrrd
+ddddddddddddddqd
+dddddddrrddddddd
+ddrrddddqddddddd

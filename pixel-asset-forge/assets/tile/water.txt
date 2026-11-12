@@ -1,0 +1,23 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# Deep river water as a flat field (no banks), for a river that is two map cells
+# wide. The banks are the gravel on either side, so the tile has no edge profile
+# and can be repeated in any direction.
+# map: w=water_surface_base W=water_surface_hi x=water_surface_shadow
+wwWWwwwwwwwwwwww
+wwwwwwxxwwwwwwww
+wwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwww
+wwxxwwwWWwwwWWww
+wwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwww
+WwwwwwwwwwwwwwwW
+wwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwww
+wwwwwwwxxwwwwwww
+wwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwww
+wwwwwwwwwwwWWwww

@@ -1,0 +1,23 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# A shallow crossing. Lighter than water, with the stones of the river bed
+# showing through.
+# map: w=water_surface_base W=water_surface_hi x=water_surface_shadow r=rock_base
+# map: R=rock_hi
+WWWRrWWWWWWWWWWW
+WWWrxWWWWwwWWWWW
+WWWWWWWWWWWWWWWW
+WWWWWWWWWWRrWWWW
+wWWWWWWWWWrxWWWw
+WWWWWWWWwwWWWWWW
+WWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWW
+WWWWWrrWWWWWWWWW
+WWWWWWxwwWWWWRrW
+WWWWWWWWWWWWWrxW
+WWWWWWWWWWWWWWWW
+WWWwwWWrrWWWWWWW
+WWWWWWWWxWWWWWWW
+WWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWW
