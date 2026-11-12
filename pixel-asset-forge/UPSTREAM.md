@@ -27,6 +27,7 @@ forge 本体も並行して開発が続く。forge の改善をこちらへ取�
 - 部品で組むユニットの確かめ（D 敵の組み直し 2回目、2026-11-03〜04。character-tactics の `docs/superpowers/specs/2026-11-03-enemy-rebuild-2-design.md`・台帳 `docs/superpowers/ledgers/2026-11-03-enemy-rebuild-2.md`）: `weapon_check.py` の `--no-presence`（部品で組むユニットは武器と手が見えるかを見ない。`unit_rules.py` が渡し、設定の `hidden` はやめた）と、斜めの柄の拳の先の切れ端を柄に数える判定、`part_outline.py` が前と後ろに分けた髪の分け目を通す判定、新しい `head_cover_check.py`（被り物は髪より大きく）・`far_fist_check.py`（体の奥で握る拳は影の色）。どれも `tests/` にテストがある
 - 胴のはみ出しの確認をやめた（D 敵の組み直し 3回目、2026-11-05。台帳 character-tactics の `docs/superpowers/ledgers/2026-11-05-enemy-rebuild-3.md`）: `tools/unit_rules.py` の `PROTRUSION_BODIES` を `()` にし、`body_check.py` の「はみ出し」を男女とも掛けない（袖の名残を見つける確認で、敵の袖を消し終えたため。`body_check.py` のコードは残す）
 - 敵の絵（2026-11-11。台帳 character-tactics の `docs/superpowers/ledgers/2026-11-11-enemy-art.md`）: `tools/enemy_build.py` の `shield`・`bow`・`staff` の型。新しい 8 体（盾持ち 2・弓兵 3・まじない師 3）の `compose/{shield,bow,staff}-*.json` と `checks/`。描き足した部品（盾 `assets/part/equip/shield/enemy_male/`、拳 `assets/part/fist/enemy_female/{bow,arrow,staff}_hand_*`。どれもロラン・イネス・ミストの部品の色を換えた写し）。`tools/enemy_gallery.py` の `--first`
+- 各ステージのタイル（2026-11-12。台帳 character-tactics の `docs/superpowers/ledgers/2026-11-12-stage-tiles.md`）: tile の家族 6 つ（川原・石切り場・城壁・関所・野営地・塔と城内の物）。`types/tile/SPEC.md` の「セット構成」と「32px の物のセットの決めごと」、`layouts/{riverside,quarry,fortress,fortress_gate,checkpoint,camp,tower,hall}.txt`、`palette/uses/tile.json` の `magic_*`。色見本は足していない
 
 ## forge から持ってきたもの
 

@@ -1,0 +1,4 @@
+# magic_circle set. One map cell in character-tactics (32px), built from four 16px parts.
+# tools/sets.py assembles it into build/sets/magic_circle.png.
+magic_circle_nw  magic_circle_ne
+magic_circle_sw  magic_circle_se

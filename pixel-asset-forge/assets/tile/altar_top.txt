@@ -1,0 +1,23 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# The top of a stone altar, seen from above, with small violet inlays. Repeats in
+# both directions, so a row of them makes a long slab. Not walkable.
+# map: n=building_stone_base m=building_stone_shadow M=building_stone_dark i=magic_hi
+# map: I=magic_base J=magic_shadow
+MMMMMMMMMMMMMMMM
+MnnnnnnnMnnnnnnn
+MnmmmmmmMmmmmmmm
+MnmimmmmMmmmmmmm
+MniIJmmmMmmmmmmm
+MnmJmmmmMmmmmmmm
+MnmmmmmmMmmmmmmm
+MnmmmmmmMmmmmmmm
+MMMMMMMMMMMMMMMM
+MnmmMmmmmmmmMmmm
+MnmmMmmmmmmmMmmm
+MnmmMmmmmmmiMmmm
+MnmmMmmmmmiIJmmm
+MnmmMmmmmmmJMmmm
+MnmmMmmmmmmmMmmm
+MnmmMmmmmmmmMmmm

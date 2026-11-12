@@ -353,5 +353,25 @@
     "swatch": "stone_base",
     "kind": "object",
     "note": "井戸の石（中）"
+  },
+  "magic_hi": {
+    "swatch": "orchid_hi",
+    "kind": "object",
+    "note": "魔法陣の紫（明）"
+  },
+  "magic_base": {
+    "swatch": "orchid_base",
+    "kind": "object",
+    "note": "魔法陣の紫（中）"
+  },
+  "magic_shadow": {
+    "swatch": "orchid_shadow",
+    "kind": "object",
+    "note": "魔法陣の紫（暗）"
+  },
+  "magic_dark": {
+    "swatch": "orchid_dark",
+    "kind": "object",
+    "note": "魔法陣の紫（最暗）"
   }
 }

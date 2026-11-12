@@ -1,0 +1,24 @@
+# type: tile
+# size: 16x16
+# light: upper-left
+# A three-armed gold candlestick with three still flames, standing on the flagstones
+# of a tower. It is a light source - the game lights the floor around it, so the
+# flames are the only bright things in the picture.
+# map: o=contour f=ground_floor_base F=ground_floor_hi S=ground_floor_shadow
+# map: D=ground_floor_dark l=furniture_metal_base L=furniture_metal_hi j=furniture_metal_shadow
+joSSSSSSSSSSSSSS
+joFFFFFFSFFFFFFF
+joffffffSFffffff
+joffffffSFffffff
+joffffffSFffffff
+joffffffSFffffff
+joffffffSFffffff
+joffffffSFffffff
+joSSSSSSSSSSSSSS
+loFFSFFFFFFFSFFF
+loooooffffffSFff
+LLLLLoffffffSFff
+llllloDfffffSFff
+ooooooDfffffSFff
+DDDDDDDfffffSFff
+ffffSFffffffSFff
