@@ -310,12 +310,13 @@ function drawUnits(
     const half = drawHalf(def, radius);
     if (phase !== 'marks') {
       drawMapUnit(ctx, p, radius, def, images, frame);
-      if (unit.bowDamageCap !== null) {
-        ctx.fillStyle = '#c8ccd4';
-        ctx.fillRect(p.x - 14, p.y - 8, 5, 16);
-      }
     }
     if (phase === 'bodies') continue;
+    // 弓を通しにくい印。体ではなく印なので、暗い膜の上に描く（暗くないステージでは体の直後で、これまでと同じ順）
+    if (unit.bowDamageCap !== null) {
+      ctx.fillStyle = '#c8ccd4';
+      ctx.fillRect(p.x - 14, p.y - 8, 5, 16);
+    }
 
     if (isAlly) {
       // 旗(キャラだとわかるように)
