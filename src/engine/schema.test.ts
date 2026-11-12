@@ -961,3 +961,53 @@ describe('validateStageDef: joins / persuasions / villages', () => {
     expect(validateStageDef('stages/x.json', { ...OK, persuasions: [p] }).ok).toBe(false);
   });
 });
+
+describe('validateStageDef: darkness と light', () => {
+  const LEGEND = {
+    '.': { tile: null, walkable: true },
+    '#': { tile: null, walkable: false },
+    C: { tile: null, walkable: false, light: 72 },
+  };
+  const ROWS = ['####', '#C.#', '#..#', '####'];
+  const base = { ...VALID_STAGE, mapRows: ROWS, legend: LEGEND, darkness: 0.7 };
+
+  it('darkness と light を 読む', () => {
+    const r = validateStageDef('stages/x.json', base);
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.value.darkness).toBe(0.7);
+      expect(r.value.legend?.C?.light).toBe(72);
+    }
+  });
+
+  it.each([[0], [0.95], ['0.5']])('darkness が %s だと 弾く', (darkness) => {
+    const r = validateStageDef('stages/x.json', { ...base, darkness });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors.some((e) => e.path === 'darkness')).toBe(true);
+  });
+
+  it.each([[4], [200], [72.5]])('light が %s だと 弾く', (light) => {
+    const r = validateStageDef('stages/x.json', {
+      ...base, legend: { ...LEGEND, C: { tile: null, walkable: false, light } },
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors.some((e) => e.path === 'legend.C.light')).toBe(true);
+  });
+
+  it('darkness が ないのに light が あると 弾く', () => {
+    const { darkness: _d, ...noDark } = base;
+    const r = validateStageDef('stages/x.json', noDark);
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      const e = r.errors.find((x) => x.path === 'legend.C.light');
+      expect(e).toBeDefined();
+      expect(e?.reason).toContain('darkness');
+    }
+  });
+
+  it('darkness も light も 書かない ステージは 今までどおり 読める', () => {
+    const r = validateStageDef('stages/x.json', VALID_STAGE);
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value.darkness).toBeUndefined();
+  });
+});

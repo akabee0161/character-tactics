@@ -446,11 +446,18 @@ export type VillageDef = { id: string; col: number; row: number; text: string | 
  */
 export const MIN_TILE_SPEED = 0.1;
 
+/** legend の light（明かりの輪の半径 px）の範囲。darkness のあるステージだけで使える */
+export const MIN_LIGHT_RADIUS = 8;
+export const MAX_LIGHT_RADIUS = 160;
+/** ステージの darkness（暗い膜の濃さ）の上限。0 は「暗さなし」なので書かせない */
+export const MAX_DARKNESS = 0.9;
+
 /**
  * mapRows の1文字が何を表すか。tile は assets/images 内のファイル名。null なら単色で描く。
  * speed はそのマスでの移動の速さの倍率（MIN_TILE_SPEED 以上 1 以下）。省略時は 1 で、書かれたときだけ入る
+ * light はそのマスにある明かり（燭台・たき火など）の輪の半径 px。歩けないマスにも書ける。darkness のあるステージだけ
  */
-export type LegendEntry = { tile: string | null; walkable: boolean; speed?: number };
+export type LegendEntry = { tile: string | null; walkable: boolean; speed?: number; light?: number };
 export type Legend = Record<string, LegendEntry>;
 
 /** legend を書かないステージの既定。'.' 歩ける / '#' 歩けない、どちらも単色 */
@@ -477,6 +484,8 @@ export type StageDef = {
   mapRows: string[];
   /** mapRows の文字の意味。省略時は DEFAULT_LEGEND */
   legend?: Legend;
+  /** 暗い膜の濃さ（0 より大きく MAX_DARKNESS 以下）。書かないステージは暗くしない */
+  darkness?: number;
   placement: PlacementDef;
   roster: string[];
   enemies: EnemyPlacement[];
@@ -531,17 +540,24 @@ function readLegend(ctx: Ctx, v: unknown): Legend | undefined {
     const tile = e.tile === null ? null : requireString(ctx, `${path}.tile`, e.tile);
     const walkable = requireBoolean(ctx, `${path}.walkable`, e.walkable);
     if (walkable === null) continue;
-    if (e.speed === undefined) {
-      out[key] = { tile, walkable };
-      continue;
+    const entry: LegendEntry = { tile, walkable };
+    if (e.speed !== undefined) {
+      if (!walkable) {
+        fail(ctx, `${path}.speed`, 'とおれない マスには かけない');
+        continue;
+      }
+      const speed = requireNumber(ctx, `${path}.speed`, e.speed, { min: MIN_TILE_SPEED, max: 1 });
+      if (speed === null) continue;
+      entry.speed = speed;
     }
-    if (!walkable) {
-      fail(ctx, `${path}.speed`, 'とおれない マスには かけない');
-      continue;
+    if (e.light !== undefined) {
+      const light = requireNumber(ctx, `${path}.light`, e.light, {
+        min: MIN_LIGHT_RADIUS, max: MAX_LIGHT_RADIUS, int: true,
+      });
+      if (light === null) continue;
+      entry.light = light;
     }
-    const speed = requireNumber(ctx, `${path}.speed`, e.speed, { min: MIN_TILE_SPEED, max: 1 });
-    if (speed === null) continue;
-    out[key] = { tile, walkable, speed };
+    out[key] = entry;
   }
   if (Object.keys(out).length === 0) fail(ctx, 'legend', '1つ いじょう ひつよう');
   return out;
@@ -903,6 +919,20 @@ export function validateStageDef(file: string, raw: unknown): Validated<StageDef
   };
 
   if (legend !== undefined) stage.legend = legend;
+
+  if (o.darkness !== undefined) {
+    const darkness = requireNumber(ctx, 'darkness', o.darkness, { max: MAX_DARKNESS });
+    if (darkness !== null && darkness <= 0) fail(ctx, 'darkness', '0 より おおきい かずが ひつよう');
+    else if (darkness !== null) stage.darkness = darkness;
+  }
+  // 明かりは暗い膜を抜くためのもの。膜が無いと黙って無視されるので、書かれていたら弾く
+  if (o.darkness === undefined && legend !== undefined) {
+    for (const [key, entry] of Object.entries(legend)) {
+      if (entry.light !== undefined) {
+        fail(ctx, `legend.${key}.light`, 'darkness の ない ステージには かけない');
+      }
+    }
+  }
 
   if (o.intro !== undefined) {
     const introRaw = requireArray(ctx, 'intro', o.intro) ?? [];
