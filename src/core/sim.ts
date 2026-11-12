@@ -173,10 +173,10 @@ function updateEngagements(state: BattleState, movedThisTick: Set<string>): void
       u.attackInterval, u.attack, hasThreatWithinMelee(u.pos, hostilesOf(state, u)),
     );
     claimed.add(target.uid);
-    const firstMeeting = !u.seenDefIds.includes(target.defId);
-    if (firstMeeting) u.seenDefIds.push(target.defId);
+    const firstMeeting = !u.seenDefIds.includes(target.kindId);
+    if (firstMeeting) u.seenDefIds.push(target.kindId);
     state.events.push({
-      type: 'engage', uid: u.uid, defId: u.defId, targetUid: target.uid, targetDefId: target.defId, firstMeeting,
+      type: 'engage', uid: u.uid, defId: u.defId, targetUid: target.uid, targetDefId: target.kindId, firstMeeting,
     });
   }
 }

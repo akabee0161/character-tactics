@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { MAX_PARTY } from './constants';
 import { cellIndexAt } from './field';
 import { fieldToStatic } from './fields';
-import { beginBattle, canPlaceAt, createBattleState, placeUnit, startPositions, statsForLevel, windupOf } from './state';
+import { beginBattle, canPlaceAt, createBattleState, makeUnit, placeUnit, startPositions, statsForLevel, windupOf } from './state';
 import { testRegistry } from './testing';
 import type { Registry } from '../engine/registry';
 import type { StageDef } from '../engine/schema';
@@ -213,6 +213,28 @@ describe('windupOf', () => {
   it('シートが無ければ 0（即時）', () => {
     const def = { ...testRegistry().units.get('roran')!, sprites: { role: null, face: null, map: null } };
     expect(windupOf(def)).toBe(0);
+  });
+});
+
+describe('makeUnit: kindId', () => {
+  const base = { side: 'enemy', controller: 'ai', pos: { x: 0, y: 0 }, level: 1, xp: 0, ai: null } as const;
+
+  it('makeUnit は敵の kind を kindId に入れる', () => {
+    const reg = testRegistry();
+    const def = { ...reg.enemies.get('narazumono')!, id: 'narazumono-2', kind: 'narazumono' };
+    const u = makeUnit({ ...base, uid: 'e1', def, growth: reg.growth });
+    expect(u.kindId).toBe('narazumono');
+    expect(u.defId).toBe('narazumono-2');
+  });
+
+  it('makeUnit は kind が無ければ id を kindId に入れる', () => {
+    const reg = testRegistry();
+    const enemy = makeUnit({ ...base, uid: 'e1', def: reg.enemies.get('garum')!, growth: reg.growth });
+    expect(enemy.kindId).toBe('garum');
+    const ally = makeUnit({
+      ...base, side: 'player', controller: 'player', uid: 'p1', def: reg.units.get('roran')!, growth: reg.growth,
+    });
+    expect(ally.kindId).toBe('roran');
   });
 });
 

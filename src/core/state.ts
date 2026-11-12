@@ -50,6 +50,7 @@ export function makeUnit(a: MakeUnitArgs): Unit {
   return {
     uid: a.uid,
     defId: a.def.id,
+    kindId: enemyDef?.kind ?? a.def.id,
     side: a.side,
     controller: a.controller,
     combat: a.def.combat,

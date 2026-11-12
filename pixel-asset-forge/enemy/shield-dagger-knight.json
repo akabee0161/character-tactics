@@ -1,0 +1,12 @@
+{
+  "id": "shield-dagger-knight",
+  "name": "フルフェイス（短剣・盾）",
+  "archetype": "shield",
+  "body": "male",
+  "frames": "assets/unit/shield-dagger-knight",
+  "recolor": {
+    "clothes_dark_hi": "floor_base",
+    "clothes_dark_base": "floor_shadow",
+    "clothes_dark_shadow": "floor_dark"
+  }
+}

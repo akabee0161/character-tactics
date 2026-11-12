@@ -295,6 +295,9 @@ cat sheets/roran.txt
 ガウも全24コマを、芯・短剣・短剣の拳・空き手の拳で組んでいる（`compose/gau.json`、部品は `assets/part/` の `body/gau/core_*`・`equip/dagger/dagger_<向き>_<状態>`・`fist/gau/`）。
 短剣の敵4体（`compose/dagger-{bandit,knight,horn,thug}.json`）は、敵の男性の芯（`body/enemy_male/core_*`）に、目・服・頭の部品とガウの短剣・拳を重ねて組む。設定は `checks/dagger-*.json`。
 斧の敵7体（`compose/axe-*.json`）は、男性2体が敵の男性の芯、女性5体が敵の女性の芯（`body/enemy_female/core_*`）に、目・服・頭（女性は長い髪 `hair/{A,B,C}/` の前と後ろも）と、斧（`equip/axe/{male,female}/`）・斧を握る拳（`fist/enemy_{male,female}/axe_hand_*`）・空き手の拳（男性はガウの `fist/gau/free_hand_*`、女性は `fist/enemy_female/free_hand_*`）を重ねて組む。設定は `checks/axe-*.json`。
+弓の敵3体（`compose/bow-{thug,bandit-a-f,horn-b-f}.json`）は、元の敵（`dagger-thug`・`axe-bandit-a-f`・`axe-horn-b-f`）と同じ目・服・頭・髪に、イネスの弓（`equip/bow/`）・矢（`equip/arrow/`）と、敵の肌の色の弓の拳・矢の拳（`fist/enemy_female/{bow,arrow}_hand_*`。画素はイネスの拳と同じ。男性の `bow-thug` もこの拳を使う）を、イネスの重なり順で重ねて組む。攻撃は `atk_wind`・`atk_hit`（引き絞った絵）の2枚。設定は `checks/bow-*.json`。
+杖の敵3体（`compose/staff-{a,b,c}-f.json`）は、ミストの組み方（`compose/mist.json`）から、芯を敵の女性の芯（`body/enemy_female/core_*`。ミストの芯と画素が同じで肌の色だけ違う）に、魔女の帽子とミストの髪を長い髪 `hair/{A,B,C}/` の前と後ろに換えて組む。目 `eye/E0`・ローブ `cloth/robe`・杖 `equip/staff/` はミストと同じで、拳は敵の肌の色の杖の拳（`fist/enemy_female/staff_hand_*`。画素はミストの杖の拳と同じ）と空き手（`fist/enemy_female/free_hand_*`）。重なり順はミストの順に、後ろ髪を斧の女性の敵と同じ位置で足した。ローブの色はレシピの `recolor` で瓦の赤（`roof_base`・`roof_shadow`）に換えて、味方のミストの黒いローブと見分ける。肌は `recolor` しない（芯が敵の肌でミストと既に別なため）。設定は `checks/staff-*.json`。
+盾持ちの敵2体（`compose/shield-{dagger,spear}-knight.json`）は、敵の男性の芯に、目・服・頭の部品と盾の拳・短剣（槍）を重ねて組む。盾は `assets/part/equip/shield/enemy_male/` で、ロランの盾（`equip/shield/`）の文字を換えた写し（`h g i`）。元の盾を直したら写し直す。弓の敵の拳（`fist/enemy_female/{bow,arrow}_hand_*`）と杖の拳（`staff_hand_*`）も、イネス・ミストの拳の肌の色だけを換えた写しなので、元を直したら写し直す。
 
 ```sh
 .venv/bin/python tools/compose.py compose/ines.json --check     # 全32コマが部品から再現できる
@@ -372,14 +375,15 @@ forge をゲームリポジトリへコピーして使うときは、ゲーム�
 ```
 
 - レシピは `enemy/<id>.json`（キー: `id` `name` `archetype` `body` `recolor` `frames`）。`id` はファイル名と同じ
-- `archetype` は `dagger` `axe` `spear`（シート定義はどれも `sheets/gau.txt`）。`body` は `male` か `female`
-- `frames` は元のコマの置き場（リポジトリからの相対パス）。今の16体（男性8・女性8）は `assets/unit/<id>`
-  （部品で組んだコマ）を指す。`axe` `spear` では必須。
+- `archetype` は `dagger` `axe` `spear` `shield` `bow` `staff`（シート定義はどれも `sheets/gau.txt`）。`body` は `male` か `female`
+- `frames` は元のコマの置き場（リポジトリからの相対パス）。今の24体（男性11・女性13）は `assets/unit/<id>`
+  （部品で組んだコマ）を指す。`dagger` 以外では必須。
   書かなければ `dagger` の `male` は `assets/unit/gau/`、`female` は `assets/unit/dagger-female/`
   （`--colours` が比べるのもこの2つ。短剣の女性の元のコマはまだ無いので、今は置き場が無いと言って止まる）
-- 16体のコマはすべて部品から `compose/<id>.json` で組む（短剣の4体・斧の7体は 2026-11-03、槍の5体は 2026-11-05）。
+- 24体のコマはすべて部品から `compose/<id>.json` で組む（短剣の4体・斧の7体は 2026-11-03、槍の5体は 2026-11-05、盾持ちの2体・弓の3体・杖の3体は 2026-11-11）。
   `tools/compose.py compose/<id>.json --force` で組み、`tools/unit_rules.py checks/<id>.json` で確かめる。
   女性の id は `<男性の id>-<髪 a・b・c>-f`（a 前髪ありのロング・b 前髪なしのロング・c ポニーテール）。
+  杖の3体は男性がいないので `staff-<髪 a・b・c>-f`。
   前に使っていた生成スクリプト `gen/enemy/` は、腕・袖つきの古い作り方で、2026-11-05 に消した
 - `recolor` は「元のコマが使う用途の色 → 置き換え後の**色見本**」。元のコマが使わない名前は止める。
   そのため `build/enemy/<id>/*.txt`（色替え後のコマ）の `map` は色見本の名前になり、用途の色としては検査されない
@@ -422,7 +426,7 @@ types/<type>/SPEC.md       型ごとの機械的な規約（寸法・構成・�
 types/<type>/reference/    合格済みのお手本。絵柄はここで揃える（`unit` は `reference/` を持たない。手本は `assets/unit/roran/`（剣と盾）・`assets/unit/ines/`（弓）・`assets/unit/gau/`（短剣）・`assets/unit/mist/`（杖）・`assets/unit/garum/`（48px。大きな剣と盾）、土台は `types/unit/base/` の素体）
 types/unit/base/           unit の素体（4方向）。新しい unit を複製して作る土台
 assets/<type>/<name>.txt   アセットの元テキスト（これが正）
-assets/unit/<unit>/        unit のコマ。味方4体と、部品で組んだ敵16体（`assets/unit/<敵の id>/`）
+assets/unit/<unit>/        unit のコマ。味方4体と、部品で組んだ敵24体（既存 16 ＋新しい 8）（`assets/unit/<敵の id>/`）
 assets/part/<種類>/<名前>/  unit の部品。種類は equip・fist・body・head・hair・eye・cloth（`types/unit/SPEC.md`）
 compose/<unit>.json        部品の組み立て方（tools/compose.py が読む）
 enemy/<id>.json            敵のレシピ（tools/enemy_build.py が読む）
@@ -444,7 +448,7 @@ seed/face32.py             リポジトリ化前の原型。もう使ってい�
 | `face`（顔グラ） | reference 1点（`knight`） | 32x32 | [`types/face/SPEC.md`](types/face/SPEC.md) |
 | `item`（小物） | 3点（`chest`・`sword`・`bow`） | 16x16 | [`types/item/SPEC.md`](types/item/SPEC.md) |
 | `tile`（マップ） | 77点（草原57・城内20）。うち12点は物のセット3つ（村・岩・木）の部品 | 16x16（セットは 32x32） | [`types/tile/SPEC.md`](types/tile/SPEC.md) |
-| `unit`（マップ上のキャラ） | 4体（ロラン・ガウ・ミスト 24コマ、イネス 32コマ）＋素体 `male_*`・`female_*` 4方向ずつ。ほかに敵16体（24コマずつ。部品で生成し、`enemy_build.py` で色替えする）とボスのガルム（24コマ） | 32x32（ガルムだけ 48x48） | [`types/unit/SPEC.md`](types/unit/SPEC.md) |
+| `unit`（マップ上のキャラ） | 4体（ロラン・ガウ・ミスト 24コマ、イネス 32コマ）＋素体 `male_*`・`female_*` 4方向ずつ。ほかに敵24体（既存 16 ＋新しい 8。24コマずつ。部品で生成し、`enemy_build.py` で色替えする）とボスのガルム（24コマ） | 32x32（ガルムだけ 48x48） | [`types/unit/SPEC.md`](types/unit/SPEC.md) |
 
 **「正」はテキストで、PNG は生成物。** 絵を変えるときに編集するのは `assets/**/*.txt` だけで、
 PNG を直接編集しない。

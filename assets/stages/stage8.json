@@ -44,17 +44,17 @@
   },
   "roster": ["roran", "ines", "mist", "gau"],
   "enemies": [
-    { "defId": "narazumono", "pos": { "x": 176, "y": 464 }, "ai": { "kind": "sentry", "sightRange": 100 } },
-    { "defId": "narazumono", "pos": { "x": 336, "y": 464 }, "ai": { "kind": "sentry", "sightRange": 100 } },
-    { "defId": "majinaishi", "pos": { "x": 240, "y": 336 }, "ai": { "kind": "sentry", "sightRange": 150 } },
-    { "defId": "yumihei",    "pos": { "x": 112, "y": 304 }, "ai": { "kind": "sentry", "sightRange": 130 } },
-    { "defId": "yumihei",    "pos": { "x": 400, "y": 304 }, "ai": { "kind": "sentry", "sightRange": 130 } },
-    { "defId": "tatemochi",  "pos": { "x": 176, "y": 176 }, "ai": { "kind": "guard", "post": { "x": 176, "y": 176 }, "leash": 130, "sightRange": 120 } },
+    { "defId": "narazumono-3", "pos": { "x": 176, "y": 464 }, "ai": { "kind": "sentry", "sightRange": 100 } },
+    { "defId": "narazumono-4", "pos": { "x": 336, "y": 464 }, "ai": { "kind": "sentry", "sightRange": 100 } },
+    { "defId": "majinaishi-2", "pos": { "x": 240, "y": 336 }, "ai": { "kind": "sentry", "sightRange": 150 } },
+    { "defId": "yumihei-2",    "pos": { "x": 112, "y": 304 }, "ai": { "kind": "sentry", "sightRange": 130 } },
+    { "defId": "yumihei-3",    "pos": { "x": 400, "y": 304 }, "ai": { "kind": "sentry", "sightRange": 130 } },
+    { "defId": "tatemochi-2",  "pos": { "x": 176, "y": 176 }, "ai": { "kind": "guard", "post": { "x": 176, "y": 176 }, "leash": 130, "sightRange": 120 } },
     { "defId": "tatemochi",  "pos": { "x": 336, "y": 176 }, "ai": { "kind": "guard", "post": { "x": 336, "y": 176 }, "leash": 130, "sightRange": 120 } },
-    { "defId": "majinaishi", "pos": { "x": 112, "y": 400 }, "ai": { "kind": "aggressive" } },
+    { "defId": "majinaishi-3", "pos": { "x": 112, "y": 400 }, "ai": { "kind": "aggressive" } },
     { "defId": "majinaishi", "pos": { "x": 368, "y": 400 }, "ai": { "kind": "aggressive" } },
-    { "defId": "majinaishi", "pos": { "x": 240, "y": 400 }, "ai": { "kind": "aggressive" } },
-    { "defId": "majinaishi", "pos": { "x": 176, "y": 336 }, "ai": { "kind": "sentry", "sightRange": 100 } }
+    { "defId": "majinaishi-2", "pos": { "x": 240, "y": 400 }, "ai": { "kind": "aggressive" } },
+    { "defId": "majinaishi-3", "pos": { "x": 176, "y": 336 }, "ai": { "kind": "sentry", "sightRange": 100 } }
   ],
   "spawners": [
     { "defId": "narazumono", "pos": { "x": 112, "y": 48 }, "firstAfter": 3, "every": 5, "total": 3 },

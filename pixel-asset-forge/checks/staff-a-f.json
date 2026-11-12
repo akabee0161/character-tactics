@@ -1,0 +1,79 @@
+{
+  "unit": "staff-a-f",
+  "compose": "compose/staff-a-f.json",
+  "body": "female",
+  "head_chars": "",
+  "items": "mng",
+  "parts": {
+    "staff": {
+      "moves": true
+    },
+    "staff_hand": {
+      "fist": true,
+      "grips": "staff",
+      "fist_sizes": [
+        "3x2",
+        "2x2"
+      ],
+      "moves": true
+    },
+    "free_hand": {
+      "fist": true,
+      "fist_sizes": [
+        "2x2"
+      ]
+    },
+    "eye_E0": {
+      "eye": true
+    },
+    "hair_A": {
+      "head": true
+    },
+    "hair_A_back": {},
+    "cloth_robe": {}
+  },
+  "orders": {
+    "down": [
+      "hair_A_back",
+      "CORE",
+      "eye_E0",
+      "cloth_robe",
+      "hair_A",
+      "staff",
+      "staff_hand",
+      "free_hand"
+    ],
+    "up": [
+      "hair_A_back",
+      "staff",
+      "staff_hand",
+      "free_hand",
+      "CORE",
+      "eye_E0",
+      "cloth_robe",
+      "hair_A"
+    ],
+    "left": [
+      "staff",
+      "staff_hand",
+      "hair_A_back",
+      "CORE",
+      "eye_E0",
+      "cloth_robe",
+      "hair_A",
+      "free_hand"
+    ],
+    "right": [
+      "hair_A_back",
+      "free_hand",
+      "CORE",
+      "eye_E0",
+      "cloth_robe",
+      "hair_A",
+      "staff",
+      "staff_hand"
+    ]
+  },
+  "weapon_check": null,
+  "exceptions": []
+}

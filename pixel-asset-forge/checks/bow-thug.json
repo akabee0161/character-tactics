@@ -1,0 +1,83 @@
+{
+  "unit": "bow-thug",
+  "compose": "compose/bow-thug.json",
+  "body": "male",
+  "head_chars": "",
+  "items": "klmstuw",
+  "parts": {
+    "eye_E2": {
+      "eye": true
+    },
+    "head_bare": {
+      "head": true
+    },
+    "cloth_tatter": {},
+    "bow": {
+      "moves": true,
+      "open_chars": "s"
+    },
+    "arrow": {
+      "blade": "t",
+      "moves": true
+    },
+    "bow_hand": {
+      "fist": true,
+      "grips": "bow",
+      "fist_sizes": [
+        "2x2"
+      ]
+    },
+    "arrow_hand": {
+      "fist": true,
+      "grips": "arrow",
+      "fist_sizes": [
+        "2x2"
+      ],
+      "moves": true
+    }
+  },
+  "orders": {
+    "down": [
+      "CORE",
+      "eye_E2",
+      "cloth_tatter",
+      "head_bare",
+      "bow",
+      "arrow",
+      "bow_hand",
+      "arrow_hand"
+    ],
+    "up": [
+      "arrow",
+      "arrow_hand",
+      "bow",
+      "bow_hand",
+      "CORE",
+      "eye_E2",
+      "cloth_tatter",
+      "head_bare"
+    ],
+    "left": [
+      "arrow",
+      "arrow_hand",
+      "bow",
+      "bow_hand",
+      "CORE",
+      "eye_E2",
+      "cloth_tatter",
+      "head_bare"
+    ],
+    "right": [
+      "CORE",
+      "eye_E2",
+      "cloth_tatter",
+      "head_bare",
+      "bow",
+      "bow_hand",
+      "arrow",
+      "arrow_hand"
+    ]
+  },
+  "weapon_check": null,
+  "exceptions": []
+}

@@ -85,8 +85,11 @@ def serialize_frame(frame: Frame, note: str) -> str:
 ENEMY_DIR = REPO_ROOT / "enemy"
 BUILD_ROOT = REPO_ROOT / "build" / "enemy"
 SHEET_DIR = REPO_ROOT / "build" / "sheets"
-# 斧・槍はガウと同じコマ割り（idle 2 / walk 4 / attack 3）。元のコマはレシピの frames で指す
-ARCHETYPES = {"dagger": "sheets/gau.txt", "axe": "sheets/gau.txt", "spear": "sheets/gau.txt"}
+# 斧・槍・盾・弓・杖はガウと同じコマ割り（idle 2 / walk 4 / attack 3）。元のコマはレシピの frames で指す
+ARCHETYPES = {
+    "dagger": "sheets/gau.txt", "axe": "sheets/gau.txt", "spear": "sheets/gau.txt",
+    "shield": "sheets/gau.txt", "bow": "sheets/gau.txt", "staff": "sheets/gau.txt",
+}
 BODIES = ("male", "female")
 SOURCES = {
     ("dagger", "male"): "assets/unit/gau",

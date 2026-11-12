@@ -1,0 +1,88 @@
+{
+  "unit": "shield-dagger-knight",
+  "compose": "compose/shield-dagger-knight.json",
+  "body": "male",
+  "head_chars": "",
+  "items": "stlmnghi",
+  "parts": {
+    "dagger": {
+      "weapon": true,
+      "blade": "st",
+      "moves": true
+    },
+    "dagger_hand": {
+      "fist": true,
+      "grips": "dagger",
+      "fist_sizes": [
+        "3x2",
+        "2x2"
+      ],
+      "moves": true
+    },
+    "eye_E0": {
+      "eye": true
+    },
+    "head_full": {
+      "head": true
+    },
+    "cloth_belt": {},
+    "shield": {
+      "fixed": true
+    },
+    "shield_hand": {
+      "fist": true,
+      "grips": "shield",
+      "fist_sizes": [
+        "3x2"
+      ]
+    }
+  },
+  "orders": {
+    "down": [
+      "CORE",
+      "eye_E0",
+      "cloth_belt",
+      "head_full",
+      "shield_hand",
+      "shield",
+      "dagger",
+      "dagger_hand"
+    ],
+    "up": [
+      "dagger",
+      "shield",
+      "dagger_hand",
+      "shield_hand",
+      "CORE",
+      "eye_E0",
+      "cloth_belt",
+      "head_full"
+    ],
+    "left": [
+      "dagger",
+      "dagger_hand",
+      "CORE",
+      "eye_E0",
+      "cloth_belt",
+      "head_full",
+      "shield_hand",
+      "shield"
+    ],
+    "right": [
+      "shield_hand",
+      "shield",
+      "CORE",
+      "eye_E0",
+      "cloth_belt",
+      "head_full",
+      "dagger",
+      "dagger_hand"
+    ]
+  },
+  "weapon_check": {
+    "depth": [
+      "down"
+    ]
+  },
+  "exceptions": []
+}

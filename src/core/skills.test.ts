@@ -20,7 +20,7 @@ function addEnemy(s: BattleState, x: number, y: number, hp = 12): Unit {
   const def = s.reg.enemies.get('narazumono')!;
   const uid = `e${s.nextEnemyUid++}`;
   const e: Unit = {
-    uid, defId: 'narazumono', side: 'enemy', controller: 'ai', combat: def.combat,
+    uid, defId: 'narazumono', kindId: 'narazumono', side: 'enemy', controller: 'ai', combat: def.combat,
     pos: { x, y }, hp, maxHp: 12, power: def.power, guard: def.guard,
     attack: def.attack, range: def.range, attackInterval: def.attackInterval, speed: def.speed,
     bowDamageCap: def.bowDamageCap, skillId: def.skillId,

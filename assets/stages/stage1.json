@@ -47,8 +47,8 @@
   "roster": ["roran", "ines", "mist", "gau"],
   "enemies": [
     { "defId": "narazumono", "pos": { "x": 144, "y": 464 }, "ai": { "kind": "aggressive" } },
-    { "defId": "narazumono", "pos": { "x": 336, "y": 464 }, "ai": { "kind": "aggressive" } },
-    { "defId": "narazumono", "pos": { "x": 240, "y": 240 }, "ai": { "kind": "aggressive" } }
+    { "defId": "narazumono-2", "pos": { "x": 336, "y": 464 }, "ai": { "kind": "aggressive" } },
+    { "defId": "narazumono-3", "pos": { "x": 240, "y": 240 }, "ai": { "kind": "aggressive" } }
   ],
   "victory": { "type": "reach", "pos": { "x": 240, "y": 48 }, "radius": 40, "by": "any" },
   "defeat": [{ "type": "unitLost", "defIds": ["roran"] }],

@@ -50,6 +50,8 @@ export type AiState = {
 export type Unit = {
   uid: string;
   defId: string;
+  /** 種類。敵は定義の kind（無ければ defId）、味方は defId */
+  kindId: string;
   side: 'player' | 'enemy';
   controller: 'player' | 'ai';
   /** false なら攻撃しない。狙われはする */
@@ -103,7 +105,7 @@ export type Unit = {
   funbaruUntil: number;
   neraiuchiArmed: boolean;
   pinchShown: boolean;
-  /** このステージで交戦したことのある相手の defId */
+  /** このステージで交戦したことのある相手の kindId */
   seenDefIds: string[];
   lastHitBy: string | null;
   lastHitNeraiuchi: boolean;

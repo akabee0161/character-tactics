@@ -11,7 +11,7 @@ import type { AiDef, BattleState, CharProgress, StageDef, Unit, Vec2 } from './t
 
 function makeTestUnit(s: BattleState, def: EnemyDef, pos: Vec2, ai: AiDef): Unit {
   return {
-    uid: `t${s.units.length + 1}`, defId: def.id, side: 'enemy', controller: 'ai',
+    uid: `t${s.units.length + 1}`, defId: def.id, kindId: def.kind ?? def.id, side: 'enemy', controller: 'ai',
     combat: def.combat, pos: { ...pos },
     hp: def.maxHp, maxHp: def.maxHp, power: def.power, guard: def.guard,
     attack: def.attack, range: def.range, attackInterval: def.attackInterval, speed: def.speed,
@@ -82,7 +82,7 @@ function spawnEnemy(s: BattleState, defId: string, pos: { x: number; y: number }
   const def = s.reg.enemies.get(defId)!;
   const uid = `t${s.nextEnemyUid++}`;
   const u: Unit = {
-    uid, defId, side: 'enemy', controller: 'ai', combat: def.combat,
+    uid, defId, kindId: def.kind ?? defId, side: 'enemy', controller: 'ai', combat: def.combat,
     pos: { ...pos }, hp: def.maxHp, maxHp: def.maxHp, power: def.power, guard: def.guard,
     attack: def.attack, range: def.range, attackInterval: def.attackInterval, speed: def.speed,
     bowDamageCap: def.bowDamageCap, skillId: def.skillId,
@@ -233,6 +233,63 @@ describe('step: 交戦の成立と解除', () => {
     const engages = s.events.filter((ev) => ev.type === 'engage' && ev.uid === roran.uid);
     expect(engages).toHaveLength(1);
     expect(engages[0]).toMatchObject({ firstMeeting: false });
+  });
+
+  it('kind が同じ別の defId の敵とは、続けて戦っても初対面は 1 回', () => {
+    const { state: s } = fresh();
+    const base = s.reg.enemies.get('narazumono')!;
+    const base2 = s.reg.enemies.get('narazumono-2');
+    // レジストリは全テストで共有なので、書き換えたら必ず戻す
+    try {
+      s.reg.enemies.set('narazumono', { ...base, kind: 'narazumono' });
+      s.reg.enemies.set('narazumono-2', { ...base, id: 'narazumono-2', kind: 'narazumono' });
+      expectSharedKindFirstMeetingOnce(s);
+    } finally {
+      s.reg.enemies.set('narazumono', base);
+      if (base2) s.reg.enemies.set('narazumono-2', base2);
+      else s.reg.enemies.delete('narazumono-2');
+    }
+  });
+
+  function expectSharedKindFirstMeetingOnce(s: BattleState): void {
+    const roran = unitOf(s, 'roran');
+    for (const u of s.units) if (u.side === 'player' && u !== roran) u.pos = { x: 900, y: 900 };
+    const engages: Extract<typeof s.events[number], { type: 'engage' }>[] = [];
+    const collect = () => {
+      for (const ev of s.events) if (ev.type === 'engage' && ev.uid === roran.uid) engages.push(ev);
+    };
+    const e1 = spawnEnemy(s, 'narazumono', { x: 30, y: 80 });
+    step(s, [], 0.1);
+    collect();
+    e1.pos = { x: 900, y: 900 };
+    step(s, [], 0.1);
+    spawnEnemy(s, 'narazumono-2', { x: 30, y: 80 });
+    step(s, [], 0.1);
+    collect();
+    expect(engages.map((e) => e.firstMeeting)).toEqual([true, false]);
+    expect(engages.map((e) => e.targetDefId)).toEqual(['narazumono', 'narazumono']);
+  }
+
+  it('kind が無い敵は defId のまま初対面になる', () => {
+    const { state: s } = fresh();
+    expect(s.reg.enemies.get('ally06-foe')!.kind).toBeUndefined();
+    expect(s.reg.enemies.get('garum')!.kind).toBeUndefined();
+    const roran = unitOf(s, 'roran');
+    for (const u of s.units) if (u.side === 'player' && u !== roran) u.pos = { x: 900, y: 900 };
+    const engages: Extract<typeof s.events[number], { type: 'engage' }>[] = [];
+    const collect = () => {
+      for (const ev of s.events) if (ev.type === 'engage' && ev.uid === roran.uid) engages.push(ev);
+    };
+    const e1 = spawnEnemy(s, 'garum', { x: 30, y: 80 });
+    step(s, [], 0.1);
+    collect();
+    e1.pos = { x: 900, y: 900 };
+    step(s, [], 0.1);
+    spawnEnemy(s, 'ally06-foe', { x: 30, y: 80 });
+    step(s, [], 0.1);
+    collect();
+    expect(engages.map((e) => e.firstMeeting)).toEqual([true, true]);
+    expect(engages.map((e) => e.targetDefId)).toEqual(['garum', 'ally06-foe']);
   });
 
   it('イネスは 160px 離れていても交戦できる', () => {
