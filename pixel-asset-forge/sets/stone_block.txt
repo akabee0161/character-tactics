@@ -1,0 +1,4 @@
+# stone_block set. One map cell in character-tactics (32px), built from four 16px parts.
+# tools/sets.py assembles it into build/sets/stone_block.png.
+stone_block_nw  stone_block_ne
+stone_block_sw  stone_block_se
