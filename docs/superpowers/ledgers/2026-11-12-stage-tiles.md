@@ -10,3 +10,10 @@ Task 5a(川原): 依頼者承認、コミット済み。Ruling: tilemap --unplac
 Task 5: Ruling: 依頼者が「家族ごとに止まる」指示を撤回し、残り5家族（石切り場・城壁・関所・野営地・塔）を続けて進めると決めた（2026-11-12） — 家族ごとの承認待ちをしない。Task 7（全ステージの画面）の確認は残す — 絵は Task 7 でまとめて見てもらう
 Task 5: complete (commits 76bb8a2..882fdf4, tests: bash -c 'cd pixel-asset-forge && .venv/bin/python tools/validate.py && .venv/bin/python -m unittest discover -s tests' → ok   /tmp/tmp_vyzldk8/tmpqwkns0pv_attack.gif  1 frame(s) at 6fps (170ms))
 Task 6: complete (commits 882fdf4..279db7c, tests: npm test →    Duration  29.91s (transform 1.64s, setup 0ms, collect 5.30s, tests 13.83s, environment 10ms, prepare 3.26s))
+Task 8: complete (commits 279db7c..c7ac273, tests: npm test →    Duration  32.20s (transform 1.67s, setup 0ms, collect 5.40s, tests 15.52s, environment 10ms, prepare 3.43s))
+Task 7: Ruling: 暗さ・明かりの値は初めの値のまま採った（stage9 darkness 0.72・たき火 72・ランプ 40、stage7 darkness 0.55・燭台 48）— 実画面（stages.html）で依頼者が承認した — 濃さ・半径は JSON の数値だけで直せる
+Task 7: complete (実画面を 10 ステージ×配置・戦闘で撮り、Review Focus 1・2 を画面で確認。依頼者承認 2026-11-12。コミットなし)
+Final: 最終レビュー（opus）— Critical なし・Important なし
+Final: minor (deferred): 範囲外の light を書くとその文字が legend から外れ、mapRows の行が詰まって関係のない足元エラーが大量に出る（schema.ts の light 検査。speed も同じ形。起動時エラーにはなる）
+Final: minor (deferred): 勝利地点への到達テストが開始位置と敵だけで、時間湧き・説得の相手・村の隣は見ていない（loader.test.ts。今のデータは全て到達できると確認済み）
+Final: Ruling: 台帳に Task 7 の行が無かった指摘は記録漏れとして直した — 上の 2 行 — 無し
