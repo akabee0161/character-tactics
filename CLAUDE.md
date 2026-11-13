@@ -38,3 +38,10 @@ npm run balance # ステージの難易度を測る（ボットで全ステー�
 - `docs/superpowers/`(specs / plans)は作成時点のログ。後から実装や運用が変わっても遡って更新しない
 - `docs/superpowers/ledgers/` は進捗台帳（`.superpowers/sdd/<計画>/progress.md`）の写し。これもログ。計画を終えたら、その計画の台帳をここに写してコミットする
 - 最新の状態を表す正典は README.md とこのファイル。実装・手順・制約が変わったら更新するのはこの2つ
+
+## ブランチとプレビュー
+
+- 機能ブランチから `develop` への PR を最初に作る。`develop` にマージすると、Cloudflare Access の受付の後ろに確認用のプレビューが固定の URL に自動で上がる（`.github/workflows/preview.yml`）
+- 本番に出すときは、`develop` から `main` への PR をマージする（`deploy.yml` が本番に出す）
+- `preview.yml` は `develop` への push だけで動き、`wrangler deploy` は書かない。`wrangler.toml` の `preview_urls = true` は確認用プレビューのためで、本番の `workers.dev` は開かない
+- `develop` ができるまでの最初の PR（プレビューの導入そのもの）だけは `main` に向ける
