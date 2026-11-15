@@ -19,8 +19,6 @@ export type SaveData = {
   members: string[];
   /** 受け取った一度きりのごほうびの印 */
   claimed: string[];
-  counters: Record<string, number>;
-  titles: string[];
 };
 
 function isFiniteNonNegInt(v: unknown): boolean {
@@ -55,7 +53,7 @@ export function newSave(reg: Registry): SaveData {
   for (const id of reg.units.keys()) units[id] = { level: 1, xp: 0 };
   return {
     version: SAVE_VERSION, clearedStageIds: [], readIntroStageIds: [],
-    units, members: [], claimed: [], counters: {}, titles: [],
+    units, members: [], claimed: [],
   };
 }
 
@@ -105,17 +103,6 @@ function reconcile(raw: Record<string, unknown>, reg: Registry): SaveData {
   }
   if (Array.isArray(raw.claimed)) {
     save.claimed = raw.claimed.filter((id): id is string => typeof id === 'string');
-  }
-
-  if (Array.isArray(raw.titles)) {
-    const known = new Set(reg.titles.map((t) => t.id));
-    save.titles = raw.titles.filter((id): id is string => typeof id === 'string' && known.has(id));
-  }
-
-  if (isPlainObject(raw.counters)) {
-    for (const [key, value] of Object.entries(raw.counters)) {
-      if (isFiniteNonNegInt(value)) save.counters[key] = value as number;
-    }
   }
 
   return save;

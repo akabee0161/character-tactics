@@ -109,7 +109,7 @@ URL に `?debug` を付けると、戦闘中だけ次の操作ができる（攻
 
 | ディレクトリ / ファイル | 責務 |
 |---|---|
-| `assets/` | ステージ・ユニット・敵・スキル・称号・セリフの定義（JSON）。ロジックを置かない |
+| `assets/` | ステージ・ユニット・敵・スキル・セリフの定義（JSON）。ロジックを置かない |
 | `assets/images/` | ユニットの絵（PNG）。`sprites` から名前で参照する |
 | `src/engine/` | 定義の型検証・読み込み・索引。`core` を知らない |
 | `src/engine/names.ts` | 本文の `{<ユニットID>}` を名前に置き換える |
@@ -223,7 +223,6 @@ python3 tools/anim-page.py assets/units/roran.json out/anim/roran.html
   - **新しい仲間の ID は名前と関係ない `allyNN`（説得の相手の敵は `allyNN-foe`）にする。** JSON のファイル名・`assets/images/` の名前・セリフのキー・セーブのキーに名前を入れない。名前が出てよいのは、ユニットの JSON の `name` と本文（`{id}` で書く）だけ。今の4人（`roran` `ines` `mist` `gau`）の ID は変えない。
   - 仲間は最大 15 人（`roster` と加入しうる仲間の合計。超えると読み込みで止まる。`MAX_MEMBERS`）。場に出るのは 8 人まで（`MAX_PARTY`）。
 - **セリフ** — `assets/lines/*.json`
-- **称号** — `assets/titles.json`。`counter` に使えるキーは `skill:<skillId>:uses` / `skill:<skillId>:hits` / `kill:neraiuchi` / `bond:supports`
 - **絆** — `assets/bonds.json`
 - **成長の調整** — `assets/growth.json`。`xpPerLevel`（レベルアップの必要量）、`hpPerLevel` と `levelsPerPower`（1レベルの強化量）、`hitXp` / `healXp` / `assistRatio` / `clearXp`（経験値の入り口）、`maxLevel`。経験値が小数にならないよう `hitXp` / `healXp` / `clearXp` は整数で検証する
 

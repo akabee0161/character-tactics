@@ -3,7 +3,6 @@ import { pickCloseTarget } from './autoclose';
 import { bondSupporters } from './bonds';
 import { effectiveInterval, hasThreatWithinMelee, nearestWithin } from './combat';
 import { MIN_SEPARATION, RANGE_EPS } from './constants';
-import { accumulate } from './counters';
 import { applyDamage } from './damage';
 import {
   cellIndexAt, clampToMap, computeFlowField, distance, flowDirection, hasClearPath, isFullSpeedLine, resolveMoveDest,
@@ -119,7 +118,6 @@ export function step(state: BattleState, commands: SimCommand[], dt: number): vo
   awardXpForEvents(state);
   // 加入の会話が立った tick では勝敗を決めない（会話の後の tick で決める）
   if (state.pendingRecruit === null) updateObjectives(state);
-  accumulate(state.counters, state.events);
 }
 
 function applyCommands(state: BattleState, commands: SimCommand[]): Set<string> {

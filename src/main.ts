@@ -115,7 +115,7 @@ function toStageSelect(): void {
 }
 
 let pendingSkill: string | null = null;
-let result: { gains: XpGain[]; newTitles: string[] } | null = null;
+let result: { gains: XpGain[] } | null = null;
 /** 護衛対象の defId。beginStage で1度だけ作る */
 let escorts: Set<string> = new Set();
 const speech = makeSpeechState();
@@ -206,7 +206,7 @@ function finishStage(state: BattleState): void {
   const r = applyStageClear(registry, save, stageId, state);
   save = r.save;
   hasSave = writeSave(window.localStorage, save) || hasSave;
-  result = { gains: r.gains, newTitles: r.newTitles };
+  result = { gains: r.gains };
   phase = 'result';
 }
 
@@ -494,7 +494,7 @@ function render(): void {
       }
       break;
     case 'result':
-      if (result) drawResult(ctx, registry, result.gains, result.newTitles, images);
+      if (result) drawResult(ctx, registry, result.gains, images);
       break;
     case 'defeat':
       drawDefeat(ctx);

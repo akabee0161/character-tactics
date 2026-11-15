@@ -25,7 +25,6 @@ describe('loadRegistry', () => {
     expect(r.value.enemies.size).toBe(25);
     expect(r.value.stages.length).toBe(10);
     expect(r.value.skills.size).toBe(11);
-    expect(r.value.titles.length).toBe(5);
     expect(r.value.bonds.length).toBe(3);
   });
 

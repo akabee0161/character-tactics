@@ -31,7 +31,7 @@ export const DEFAULT_SKILL_COOLDOWN = 10;
 export type SkillContext = { state: BattleState; self: Unit; dest?: Vec2 };
 
 /**
- * 効果の本体。戻り値は「当てた数」で、称号のカウンタ（skill:<id>:hits）に積まれる。
+ * 効果の本体。戻り値は「当てた数」（`skill` イベントの `hits` に残る）。
  * 発動できなかった場合だけ null を返す。呼び出し側はそのとき使用回数も消費させない。
  */
 export type SkillEffect = (ctx: SkillContext) => number | null;

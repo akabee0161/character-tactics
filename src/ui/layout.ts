@@ -53,7 +53,7 @@ export function rosterSlot(index: number): Rect {
   return { x: 20 + (index % 2) * 254, y: 640 + Math.floor(index / 2) * 72, w: 246, h: 64 };
 }
 
-/** リザルトの仲間の行。2列×4行（最大 8 人）。称号の行は y 450 */
+/** リザルトの仲間の行。2列×4行（最大 8 人） */
 export function resultSlot(index: number): Rect {
   return { x: 20 + (index % 2) * 260, y: 150 + Math.floor(index / 2) * 64, w: 240, h: 56 };
 }

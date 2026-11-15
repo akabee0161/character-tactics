@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   validateBondsFile, validateEnemyDef, validateGrowthFile, validateLinesFile, validateSkillsFile,
-  validateStageDef, validateTitlesFile, validateUnitDef,
+  validateStageDef, validateUnitDef,
 } from './schema';
 
 const VALID_UNIT = {
@@ -265,24 +265,6 @@ describe('validateBondsFile', () => {
     const r = validateBondsFile('bonds.json', [{ a: 'roran', b: 'roran', bonus: 2 }]);
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.errors[0]?.reason).toContain('じぶん');
-  });
-});
-
-describe('validateTitlesFile', () => {
-  it('owner に null を許す', () => {
-    const r = validateTitlesFile('titles.json', [
-      { id: 'nakayoshi', label: 'なかよし', owner: null, counter: 'bond:supports', threshold: 20 },
-    ]);
-    expect(r.ok).toBe(true);
-    if (r.ok) expect(r.value[0]?.owner).toBeNull();
-  });
-
-  it('threshold が 1 未満なら弾く', () => {
-    const r = validateTitlesFile('titles.json', [
-      { id: 'x', label: 'エックス', owner: null, counter: 'bond:supports', threshold: 0 },
-    ]);
-    expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.errors[0]?.path).toBe('[0].threshold');
   });
 });
 

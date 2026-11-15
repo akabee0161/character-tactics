@@ -183,7 +183,6 @@ export type BattleState = {
   phase: BattlePhase;
   units: Unit[];
   events: SimEvent[];
-  counters: Record<string, number>;
   rng: Rng;
   nextEnemyUid: number;
   /** 湧き口ごとに、これまで湧かせた数。stage.spawners と同じ長さ */

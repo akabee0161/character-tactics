@@ -43,9 +43,6 @@ function files(over: Record<string, unknown> = {}): Record<string, unknown> {
     'assets/stages/stage1.json': STAGE,
     'assets/skills.json': [{ id: 'funbaru', label: 'ふんばる', params: { duration: 5 } }],
     'assets/bonds.json': [{ a: 'roran', b: 'ines', bonus: 2 }],
-    'assets/titles.json': [
-      { id: 'nakayoshi', label: 'なかよし', owner: null, counter: 'bond:supports', threshold: 20 },
-    ],
     'assets/lines/common.json': { 'skill:roran': 'ここは とおさない！' },
     'assets/growth.json': GROWTH,
     ...over,
@@ -176,15 +173,6 @@ describe('buildRegistry', () => {
     expect(r.ok).toBe(true);
   });
 
-  it('titles.json の owner が存在しない ユニットなら弾く', () => {
-    const r = buildRegistry(files({
-      'assets/titles.json': [
-        { id: 'x', label: 'エックス', owner: 'yuurei', counter: 'bond:supports', threshold: 1 },
-      ],
-    }), KNOWN_SKILLS);
-    expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.errors[0]?.path).toBe('[0].owner');
-  });
 
   it('bonds.json が存在しない ユニットを指していたら弾く', () => {
     const r = buildRegistry(files({

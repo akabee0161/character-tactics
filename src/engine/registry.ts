@@ -2,10 +2,10 @@ import { MAX_MEMBERS } from './limits';
 import { fillNames } from './names';
 import {
   validateBondsFile, validateEnemyDef, validateGrowthFile, validateLinesFile, validateSkillsFile,
-  validateStageDef, validateTitlesFile, validateUnitDef,
+  validateStageDef, validateUnitDef,
 } from './schema';
 import type {
-  BondDef, EnemyDef, GrowthDef, IntroLine, RecruitDef, SkillDef, Sprites, StageDef, TitleDef, UnitDef, Validated,
+  BondDef, EnemyDef, GrowthDef, IntroLine, RecruitDef, SkillDef, Sprites, StageDef, UnitDef, Validated,
   ValidationError,
 } from './schema';
 
@@ -15,7 +15,6 @@ export type Registry = {
   /** 順序を持つのでこれだけ配列。order の昇順 */
   stages: StageDef[];
   skills: Map<string, SkillDef>;
-  titles: TitleDef[];
   bonds: BondDef[];
   lines: Map<string, string>;
   growth: GrowthDef;
@@ -48,7 +47,7 @@ export function buildRegistry(
   const errors: ValidationError[] = [];
   const reg: Registry = {
     units: new Map(), enemies: new Map(), stages: [],
-    skills: new Map(), titles: [], bonds: [], lines: new Map(),
+    skills: new Map(), bonds: [], lines: new Map(),
     growth: FALLBACK_GROWTH,
   };
   let sawGrowth = false;
@@ -100,8 +99,6 @@ export function buildRegistry(
       });
     } else if (baseName(path) === 'bonds') {
       take(validateBondsFile(path, raw), (d) => reg.bonds.push(...d));
-    } else if (baseName(path) === 'titles') {
-      take(validateTitlesFile(path, raw), (d) => reg.titles.push(...d));
     } else if (baseName(path) === 'growth') {
       sawGrowth = true;
       take(validateGrowthFile(path, raw), (d) => { reg.growth = d; });
@@ -261,12 +258,6 @@ export function buildRegistry(
       reason: `roster の なかま（${rosterAll.size}）と くわわる なかま（${recruitedAt.size}）の ごうけいが ${MAX_MEMBERS} 人を こえている`,
     });
   }
-
-  reg.titles.forEach((t, i) => {
-    if (t.owner !== null && !reg.units.has(t.owner)) {
-      errors.push({ file: 'assets/titles.json', path: `[${i}].owner`, reason: `units に ない id: ${t.owner}` });
-    }
-  });
 
   reg.bonds.forEach((b, i) => {
     if (!reg.units.has(b.a)) {

@@ -7,29 +7,17 @@ import { testRegistry } from '../core/testing';
 import type { Registry } from '../engine/registry';
 import type { BattleState, CharProgress } from '../core/types';
 
-/** どのキャラのスキルがどの称号カウンタにつながるかは titles.json の決め事なので、
- * テストの分だけ対応表を持つ */
-const SKILL_OF: Record<string, string> = {
-  roran: 'funbaru', ines: 'neraiuchi', mist: 'omajinai', gau: 'kakenukeru',
-};
-
 type UnitOver = { level: number; xp: number; retired?: boolean };
 type BattleOver = {
   units?: Partial<Record<string, UnitOver>>;
-  skillUses?: Partial<Record<string, number>>;
 };
 
 /**
- * applyStageClear が読む units(player 分の level/xp)と counters だけを持った簡易な BattleState。
+ * applyStageClear が読む units(player 分の level/xp)だけを持った簡易な BattleState。
  * クリアボーナスの対象外にするため、retired を明示しない限りは退場済み扱いにする
- * （このヘルパを使う既存テストは書き戻し・称号まわりの検証で、クリアボーナスの計算対象ではないため）
+ * （このヘルパを使う既存テストは書き戻しの検証で、クリアボーナスの計算対象ではないため）
  */
 const battleWith = (over: BattleOver = {}): BattleState => {
-  const counters: Record<string, number> = {};
-  for (const [id, uses] of Object.entries(over.skillUses ?? {})) {
-    if (!uses) continue;
-    counters[`skill:${SKILL_OF[id]}:uses`] = uses;
-  }
   const units = Object.entries(over.units ?? {}).map(([defId, p]) => ({
     side: 'player' as const,
     defId,
@@ -38,7 +26,7 @@ const battleWith = (over: BattleOver = {}): BattleState => {
     retired: p!.retired ?? true,
     statBonus: { maxHp: 0, power: 0, guard: 0, speed: 0 },
   }));
-  return { units, counters, joined: [], benchedRecruits: [], claimed: [] } as unknown as BattleState;
+  return { units, joined: [], benchedRecruits: [], claimed: [] } as unknown as BattleState;
 };
 
 /** クリアボーナスのテスト用に、実際の Unit(retired: false がデフォルト)を持つ BattleState を組む */
@@ -122,23 +110,6 @@ describe('applyStageClear', () => {
     const r = applyStageClear(reg, save, 'stage1', battle);
     expect(r.save.units.mist).toEqual({ level: 3, xp: 7 });
     expect(r.gains.find((g) => g.id === 'mist')).toBeUndefined();
-  });
-
-  it('新しく取った称号だけ newTitles に入る', () => {
-    const first = applyStageClear(reg, newSave(reg), 'stage1', battleWith({ skillUses: { roran: 5 } }));
-    expect(first.newTitles).toEqual(['gamanzuyoi']);
-    expect(first.save.titles).toEqual(['gamanzuyoi']);
-
-    const second = applyStageClear(reg, first.save, 'stage2', battleWith({ skillUses: { roran: 1 } }));
-    expect(second.newTitles).toEqual([]);
-    expect(second.save.titles).toEqual(['gamanzuyoi']);
-  });
-
-  it('カウンタが積み上がる', () => {
-    const first = applyStageClear(reg, newSave(reg), 'stage1', battleWith({ skillUses: { roran: 2 } }));
-    const second = applyStageClear(reg, first.save, 'stage2', battleWith({ skillUses: { roran: 3 } }));
-    expect(second.save.counters['skill:funbaru:uses']).toBe(5);
-    expect(second.newTitles).toEqual(['gamanzuyoi']);
   });
 
   it('元のセーブを書き換えない', () => {

@@ -1,5 +1,4 @@
-import { mergeCounters } from '../core/counters';
-import { applyXp, earnedTitles } from '../core/progress';
+import { applyXp } from '../core/progress';
 import type { Registry } from '../engine/registry';
 import type { StageDef } from '../engine/schema';
 import type { BattleState,CharProgress, StatBonus } from '../core/types';
@@ -43,7 +42,7 @@ function hasBonus(b: StatBonus): boolean {
   return b.maxHp > 0 || b.power > 0 || b.guard > 0 || b.speed > 0 || b.resist > 0;
 }
 
-export type StageResult = { save: SaveData; gains: XpGain[]; newTitles: string[] };
+export type StageResult = { save: SaveData; gains: XpGain[] };
 
 export function applyStageClear(
   reg: Registry,
@@ -76,20 +75,16 @@ export function applyStageClear(
     }
   }
 
-  const counters = mergeCounters(save.counters, battle.counters, reg.titles);
-  const allTitles = earnedTitles(reg, counters);
-  const newTitles = allTitles.filter((t) => !save.titles.includes(t));
-
   return {
     save: {
       ...save,
       clearedStageIds: save.clearedStageIds.includes(stageId)
         ? save.clearedStageIds
         : [...save.clearedStageIds, stageId],
-      units, counters, titles: allTitles,
+      units,
       members: [...save.members, ...battle.joined.filter((id) => !save.members.includes(id))],
       claimed: [...save.claimed, ...battle.claimed.filter((id) => !save.claimed.includes(id))],
     },
-    gains, newTitles,
+    gains,
   };
 }
