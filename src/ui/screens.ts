@@ -28,7 +28,7 @@ const INK = '#f2efe4';
 const PANEL = 'rgba(16, 24, 32, 0.88)';
 const FALLBACK_DEF = { name: '', color: '#888888', role: '', sprites: { role: null, face: null, map: null } };
 
-function panel(ctx: CanvasRenderingContext2D, r: Rect, fill = PANEL): void {
+export function panel(ctx: CanvasRenderingContext2D, r: Rect, fill = PANEL): void {
   ctx.fillStyle = fill;
   ctx.fillRect(r.x, r.y, r.w, r.h);
   ctx.strokeStyle = INK;
@@ -41,7 +41,7 @@ function panel(ctx: CanvasRenderingContext2D, r: Rect, fill = PANEL): void {
  * 並べないと区別がつかず、「押せないボタン」に見えてしまうため、押してほしいボタンは
  * アクセント色で塗る
  */
-function button(
+export function button(
   ctx: CanvasRenderingContext2D,
   r: Rect,
   label: string,

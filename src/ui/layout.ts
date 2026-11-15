@@ -111,3 +111,14 @@ const measure = (t: string): number => {
 export function speechLines(text: string): string[] {
   return wrapText(text, measure, SPEECH_CONTENT_W);
 }
+
+/** 能力の札（仲間・敵・レベルアップで共通）。画面の中ほどに重ねる */
+export const STAT_CARD: Rect = { x: 30, y: 130, w: 480, h: 640 };
+export const CARD_CLOSE_BTN: Rect = { x: 170, y: 696, w: 200, h: 56 };
+
+/** ステージに出る敵の一覧。見出しの下に行を 64px ずつ並べ、下端の中央に閉じるボタン */
+export const ENEMY_LIST: Rect = { x: 30, y: 200, w: 480, h: 520 };
+export function enemyListRow(index: number): Rect {
+  return { x: ENEMY_LIST.x + 12, y: ENEMY_LIST.y + 64 + index * 64, w: ENEMY_LIST.w - 24, h: 60 };
+}
+export const ENEMY_LIST_CLOSE_BTN: Rect = { x: ENEMY_LIST.x + (ENEMY_LIST.w - 200) / 2, y: ENEMY_LIST.y + ENEMY_LIST.h - 64, w: 200, h: 52 };

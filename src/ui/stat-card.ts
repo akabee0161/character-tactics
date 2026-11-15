@@ -15,6 +15,8 @@ export const STAT_LABEL: Record<StatKey, string> = {
 /** 棒の長さの上限。仲間と敵で共通（同じ物差しで比べられるように） */
 export const BAR_MAX: Record<StatKey, number> = { maxHp: 40, power: 18, guard: 8, resist: 12, speed: 100 };
 export const KIND_LABEL: Record<AttackKind, string> = { melee: '近接', bow: '弓', magic: '魔法' };
+/** 攻撃の種類の色（札と、ステージ選択の仲間一覧の印で共通） */
+export const KIND_COLOR: Record<AttackKind, string> = { melee: '#e8c48a', bow: '#9fd38a', magic: '#c8a2ff' };
 export const KIND_NOTE: Record<AttackKind, string> = {
   melee: '相手の 守備で 減る', bow: '相手の 守備で 減る', magic: '相手の 魔法防御で 減る',
 };
