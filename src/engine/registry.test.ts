@@ -5,12 +5,12 @@ import { buildRegistry, lookupDef, skillParam } from './registry';
 
 const UNIT = {
   id: 'roran', name: 'ロラン', role: 'たて', combat: true,
-  maxHp: 30, power: 6, guard: 5, attack: 'melee', range: 24,
+  maxHp: 30, power: 6, guard: 5, resist: 0, attack: 'melee', range: 24,
   attackInterval: 1.6, speed: 60, skillId: 'funbaru', color: '#4a80c8',
 };
 const ENEMY = {
   id: 'narazumono', name: 'ならずもの', role: 'てき', combat: true,
-  maxHp: 12, power: 5, guard: 1, attack: 'melee', range: 24,
+  maxHp: 12, power: 5, guard: 1, resist: 0, attack: 'melee', range: 24,
   attackInterval: 1.6, speed: 45, skillId: null, color: '#8a5a4a',
   xpReward: 5, bowDamageCap: null, fleeAtHpRatio: null,
 };
@@ -18,7 +18,7 @@ const ENEMY = {
 // もう1人のユニットとして定義しておく（ブリーフのフィクスチャ不足を補うためのローカルな追加）
 const INES = {
   id: 'ines', name: 'イネス', role: 'ゆみ', combat: true,
-  maxHp: 20, power: 4, guard: 2, attack: 'bow', range: 120,
+  maxHp: 20, power: 4, guard: 2, resist: 0, attack: 'bow', range: 120,
   attackInterval: 1.2, speed: 50, skillId: null, color: '#c8a04a',
 };
 const GROWTH = {

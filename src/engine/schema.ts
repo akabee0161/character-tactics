@@ -1,4 +1,4 @@
-export type StatKey = 'maxHp' | 'power' | 'guard' | 'speed';
+export type StatKey = 'maxHp' | 'power' | 'guard' | 'speed' | 'resist';
 import { footCorners } from './footprint';
 
 export type Vec2 = { x: number; y: number };
@@ -172,6 +172,8 @@ export type UnitDef = {
   maxHp: number;
   power: number;
   guard: number;
+  /** 魔法防御。魔法の攻撃のダメージから引く（近接と弓は guard） */
+  resist: number;
   attack: AttackKind;
   range: number;
   attackInterval: number;
@@ -201,6 +203,7 @@ function readUnitFields(ctx: Ctx, o: Record<string, unknown>): UnitDef {
     maxHp: requireNumber(ctx, 'maxHp', o.maxHp, { min: 1 }) ?? 1,
     power: requireNumber(ctx, 'power', o.power, { min: 0 }) ?? 0,
     guard: requireNumber(ctx, 'guard', o.guard, { min: 0 }) ?? 0,
+    resist: requireNumber(ctx, 'resist', o.resist, { min: 0 }) ?? 0,
     attack: requireEnum(ctx, 'attack', o.attack, ATTACK_KINDS) ?? 'melee',
     range: requireNumber(ctx, 'range', o.range, { min: 1 }) ?? 1,
     attackInterval: requireNumber(ctx, 'attackInterval', o.attackInterval, { min: 0.1 }) ?? 1,
@@ -424,7 +427,7 @@ export type RecruitDef = { unitId: string; level: number; talk: IntroLine[] };
 /** 説得の相手。普通の敵として置かれ、persuader が 2 マス以内に入ると会話が始まる */
 export type PersuasionDef = RecruitDef & { foeId: string; pos: Vec2; ai: AiDef; persuader: string };
 
-export const STAT_KEYS: readonly StatKey[] = ['maxHp', 'power', 'guard', 'speed'];
+export const STAT_KEYS: readonly StatKey[] = ['maxHp', 'power', 'guard', 'speed', 'resist'];
 
 export const VILLAGE_EFFECT_TYPES = ['talk', 'heal', 'powerUp', 'xp', 'stat', 'recruit'] as const;
 

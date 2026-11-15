@@ -7,7 +7,7 @@ import {
 const VALID_UNIT = {
   id: 'roran', name: 'ロラン', role: 'たて',
   combat: true,
-  maxHp: 30, power: 6, guard: 5,
+  maxHp: 30, power: 6, guard: 5, resist: 2,
   attack: 'melee', range: 24,
   attackInterval: 1.6, speed: 60,
   skillId: 'funbaru',
@@ -26,6 +26,17 @@ describe('validateUnitDef', () => {
     const r = validateUnitDef('units/roran.json', VALID_UNIT);
     expect(r.ok).toBe(true);
     if (r.ok) expect(r.value.id).toBe('roran');
+  });
+
+  it('resist を読む', () => {
+    const r = validateUnitDef('units/roran.json', VALID_UNIT);
+    expect(r.ok && r.value.resist).toBe(2);
+  });
+
+  it('resist が無い・負の値ならエラー', () => {
+    const { resist: _drop, ...missing } = VALID_UNIT;
+    expect(validateUnitDef('units/roran.json', missing).ok).toBe(false);
+    expect(validateUnitDef('units/roran.json', { ...VALID_UNIT, resist: -1 }).ok).toBe(false);
   });
 
   it('skillId は null を許す', () => {

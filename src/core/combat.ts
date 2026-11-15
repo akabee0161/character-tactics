@@ -9,6 +9,8 @@ export function isFunbaruActive(unit: Unit, time: number): boolean {
 export type DamageParams = {
   power: number;
   guard: number;
+  /** 防御側の魔法防御。魔法の攻撃では guard の代わりにこれを引く */
+  resist: number;
   attackKind: AttackKind;
   /** 防御側が弓ダメージに上限を持つならその値。持たないなら null */
   bowDamageCap: number | null;
@@ -21,7 +23,8 @@ export type DamageParams = {
 };
 
 export function computeDamage(p: DamageParams): number {
-  let dmg = p.power + p.bondBonus - p.guard;
+  const defense = p.attackKind === 'magic' ? p.resist : p.guard;
+  let dmg = p.power + p.bondBonus - defense;
   if (dmg < 1) dmg = 1;
 
   if (p.neraiuchi) {

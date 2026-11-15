@@ -6,6 +6,7 @@
   "maxHp": 18,
   "power": 8,
   "guard": 1,
+  "resist": 7,
   "attack": "magic",
   "range": 140,
   "attackInterval": 2.6,

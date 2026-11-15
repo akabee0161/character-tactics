@@ -14,13 +14,14 @@ import type { BattleState, Grid, PartyProgress, StatBonus, Unit, Vec2 } from './
  */
 export function statsForLevel(
   def: UnitDef | EnemyDef, level: number, growth: GrowthDef, bonus: StatBonus = NO_BONUS,
-): { maxHp: number; power: number; guard: number; speed: number } {
+): { maxHp: number; power: number; guard: number; speed: number; resist: number } {
   const steps = Math.max(0, level - 1);
   return {
     maxHp: def.maxHp + steps * growth.hpPerLevel + bonus.maxHp,
     power: def.power + Math.floor(steps / growth.levelsPerPower) + bonus.power,
     guard: def.guard + bonus.guard,
     speed: def.speed + bonus.speed,
+    resist: def.resist + bonus.resist,
   };
 }
 
@@ -45,7 +46,7 @@ type MakeUnitArgs = {
 
 export function makeUnit(a: MakeUnitArgs): Unit {
   const statBonus = { ...(a.bonus ?? NO_BONUS) };
-  const { maxHp, power, guard, speed } = statsForLevel(a.def, a.level, a.growth, statBonus);
+  const { maxHp, power, guard, speed, resist } = statsForLevel(a.def, a.level, a.growth, statBonus);
   const enemyDef = 'bowDamageCap' in a.def ? a.def : null;
   return {
     uid: a.uid,
@@ -57,6 +58,7 @@ export function makeUnit(a: MakeUnitArgs): Unit {
     pos: { ...a.pos },
     hp: maxHp, maxHp, power,
     guard,
+    resist,
     attack: a.def.attack,
     range: a.def.range,
     attackInterval: a.def.attackInterval,

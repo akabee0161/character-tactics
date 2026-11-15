@@ -11,6 +11,7 @@ export function applyDamage(state: BattleState, source: HitSource, target: Unit)
   const dmg = computeDamage({
     power: source.power,
     guard: target.guard,
+    resist: target.resist,
     attackKind: source.attack,
     bowDamageCap: target.bowDamageCap,
     bondBonus: source.bondBonus,

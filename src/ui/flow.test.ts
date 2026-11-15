@@ -218,11 +218,11 @@ describe('applyStageClear: 加入と印と上乗せ', () => {
     state.joined = ['ally05'];
     state.claimed = ['village:v1'];
     const roran = state.units.find((u) => u.defId === 'roran')!;
-    roran.statBonus = { maxHp: 3, power: 0, guard: 1, speed: 0 };
+    roran.statBonus = { maxHp: 3, power: 0, guard: 1, speed: 0, resist: 0 };
     const r = applyStageClear(reg, newSave(reg), state.stage.id, state);
     expect(r.save.members).toEqual(['ally05']);
     expect(r.save.claimed).toEqual(['village:v1']);
-    expect(r.save.units.roran!.bonus).toEqual({ maxHp: 3, power: 0, guard: 1, speed: 0 });
+    expect(r.save.units.roran!.bonus).toEqual({ maxHp: 3, power: 0, guard: 1, speed: 0, resist: 0 });
     expect(r.save.units.ines!.bonus).toBeUndefined();
   });
 

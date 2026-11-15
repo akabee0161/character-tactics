@@ -13,7 +13,7 @@ function makeTestUnit(s: BattleState, def: EnemyDef, pos: Vec2, ai: AiDef): Unit
   return {
     uid: `t${s.units.length + 1}`, defId: def.id, kindId: def.kind ?? def.id, side: 'enemy', controller: 'ai',
     combat: def.combat, pos: { ...pos },
-    hp: def.maxHp, maxHp: def.maxHp, power: def.power, guard: def.guard,
+    hp: def.maxHp, maxHp: def.maxHp, power: def.power, guard: def.guard, resist: def.resist,
     attack: def.attack, range: def.range, attackInterval: def.attackInterval, speed: def.speed,
     bowDamageCap: def.bowDamageCap, skillId: def.skillId,
     level: 1, xp: 0,
@@ -83,7 +83,7 @@ function spawnEnemy(s: BattleState, defId: string, pos: { x: number; y: number }
   const uid = `t${s.nextEnemyUid++}`;
   const u: Unit = {
     uid, defId, kindId: def.kind ?? defId, side: 'enemy', controller: 'ai', combat: def.combat,
-    pos: { ...pos }, hp: def.maxHp, maxHp: def.maxHp, power: def.power, guard: def.guard,
+    pos: { ...pos }, hp: def.maxHp, maxHp: def.maxHp, power: def.power, guard: def.guard, resist: def.resist,
     attack: def.attack, range: def.range, attackInterval: def.attackInterval, speed: def.speed,
     bowDamageCap: def.bowDamageCap, skillId: def.skillId,
     level: 1, xp: 0,

@@ -2,6 +2,7 @@
   "id": "tatemochi", "kind": "tatemochi", "name": "盾持ち", "role": "敵",
   "combat": true,
   "maxHp": 20, "power": 12, "guard": 3,
+  "resist": 0,
   "attack": "melee", "range": 24,
   "attackInterval": 1.8, "speed": 26,
   "skillId": null,

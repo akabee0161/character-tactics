@@ -2,6 +2,7 @@
   "id": "majinaishi", "kind": "majinaishi", "name": "まじない師", "role": "敵",
   "combat": true,
   "maxHp": 9, "power": 16, "guard": 0,
+  "resist": 6,
   "attack": "magic", "range": 140,
   "attackInterval": 2.6, "speed": 24,
   "skillId": null,

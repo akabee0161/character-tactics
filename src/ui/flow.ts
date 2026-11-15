@@ -40,7 +40,7 @@ export type XpGain = {
 };
 
 function hasBonus(b: StatBonus): boolean {
-  return b.maxHp > 0 || b.power > 0 || b.guard > 0 || b.speed > 0;
+  return b.maxHp > 0 || b.power > 0 || b.guard > 0 || b.speed > 0 || b.resist > 0;
 }
 
 export type StageResult = { save: SaveData; gains: XpGain[]; newTitles: string[] };

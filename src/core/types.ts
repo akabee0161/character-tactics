@@ -24,7 +24,7 @@ export type FlowField = {
 import type { Rng } from './rng';
 
 export type StatBonus = Record<StatKey, number>;
-export const NO_BONUS: StatBonus = Object.freeze({ maxHp: 0, power: 0, guard: 0, speed: 0 });
+export const NO_BONUS: StatBonus = Object.freeze({ maxHp: 0, power: 0, guard: 0, speed: 0, resist: 0 });
 
 export type CharProgress = { level: number; xp: number; bonus?: StatBonus };
 
@@ -62,6 +62,7 @@ export type Unit = {
   maxHp: number;
   power: number;
   guard: number;
+  resist: number;
   attack: AttackKind;
   range: number;
   attackInterval: number;

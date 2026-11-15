@@ -32,12 +32,12 @@ function isFinitePositiveInt(v: unknown): boolean {
   return typeof v === 'number' && Number.isInteger(v) && v >= 1;
 }
 
-const BONUS_KEYS = ['maxHp', 'power', 'guard', 'speed'] as const;
+const BONUS_KEYS = ['maxHp', 'power', 'guard', 'speed', 'resist'] as const;
 
 /** 4 つ全部が 0 以上の整数のときだけ読む。それ以外は壊れた値として捨てる */
 function readBonus(v: unknown): StatBonus | null {
   if (!isPlainObject(v)) return null;
-  const out = { maxHp: 0, power: 0, guard: 0, speed: 0 };
+  const out = { maxHp: 0, power: 0, guard: 0, speed: 0, resist: 0 };
   for (const k of BONUS_KEYS) {
     const n = v[k];
     if (!isFiniteNonNegInt(n)) return null;

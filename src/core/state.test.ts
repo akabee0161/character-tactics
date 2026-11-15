@@ -26,7 +26,7 @@ describe('statsForLevel', () => {
   it('レベル1 は基礎値どおり', () => {
     const reg = testRegistry();
     expect(statsForLevel(reg.units.get('roran')!, 1, reg.growth)).toEqual({
-      maxHp: 30, power: 6, guard: reg.units.get('roran')!.guard, speed: reg.units.get('roran')!.speed,
+      maxHp: 30, power: 6, guard: reg.units.get('roran')!.guard, speed: reg.units.get('roran')!.speed, resist: 2,
     });
   });
 
@@ -44,15 +44,33 @@ describe('statsForLevel', () => {
   it('上限レベルでも現状の上限とほぼ同じ強さ', () => {
     const reg = testRegistry();
     expect(statsForLevel(reg.units.get('roran')!, 12, reg.growth)).toEqual({
-      maxHp: 41, power: 9, guard: reg.units.get('roran')!.guard, speed: reg.units.get('roran')!.speed,
+      maxHp: 41, power: 9, guard: reg.units.get('roran')!.guard, speed: reg.units.get('roran')!.speed, resist: 2,
     });
   });
 
   it('上乗せが能力値に入る', () => {
     const reg = testRegistry();
     const def = reg.units.get('roran')!;
-    const s = statsForLevel(def, 1, reg.growth, { maxHp: 3, power: 1, guard: 2, speed: 5 });
-    expect(s).toEqual({ maxHp: def.maxHp + 3, power: def.power + 1, guard: def.guard + 2, speed: def.speed + 5 });
+    const s = statsForLevel(def, 1, reg.growth, { maxHp: 3, power: 1, guard: 2, speed: 5, resist: 4 });
+    expect(s).toEqual({
+      maxHp: def.maxHp + 3, power: def.power + 1, guard: def.guard + 2, speed: def.speed + 5, resist: def.resist + 4,
+    });
+  });
+
+  it('魔法防御はレベルで上がらない', () => {
+    const reg = testRegistry();
+    const mist = reg.units.get('mist')!;
+    expect(statsForLevel(mist, 1, reg.growth).resist).toBe(7);
+    expect(statsForLevel(mist, 5, reg.growth).resist).toBe(7);
+  });
+
+  it('makeUnit は魔法防御に上乗せを足す', () => {
+    const reg = testRegistry();
+    const u = makeUnit({
+      uid: 'p1', def: reg.units.get('mist')!, side: 'player', controller: 'player', pos: { x: 0, y: 0 },
+      level: 1, xp: 0, bonus: { maxHp: 0, power: 0, guard: 0, speed: 0, resist: 2 }, ai: null, growth: reg.growth,
+    });
+    expect(u.resist).toBe(9);
   });
 });
 
