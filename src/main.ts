@@ -30,7 +30,7 @@ import { drawEnemyList, drawStatCard } from './ui/card-view';
 import { closeOverlay, overlayTap } from './ui/overlay';
 import type { Overlay } from './ui/overlay';
 import { stageTapTarget } from './ui/select-tap';
-import { allyCardFromSave, enemyCard, stageEnemies } from './ui/stat-card';
+import { allyCardFromSave, cardFromUnit, enemyCard, stageEnemies } from './ui/stat-card';
 import { partyIds } from './core/party';
 import {
   drawBottomBar, drawDefeat, drawLoadErrors, drawPlacement, drawResult,
@@ -295,6 +295,10 @@ function onPointerDown(ev: PointerEvent): void {
 
     case 'placement': {
       if (!battle) return;
+      if (overlay) {
+        tapOverlay(p);
+        return;
+      }
       if (hitRect(MESSAGE_BAR, p)) {
         pointerStart = null;
         writeSave(window.localStorage, save); // ステージ開始時点を保存する
@@ -339,6 +343,11 @@ function beginMapPointer(state: BattleState, p: Vec2, ev: PointerEvent): void {
     pointerStart = null;
     const unit = portraitUnits[i];
     if (!unit || unit.retired) return;
+    if (phase === 'placement') {
+      // 配置の場面の顔の枠は、強さを見る札を開く（選ぶ・動かすのはマップ上の仲間を押す）
+      overlay = { kind: 'card', card: cardFromUnit(registry, unit, null), back: null };
+      return;
+    }
     // ポートレートのタップは「選択して必殺技を出す」。選択の解除はマップ上の再タップで行う
     selected = unit.uid;
     if (phase !== 'battle') return;
@@ -354,6 +363,17 @@ function beginMapPointer(state: BattleState, p: Vec2, ev: PointerEvent): void {
   }
   const startMap = logicalToMap(p);
   const uid = pickUnit(playerUnits(state), startMap, undefined, unitBody);
+  if (uid === null && phase === 'placement') {
+    // 仲間に当たらず敵に当たったら、その敵の札を開く（敵は置ける範囲の外にいるので、移動の操作とぶつからない）
+    const enemyUid = pickUnit(state.units.filter((e) => e.side === 'enemy'), startMap, undefined, unitBody);
+    const enemy = state.units.find((u) => u.uid === enemyUid);
+    if (enemy) {
+      const name = lookupDef(registry, enemy.defId)?.name;
+      const count = stageEnemies(registry, state.stage).find((e) => e.name === name)?.count ?? 1;
+      overlay = { kind: 'card', card: cardFromUnit(registry, enemy, count), back: null };
+      return;
+    }
+  }
   pointerStart = {
     uid,
     startMap,
@@ -528,6 +548,7 @@ function render(): void {
         drawBattle(ctx, registry, battle, selected, effects, escorts, images, anim);
         drawBottomBar(ctx, registry, battle, selected, escorts, images);
         drawPlacement(ctx, battle);
+        drawOverlay();
       }
       break;
     case 'battle':

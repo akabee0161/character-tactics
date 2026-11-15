@@ -198,7 +198,8 @@ export function drawPlacement(ctx: CanvasRenderingContext2D, state: BattleState)
 
   ctx.fillStyle = INK;
   ctx.font = '20px sans-serif';
-  ctx.fillText('黄色い 線より 下に 仲間を 置こう', 24, 760);
+  ctx.fillText('黄色い 線より 下に 仲間を 置こう', 24, 734);
+  ctx.fillText('下の 顔や 敵を 押すと 強さが 見られる', 24, 762);
   button(ctx, MESSAGE_BAR, '始める', true, true);
 }
 
