@@ -379,6 +379,7 @@ function resolveAttacks(state: BattleState, dt: number): void {
     const source: HitSource = {
       uid: u.uid, defId: u.defId, attack: u.attack, pos: { ...u.pos },
       neraiuchi: u.neraiuchiArmed, power: attackPower(u, state.time), bondBonus: bonus,
+      ignoresGuard: u.ignoresGuard,
     };
     u.neraiuchiArmed = false;
     u.attackCooldown = interval;

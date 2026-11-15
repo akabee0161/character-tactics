@@ -21,7 +21,7 @@ function addEnemy(s: BattleState, x: number, y: number, hp = 12): Unit {
   const uid = `e${s.nextEnemyUid++}`;
   const e: Unit = {
     uid, defId: 'narazumono', kindId: 'narazumono', side: 'enemy', controller: 'ai', combat: def.combat,
-    pos: { x, y }, hp, maxHp: 12, power: def.power, guard: def.guard, resist: def.resist,
+    pos: { x, y }, hp, maxHp: 12, power: def.power, guard: def.guard, resist: def.resist, ignoresGuard: def.ignoresGuard,
     attack: def.attack, range: def.range, attackInterval: def.attackInterval, speed: def.speed,
     bowDamageCap: def.bowDamageCap, skillId: def.skillId,
     level: 1, xp: 0,
@@ -436,5 +436,31 @@ describe('はげます', () => {
     useSkill(s, caster.uid);
     expect(caster.cheerPower).toBe(2);
     expect(caster.cheerUntil).toBe(s.time + 8);
+  });
+});
+
+describe('たたき割り', () => {
+  it('射程 32 以内の一番近い敵 1 体に 14 のダメージ', () => {
+    const s = fresh();
+    const axe = unitOf(s, 'roran');
+    axe.skillId = 'tatakiwari';
+    axe.pos = { x: 80, y: 208 };
+    const near = addEnemy(s, 100, 208, 30);
+    const other = addEnemy(s, 108, 208, 30);
+    expect(useSkill(s, axe.uid)).toBe(true);
+    expect(near.hp).toBe(30 - 14);
+    expect(other.hp).toBe(30);
+    expect(near.lastHitBy).toBe(axe.uid);
+    expect(s.events).toContainEqual(expect.objectContaining({ type: 'skill', skillId: 'tatakiwari', hits: 1 }));
+  });
+
+  it('32 より遠い敵しかいなければ出さず、待ち時間も使わない', () => {
+    const s = fresh();
+    const axe = unitOf(s, 'roran');
+    axe.skillId = 'tatakiwari';
+    axe.pos = { x: 80, y: 208 };
+    addEnemy(s, 120, 208, 30);
+    expect(useSkill(s, axe.uid)).toBe(false);
+    expect(axe.skillCooldownUntil).toBe(0);
   });
 });

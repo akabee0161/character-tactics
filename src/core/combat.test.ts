@@ -3,13 +3,21 @@ import { computeDamage, effectiveInterval, hasThreatWithinMelee, nearestWithin }
 import type { DamageParams } from './combat';
 
 const base: DamageParams = {
-  power: 6, guard: 1, resist: 0, attackKind: 'melee',
+  power: 6, guard: 1, resist: 0, ignoresGuard: false, attackKind: 'melee',
   bowDamageCap: null, bondBonus: 0, neraiuchi: false, targetFunbaru: false,
 };
 
 describe('computeDamage', () => {
   it('魔法の攻撃は守備でなく魔法防御を引く', () => {
     expect(computeDamage({ ...base, power: 16, guard: 5, resist: 2, attackKind: 'magic' })).toBe(14);
+  });
+
+  it('守備を無視する攻撃は守備を 0 として計算する', () => {
+    expect(computeDamage({ ...base, power: 10, guard: 3, ignoresGuard: true, attackKind: 'melee' })).toBe(10);
+  });
+
+  it('守備を無視しても魔法防御には関係しない', () => {
+    expect(computeDamage({ ...base, power: 10, resist: 4, ignoresGuard: true, attackKind: 'magic' })).toBe(6);
   });
 
   it('近接と弓の攻撃は魔法防御を見ない', () => {
@@ -56,7 +64,7 @@ describe('computeDamage', () => {
 
   it('まほうには bowDamageCap が きかない', () => {
     expect(computeDamage({
-      power: 10, guard: 1, resist: 1, attackKind: 'magic', bowDamageCap: 2,
+      power: 10, guard: 1, resist: 1, ignoresGuard: false, attackKind: 'magic', bowDamageCap: 2,
       bondBonus: 0, neraiuchi: false, targetFunbaru: false,
     })).toBe(9);
   });

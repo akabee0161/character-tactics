@@ -19,6 +19,8 @@ export const TSUKI_DAMAGE = 7;
 export const HAGEMASU_RANGE = 120;
 export const HAGEMASU_POWER = 2;
 export const HAGEMASU_DURATION = 8;
+export const TATAKIWARI_DAMAGE = 14;
+export const TATAKIWARI_RANGE = 32;
 export const DEFAULT_SKILL_COOLDOWN = 10;
 
 export type SkillContext = { state: BattleState; self: Unit; dest?: Vec2 };
@@ -136,6 +138,15 @@ export const SKILL_EFFECTS: Record<string, SkillEffect> = {
       hits++;
     }
     return hits;
+  },
+
+  tatakiwari: ({ state, self }) => {
+    const range = skillParam(state.reg, 'tatakiwari', 'range', TATAKIWARI_RANGE);
+    const damage = skillParam(state.reg, 'tatakiwari', 'damage', TATAKIWARI_DAMAGE);
+    const target = nearestWithin(self.pos, hostilesOf(state, self), range);
+    if (!target) return null;
+    skillHit(state, self, target, damage, self.pos);
+    return 1;
   },
 
   hagemasu: ({ state, self }) => {

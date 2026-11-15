@@ -12,6 +12,7 @@ export function applyDamage(state: BattleState, source: HitSource, target: Unit)
     power: source.power,
     guard: target.guard,
     resist: target.resist,
+    ignoresGuard: source.ignoresGuard,
     attackKind: source.attack,
     bowDamageCap: target.bowDamageCap,
     bondBonus: source.bondBonus,

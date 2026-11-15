@@ -59,6 +59,7 @@ export function makeUnit(a: MakeUnitArgs): Unit {
     hp: maxHp, maxHp, power,
     guard,
     resist,
+    ignoresGuard: a.def.ignoresGuard,
     attack: a.def.attack,
     range: a.def.range,
     attackInterval: a.def.attackInterval,

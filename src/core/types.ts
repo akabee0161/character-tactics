@@ -63,6 +63,8 @@ export type Unit = {
   power: number;
   guard: number;
   resist: number;
+  /** 通常の攻撃で相手の守備を無視する（斧） */
+  ignoresGuard: boolean;
   attack: AttackKind;
   range: number;
   attackInterval: number;
@@ -145,6 +147,7 @@ export type HitSource = {
   neraiuchi: boolean;
   power: number;
   bondBonus: number;
+  ignoresGuard: boolean;
 };
 
 /** 振りかぶり中の攻撃。発動時刻になったら、攻撃した側と相手が生きていればダメージか飛翔体になる */

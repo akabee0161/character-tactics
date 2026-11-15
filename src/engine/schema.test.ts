@@ -39,6 +39,17 @@ describe('validateUnitDef', () => {
     expect(validateUnitDef('units/roran.json', { ...VALID_UNIT, resist: -1 }).ok).toBe(false);
   });
 
+  it('ignoresGuard は省略すれば false、書けば読む', () => {
+    const a = validateUnitDef('units/roran.json', VALID_UNIT);
+    expect(a.ok && a.value.ignoresGuard).toBe(false);
+    const b = validateUnitDef('units/roran.json', { ...VALID_UNIT, ignoresGuard: true });
+    expect(b.ok && b.value.ignoresGuard).toBe(true);
+  });
+
+  it('ignoresGuard が真偽値でなければエラー', () => {
+    expect(validateUnitDef('units/roran.json', { ...VALID_UNIT, ignoresGuard: 'yes' }).ok).toBe(false);
+  });
+
   it('skillId は null を許す', () => {
     const r = validateUnitDef('units/npc.json', { ...VALID_UNIT, skillId: null });
     expect(r.ok).toBe(true);

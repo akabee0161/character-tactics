@@ -174,6 +174,8 @@ export type UnitDef = {
   guard: number;
   /** 魔法防御。魔法の攻撃のダメージから引く（近接と弓は guard） */
   resist: number;
+  /** 通常の近接・弓の攻撃で相手の守備を 0 として計算する（斧）。JSON では省略でき、そのとき false */
+  ignoresGuard: boolean;
   attack: AttackKind;
   range: number;
   attackInterval: number;
@@ -204,6 +206,7 @@ function readUnitFields(ctx: Ctx, o: Record<string, unknown>): UnitDef {
     power: requireNumber(ctx, 'power', o.power, { min: 0 }) ?? 0,
     guard: requireNumber(ctx, 'guard', o.guard, { min: 0 }) ?? 0,
     resist: requireNumber(ctx, 'resist', o.resist, { min: 0 }) ?? 0,
+    ignoresGuard: o.ignoresGuard === undefined ? false : (requireBoolean(ctx, 'ignoresGuard', o.ignoresGuard) ?? false),
     attack: requireEnum(ctx, 'attack', o.attack, ATTACK_KINDS) ?? 'melee',
     range: requireNumber(ctx, 'range', o.range, { min: 1 }) ?? 1,
     attackInterval: requireNumber(ctx, 'attackInterval', o.attackInterval, { min: 0.1 }) ?? 1,
