@@ -230,13 +230,14 @@ export function drawBottomBar(
       drawRoleBadge(ctx, roleBadgeIn(r), def, images);
 
       if (!unit.retired) {
-        // 効いているバフの印。役割アイコンの下に、はげます・結界の順に縦に並べる
+        // 効いているバフの印。顔と HP バーの間の細い行に、はげます・結界の順に並べる。
+        // 顔の右横（y 30〜42）は護衛対象の金色の三角が使うので避ける
         const buffs = activeBuffs(unit, state.time);
-        let by = r.y + 34;
+        let bx = r.x + 34;
         for (const k of ['cheer', 'ward'] as const) {
           if (!buffs[k]) continue;
-          drawUpTriangle(ctx, r.x + r.w - 12, by, 10, 9, BUFF_COLOR[k]);
-          by += 12;
+          drawUpTriangle(ctx, bx, r.y + 54, 9, 7, BUFF_COLOR[k]);
+          bx += 12;
         }
       }
 
