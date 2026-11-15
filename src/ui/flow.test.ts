@@ -207,6 +207,19 @@ describe('applyStageClear: 加入と印と上乗せ', () => {
     expect(r.save.units.ally06).toEqual({ level: 4, xp: 0 });
   });
 
+  it('場に出なかった仲間にも、加入の表示（joined の XpGain）が出る。先頭に並ぶ', () => {
+    const reg = testRegistry();
+    const state = freshBattle(reg);
+    state.joined = ['ally06'];
+    state.benchedRecruits = [{ defId: 'ally06', level: 4 }];
+    const r = applyStageClear(reg, newSave(reg), state.stage.id, state);
+    const g = r.gains.find((x) => x.id === 'ally06')!;
+    expect(g).toEqual({ id: 'ally06', before: { level: 4, xp: 0 }, after: { level: 4, xp: 0 }, leveledUp: false, joined: true });
+    expect(r.gains[0]!.id).toBe('ally06');
+    // 場の味方の分はそのまま残る
+    expect(r.gains.length).toBe(state.units.filter((u) => u.side === 'player').length + 1);
+  });
+
   it('2 回クリアしても members が重ならない', () => {
     const reg = testRegistry();
     const state = freshBattle(reg);

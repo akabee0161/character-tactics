@@ -23,3 +23,6 @@ Final: minor (deferred): 村の加入の present 判定が save.members を見�
 Final: minor (deferred): マップの端で飛行の 1 歩が clampToMap のあと敵との最小距離を少し破りうる
 Final: minor (deferred): 飛行の影が先に描いたユニットの絵に重なりうる／マップ上のタップの当たり（unitBody）が持ち上げ 5px ぶんずれる
 Final: minor (deferred): 開始時の加入が場に出られなかったときは benchedRecruits に入らずレベルが残らない（今のデータでは起きない）
+Review: Ruling: CodeRabbit「旧セーブの bonus に resist が無いと上乗せが消える」は直さない — 依頼者が 2026-11-15 に旧セーブは気にしなくてよいと決めた（Task 1 の Ruling と同じ） — 旧セーブを読むと村で上げた守備などの上乗せが消える（依頼者が許容）
+Review: fixed 開始時の加入が場に出られないとレベルが残らない（Final の minor を解消） — state.test「開始時の加入は、場に出られなくても joined に入る」RED→GREEN
+Review: fixed 場に出なかった加入者のリザルト表示が出ない — flow.test「場に出なかった仲間にも、加入の表示が出る」RED→GREEN。加入の XpGain を先頭に並べ、リザルトの 8 件の枠で切り捨てられないようにした
