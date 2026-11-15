@@ -1,7 +1,6 @@
 import { lookupDef, skillParam } from '../engine/registry';
 import { MAX_PARTY } from '../core/constants';
 import { partyIds } from '../core/party';
-import { xpToNext } from '../core/progress';
 import { DEFAULT_SKILL_COOLDOWN } from '../core/skills';
 import type { ImageCache } from '../render/images';
 import { drawFace, drawRoleBadge } from '../render/sprites';
@@ -15,6 +14,7 @@ import {
 import { currentSpeaker, pageCount, visibleLines } from './talk';
 import { isStageUnlocked } from './flow';
 import { maxScroll } from './scroll';
+import { resultLine } from './result-text';
 import { KIND_COLOR, KIND_LABEL } from './stat-card';
 import type { Speech } from './speech';
 import type { TalkState } from './talk';
@@ -371,14 +371,13 @@ export function drawResult(
     ctx.fillStyle = g.joined || g.leveledUp ? '#ffd479' : '#9fb3c4';
     ctx.font = '16px sans-serif';
     // 枠は 240px。長い行は maxWidth で縮めて枠からはみ出さない
-    ctx.fillText(
-      g.joined
-        ? '仲間に 加わった！'
-        : g.leveledUp
-        ? `レベルアップ！ Lv${g.before.level} → Lv${g.after.level}`
-        : `Lv${g.after.level} (${g.after.xp}/${xpToNext(g.after.level, reg.growth.xpPerLevel)})`,
-      r.x + 44, r.y + 46, r.w - 48,
-    );
+    ctx.fillText(resultLine(reg, g), r.x + 44, r.y + 46, r.w - 48 - (g.leveledUp && !g.joined ? 14 : 0));
+    if (g.leveledUp && !g.joined) {
+      // 押すと札が開く行の印
+      ctx.textAlign = 'right';
+      ctx.fillText('›', r.x + r.w - 8, r.y + 46);
+      ctx.textAlign = 'left';
+    }
   });
 
 

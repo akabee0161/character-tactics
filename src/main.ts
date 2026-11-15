@@ -23,14 +23,14 @@ import { resolveMapGesture } from './ui/input';
 import type { PointerStart } from './ui/input';
 import {
   BOTTOM_PANEL_Y, BTN, MESSAGE_BAR, STAGE_LIST_VIEW, TALK_BODY_X, TALK_FONT, TALK_MAX_LINES,
-  TALK_PAD, TALK_WINDOW, portraitSlot, rosterSlot, stageListContentH,
+  TALK_PAD, TALK_WINDOW, portraitSlot, resultSlot, rosterSlot, stageListContentH,
 } from './ui/layout';
 import { clampScroll, isTap, maxScroll } from './ui/scroll';
 import { drawEnemyList, drawStatCard } from './ui/card-view';
 import { closeOverlay, overlayTap } from './ui/overlay';
 import type { Overlay } from './ui/overlay';
 import { stageTapTarget } from './ui/select-tap';
-import { allyCardFromSave, cardFromUnit, enemyCard, stageEnemies } from './ui/stat-card';
+import { allyCardFromSave, cardFromGain, cardFromUnit, enemyCard, stageEnemies } from './ui/stat-card';
 import { levelUpCard, mergeLevelUps } from './ui/levelup';
 import type { LevelUpEvent } from './ui/levelup';
 import { partyIds } from './core/party';
@@ -334,9 +334,26 @@ function onPointerDown(ev: PointerEvent): void {
       return;
     }
 
-    case 'result':
-      if (hitRect(BTN.next, p)) toStageSelect();
+    case 'result': {
+      if (overlay) {
+        tapOverlay(p);
+        return;
+      }
+      if (hitRect(BTN.next, p)) {
+        toStageSelect();
+        return;
+      }
+      // レベルアップした行を押すと、上がった能力の札が開く
+      const gains = result?.gains.slice(0, MAX_PARTY) ?? [];
+      for (let i = 0; i < gains.length; i++) {
+        const g = gains[i]!;
+        if (g.leveledUp && !g.joined && hitRect(resultSlot(i), p)) {
+          overlay = { kind: 'card', card: cardFromGain(registry, g), back: null };
+          return;
+        }
+      }
       return;
+    }
 
     case 'defeat':
       if (hitRect(BTN.retry, p)) beginStage(stageIndex);
@@ -593,6 +610,7 @@ function render(): void {
       break;
     case 'result':
       if (result) drawResult(ctx, registry, result.gains, images);
+      drawOverlay();
       break;
     case 'defeat':
       drawDefeat(ctx);
