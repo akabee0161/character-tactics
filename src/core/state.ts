@@ -192,7 +192,9 @@ export function createBattleState(
     projectiles: [],
     nextProjectileId: 1,
     joined,
-    benchedRecruits: [],
+    benchedRecruits: joinEntries
+      .filter((e) => !entries.some((x) => x.defId === e.defId))
+      .map((e) => ({ defId: e.defId, level: e.level })),
     claimed: [],
     visited: [],
     pendingRecruit: null,

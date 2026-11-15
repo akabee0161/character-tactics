@@ -318,6 +318,11 @@ describe('出撃メンバーと開始位置', () => {
     const s = createBattleState(reg, { ...stage, joins: many.map(recruitOf) }, party([]), 1);
     expect(players(s)).toHaveLength(MAX_PARTY);
     expect(s.joined).toEqual(many);
+    // 場に出られなかった 1 人は、加わったときのレベルを benchedRecruits に残す
+    const onField = new Set(players(s).map((u) => u.defId));
+    const off = many.filter((id) => !onField.has(id));
+    expect(off).toHaveLength(1);
+    expect(s.benchedRecruits).toEqual([{ defId: off[0], level: 2 }]);
   });
 
   it('開始位置: starts が足りないと近いマスで補い、補えなければ starts を繰り返す', () => {

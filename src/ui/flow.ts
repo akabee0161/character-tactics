@@ -76,6 +76,12 @@ export function applyStageClear(
     }
   }
 
+  // 場に出なかった加入者のリザルト表示。リザルトの枠は 8 件なので、加入の表示を先頭に並べて切り捨てられないようにする
+  for (const b of battle.benchedRecruits) {
+    const rec = { level: b.level, xp: 0 };
+    gains.unshift({ id: b.defId, before: rec, after: { ...rec }, leveledUp: false, joined: true });
+  }
+
   const counters = mergeCounters(save.counters, battle.counters, reg.titles);
   const allTitles = earnedTitles(reg, counters);
   const newTitles = allTitles.filter((t) => !save.titles.includes(t));
