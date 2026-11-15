@@ -4,6 +4,7 @@ import { partyIds } from '../core/party';
 import { DEFAULT_SKILL_COOLDOWN } from '../core/skills';
 import type { ImageCache } from '../render/images';
 import { drawFace, drawRoleBadge } from '../render/sprites';
+import { BUFF_COLOR, activeBuffs, drawUpTriangle } from '../render/buff-marks';
 import { readyGlowAlpha } from '../render/effects';
 import { LOGICAL_H, LOGICAL_W, mapToLogical } from '../render/viewport';
 import {
@@ -227,6 +228,17 @@ export function drawBottomBar(
       drawFace(ctx, { x: r.x + 4 + fh, y: r.y + 6 + fh }, fh, def, images);
 
       drawRoleBadge(ctx, roleBadgeIn(r), def, images);
+
+      if (!unit.retired) {
+        // 効いているバフの印。役割アイコンの下に、はげます・結界の順に縦に並べる
+        const buffs = activeBuffs(unit, state.time);
+        let by = r.y + 34;
+        for (const k of ['cheer', 'ward'] as const) {
+          if (!buffs[k]) continue;
+          drawUpTriangle(ctx, r.x + r.w - 12, by, 10, 9, BUFF_COLOR[k]);
+          by += 12;
+        }
+      }
 
       const bar = hpBarIn(r);
       ctx.fillStyle = '#000';
