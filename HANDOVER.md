@@ -10,14 +10,19 @@
 5. 戦闘の演出（村での会話・仲間が倒れたときの余韻・必殺技）
 6. 点数（クリアの速さ）
 7. テストプレイ（全部の工程が終わってから依頼者が行う）
-段階: 実装（7 タスク中 2）
+段階: 実装（7 タスク中 7）
 次にやること:
-- 工程 1 の Task 3（結界）から、計画 `docs/superpowers/plans/2026-11-15-counter-allies.md` のとおり実装する（設計は `docs/superpowers/specs/2026-11-15-counter-allies-design.md`、台帳は `.superpowers/sdd/2026-11-15-counter-allies/progress.md`）
+- ブランチ全体のレビューの指摘を直す（Critical・Important だけ）
+- 依頼者の指示があれば push して PR を作る（`develop` 向け。CLAUDE.md の「ブランチとプレビュー」）
+- 工程 2（強さを見せる）の brainstorming に進む
 
-工程 1 の実装の注意（2026-11-15、Task 2 まで終えた時点）:
-- 依頼者は旧セーブを気にしなくてよいと決めた。計画の Review Focus 1（旧セーブの bonus）は不要で、`readBonus` は `resist` も必須のまま
-- `Unit` や `HitSource` に項目を足すと、テストの中で `Unit` を手で組んでいる所（`sim.test.ts`・`sim-combat.test.ts`・`skills.test.ts`）と `projectiles.test.ts` の `sourceOf` も直す必要がある
-- 技を足すたびに `src/engine/loader.test.ts` の `KNOWN_SKILLS` と技の数（今 9）も直す
+工程 1 の結果（2026-11-15）:
+- 守備（近接・弓）と魔法防御（魔法）を分けた。`ignoresGuard`（斧）・`flying`（飛行）・技 3 つ（たたき割り・結界・急降下）・新しい仲間 7 人（ally09〜15、仮の絵）を足した。勝率の表と確かめた内容は `docs/superpowers/specs/2026-11-15-counter-allies-results.md`
+- 場が 8 人を超えるステージ 6 以降は、出撃しない仲間がいる（出撃を選ぶ画面は工程 3）。場に出ない仲間も加入の記録は残る
+- 敵は歩けないマスの上の飛行の仲間に近づけない（経路が無い）。飛行の仲間は壁の向こうから狙われても安全。直すかは工程 5 の人手のレビューで決める
+- 勝率はボットで測ると s5〜s10 の多くが帯の外（結果の文書）。依頼者の指示で直していない
+- 7 人の絵は仮のまま（本番の絵は別の作業）。急降下の線（`trail`）はブラウザで確かめていない
+- 台帳の Ruling は `.superpowers/sdd/2026-11-15-counter-allies/progress.md`（計画を終えたら `docs/superpowers/ledgers/` へ写す）
 
 依頼者がテストプレイで挙げた 20 件を上の 6 工程に分けた（2026-11-15）。前の作業「仲間・村・難易度・絵の仕上げ」の工程 5（人間のレビュー）がこのテストプレイにあたる。下の残課題は工程 4 で一緒に扱う。
 
@@ -26,7 +31,7 @@
 全部の工程が終わってから、依頼者が人手で確認して調整する。詳細は `docs/superpowers/specs/2026-11-11-difficulty-tuning-results.md` の「依頼者が見るところ」。
 
 敵の絵（工程 3）で出たもの:
-- 説得の相手（ally06-foe・ally08-foe）と味方（ally05〜08）の絵が仮のまま
+- 説得の相手（ally06-foe・ally08-foe）と味方（ally05〜15）の絵が仮のまま
 - 顔グラ・役割アイコンが仮のまま
 - まじない師のローブの色（瓦の赤）が、ガウの赤い髪と同じ色見本
 
