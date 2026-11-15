@@ -12,7 +12,7 @@
 7. テストプレイ（全部の工程が終わってから依頼者が行う）
 段階: 実装計画
 次にやること:
-- 実装計画（`docs/superpowers/plans/2026-11-15-show-strength.md`、10 タスク）の確認と、進め方の選択をもらう
+- 実装計画（`docs/superpowers/plans/2026-11-15-show-strength.md`、10 タスク）をネイティブ方式で Task 1 から実装する（依頼者が選択済み）
 - Task 9（はげます・結界の印）は見本を見せて承認を待ってから描く
 - 工程 1 のレビュー修正が feat/counter-allies に入ったら、工程 2 のブランチ（feat/show-strength）に取り込み直す
 
