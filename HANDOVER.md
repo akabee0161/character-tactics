@@ -10,9 +10,14 @@
 5. 戦闘の演出（村での会話・仲間が倒れたときの余韻・必殺技）
 6. 点数（クリアの速さ）
 7. テストプレイ（全部の工程が終わってから依頼者が行う）
-段階: 実装（7 タスク中 0）
+段階: 実装（7 タスク中 2）
 次にやること:
-- 工程 1 を計画 `docs/superpowers/plans/2026-11-15-counter-allies.md` のとおり実装する（設計は `docs/superpowers/specs/2026-11-15-counter-allies-design.md`）
+- 工程 1 の Task 3（結界）から、計画 `docs/superpowers/plans/2026-11-15-counter-allies.md` のとおり実装する（設計は `docs/superpowers/specs/2026-11-15-counter-allies-design.md`、台帳は `.superpowers/sdd/2026-11-15-counter-allies/progress.md`）
+
+工程 1 の実装の注意（2026-11-15、Task 2 まで終えた時点）:
+- 依頼者は旧セーブを気にしなくてよいと決めた。計画の Review Focus 1（旧セーブの bonus）は不要で、`readBonus` は `resist` も必須のまま
+- `Unit` や `HitSource` に項目を足すと、テストの中で `Unit` を手で組んでいる所（`sim.test.ts`・`sim-combat.test.ts`・`skills.test.ts`）と `projectiles.test.ts` の `sourceOf` も直す必要がある
+- 技を足すたびに `src/engine/loader.test.ts` の `KNOWN_SKILLS` と技の数（今 9）も直す
 
 依頼者がテストプレイで挙げた 20 件を上の 6 工程に分けた（2026-11-15）。前の作業「仲間・村・難易度・絵の仕上げ」の工程 5（人間のレビュー）がこのテストプレイにあたる。下の残課題は工程 4 で一緒に扱う。
 
