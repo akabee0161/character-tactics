@@ -7,7 +7,7 @@ import { CARD_CLOSE_BTN, ENEMY_LIST, ENEMY_LIST_CLOSE_BTN, FACE_PX, STAT_CARD, e
 import type { Overlay } from './overlay';
 import { button, panel } from './screens';
 import {
-  KIND_COLOR, KIND_LABEL, KIND_NOTE, STAT_LABEL, STAT_ORDER, barRatio, statGains,
+  KIND_COLOR, KIND_LABEL, STAT_LABEL, STAT_ORDER, barRatio, statGains,
 } from './stat-card';
 import type { StatCard } from './stat-card';
 import { wrapText } from './talk';
@@ -68,7 +68,7 @@ export function drawStatCard(
   ctx.fillText(`届く 距離 ${card.range}`, left + 64, top + 94);
   ctx.fillStyle = MUTED;
   ctx.font = '18px sans-serif';
-  ctx.fillText(KIND_NOTE[card.attack], left, top + 120, c.w - 48);
+  ctx.fillText(card.note, left, top + 120, c.w - 48);
 
   const gained = new Set(card.before ? statGains(card.before.stats, card.stats).map((g) => g.key) : []);
   let y = top + 140;

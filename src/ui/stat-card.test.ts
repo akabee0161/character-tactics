@@ -87,3 +87,22 @@ describe('barRatio', () => {
     expect(barRatio('guard', -1)).toBe(0);
   });
 });
+
+describe('ダメージが減る守りの案内（note）', () => {
+  it('通常の近接は守備で減ると案内する', () => {
+    expect(enemyCard(testRegistry(), 'tatemochi', 1).note).toBe('相手の 守備で 減る');
+  });
+
+  it('斧（守備を無視）の札は、守備で減るとは案内しない', () => {
+    const reg = testRegistry();
+    const save = newSave(reg);
+    const c = allyCardFromSave(reg, save, 'ally09');
+    expect(c.traits.some((t) => t.startsWith('斧'))).toBe(true);
+    expect(c.note).toBe('相手の 守備に 関係なく 減る');
+  });
+
+  it('魔法は魔法防御で減ると案内する', () => {
+    const reg = testRegistry();
+    expect(allyCardFromSave(reg, newSave(reg), 'mist').note).toBe('相手の 魔法防御で 減る');
+  });
+});

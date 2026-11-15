@@ -31,6 +31,8 @@ export type StatCard = {
   role: string;
   attack: AttackKind;
   range: number;
+  /** ダメージがどちらの守りで減るか。斧（守備を無視）は別の文 */
+  note: string;
   stats: UnitStats;
   /** レベルアップの札だけ。上がる前の値と見出しのレベル */
   before: { level: number; stats: UnitStats } | null;
@@ -67,7 +69,7 @@ function capOf(def: UnitDef | EnemyDef): number | null {
 function baseCard(def: UnitDef | EnemyDef, stats: UnitStats, skill: StatCard['skill']): StatCard {
   return {
     defId: def.id, name: def.name, level: null, count: null, role: def.role,
-    attack: def.attack, range: def.range, stats, before: null, skill,
+    attack: def.attack, range: def.range, note: noteOf(def.attack, def.ignoresGuard), stats, before: null, skill,
     traits: traitsOf(def.flying === true, def.ignoresGuard, capOf(def)),
   };
 }
@@ -93,6 +95,7 @@ export function cardFromUnit(reg: Registry, unit: Unit, count: number | null): S
     ...card,
     level: unit.side === 'player' ? unit.level : null,
     count,
+    note: noteOf(unit.attack, unit.ignoresGuard),
     traits: traitsOf(unit.flying, unit.ignoresGuard, unit.bowDamageCap),
   };
 }
@@ -148,4 +151,9 @@ export function barRatio(key: StatKey, value: number): number {
 export function cardFromDef(reg: Registry, defId: string, stats: UnitStats): StatCard {
   const def = defOf(reg, defId);
   return baseCard(def, stats, skillOf(reg, def.skillId));
+}
+
+/** 攻撃がどちらの守りで減るか。斧は通常の近接・弓で守備を無視するので、守備で減るとは書かない */
+function noteOf(attack: AttackKind, ignoresGuard: boolean): string {
+  return ignoresGuard && attack !== 'magic' ? '相手の 守備に 関係なく 減る' : KIND_NOTE[attack];
 }
