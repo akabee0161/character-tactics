@@ -140,7 +140,7 @@ export type SimEvent =
   | { type: 'unitFled'; uid: string; defId: string; byUid: string | null; byDefId: string | null }
   | { type: 'unitRetired'; uid: string; defId: string }
   | { type: 'bondSupport'; targetUid: string; targetDefId: string; supporterUids: string[]; pos: Vec2 }
-  | { type: 'levelUp'; uid: string; defId: string; level: number }
+  | { type: 'levelUp'; uid: string; defId: string; level: number; fromLevel: number; before: UnitStats; after: UnitStats }
   | { type: 'enemySpawned'; uid: string; defId: string; pos: Vec2 }
   | { type: 'villageVisited'; uid: string; defId: string; villageId: string; text: string };
 

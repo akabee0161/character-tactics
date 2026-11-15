@@ -143,3 +143,9 @@ export function statGains(before: UnitStats, after: UnitStats): { key: StatKey; 
 export function barRatio(key: StatKey, value: number): number {
   return Math.min(1, Math.max(0, value / BAR_MAX[key]));
 }
+
+/** 定義と能力値から札を組む（レベル・数・前後は呼び出し側が足す） */
+export function cardFromDef(reg: Registry, defId: string, stats: UnitStats): StatCard {
+  const def = defOf(reg, defId);
+  return baseCard(def, stats, skillOf(reg, def.skillId));
+}

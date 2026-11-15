@@ -126,23 +126,26 @@ describe('しょそうぐうの セリフ', () => {
   });
 });
 
+const st = { maxHp: 30, power: 6, guard: 5, resist: 2, speed: 60 };
+const lvEv = (uid: string, defId: string) => ({ type: 'levelUp' as const, uid, defId, fromLevel: 1, level: 2, before: st, after: st });
+
 describe('levelUp の トリガ', () => {
   it('レベルアップで セリフが でる', () => {
     const reg = testRegistry();
-    const got = pickDialogue(reg, [{ type: 'levelUp', uid: 'p1', defId: 'roran', level: 2 }]);
+    const got = pickDialogue(reg, [lvEv('p1', 'roran')]);
     expect(got.map((d) => d.lineId)).toEqual(['levelup:roran']);
   });
 
   it('セリフが ない ユニットなら なにも でない', () => {
     const reg = testRegistry();
-    expect(pickDialogue(reg, [{ type: 'levelUp', uid: 'e1', defId: 'garum', level: 2 }])).toEqual([]);
+    expect(pickDialogue(reg, [lvEv('e1', 'garum')])).toEqual([]);
   });
 
   it('ゆうせん じゅんは skill の あと、pinch の まえ', () => {
     const reg = testRegistry();
     const got = pickDialogue(reg, [
       { type: 'pinch', uid: 'p1', defId: 'roran' },
-      { type: 'levelUp', uid: 'p1', defId: 'roran', level: 2 },
+      lvEv('p1', 'roran'),
       { type: 'skill', uid: 'p1', defId: 'roran', skillId: 'funbaru', hits: 0, fromPos: { x: 0, y: 0 }, toPos: { x: 0, y: 0 } },
     ]);
     expect(got.map((d) => d.lineId)).toEqual(['skill:roran', 'levelup:roran', 'pinch:roran']);

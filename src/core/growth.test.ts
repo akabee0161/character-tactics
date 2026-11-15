@@ -76,11 +76,15 @@ describe('awardXp', () => {
     expect(u.hp).toBeLessThan(u.maxHp);
   });
 
-  it('レベルアップの イベントが でる', () => {
+  it('レベルアップの イベントが でる。上がる前と後の能力も のる', () => {
     const s = fresh();
     const u = playerOf(s, 'roran');
     awardXp(s, u, xpToNext(1, s.reg.growth.xpPerLevel));
-    expect(s.events).toContainEqual({ type: 'levelUp', uid: u.uid, defId: 'roran', level: 2 });
+    const ev = s.events.find((e) => e.type === 'levelUp')!;
+    expect(ev).toMatchObject({
+      uid: u.uid, defId: 'roran', fromLevel: 1, level: 2,
+      before: { maxHp: 30, power: 6 }, after: { maxHp: 31, power: 6 },
+    });
   });
 
   it('あがらなければ イベントは でない', () => {
@@ -95,7 +99,7 @@ describe('awardXp', () => {
     awardXp(s, u, xpToNext(1, s.reg.growth.xpPerLevel) + xpToNext(2, s.reg.growth.xpPerLevel));
     expect(u.level).toBe(3);
     expect(s.events.filter((e) => e.type === 'levelUp')).toEqual([
-      { type: 'levelUp', uid: u.uid, defId: 'roran', level: 3 },
+      expect.objectContaining({ type: 'levelUp', uid: u.uid, defId: 'roran', fromLevel: 1, level: 3 }),
     ]);
   });
 

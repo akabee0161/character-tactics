@@ -31,6 +31,8 @@ import { closeOverlay, overlayTap } from './ui/overlay';
 import type { Overlay } from './ui/overlay';
 import { stageTapTarget } from './ui/select-tap';
 import { allyCardFromSave, cardFromUnit, enemyCard, stageEnemies } from './ui/stat-card';
+import { levelUpCard, mergeLevelUps } from './ui/levelup';
+import type { LevelUpEvent } from './ui/levelup';
 import { partyIds } from './core/party';
 import {
   drawBottomBar, drawDefeat, drawLoadErrors, drawPlacement, drawResult,
@@ -45,7 +47,8 @@ import type { BattleState, Unit, Vec2 } from './core/types';
 
 const FIXED_DT = 1 / 60;
 
-type Phase = 'title' | 'select' | 'talk' | 'placement' | 'battle' | 'event' | 'outro' | 'result' | 'defeat';
+type Phase =
+  | 'title' | 'select' | 'talk' | 'placement' | 'battle' | 'levelup' | 'event' | 'outro' | 'result' | 'defeat';
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const stageBox = document.getElementById('stage') as HTMLElement;
@@ -115,6 +118,8 @@ function stageScrollMax(): number {
 
 /** 札や敵の一覧を重ねているとき。重ねている間は、下の画面に入力が届かない */
 let overlay: Overlay | null = null;
+/** 戦闘を止めて札を出す順番待ちのレベルアップ。先頭から 1 人ずつ出す */
+let levelUps: LevelUpEvent[] = [];
 
 /** 重ねている物の上を押したときの処理 */
 function tapOverlay(p: Vec2): void {
@@ -193,6 +198,7 @@ function beginStage(index: number): void {
   stageId = registry.stages[index]!.id;
   battle = createBattleState(registry, registry.stages[index]!, save, Date.now() % 100000);
   escorts = new Set(escortDefIds(battle.stage));
+  levelUps = [];
   overlay = null;
   selected = null;
   pendingSkill = null;
@@ -275,6 +281,12 @@ function onPointerDown(ev: PointerEvent): void {
       if (talk.done) endTalk();
       return;
     }
+
+    case 'levelup':
+      // どこを押しても札を 1 枚閉じる。全部閉じたら戦闘に戻る（加入の会話・勝利の会話は次の update で判定する）
+      levelUps.shift();
+      if (levelUps.length === 0) phase = 'battle';
+      return;
 
     case 'event': {
       // 加入の会話。「飛ばす」は無く、タップは必ず 1 行進むだけ
@@ -478,7 +490,20 @@ function update(realDt: number): void {
     spawnEffects(effects, battle.events);
     noteAttacks(anim, battle.events, battle.time, attackDuration);
     pushSpeech(speech, pickDialogue(battle.reg, battle.events));
+    levelUps = mergeLevelUps(levelUps, battle.events);
+    if (levelUps.length > 0) break; // レベルアップの札を出す間は戦闘を止める
     if (battle.pendingRecruit !== null) break; // 加入の会話の間は戦闘を止める
+  }
+  if (levelUps.length > 0) {
+    // 札を出し終えてから、加入の会話・勝利の会話に入る（battle の状態は止まったまま残る）
+    accumulator = 0;
+    pendingSkill = null; // 札のあとに、前のタップで構えた必殺技が勝手に出ないようにする
+    pointerStart = null;
+    dragMap = null;
+    clearSpeech(speech);
+    resetAnim(anim);
+    phase = 'levelup';
+    return;
   }
   if (battle.pendingRecruit !== null) {
     accumulator = 0;
@@ -549,6 +574,13 @@ function render(): void {
         drawBottomBar(ctx, registry, battle, selected, escorts, images);
         drawPlacement(ctx, battle);
         drawOverlay();
+      }
+      break;
+    case 'levelup':
+      if (battle && levelUps[0]) {
+        drawBattle(ctx, registry, battle, null, effects, escorts, images, anim);
+        drawBottomBar(ctx, registry, battle, null, escorts, images);
+        drawStatCard(ctx, registry, levelUpCard(registry, levelUps[0]), images, '戦闘に 戻る');
       }
       break;
     case 'battle':
