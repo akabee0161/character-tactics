@@ -93,8 +93,6 @@ export function updateVillages(state: BattleState): void {
  */
 export function updatePersuasions(state: BattleState): void {
   if (state.pendingRecruit !== null) return;
-  // 仲間がすでに MAX_PARTY 人なら説得を始めない（相手は普通の敵のまま）
-  if (state.units.filter((u) => u.side === 'player' && !u.retired).length >= MAX_PARTY) return;
   for (const foe of state.units) {
     if (foe.side !== 'enemy' || foe.persuasion === null || foe.retired || foe.hp <= 0) continue;
     const def = state.stage.persuasions[foe.persuasion];
@@ -111,7 +109,7 @@ export function updatePersuasions(state: BattleState): void {
 
 /**
  * 加入の会話が終わったあとに呼ぶ。説得の相手を（倒れた扱いにせず）取り除き、新しい味方を足す。
- * すでに MAX_PARTY 人いれば足さずに null
+ * すでに MAX_PARTY 人いれば場には足さず、加入の記録（joined と benchedRecruits）だけ残して null
  */
 export function completeRecruit(state: BattleState): Unit | null {
   const pending = state.pendingRecruit;
@@ -122,7 +120,11 @@ export function completeRecruit(state: BattleState): Unit | null {
     if (foe) retireUnit(state, foe);
   }
   const allies = state.units.filter((u) => u.side === 'player' && !u.retired).length;
-  if (allies >= MAX_PARTY) return null;
+  if (allies >= MAX_PARTY) {
+    state.joined.push(pending.recruit.unitId);
+    state.benchedRecruits.push({ defId: pending.recruit.unitId, level: pending.recruit.level });
+    return null;
+  }
   const unit = makeUnit({
     uid: `p${state.nextPlayerUid++}`, def: state.reg.units.get(pending.recruit.unitId)!, side: 'player',
     controller: 'player', pos: { ...pending.pos }, level: pending.recruit.level, xp: 0, ai: null,

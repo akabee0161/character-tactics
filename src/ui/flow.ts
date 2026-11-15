@@ -67,6 +67,15 @@ export function applyStageClear(
     gains.push({ id: u.defId, before, after, leveledUp: after.level > before.level, joined: battle.joined.includes(u.defId) });
   }
 
+  // 場に出なかった仲間にも、加わったときのレベルで記録を作る（無いとレベル 1 に戻る）。
+  // セーブには未加入の仲間も初期値（レベル 1・経験値 0）で入っているので、初期値のままなら書き換える
+  for (const b of battle.benchedRecruits) {
+    const cur = units[b.defId];
+    if (!cur || (cur.level === 1 && cur.xp === 0 && cur.bonus === undefined)) {
+      units[b.defId] = { level: b.level, xp: 0 };
+    }
+  }
+
   const counters = mergeCounters(save.counters, battle.counters, reg.titles);
   const allTitles = earnedTitles(reg, counters);
   const newTitles = allTitles.filter((t) => !save.titles.includes(t));

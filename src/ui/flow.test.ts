@@ -38,7 +38,7 @@ const battleWith = (over: BattleOver = {}): BattleState => {
     retired: p!.retired ?? true,
     statBonus: { maxHp: 0, power: 0, guard: 0, speed: 0 },
   }));
-  return { units, counters, joined: [], claimed: [] } as unknown as BattleState;
+  return { units, counters, joined: [], benchedRecruits: [], claimed: [] } as unknown as BattleState;
 };
 
 /** クリアボーナスのテスト用に、実際の Unit(retired: false がデフォルト)を持つ BattleState を組む */
@@ -224,6 +224,16 @@ describe('applyStageClear: 加入と印と上乗せ', () => {
     expect(r.save.claimed).toEqual(['village:v1']);
     expect(r.save.units.roran!.bonus).toEqual({ maxHp: 3, power: 0, guard: 1, speed: 0, resist: 0 });
     expect(r.save.units.ines!.bonus).toBeUndefined();
+  });
+
+  it('場に出なかった仲間は、加わったときのレベルで units に残る', () => {
+    const reg = testRegistry();
+    const state = freshBattle(reg);
+    state.joined = ['ally06'];
+    state.benchedRecruits = [{ defId: 'ally06', level: 4 }];
+    const r = applyStageClear(reg, newSave(reg), state.stage.id, state);
+    expect(r.save.members).toEqual(['ally06']);
+    expect(r.save.units.ally06).toEqual({ level: 4, xp: 0 });
   });
 
   it('2 回クリアしても members が重ならない', () => {

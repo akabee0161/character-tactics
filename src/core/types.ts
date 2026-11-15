@@ -192,6 +192,8 @@ export type BattleState = {
   nextProjectileId: number;
   /** このステージで加わった仲間の ID（クリアしたときだけセーブに残る） */
   joined: string[];
+  /** 戦闘の途中で加わったが、場が埋まっていて出なかった仲間（クリアで units に加わったときのレベルを残す） */
+  benchedRecruits: { defId: string; level: number }[];
   /** このステージで受け取った一度きりのごほうびの印 */
   claimed: string[];
   /** 訪れた村の id */

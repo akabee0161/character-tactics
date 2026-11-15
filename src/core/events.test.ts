@@ -295,13 +295,13 @@ describe('updatePersuasions', () => {
     expect(s.pendingRecruit).toBeNull();
   });
 
-  it('味方が MAX_PARTY 人いれば説得を始めない', () => {
+  it('味方が MAX_PARTY 人いても説得の会話は始まる', () => {
     const { s } = withPersuasion();
     roranOf(s).pos = { x: 310, y: 300 };
     const base = players(s)[0]!;
     while (players(s).length < MAX_PARTY) s.units.push({ ...base, uid: `x${s.units.length}`, pos: { ...FAR } });
     updatePersuasions(s);
-    expect(s.pendingRecruit).toBeNull();
+    expect(s.pendingRecruit).not.toBeNull();
   });
 
   it('すでに加入の会話があれば何もしない', () => {
@@ -341,7 +341,7 @@ describe('completeRecruit', () => {
     expect(s.joined).toContain('ally05');
   });
 
-  it('すでに MAX_PARTY 人いれば加えない', () => {
+  it('すでに MAX_PARTY 人いれば場には加えず、joined と benchedRecruits に残す', () => {
     const { s, foe } = withPersuasion();
     roranOf(s).pos = { x: 310, y: 300 };
     updatePersuasions(s);
@@ -352,6 +352,16 @@ describe('completeRecruit', () => {
     expect(s.units.length).toBe(n);
     expect(s.pendingRecruit).toBeNull();
     expect(foe.retired).toBe(true);
+    expect(s.joined).toEqual(['ally05']);
+    expect(s.benchedRecruits).toEqual([{ defId: 'ally05', level: 3 }]);
+  });
+
+  it('場に空きがあれば benchedRecruits は空のまま', () => {
+    const { s } = withPersuasion();
+    roranOf(s).pos = { x: 310, y: 300 };
+    updatePersuasions(s);
+    completeRecruit(s);
+    expect(s.benchedRecruits).toEqual([]);
   });
 
   it('勝利の条件を満たしても、加入の会話が先に出る', () => {

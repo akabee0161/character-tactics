@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { testRegistry } from '../core/testing';
-import { MAX_PARTY } from './limits';
+import { MAX_MEMBERS, MAX_PARTY } from './limits';
 import { buildRegistry, lookupDef, skillParam } from './registry';
 
 const UNIT = {
@@ -523,14 +523,23 @@ describe('buildRegistry: joins / persuasions / villages', () => {
     expect(rs).toContain('persuasions[0].persuader');
   });
 
-  it('roster と加入しうる仲間の合計が 8 人を超えるとエラー', () => {
+  const withJoins = (n: number) => {
     const extra: Record<string, unknown> = {};
     const joins: unknown[] = [];
-    for (let i = 0; i < MAX_PARTY; i++) {
+    for (let i = 0; i < n; i++) {
       extra[`assets/units/x${i}.json`] = { ...INES, id: `x${i}`, name: `x${i}` };
       joins.push({ unitId: `x${i}`, level: 1, talk: TALK });
     }
-    const r = base({ joins }, extra);
-    expect(reasons(r).some((s) => s.includes(`${MAX_PARTY} 人を こえている`))).toBe(true);
+    return base({ joins }, extra);
+  };
+
+  it('roster と加入しうる仲間の合計が 15 人を超えるとエラー', () => {
+    const r = withJoins(MAX_MEMBERS);
+    expect(reasons(r).some((s) => s.includes(`${MAX_MEMBERS} 人を こえている`))).toBe(true);
+  });
+
+  it('合計が 8 人を超えても 15 人以内ならエラーにならない', () => {
+    const r = withJoins(MAX_PARTY);
+    expect(reasons(r).some((s) => s.includes('人を こえている'))).toBe(false);
   });
 });

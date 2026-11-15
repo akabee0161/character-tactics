@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { testRegistry } from './testing';
-import { MAX_PARTY } from './constants';
+import { MAX_MEMBERS, MAX_PARTY } from './constants';
 import { partyIds, recruitUnitIds } from './party';
 import type { Registry } from '../engine/registry';
 import type { UnitDef } from '../engine/schema';
@@ -31,14 +31,15 @@ describe('partyIds', () => {
     expect(partyIds(reg(), ['f', 'e', 'zzz', 'f'])).toEqual(['a', 'b', 'c', 'd', 'g', 'h', 'f', 'e']);
   });
 
-  it('8 人で切る', () => {
+  it('切らずに全員を返す（場は 8 人まで、仲間は 15 人まで）', () => {
     expect(MAX_PARTY).toBe(8);
+    expect(MAX_MEMBERS).toBe(15);
     expect(partyIds(reg(), ['e', 'f'])).toHaveLength(8);
     expect(partyIds(reg(), ['e', 'f']).slice(-2)).toEqual(['e', 'f']);
-    // 一覧そのものが 8 を超えても切る
+    // 一覧そのものが 8 を超えても切らない
     const r = reg(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']);
     r.stages[0]!.joins = [];
     r.stages[0]!.villages = [];
-    expect(partyIds(r, [])).toEqual(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']);
+    expect(partyIds(r, [])).toEqual(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']);
   });
 });

@@ -1,4 +1,4 @@
-import { MAX_PARTY } from './limits';
+import { MAX_MEMBERS } from './limits';
 import { fillNames } from './names';
 import {
   validateBondsFile, validateEnemyDef, validateGrowthFile, validateLinesFile, validateSkillsFile,
@@ -255,10 +255,10 @@ export function buildRegistry(
     });
   }
 
-  if (recruitedAt.size + rosterAll.size > MAX_PARTY) {
+  if (recruitedAt.size + rosterAll.size > MAX_MEMBERS) {
     errors.push({
       file: 'assets/stages/', path: 'roster',
-      reason: `roster の なかま（${rosterAll.size}）と くわわる なかま（${recruitedAt.size}）の ごうけいが ${MAX_PARTY} 人を こえている`,
+      reason: `roster の なかま（${rosterAll.size}）と くわわる なかま（${recruitedAt.size}）の ごうけいが ${MAX_MEMBERS} 人を こえている`,
     });
   }
 
