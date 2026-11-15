@@ -218,16 +218,29 @@ describe('validateEnemyDef', () => {
 describe('validateSkillsFile', () => {
   it('id と label と params を読む', () => {
     const r = validateSkillsFile('skills.json', [
-      { id: 'funbaru', label: 'ふんばる', params: { duration: 5 } },
-      { id: 'neraiuchi', label: 'ねらいうち', params: {} },
+      { id: 'funbaru', label: 'ふんばる', summary: 'せつめい', params: { duration: 5 } },
+      { id: 'neraiuchi', label: 'ねらいうち', summary: 'せつめい', params: {} },
     ]);
     expect(r.ok).toBe(true);
     if (r.ok) expect(r.value[0]?.params.duration).toBe(5);
   });
 
+  it('summary が無い技は弾く', () => {
+    const r = validateSkillsFile('skills.json', [{ id: 'a', label: 'A', params: { cooldown: 1 } }]);
+    expect(r.ok).toBe(false);
+  });
+
+  it('summary の {名前} が params に無ければ弾く', () => {
+    const r = validateSkillsFile('skills.json', [
+      { id: 'a', label: 'A', summary: '{damage} ダメージ', params: { cooldown: 1 } },
+    ]);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors[0]?.path).toBe('[0].summary');
+  });
+
   it('params の値が数でなければ、その キーを path に含めて弾く', () => {
     const r = validateSkillsFile('skills.json', [
-      { id: 'funbaru', label: 'ふんばる', params: { duration: 'ごびょう' } },
+      { id: 'funbaru', label: 'ふんばる', summary: 'せつめい', params: { duration: 'ごびょう' } },
     ]);
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.errors[0]?.path).toBe('[0].params.duration');
@@ -235,8 +248,8 @@ describe('validateSkillsFile', () => {
 
   it('id が重複したら弾く', () => {
     const r = validateSkillsFile('skills.json', [
-      { id: 'funbaru', label: 'ふんばる', params: {} },
-      { id: 'funbaru', label: 'べつ', params: {} },
+      { id: 'funbaru', label: 'ふんばる', summary: 'せつめい', params: {} },
+      { id: 'funbaru', label: 'べつ', summary: 'せつめい', params: {} },
     ]);
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.errors[0]?.reason).toContain('じゅうふく');

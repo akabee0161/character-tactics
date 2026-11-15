@@ -245,7 +245,8 @@ export function validateEnemyDef(file: string, raw: unknown): Validated<EnemyDef
   return finish(ctx, def);
 }
 
-export type SkillDef = { id: string; label: string; params: Record<string, number> };
+/** summary は一言の説明。`{名前}` は params の値に置き換わる（skillSummary） */
+export type SkillDef = { id: string; label: string; summary: string; params: Record<string, number> };
 export type BondDef = { a: string; b: string; bonus: number };
 
 /** id を持つ定義の配列を検証する共通部分。id の重複もここで見る */
@@ -286,11 +287,19 @@ function readParams(ctx: Ctx, path: string, v: unknown): Record<string, number> 
 }
 
 export function validateSkillsFile(file: string, raw: unknown): Validated<SkillDef[]> {
-  return validateIdArray<SkillDef>(file, raw, (ctx, path, o) => ({
-    id: requireString(ctx, `${path}.id`, o.id) ?? '',
-    label: requireString(ctx, `${path}.label`, o.label) ?? '',
-    params: readParams(ctx, `${path}.params`, o.params),
-  }));
+  return validateIdArray<SkillDef>(file, raw, (ctx, path, o) => {
+    const params = readParams(ctx, `${path}.params`, o.params);
+    const summary = requireString(ctx, `${path}.summary`, o.summary) ?? '';
+    for (const m of summary.matchAll(/\{(\w+)\}/g)) {
+      if (!(m[1]! in params)) fail(ctx, `${path}.summary`, `{${m[1]}} が params に ない`);
+    }
+    return {
+      id: requireString(ctx, `${path}.id`, o.id) ?? '',
+      label: requireString(ctx, `${path}.label`, o.label) ?? '',
+      summary,
+      params,
+    };
+  });
 }
 
 export function validateBondsFile(file: string, raw: unknown): Validated<BondDef[]> {

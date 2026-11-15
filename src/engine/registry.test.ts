@@ -41,7 +41,7 @@ function files(over: Record<string, unknown> = {}): Record<string, unknown> {
     'assets/units/ines.json': INES,
     'assets/enemies/narazumono.json': ENEMY,
     'assets/stages/stage1.json': STAGE,
-    'assets/skills.json': [{ id: 'funbaru', label: 'ふんばる', params: { duration: 5 } }],
+    'assets/skills.json': [{ id: 'funbaru', label: 'ふんばる', summary: 'せつめい', params: { duration: 5 } }],
     'assets/bonds.json': [{ a: 'roran', b: 'ines', bonus: 2 }],
     'assets/lines/common.json': { 'skill:roran': 'ここは とおさない！' },
     'assets/growth.json': GROWTH,
@@ -98,8 +98,8 @@ describe('buildRegistry', () => {
   it('実装のない skillId を skills.json に書いたら弾く', () => {
     const r = buildRegistry(files({
       'assets/skills.json': [
-        { id: 'funbaru', label: 'ふんばる', params: { duration: 5 } },
-        { id: 'mihitsugen', label: 'みじっそう', params: {} },
+        { id: 'funbaru', label: 'ふんばる', summary: 'せつめい', params: { duration: 5 } },
+        { id: 'mihitsugen', label: 'みじっそう', summary: 'せつめい', params: {} },
       ],
     }), KNOWN_SKILLS);
     expect(r.ok).toBe(false);

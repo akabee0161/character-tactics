@@ -228,7 +228,7 @@ python3 tools/anim-page.py assets/units/roran.json out/anim/roran.html
 
 コードが要るもの:
 
-- **新しいスキル** — 今あるのは踏ん張る・狙い撃ち・おまじない・駆け抜ける・引きつける・火の雨・突き・はげます・たたき割り（守備を無視する 1 体への固定ダメージ）・結界（範囲の味方の魔法防御を一定時間上げる）・急降下（指した場所へ飛び、着いた場所の周りの敵に固定ダメージ）。足すときは `src/core/skills.ts` の `SKILL_EFFECTS` に効果を足し、`assets/skills.json` に数値を足す。`assets/skills.json` の各スキルには `params.cooldown`（秒）が必須
+- **新しいスキル** — 今あるのは踏ん張る・狙い撃ち・おまじない・駆け抜ける・引きつける・火の雨・突き・はげます・たたき割り（守備を無視する 1 体への固定ダメージ）・結界（範囲の味方の魔法防御を一定時間上げる）・急降下（指した場所へ飛び、着いた場所の周りの敵に固定ダメージ）。足すときは `src/core/skills.ts` の `SKILL_EFFECTS` に効果を足し、`assets/skills.json` に数値を足す。`assets/skills.json` の各スキルには `params.cooldown`（秒）と `summary`（札に出す一言の説明。`{duration}` のように `params` のキーを書くと値に置き換わる。`params` に無いキーは起動時エラー）が必須
 - **新しい AI パターン** — `src/core/ai.ts` の `AI_BEHAVIORS` に足し、`src/engine/schema.ts` の `AiDef` と `AI_KINDS` に variant を足す
 - **新しい勝敗条件** — `src/engine/schema.ts` の `VictoryCond` / `DefeatCond` に variant を足し、`src/core/objectives.ts` で判定を書く
 
