@@ -93,6 +93,8 @@ const WEAPON = {
   club:   { w: 0.12, h: 0.30, col: [122, 92, 66] },
   spear:  { w: 0.06, h: 0.40, col: STEEL },
   flag:   { w: 0.18, h: 0.22, col: [220, 200, 90] },
+  axe:    { w: 0.16, h: 0.30, col: [150, 110, 80] },
+  wing:   { w: 0.24, h: 0.18, col: [230, 240, 250] },
 };
 
 // ---- 1コマ ----
@@ -212,6 +214,13 @@ const CHARS = [
   { id: 'ally06', color: '#8a5ac8', weapon: 'staff', frame: 32 },
   { id: 'ally07', color: '#c85a5a', weapon: 'spear', frame: 32 },
   { id: 'ally08', color: '#5ab0b8', weapon: 'flag', frame: 32 },
+  { id: 'ally09', color: '#a0602e', weapon: 'axe', frame: 32 },
+  { id: 'ally10', color: '#d8d070', weapon: 'shield', frame: 32 },
+  { id: 'ally11', color: '#78c8e8', weapon: 'wing', frame: 32 },
+  { id: 'ally12', color: '#58b848', weapon: 'bow', frame: 32 },
+  { id: 'ally13', color: '#b05030', weapon: 'axe', frame: 32 },
+  { id: 'ally14', color: '#5a6a8a', weapon: 'shield', frame: 32 },
+  { id: 'ally15', color: '#d89a5a', weapon: 'spear', frame: 32 },
 ];
 
 const ROLES = [
@@ -224,6 +233,9 @@ const ROLES = [
   ['role-teki-mahou', 'staff', '#6a4a8a'],
   ['role-yari', 'spear', '#c85a5a'],
   ['role-ouen', 'flag', '#5ab0b8'],
+  ['role-ono', 'axe', '#a0602e'],
+  ['role-shugo', 'shield', '#d8d070'],
+  ['role-hikou', 'wing', '#78c8e8'],
 ];
 
 const ids = process.argv.slice(2);

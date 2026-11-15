@@ -1,0 +1,37 @@
+{
+  "id": "ally13",
+  "name": "オルト",
+  "role": "斧",
+  "combat": true,
+  "maxHp": 28,
+  "power": 9,
+  "guard": 4,
+  "resist": 1,
+  "ignoresGuard": true,
+  "attack": "melee",
+  "range": 24,
+  "attackInterval": 2.6,
+  "speed": 50,
+  "skillId": "tatakiwari",
+  "color": "#b05030",
+  "sprites": {
+    "role": "role-ono.png",
+    "face": "ally13-face.png",
+    "map": {
+      "sheet": "ally13-map.png",
+      "frame": 32,
+      "idle": {
+        "frames": 2,
+        "fps": 4
+      },
+      "walk": {
+        "frames": 4,
+        "fps": 8
+      },
+      "attack": {
+        "frames": 3,
+        "fps": 6
+      }
+    }
+  }
+}

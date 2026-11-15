@@ -79,5 +79,8 @@
   ],
   "persuasions": [
     {"unitId": "ally06", "level": 4, "foeId": "ally06-foe", "pos": {"x": 448, "y": 496}, "ai": {"kind": "sentry", "sightRange": 150}, "persuader": "mist", "talk": [{"speaker": "mist", "text": "{ally06}、私です。{mist}です"}, {"speaker": "ally06", "text": "{mist}……？ 私、だまされて いたのね。\n一緒に 戦わせて！"}, {"text": "{ally06}が 仲間に 加わった！"}]}
+  ],
+  "joins": [
+    {"unitId": "ally10", "level": 4, "talk": [{"speaker": "ally10", "text": "塔の 魔力から 皆を 守る\n結界なら 得意だよ。"}, {"speaker": "roran", "text": "ありがたい。よろしく、{ally10}！"}, {"text": "{ally10}が 仲間に 加わった！"}]}
   ]
 }

@@ -69,5 +69,8 @@
   ],
   "villages": [
     {"id": "v1", "col": 11, "row": 10, "text": "村の 人が けがの 手当てを してくれた！", "effect": {"type": "heal"}}
+  ],
+  "joins": [
+    {"unitId": "ally09", "level": 3, "talk": [{"speaker": "ally09", "text": "森の 木こりを していたが、\nそろそろ 腕試しに 出たいと 思っていたんだ。"}, {"speaker": "roran", "text": "頼もしいね。よろしく、{ally09}！"}, {"text": "{ally09}が 仲間に 加わった！"}]}
   ]
 }

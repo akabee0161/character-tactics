@@ -1,0 +1,37 @@
+{
+  "id": "ally11",
+  "name": "ピコ",
+  "role": "飛行",
+  "combat": true,
+  "maxHp": 20,
+  "power": 7,
+  "guard": 2,
+  "resist": 6,
+  "flying": true,
+  "attack": "melee",
+  "range": 28,
+  "attackInterval": 1.5,
+  "speed": 95,
+  "skillId": "kyuukouka",
+  "color": "#78c8e8",
+  "sprites": {
+    "role": "role-hikou.png",
+    "face": "ally11-face.png",
+    "map": {
+      "sheet": "ally11-map.png",
+      "frame": 32,
+      "idle": {
+        "frames": 2,
+        "fps": 4
+      },
+      "walk": {
+        "frames": 4,
+        "fps": 8
+      },
+      "attack": {
+        "frames": 3,
+        "fps": 6
+      }
+    }
+  }
+}

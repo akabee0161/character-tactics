@@ -1,0 +1,37 @@
+{
+  "id": "ally09",
+  "name": "バルド",
+  "role": "斧",
+  "combat": true,
+  "maxHp": 30,
+  "power": 10,
+  "guard": 4,
+  "resist": 1,
+  "ignoresGuard": true,
+  "attack": "melee",
+  "range": 24,
+  "attackInterval": 2.6,
+  "speed": 50,
+  "skillId": "tatakiwari",
+  "color": "#a0602e",
+  "sprites": {
+    "role": "role-ono.png",
+    "face": "ally09-face.png",
+    "map": {
+      "sheet": "ally09-map.png",
+      "frame": 32,
+      "idle": {
+        "frames": 2,
+        "fps": 4
+      },
+      "walk": {
+        "frames": 4,
+        "fps": 8
+      },
+      "attack": {
+        "frames": 3,
+        "fps": 6
+      }
+    }
+  }
+}

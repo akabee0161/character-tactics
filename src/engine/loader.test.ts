@@ -21,7 +21,7 @@ describe('loadRegistry', () => {
     if (!r.ok) {
       throw new Error(r.errors.map((e) => `${e.file} ${e.path}: ${e.reason}`).join('\n'));
     }
-    expect(r.value.units.size).toBe(8);
+    expect(r.value.units.size).toBe(15);
     expect(r.value.enemies.size).toBe(25);
     expect(r.value.stages.length).toBe(10);
     expect(r.value.skills.size).toBe(11);

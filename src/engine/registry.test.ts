@@ -443,6 +443,37 @@ describe('実アセットのステージ', () => {
   });
 });
 
+describe('実アセットの仲間', () => {
+  const reg = testRegistry();
+
+  it('仲間は 15 人', () => {
+    expect(reg.units.size).toBe(MAX_MEMBERS);
+  });
+
+  it.each([
+    ['stage5', 'ally09', 3], ['stage6', 'ally12', 4], ['stage7', 'ally10', 4], ['stage8', 'ally11', 5],
+    ['stage8', 'ally13', 5], ['stage9', 'ally14', 6], ['stage10', 'ally15', 7],
+  ])('%s の joins に %s（レベル %i）がある', (stageId, unitId, level) => {
+    const stage = reg.stages.find((x) => x.id === stageId)!;
+    const j = stage.joins.find((x) => x.unitId === unitId);
+    expect(j?.level).toBe(level);
+    expect(j!.talk.length).toBe(3);
+  });
+
+  it('ally09・ally13 は守備を無視し、ally11 は飛ぶ', () => {
+    expect(reg.units.get('ally09')!.ignoresGuard).toBe(true);
+    expect(reg.units.get('ally13')!.ignoresGuard).toBe(true);
+    expect(reg.units.get('ally11')!.flying).toBe(true);
+    expect(reg.units.get('ally10')!.resist).toBe(10);
+    expect(reg.units.get('ally10')!.skillId).toBe('kekkai');
+  });
+
+  it('7 人ぶんの加入がステージに書かれている', () => {
+    const joined = new Set(reg.stages.flatMap((x) => x.joins.map((j) => j.unitId)));
+    expect(joined.size).toBeGreaterThanOrEqual(7);
+  });
+});
+
 describe('buildRegistry: joins / persuasions / villages', () => {
   const ALLY5 = { ...INES, id: 'ally05', name: 'ごにん' };
   const ALLY6 = { ...INES, id: 'ally06', name: 'ろくにん' };

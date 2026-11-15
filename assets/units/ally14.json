@@ -1,0 +1,36 @@
+{
+  "id": "ally14",
+  "name": "ガンツ",
+  "role": "盾",
+  "combat": true,
+  "maxHp": 34,
+  "power": 5,
+  "guard": 6,
+  "resist": 2,
+  "attack": "melee",
+  "range": 24,
+  "attackInterval": 1.6,
+  "speed": 55,
+  "skillId": "funbaru",
+  "color": "#5a6a8a",
+  "sprites": {
+    "role": "role-tate.png",
+    "face": "ally14-face.png",
+    "map": {
+      "sheet": "ally14-map.png",
+      "frame": 32,
+      "idle": {
+        "frames": 2,
+        "fps": 4
+      },
+      "walk": {
+        "frames": 4,
+        "fps": 8
+      },
+      "attack": {
+        "frames": 3,
+        "fps": 6
+      }
+    }
+  }
+}
