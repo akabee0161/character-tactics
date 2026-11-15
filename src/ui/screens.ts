@@ -10,11 +10,12 @@ import { LOGICAL_H, LOGICAL_W, mapToLogical } from '../render/viewport';
 import {
   BOTTOM_PANEL_Y, BTN, FACE_PX, MESSAGE_BAR, SPEECH_BODY_X, SPEECH_FONT_PX, SPEECH_LINE_H,
   SPEECH_MAX_LINES, STAGE_LIST_VIEW, TALK_BODY_X, TALK_FONT, TALK_LINE_H, TALK_PAD, TALK_WINDOW,
-  hpBarIn, portraitSlot, resultSlot, roleBadgeIn, rosterSlot, speechLines, stageListContentH, stageSlot,
+  enemyBtnIn, hpBarIn, portraitSlot, resultSlot, roleBadgeIn, rosterSlot, speechLines, stageListContentH, stageSlot,
 } from './layout';
 import { currentSpeaker, pageCount, visibleLines } from './talk';
 import { isStageUnlocked } from './flow';
 import { maxScroll } from './scroll';
+import { KIND_COLOR, KIND_LABEL } from './stat-card';
 import type { Speech } from './speech';
 import type { TalkState } from './talk';
 import type { XpGain } from './flow';
@@ -104,9 +105,21 @@ export function drawStageSelect(
     ctx.fillStyle = unlocked ? INK : '#78808a';
     ctx.font = '22px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(unlocked ? stage.name : 'まだ 行けない', r.x + r.w / 2, r.y + 50);
-    ctx.font = '18px sans-serif';
-    if (unlocked && save.clearedStageIds.includes(stage.id)) ctx.fillText('クリア済み', r.x + r.w / 2, r.y + 88);
+    ctx.fillText(unlocked ? stage.name : 'まだ 行けない', r.x + r.w / 2, unlocked ? r.y + 46 : r.y + 70, r.w - 16);
+    if (unlocked) {
+      if (save.clearedStageIds.includes(stage.id)) {
+        ctx.fillStyle = '#ffd479';
+        ctx.font = '14px sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText('クリア済み', r.x + r.w - 10, r.y + 20);
+        ctx.textAlign = 'center';
+      }
+      const b = enemyBtnIn(r);
+      panel(ctx, b, '#1c3144');
+      ctx.fillStyle = INK;
+      ctx.font = '18px sans-serif';
+      ctx.fillText('敵を 見る', b.x + b.w / 2, b.y + 24);
+    }
     ctx.textAlign = 'left';
   });
 
@@ -136,16 +149,33 @@ function drawScrollBar(ctx: CanvasRenderingContext2D, count: number, scrollY: nu
 function drawRoster(
   ctx: CanvasRenderingContext2D, reg: Registry, save: SaveData, images: ImageCache,
 ): void {
+  const ids = partyIds(reg, save.members);
+  ctx.fillStyle = INK;
   ctx.font = '18px sans-serif';
-  const ids = partyIds(reg, save.members).slice(0, MAX_PARTY);
+  ctx.fillText(`仲間 ${ids.length}人（押すと 強さが 見られる）`, 14, rosterSlot(0).y - 10);
   ids.forEach((id, i) => {
     const r = rosterSlot(i);
     panel(ctx, r, '#18222c');
     const def = reg.units.get(id)!;
-    drawFace(ctx, { x: r.x + 28, y: r.y + 32 }, FACE_PX.small / 2, def, images);
+    drawFace(ctx, { x: r.x + 24, y: r.y + r.h / 2 }, FACE_PX.small / 2, def, images);
     ctx.fillStyle = INK;
+    ctx.font = '16px sans-serif';
     // 列が狭いので、はみ出す分は maxWidth で縮める
-    ctx.fillText(`${def.name} Lv${save.units[id]!.level}`, r.x + 56, r.y + r.h / 2 + 6, r.w - 64);
+    ctx.fillText(def.name, r.x + 46, r.y + 22, r.w - 46 - 40);
+    ctx.fillStyle = '#9fb3c4';
+    ctx.font = '14px sans-serif';
+    ctx.fillText(`Lv${save.units[id]!.level}`, r.x + 46, r.y + 42);
+    // 攻撃の種類の印（枠で囲んだ小さな文字）
+    const kind = KIND_LABEL[def.attack];
+    ctx.font = '12px sans-serif';
+    const tag = { x: r.x + r.w - 38, y: r.y + 8, w: 30, h: 16 };
+    ctx.strokeStyle = KIND_COLOR[def.attack];
+    ctx.lineWidth = 1;
+    ctx.strokeRect(tag.x + 0.5, tag.y + 0.5, tag.w - 1, tag.h - 1);
+    ctx.fillStyle = KIND_COLOR[def.attack];
+    ctx.textAlign = 'center';
+    ctx.fillText(kind, tag.x + tag.w / 2, tag.y + 12);
+    ctx.textAlign = 'left';
   });
 }
 

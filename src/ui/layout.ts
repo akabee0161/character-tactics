@@ -48,9 +48,14 @@ export function stageListContentH(count: number): number {
   return last.y + last.h - STAGE_LIST_VIEW.y;
 }
 
-/** ステージ選択の下に出す仲間の一覧。2列×4行（最大 8 人） */
+/** ステージ選択の下に出す仲間の一覧。3列×5行（最大 15 人）。上に見出しを出す */
 export function rosterSlot(index: number): Rect {
-  return { x: 20 + (index % 2) * 254, y: 640 + Math.floor(index / 2) * 72, w: 246, h: 64 };
+  return { x: 12 + (index % 3) * 174, y: 652 + Math.floor(index / 3) * 56, w: 168, h: 50 };
+}
+
+/** ステージの枠の中の「敵を 見る」ボタン。下寄りの中央 */
+export function enemyBtnIn(slot: Rect): Rect {
+  return { x: slot.x + 50, y: slot.y + 72, w: 140, h: 36 };
 }
 
 /** リザルトの仲間の行。2列×4行（最大 8 人） */

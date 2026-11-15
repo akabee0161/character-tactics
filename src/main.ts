@@ -17,15 +17,21 @@ import { makeAnimStore, noteAttacks, resetAnim, updateMotion } from './render/an
 import { LOGICAL_H, LOGICAL_W, computeViewport, fitCanvas, logicalToMap, screenToLogical } from './render/viewport';
 import { debugKey, debugLabel, isDebugMode, makeDebugClock, simDt } from './ui/debug';
 import { clearSpeech, makeSpeechState, pushSpeech, tickSpeech } from './ui/speech';
-import { applyStageClear, canSkipIntro, isStageUnlocked, markIntroRead } from './ui/flow';
+import { applyStageClear, canSkipIntro, markIntroRead } from './ui/flow';
 import { hitRect, pickUnit } from './ui/hit';
 import { resolveMapGesture } from './ui/input';
 import type { PointerStart } from './ui/input';
 import {
   BOTTOM_PANEL_Y, BTN, MESSAGE_BAR, STAGE_LIST_VIEW, TALK_BODY_X, TALK_FONT, TALK_MAX_LINES,
-  TALK_PAD, TALK_WINDOW, portraitSlot, stageListContentH, stageSlot,
+  TALK_PAD, TALK_WINDOW, portraitSlot, rosterSlot, stageListContentH,
 } from './ui/layout';
 import { clampScroll, isTap, maxScroll } from './ui/scroll';
+import { drawEnemyList, drawStatCard } from './ui/card-view';
+import { closeOverlay, overlayTap } from './ui/overlay';
+import type { Overlay } from './ui/overlay';
+import { stageTapTarget } from './ui/select-tap';
+import { allyCardFromSave, enemyCard, stageEnemies } from './ui/stat-card';
+import { partyIds } from './core/party';
 import {
   drawBottomBar, drawDefeat, drawLoadErrors, drawPlacement, drawResult,
   drawSpeechBar, drawStageSelect, drawTalk, drawTitle,
@@ -107,9 +113,27 @@ function stageScrollMax(): number {
   return maxScroll(stageListContentH(registry.stages.length), STAGE_LIST_VIEW.h);
 }
 
+/** 札や敵の一覧を重ねているとき。重ねている間は、下の画面に入力が届かない */
+let overlay: Overlay | null = null;
+
+/** 重ねている物の上を押したときの処理 */
+function tapOverlay(p: Vec2): void {
+  if (!overlay) return;
+  const t = overlayTap(overlay, p);
+  if (t.type === 'close') overlay = closeOverlay(overlay);
+  else if (t.type === 'open') overlay = { kind: 'card', card: t.card, back: overlay };
+}
+
+function drawOverlay(): void {
+  if (!overlay) return;
+  if (overlay.kind === 'card') drawStatCard(ctx, registry, overlay.card, images, '閉じる');
+  else drawEnemyList(ctx, registry, overlay, images);
+}
+
 /** 選択画面に入るたびに一番上へ戻す */
 function toStageSelect(): void {
   stageScrollY = 0;
+  overlay = null;
   stageDrag = null;
   phase = 'select';
 }
@@ -169,6 +193,7 @@ function beginStage(index: number): void {
   stageId = registry.stages[index]!.id;
   battle = createBattleState(registry, registry.stages[index]!, save, Date.now() % 100000);
   escorts = new Set(escortDefIds(battle.stage));
+  overlay = null;
   selected = null;
   pendingSkill = null;
   clearSpeech(speech);
@@ -224,12 +249,24 @@ function onPointerDown(ev: PointerEvent): void {
       }
       return;
 
-    case 'select':
+    case 'select': {
+      if (overlay) {
+        tapOverlay(p);
+        return;
+      }
+      const ids = partyIds(registry, save.members);
+      for (let i = 0; i < ids.length; i++) {
+        if (hitRect(rosterSlot(i), p)) {
+          overlay = { kind: 'card', card: allyCardFromSave(registry, save, ids[i]!), back: null };
+          return;
+        }
+      }
       if (hitRect(STAGE_LIST_VIEW, p)) {
         stageDrag = { pointerId: ev.pointerId, startY: p.y, startScrollY: stageScrollY };
         canvas.setPointerCapture(ev.pointerId);
       }
       return;
+    }
 
     case 'talk': {
       if (!talk) return;
@@ -346,10 +383,17 @@ function onPointerUp(ev: PointerEvent): void {
     stageDrag = null;
     const p = toLogical(ev);
     // 指がほとんど動いていなければ選んだとみなす。動いていればスクロールだった
-    if (phase === 'select' && isTap(p.y - start.startY)) {
-      const hit = { x: p.x, y: p.y + stageScrollY };
-      for (let i = 0; i < registry.stages.length; i++) {
-        if (hitRect(stageSlot(i), hit) && isStageUnlocked(registry, save, i)) beginStage(i);
+    if (phase === 'select' && !overlay && isTap(p.y - start.startY)) {
+      const target = stageTapTarget(registry, save, { x: p.x, y: p.y + stageScrollY });
+      if (target.type === 'stage') {
+        beginStage(target.index);
+      } else if (target.type === 'enemies') {
+        const stage = registry.stages[target.index]!;
+        const enemies = stageEnemies(registry, stage);
+        overlay = {
+          kind: 'enemies', title: stage.name, enemies,
+          cards: enemies.map((e) => enemyCard(registry, e.defId, e.count)),
+        };
       }
     }
     return;
@@ -459,6 +503,7 @@ function render(): void {
       break;
     case 'select':
       drawStageSelect(ctx, registry, save, images, stageScrollY);
+      drawOverlay();
       break;
     case 'talk':
       if (battle && talk) {
