@@ -38,7 +38,7 @@ const battleWith = (over: BattleOver = {}): BattleState => {
     retired: p!.retired ?? true,
     statBonus: { maxHp: 0, power: 0, guard: 0, speed: 0 },
   }));
-  return { units, counters, joined: [], claimed: [] } as unknown as BattleState;
+  return { units, counters, joined: [], benchedRecruits: [], claimed: [] } as unknown as BattleState;
 };
 
 /** クリアボーナスのテスト用に、実際の Unit(retired: false がデフォルト)を持つ BattleState を組む */
@@ -218,12 +218,35 @@ describe('applyStageClear: 加入と印と上乗せ', () => {
     state.joined = ['ally05'];
     state.claimed = ['village:v1'];
     const roran = state.units.find((u) => u.defId === 'roran')!;
-    roran.statBonus = { maxHp: 3, power: 0, guard: 1, speed: 0 };
+    roran.statBonus = { maxHp: 3, power: 0, guard: 1, speed: 0, resist: 0 };
     const r = applyStageClear(reg, newSave(reg), state.stage.id, state);
     expect(r.save.members).toEqual(['ally05']);
     expect(r.save.claimed).toEqual(['village:v1']);
-    expect(r.save.units.roran!.bonus).toEqual({ maxHp: 3, power: 0, guard: 1, speed: 0 });
+    expect(r.save.units.roran!.bonus).toEqual({ maxHp: 3, power: 0, guard: 1, speed: 0, resist: 0 });
     expect(r.save.units.ines!.bonus).toBeUndefined();
+  });
+
+  it('場に出なかった仲間は、加わったときのレベルで units に残る', () => {
+    const reg = testRegistry();
+    const state = freshBattle(reg);
+    state.joined = ['ally06'];
+    state.benchedRecruits = [{ defId: 'ally06', level: 4 }];
+    const r = applyStageClear(reg, newSave(reg), state.stage.id, state);
+    expect(r.save.members).toEqual(['ally06']);
+    expect(r.save.units.ally06).toEqual({ level: 4, xp: 0 });
+  });
+
+  it('場に出なかった仲間にも、加入の表示（joined の XpGain）が出る。先頭に並ぶ', () => {
+    const reg = testRegistry();
+    const state = freshBattle(reg);
+    state.joined = ['ally06'];
+    state.benchedRecruits = [{ defId: 'ally06', level: 4 }];
+    const r = applyStageClear(reg, newSave(reg), state.stage.id, state);
+    const g = r.gains.find((x) => x.id === 'ally06')!;
+    expect(g).toEqual({ id: 'ally06', before: { level: 4, xp: 0 }, after: { level: 4, xp: 0 }, leveledUp: false, joined: true });
+    expect(r.gains[0]!.id).toBe('ally06');
+    // 場の味方の分はそのまま残る
+    expect(r.gains.length).toBe(state.units.filter((u) => u.side === 'player').length + 1);
   });
 
   it('2 回クリアしても members が重ならない', () => {

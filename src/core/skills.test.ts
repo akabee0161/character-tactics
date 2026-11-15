@@ -3,6 +3,7 @@ import { beginBattle, createBattleState } from './state';
 import { isFunbaruActive } from './combat';
 import { canUseSkill, useSkill, FUNBARU_DURATION, OMAJINAI_HEAL, KAKENUKERU_DAMAGE, TSUKI_DAMAGE, SKILL_EFFECTS, SKILL_EFFECT_IDS } from './skills';
 import { attackPower } from './sim';
+import { effectiveResist } from './damage';
 import { testRegistry } from './testing';
 import { NO_BONUS } from './types';
 import type { BattleState, CharProgress, StageDef, Unit } from './types';
@@ -21,11 +22,11 @@ function addEnemy(s: BattleState, x: number, y: number, hp = 12): Unit {
   const uid = `e${s.nextEnemyUid++}`;
   const e: Unit = {
     uid, defId: 'narazumono', kindId: 'narazumono', side: 'enemy', controller: 'ai', combat: def.combat,
-    pos: { x, y }, hp, maxHp: 12, power: def.power, guard: def.guard,
+    pos: { x, y }, hp, maxHp: 12, power: def.power, guard: def.guard, resist: def.resist, ignoresGuard: def.ignoresGuard,
     attack: def.attack, range: def.range, attackInterval: def.attackInterval, speed: def.speed,
     bowDamageCap: def.bowDamageCap, skillId: def.skillId,
     level: 1, xp: 0,
-    statBonus: { ...NO_BONUS }, stagePower: 0, cheerUntil: -1, cheerPower: 0, tauntUntil: -1, persuasion: null,
+    statBonus: { ...NO_BONUS }, stagePower: 0, cheerUntil: -1, cheerPower: 0, wardUntil: -1, wardResist: 0, flying: false, tauntUntil: -1, persuasion: null,
     goalPos: null, goalField: null, engagedWith: null, closingOn: null, attackCooldown: 0, retired: false,
     windup: 0, pendingHit: null,
     ai: { def: { kind: 'aggressive' }, mode: 'idle', targetUid: null, home: { x, y }, spottedAt: null },
@@ -436,5 +437,104 @@ describe('はげます', () => {
     useSkill(s, caster.uid);
     expect(caster.cheerPower).toBe(2);
     expect(caster.cheerUntil).toBe(s.time + 8);
+  });
+});
+
+describe('結界', () => {
+  it('結界は範囲の味方の魔法防御を上げ、時間で切れる', () => {
+    const s = fresh();
+    const caster = unitOf(s, 'mist');
+    caster.skillId = 'kekkai';
+    caster.pos = { x: 80, y: 208 };
+    const near = unitOf(s, 'roran');
+    near.pos = { x: 140, y: 208 };
+    const far = unitOf(s, 'gau');
+    far.pos = { x: 600, y: 208 };
+    const retired = unitOf(s, 'ines');
+    retired.pos = { x: 100, y: 208 };
+    retired.retired = true;
+    const base = effectiveResist(near, s.time);
+    expect(useSkill(s, caster.uid)).toBe(true);
+    expect(effectiveResist(near, s.time)).toBe(base + 6);
+    expect(effectiveResist(caster, s.time)).toBe(effectiveResist(caster, s.time + 100) + 6);
+    expect(effectiveResist(far, s.time)).toBe(far.resist);
+    expect(retired.wardUntil).toBe(-1);
+    expect(effectiveResist(near, s.time + 8)).toBe(base);
+    expect(s.events).toContainEqual(expect.objectContaining({ type: 'skill', skillId: 'kekkai', hits: 2 }));
+  });
+
+  it('重ねがけせず上書きする', () => {
+    const s = fresh();
+    const caster = unitOf(s, 'mist');
+    caster.skillId = 'kekkai';
+    caster.wardUntil = s.time + 1;
+    caster.wardResist = 99;
+    useSkill(s, caster.uid);
+    expect(caster.wardResist).toBe(6);
+    expect(caster.wardUntil).toBe(s.time + 8);
+  });
+});
+
+describe('急降下', () => {
+  const WALL: StageDef = {
+    ...(testRegistry().stages[0]!),
+    mapRows: ['.....#....', '.....#....', '.....#....'],
+  };
+
+  it('行き先が壁の向こうでも移動し、半径 32 内の敵に 8 のダメージ', () => {
+    const s = fresh(WALL);
+    const u = unitOf(s, 'roran');
+    u.skillId = 'kyuukouka';
+    u.flying = true;
+    u.pos = { x: 16, y: 48 };
+    const near = addEnemy(s, 190, 48, 30);
+    const far = addEnemy(s, 280, 48, 30);
+    expect(useSkill(s, u.uid, { x: 176, y: 48 })).toBe(true);
+    expect(u.pos).toEqual({ x: 176, y: 48 });
+    expect(near.hp).toBe(22);
+    expect(far.hp).toBe(30);
+    expect(s.events).toContainEqual(expect.objectContaining({ type: 'skill', skillId: 'kyuukouka', hits: 1 }));
+  });
+
+  it('行き先がマップの外なら内側に寄せる', () => {
+    const s = fresh(WALL);
+    const u = unitOf(s, 'roran');
+    u.skillId = 'kyuukouka';
+    u.pos = { x: 16, y: 48 };
+    expect(useSkill(s, u.uid, { x: 9999, y: -80 })).toBe(true);
+    expect(u.pos).toEqual({ x: 304, y: 16 });
+  });
+
+  it('行き先なしなら使えない', () => {
+    const s = fresh(WALL);
+    const u = unitOf(s, 'roran');
+    u.skillId = 'kyuukouka';
+    expect(useSkill(s, u.uid)).toBe(false);
+  });
+});
+
+describe('たたき割り', () => {
+  it('射程 32 以内の一番近い敵 1 体に 14 のダメージ', () => {
+    const s = fresh();
+    const axe = unitOf(s, 'roran');
+    axe.skillId = 'tatakiwari';
+    axe.pos = { x: 80, y: 208 };
+    const near = addEnemy(s, 100, 208, 30);
+    const other = addEnemy(s, 108, 208, 30);
+    expect(useSkill(s, axe.uid)).toBe(true);
+    expect(near.hp).toBe(30 - 14);
+    expect(other.hp).toBe(30);
+    expect(near.lastHitBy).toBe(axe.uid);
+    expect(s.events).toContainEqual(expect.objectContaining({ type: 'skill', skillId: 'tatakiwari', hits: 1 }));
+  });
+
+  it('32 より遠い敵しかいなければ出さず、待ち時間も使わない', () => {
+    const s = fresh();
+    const axe = unitOf(s, 'roran');
+    axe.skillId = 'tatakiwari';
+    axe.pos = { x: 80, y: 208 };
+    addEnemy(s, 120, 208, 30);
+    expect(useSkill(s, axe.uid)).toBe(false);
+    expect(axe.skillCooldownUntil).toBe(0);
   });
 });

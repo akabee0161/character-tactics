@@ -137,7 +137,7 @@ function drawRoster(
   ctx: CanvasRenderingContext2D, reg: Registry, save: SaveData, images: ImageCache,
 ): void {
   ctx.font = '18px sans-serif';
-  const ids = partyIds(reg, save.members);
+  const ids = partyIds(reg, save.members).slice(0, MAX_PARTY);
   ids.forEach((id, i) => {
     const r = rosterSlot(i);
     panel(ctx, r, '#18222c');

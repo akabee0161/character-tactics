@@ -28,6 +28,15 @@ export function cellIndexAt(grid: Grid, pos: Vec2): number {
   return cy * grid.cols + cx;
 }
 
+/** 飛行用。点を、マップの内側（端のマスの中心まで）に収める。歩けるかどうかは見ない */
+export function clampToMap(grid: Grid, pos: Vec2): Vec2 {
+  const half = grid.cell / 2;
+  return {
+    x: Math.min(Math.max(pos.x, half), grid.cols * grid.cell - half),
+    y: Math.min(Math.max(pos.y, half), grid.rows * grid.cell - half),
+  };
+}
+
 export function cellCenter(grid: Grid, index: number): Vec2 {
   const cx = index % grid.cols;
   const cy = Math.floor(index / grid.cols);

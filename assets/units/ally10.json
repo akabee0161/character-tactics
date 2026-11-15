@@ -1,0 +1,36 @@
+{
+  "id": "ally10",
+  "name": "シオン",
+  "role": "守護",
+  "combat": true,
+  "maxHp": 26,
+  "power": 5,
+  "guard": 2,
+  "resist": 10,
+  "attack": "melee",
+  "range": 24,
+  "attackInterval": 1.8,
+  "speed": 55,
+  "skillId": "kekkai",
+  "color": "#d8d070",
+  "sprites": {
+    "role": "role-shugo.png",
+    "face": "ally10-face.png",
+    "map": {
+      "sheet": "ally10-map.png",
+      "frame": 32,
+      "idle": {
+        "frames": 2,
+        "fps": 4
+      },
+      "walk": {
+        "frames": 4,
+        "fps": 8
+      },
+      "attack": {
+        "frames": 3,
+        "fps": 6
+      }
+    }
+  }
+}

@@ -40,7 +40,7 @@ export type XpGain = {
 };
 
 function hasBonus(b: StatBonus): boolean {
-  return b.maxHp > 0 || b.power > 0 || b.guard > 0 || b.speed > 0;
+  return b.maxHp > 0 || b.power > 0 || b.guard > 0 || b.speed > 0 || b.resist > 0;
 }
 
 export type StageResult = { save: SaveData; gains: XpGain[]; newTitles: string[] };
@@ -65,6 +65,21 @@ export function applyStageClear(
     const after = u.retired ? base : applyXp(base, reg.growth.clearXp, reg.growth);
     units[u.defId] = after;
     gains.push({ id: u.defId, before, after, leveledUp: after.level > before.level, joined: battle.joined.includes(u.defId) });
+  }
+
+  // 場に出なかった仲間にも、加わったときのレベルで記録を作る（無いとレベル 1 に戻る）。
+  // セーブには未加入の仲間も初期値（レベル 1・経験値 0）で入っているので、初期値のままなら書き換える
+  for (const b of battle.benchedRecruits) {
+    const cur = units[b.defId];
+    if (!cur || (cur.level === 1 && cur.xp === 0 && cur.bonus === undefined)) {
+      units[b.defId] = { level: b.level, xp: 0 };
+    }
+  }
+
+  // 場に出なかった加入者のリザルト表示。リザルトの枠は 8 件なので、加入の表示を先頭に並べて切り捨てられないようにする
+  for (const b of battle.benchedRecruits) {
+    const rec = { level: b.level, xp: 0 };
+    gains.unshift({ id: b.defId, before: rec, after: { ...rec }, leveledUp: false, joined: true });
   }
 
   const counters = mergeCounters(save.counters, battle.counters, reg.titles);

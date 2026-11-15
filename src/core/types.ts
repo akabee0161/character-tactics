@@ -24,7 +24,7 @@ export type FlowField = {
 import type { Rng } from './rng';
 
 export type StatBonus = Record<StatKey, number>;
-export const NO_BONUS: StatBonus = Object.freeze({ maxHp: 0, power: 0, guard: 0, speed: 0 });
+export const NO_BONUS: StatBonus = Object.freeze({ maxHp: 0, power: 0, guard: 0, speed: 0, resist: 0 });
 
 export type CharProgress = { level: number; xp: number; bonus?: StatBonus };
 
@@ -62,6 +62,9 @@ export type Unit = {
   maxHp: number;
   power: number;
   guard: number;
+  resist: number;
+  /** 通常の攻撃で相手の守備を無視する（斧） */
+  ignoresGuard: boolean;
   attack: AttackKind;
   range: number;
   attackInterval: number;
@@ -79,6 +82,11 @@ export type Unit = {
   /** はげますの効果。シム時刻 cheerUntil 未満の間 cheerPower を攻撃力に足す */
   cheerUntil: number;
   cheerPower: number;
+  /** 結界の効果。シム時刻 wardUntil 未満の間 wardResist を魔法防御に足す */
+  wardUntil: number;
+  wardResist: number;
+  /** 歩けないマスの上も一直線に飛ぶ（移動はフローフィールドを使わず、速さの倍率も受けない） */
+  flying: boolean;
   /** 引きつけるの効果。シム時刻 tauntUntil 未満の間有効 */
   tauntUntil: number;
   /** 説得の相手なら stage.persuasions の添字 */
@@ -144,6 +152,7 @@ export type HitSource = {
   neraiuchi: boolean;
   power: number;
   bondBonus: number;
+  ignoresGuard: boolean;
 };
 
 /** 振りかぶり中の攻撃。発動時刻になったら、攻撃した側と相手が生きていればダメージか飛翔体になる */
@@ -183,6 +192,8 @@ export type BattleState = {
   nextProjectileId: number;
   /** このステージで加わった仲間の ID（クリアしたときだけセーブに残る） */
   joined: string[];
+  /** 戦闘の途中で加わったが、場が埋まっていて出なかった仲間（クリアで units に加わったときのレベルを残す） */
+  benchedRecruits: { defId: string; level: number }[];
   /** このステージで受け取った一度きりのごほうびの印 */
   claimed: string[];
   /** 訪れた村の id */

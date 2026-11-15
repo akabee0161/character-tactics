@@ -23,6 +23,7 @@ export function awardXp(state: BattleState, unit: Unit, amount: number): void {
   unit.maxHp = stats.maxHp;
   unit.power = stats.power;
   unit.guard = stats.guard;
+  unit.resist = stats.resist;
   unit.speed = stats.speed;
   unit.hp = Math.min(unit.maxHp, unit.hp + Math.max(0, gainedMaxHp));
 

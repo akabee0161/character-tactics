@@ -3,7 +3,7 @@ import { nearestWithin } from './combat';
 import { MELEE_RANGE } from './constants';
 import { hostilesOf, playerUnits } from './sim';
 import { skillParam } from '../engine/registry';
-import { distance, distanceToSegment, fitInCell, hasClearPath } from './field';
+import { clampToMap, distance, distanceToSegment, fitInCell, hasClearPath } from './field';
 import type { BattleState, Unit, Vec2 } from './types';
 
 /** skills.json に値がなかったときのふぉーるばっく。JSON が正なのでふつうは使われない */
@@ -19,6 +19,13 @@ export const TSUKI_DAMAGE = 7;
 export const HAGEMASU_RANGE = 120;
 export const HAGEMASU_POWER = 2;
 export const HAGEMASU_DURATION = 8;
+export const KYUUKOUKA_RADIUS = 32;
+export const KYUUKOUKA_DAMAGE = 8;
+export const KEKKAI_RANGE = 120;
+export const KEKKAI_RESIST = 6;
+export const KEKKAI_DURATION = 8;
+export const TATAKIWARI_DAMAGE = 14;
+export const TATAKIWARI_RANGE = 32;
 export const DEFAULT_SKILL_COOLDOWN = 10;
 
 export type SkillContext = { state: BattleState; self: Unit; dest?: Vec2 };
@@ -138,6 +145,15 @@ export const SKILL_EFFECTS: Record<string, SkillEffect> = {
     return hits;
   },
 
+  tatakiwari: ({ state, self }) => {
+    const range = skillParam(state.reg, 'tatakiwari', 'range', TATAKIWARI_RANGE);
+    const damage = skillParam(state.reg, 'tatakiwari', 'damage', TATAKIWARI_DAMAGE);
+    const target = nearestWithin(self.pos, hostilesOf(state, self), range);
+    if (!target) return null;
+    skillHit(state, self, target, damage, self.pos);
+    return 1;
+  },
+
   hagemasu: ({ state, self }) => {
     const range = skillParam(state.reg, 'hagemasu', 'range', HAGEMASU_RANGE);
     const power = skillParam(state.reg, 'hagemasu', 'power', HAGEMASU_POWER);
@@ -146,6 +162,38 @@ export const SKILL_EFFECTS: Record<string, SkillEffect> = {
     for (const a of allies) {
       a.cheerUntil = until;
       a.cheerPower = power;
+    }
+    return allies.length;
+  },
+
+  kyuukouka: ({ state, self, dest }) => {
+    if (!dest) return null;
+    const radius = skillParam(state.reg, 'kyuukouka', 'radius', KYUUKOUKA_RADIUS);
+    const damage = skillParam(state.reg, 'kyuukouka', 'damage', KYUUKOUKA_DAMAGE);
+    // 飛んで降りるので、壁の向こうでも行ける。マップの外だけは内側へ寄せる
+    const to = clampToMap(state.grid, dest);
+    const from = { ...self.pos };
+    let hits = 0;
+    for (const enemy of hostilesOf(state, self)) {
+      if (distance(enemy.pos, to) > radius) continue;
+      skillHit(state, self, enemy, damage, from);
+      hits++;
+    }
+    self.pos = to;
+    self.goalField = null;
+    self.goalPos = null;
+    self.engagedWith = null;
+    return hits;
+  },
+
+  kekkai: ({ state, self }) => {
+    const range = skillParam(state.reg, 'kekkai', 'range', KEKKAI_RANGE);
+    const resist = skillParam(state.reg, 'kekkai', 'resist', KEKKAI_RESIST);
+    const until = state.time + skillParam(state.reg, 'kekkai', 'duration', KEKKAI_DURATION);
+    const allies = playerUnits(state).filter((u) => u.hp > 0 && distance(self.pos, u.pos) <= range);
+    for (const a of allies) {
+      a.wardUntil = until;
+      a.wardResist = resist;
     }
     return allies.length;
   },

@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { step } from './sim';
+import { applyDamage } from './damage';
 import { applyXp } from './progress';
 import { beginBattle, createBattleState } from './state';
 import { instantAttacks, testRegistry } from './testing';
 import { NO_BONUS } from './types';
-import type { StageDef, Unit } from './types';
+import type { HitSource, StageDef, Unit } from './types';
 import type { BattleState, CharProgress, Vec2 } from './types';
 
 // units のうち敵側に常時1体だけ入れておく。ゴールから遠く離れた位置に置いて
@@ -47,11 +48,11 @@ function spawnEnemy(s: BattleState, defId: string, pos: Vec2, hp?: number): Unit
   const uid = `t${s.nextEnemyUid++}`;
   const u: Unit = {
     uid, defId, kindId: defId, side: 'enemy', controller: 'ai', combat: def.combat,
-    pos: { ...pos }, hp: hp ?? def.maxHp, maxHp: def.maxHp, power: def.power, guard: def.guard,
+    pos: { ...pos }, hp: hp ?? def.maxHp, maxHp: def.maxHp, power: def.power, guard: def.guard, resist: def.resist, ignoresGuard: def.ignoresGuard,
     attack: def.attack, range: def.range, attackInterval: def.attackInterval, speed: def.speed,
     bowDamageCap: def.bowDamageCap, skillId: def.skillId,
     level: 1, xp: 0,
-    statBonus: { ...NO_BONUS }, stagePower: 0, cheerUntil: -1, cheerPower: 0, tauntUntil: -1, persuasion: null,
+    statBonus: { ...NO_BONUS }, stagePower: 0, cheerUntil: -1, cheerPower: 0, wardUntil: -1, wardResist: 0, flying: false, tauntUntil: -1, persuasion: null,
     goalPos: null, goalField: null, engagedWith: null, closingOn: null, attackCooldown: 0, retired: false,
     windup: 0, pendingHit: null,
     ai: { def: { kind: 'aggressive' }, mode: 'idle', targetUid: null, home: { ...pos }, spottedAt: null },
@@ -81,6 +82,29 @@ function advanceFine(s: BattleState, totalDt: number): void {
     remaining -= dt;
   }
 }
+
+describe('結界のダメージ', () => {
+  const hit = (attack: 'magic' | 'melee', ward: boolean): number => {
+    const s = fresh();
+    const roran = unitOf(s, 'roran');
+    roran.guard = 3;
+    roran.resist = 1;
+    if (ward) { roran.wardUntil = 100; roran.wardResist = 6; }
+    const src: HitSource = {
+      uid: 'x', defId: 'x', attack, pos: { x: 0, y: 0 },
+      neraiuchi: false, power: 12, bondBonus: 0, ignoresGuard: false,
+    };
+    return applyDamage(s, src, roran);
+  };
+
+  it('結界中の魔法の命中は 6 減る', () => {
+    expect(hit('magic', false) - hit('magic', true)).toBe(6);
+  });
+
+  it('結界中でも近接の命中は変わらない', () => {
+    expect(hit('melee', true)).toBe(hit('melee', false));
+  });
+});
 
 describe('攻撃の解決', () => {
   it('攻撃間隔ごとに 1 回ダメージが入る', () => {

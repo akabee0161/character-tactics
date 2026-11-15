@@ -78,7 +78,7 @@ export function spawnEffects(state: EffectState, events: SimEvent[]): void {
       state.items.push({ kind: 'heal', pos: { ...ev.targetPos }, ttl: HEAL_RING_DURATION });
       state.items.push({ kind: 'healBeam', from: { ...ev.sourcePos }, to: { ...ev.targetPos }, ttl: HEAL_BEAM_DURATION });
     } else if (ev.type === 'skill') {
-      if (ev.skillId === 'kakenukeru') {
+      if (ev.skillId === 'kakenukeru' || ev.skillId === 'kyuukouka') {
         state.items.push({ kind: 'trail', from: { ...ev.fromPos }, to: { ...ev.toPos }, ttl: TRAIL_DURATION });
       } else {
         state.items.push({ kind: 'skillCast', skillId: ev.skillId, pos: { ...ev.toPos }, ttl: SKILL_CAST_DURATION });

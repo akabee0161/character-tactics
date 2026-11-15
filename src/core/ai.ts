@@ -1,5 +1,5 @@
 import { nearestWithin } from './combat';
-import { distance, hasLineOfSight } from './field';
+import { distance, hasLineOfSight, isWalkableAt } from './field';
 import type { AiDef } from '../engine/schema';
 import type { AiState, Grid, Unit, Vec2 } from './types';
 
@@ -46,8 +46,9 @@ export const AI_BEHAVIORS: Record<AiDef['kind'], AiBehavior> = {
   },
 
   aggressive: (ctx) => {
-    // 索敵範囲も視線も無視して、常に最寄りの敵対ユニットを追う
-    const alive = ctx.hostiles.filter((h) => !h.retired);
+    // 索敵範囲も視線も無視して、常に最寄りの敵対ユニットを追う。
+    // ただし歩けないマスの上（飛行の仲間）には経路が無く、追うと止まったまま動かなくなるので外す
+    const alive = ctx.hostiles.filter((h) => !h.retired && isWalkableAt(ctx.grid, h.pos));
     const target = nearestWithin(ctx.self.pos, alive, Infinity);
     return target ? chase(target) : IDLE;
   },

@@ -6,5 +6,8 @@
   { "id": "hikitsukeru", "label": "引きつける", "params": { "range": 96, "duration": 6, "cooldown": 16 } },
   { "id": "hinoame",    "label": "火の雨", "params": { "radius": 48, "damage": 6, "needsDest": 1, "cooldown": 14 } },
   { "id": "tsuki",      "label": "突き", "params": { "length": 80, "damage": 7, "cooldown": 9 } },
-  { "id": "hagemasu",   "label": "はげます", "params": { "range": 120, "power": 2, "duration": 8, "cooldown": 15 } }
+  { "id": "hagemasu",   "label": "はげます", "params": { "range": 120, "power": 2, "duration": 8, "cooldown": 15 } },
+  { "id": "tatakiwari", "label": "たたき割り", "params": { "damage": 14, "range": 32, "cooldown": 12 } },
+  { "id": "kekkai",     "label": "結界", "params": { "range": 120, "resist": 6, "duration": 8, "cooldown": 16 } },
+  { "id": "kyuukouka",  "label": "急降下", "params": { "radius": 32, "damage": 8, "needsDest": 1, "cooldown": 10 } }
 ]

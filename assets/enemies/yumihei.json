@@ -2,6 +2,7 @@
   "id": "yumihei", "kind": "yumihei", "name": "弓兵", "role": "敵",
   "combat": true,
   "maxHp": 10, "power": 11, "guard": 0,
+  "resist": 1,
   "attack": "bow", "range": 120,
   "attackInterval": 1.8, "speed": 30,
   "skillId": null,

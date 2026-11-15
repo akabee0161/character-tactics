@@ -1,0 +1,36 @@
+{
+  "id": "ally12",
+  "name": "ユナ",
+  "role": "弓",
+  "combat": true,
+  "maxHp": 20,
+  "power": 8,
+  "guard": 2,
+  "resist": 3,
+  "attack": "bow",
+  "range": 160,
+  "attackInterval": 2.2,
+  "speed": 60,
+  "skillId": "neraiuchi",
+  "color": "#58b848",
+  "sprites": {
+    "role": "role-yumi.png",
+    "face": "ally12-face.png",
+    "map": {
+      "sheet": "ally12-map.png",
+      "frame": 32,
+      "idle": {
+        "frames": 2,
+        "fps": 4
+      },
+      "walk": {
+        "frames": 4,
+        "fps": 8
+      },
+      "attack": {
+        "frames": 3,
+        "fps": 6
+      }
+    }
+  }
+}

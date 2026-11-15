@@ -6,7 +6,7 @@ import { MIN_SEPARATION, RANGE_EPS } from './constants';
 import { accumulate } from './counters';
 import { applyDamage } from './damage';
 import {
-  cellIndexAt, computeFlowField, distance, flowDirection, hasClearPath, isFullSpeedLine, resolveMoveDest,
+  cellIndexAt, clampToMap, computeFlowField, distance, flowDirection, hasClearPath, isFullSpeedLine, resolveMoveDest,
   slideStep, speedAt,
 } from './field';
 import { updatePersuasions, updateVillages } from './events';
@@ -130,9 +130,10 @@ function applyCommands(state: BattleState, commands: SimCommand[]): Set<string> 
 
     if (cmd.type === 'move') {
       // 歩けない場所（マップの外を含む）は、たどり着けるうちで最も近いマスへ置き換える
-      const dest = resolveMoveDest(state.grid, u.pos, cmd.dest);
+      // 飛行は歩けないマスを気にせず、マップの内側に収めるだけ
+      const dest = u.flying ? clampToMap(state.grid, cmd.dest) : resolveMoveDest(state.grid, u.pos, cmd.dest);
       if (dest === null) continue;
-      u.goalField = computeFlowField(state.grid, dest);
+      u.goalField = u.flying ? null : computeFlowField(state.grid, dest);
       u.goalPos = dest;
       u.engagedWith = null;
       movedThisTick.add(u.uid);
@@ -205,6 +206,11 @@ function fieldFor(state: BattleState, u: Unit): FlowField | null {
   return u.goalPos ? fieldToStatic(state.fields, state.grid, u.goalPos) : null;
 }
 
+/** いるマスの速さの倍率。飛行は地面を踏まないので 1 */
+function speedMultiplier(state: BattleState, u: Unit): number {
+  return u.flying ? 1 : speedAt(state.grid, u.pos);
+}
+
 /** 動いた量がこれ未満なら、ふさがれて動けなかったとみなす */
 const BLOCKED_EPS = 1e-3;
 
@@ -217,7 +223,7 @@ type StepResult = 'moved' | 'adjusted' | 'blocked';
  */
 function stepTo(state: BattleState, u: Unit, next: Vec2): StepResult {
   const separated = separatedStep(u.pos, next, hostilesOf(state, u).map((h) => h.pos), MIN_SEPARATION);
-  const p = slideStep(state.grid, u.pos, separated);
+  const p = u.flying ? clampToMap(state.grid, separated) : slideStep(state.grid, u.pos, separated);
   if (p.x === next.x && p.y === next.y) {
     u.pos = p;
     return 'moved';
@@ -255,7 +261,7 @@ function moveTowardGoal(state: BattleState, u: Unit, dt: number): void {
   }
 
   const remaining = distance(u.pos, goal);
-  const stepLen = u.speed * speedAt(state.grid, u.pos) * dt;
+  const stepLen = u.speed * speedMultiplier(state, u) * dt;
   if (remaining <= stepLen) {
     // 着いたか、敵にふさがれて着けないなら指示は終わり。すべって回り込み中なら続ける
     if (stepTo(state, u, goal) !== 'adjusted') clearOrderedGoal(u);
@@ -266,7 +272,7 @@ function moveTowardGoal(state: BattleState, u: Unit, dt: number): void {
   // フローフィールドを使わず直行する。森を通るなら、回った方が早いかをフローフィールドに任せる。
   // 目的地と同じマスにいるときも直行する。フローフィールドは同じマスの中では向きを出せず（距離0）、
   // 指示が黙って消えてしまう。壁にかかるぶんは stepTo の slideStep が横すべりで吸収する
-  const direct = (hasClearPath(state.grid, u.pos, goal) && isFullSpeedLine(state.grid, u.pos, goal))
+  const direct = u.flying || (hasClearPath(state.grid, u.pos, goal) && isFullSpeedLine(state.grid, u.pos, goal))
     || cellIndexAt(state.grid, u.pos) === cellIndexAt(state.grid, goal);
   const dir = direct
     ? { x: (goal.x - u.pos.x) / remaining, y: (goal.y - u.pos.y) / remaining }
@@ -299,7 +305,7 @@ function closeIn(state: BattleState, u: Unit, dt: number): void {
   if (!target) return;
   const d = distance(u.pos, target.pos);
   if (d === 0) return;
-  const stepLen = Math.min(u.speed * speedAt(state.grid, u.pos) * dt, d);
+  const stepLen = Math.min(u.speed * speedMultiplier(state, u) * dt, d);
   stepTo(state, u, {
     x: u.pos.x + ((target.pos.x - u.pos.x) / d) * stepLen,
     y: u.pos.y + ((target.pos.y - u.pos.y) / d) * stepLen,
@@ -379,6 +385,7 @@ function resolveAttacks(state: BattleState, dt: number): void {
     const source: HitSource = {
       uid: u.uid, defId: u.defId, attack: u.attack, pos: { ...u.pos },
       neraiuchi: u.neraiuchiArmed, power: attackPower(u, state.time), bondBonus: bonus,
+      ignoresGuard: u.ignoresGuard,
     };
     u.neraiuchiArmed = false;
     u.attackCooldown = interval;

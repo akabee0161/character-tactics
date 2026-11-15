@@ -26,7 +26,7 @@ describe('statsForLevel', () => {
   it('レベル1 は基礎値どおり', () => {
     const reg = testRegistry();
     expect(statsForLevel(reg.units.get('roran')!, 1, reg.growth)).toEqual({
-      maxHp: 30, power: 6, guard: reg.units.get('roran')!.guard, speed: reg.units.get('roran')!.speed,
+      maxHp: 30, power: 6, guard: reg.units.get('roran')!.guard, speed: reg.units.get('roran')!.speed, resist: 2,
     });
   });
 
@@ -44,15 +44,33 @@ describe('statsForLevel', () => {
   it('上限レベルでも現状の上限とほぼ同じ強さ', () => {
     const reg = testRegistry();
     expect(statsForLevel(reg.units.get('roran')!, 12, reg.growth)).toEqual({
-      maxHp: 41, power: 9, guard: reg.units.get('roran')!.guard, speed: reg.units.get('roran')!.speed,
+      maxHp: 41, power: 9, guard: reg.units.get('roran')!.guard, speed: reg.units.get('roran')!.speed, resist: 2,
     });
   });
 
   it('上乗せが能力値に入る', () => {
     const reg = testRegistry();
     const def = reg.units.get('roran')!;
-    const s = statsForLevel(def, 1, reg.growth, { maxHp: 3, power: 1, guard: 2, speed: 5 });
-    expect(s).toEqual({ maxHp: def.maxHp + 3, power: def.power + 1, guard: def.guard + 2, speed: def.speed + 5 });
+    const s = statsForLevel(def, 1, reg.growth, { maxHp: 3, power: 1, guard: 2, speed: 5, resist: 4 });
+    expect(s).toEqual({
+      maxHp: def.maxHp + 3, power: def.power + 1, guard: def.guard + 2, speed: def.speed + 5, resist: def.resist + 4,
+    });
+  });
+
+  it('魔法防御はレベルで上がらない', () => {
+    const reg = testRegistry();
+    const mist = reg.units.get('mist')!;
+    expect(statsForLevel(mist, 1, reg.growth).resist).toBe(7);
+    expect(statsForLevel(mist, 5, reg.growth).resist).toBe(7);
+  });
+
+  it('makeUnit は魔法防御に上乗せを足す', () => {
+    const reg = testRegistry();
+    const u = makeUnit({
+      uid: 'p1', def: reg.units.get('mist')!, side: 'player', controller: 'player', pos: { x: 0, y: 0 },
+      level: 1, xp: 0, bonus: { maxHp: 0, power: 0, guard: 0, speed: 0, resist: 2 }, ai: null, growth: reg.growth,
+    });
+    expect(u.resist).toBe(9);
   });
 });
 
@@ -278,12 +296,33 @@ describe('出撃メンバーと開始位置', () => {
     const s = createBattleState(reg, { ...stage, joins: [] }, party(ALL_IDS), 1);
     expect(players(s).map((u) => u.defId)).toEqual([...stage.roster, ...room]);
     expect(players(s)).toHaveLength(MAX_PARTY);
-    // MAX_PARTY 人そろっているとき、開始時の加入は加えず joined にも入れない
+  });
+
+  it('場が 8 人で埋まっていても、開始時の加入は場に出て joined に入る。はみ出るのは members の最後', () => {
+    const { reg, stage } = reg8();
+    const room = ALL_IDS.slice(0, MAX_PARTY - stage.roster.length);
     const extra = ALL_IDS[ALL_IDS.length - 1]!;
-    const s2 = createBattleState(reg, { ...stage, joins: [recruitOf(extra)] }, party(room), 1);
-    expect(players(s2)).toHaveLength(MAX_PARTY);
-    expect(players(s2).map((u) => u.defId)).not.toContain(extra);
-    expect(s2.joined).toEqual([]);
+    const s = createBattleState(reg, { ...stage, joins: [recruitOf(extra)] }, party(room), 1);
+    const ids = players(s).map((u) => u.defId);
+    expect(players(s)).toHaveLength(MAX_PARTY);
+    expect(ids).toContain(extra);
+    expect(ids).not.toContain(room[room.length - 1]);
+    expect(ids.slice(0, stage.roster.length)).toEqual(stage.roster);
+    expect(s.joined).toEqual([extra]);
+  });
+
+  it('開始時の加入は、場に出られなくても joined に入る', () => {
+    const { reg, stage } = reg8();
+    // roster 4 人 + joins 9 人（場は 8 人）
+    const many = ALL_IDS.slice(0, MAX_PARTY + 1);
+    const s = createBattleState(reg, { ...stage, joins: many.map(recruitOf) }, party([]), 1);
+    expect(players(s)).toHaveLength(MAX_PARTY);
+    expect(s.joined).toEqual(many);
+    // 場に出られなかった 1 人は、加わったときのレベルを benchedRecruits に残す
+    const onField = new Set(players(s).map((u) => u.defId));
+    const off = many.filter((id) => !onField.has(id));
+    expect(off).toHaveLength(1);
+    expect(s.benchedRecruits).toEqual([{ defId: off[0], level: 2 }]);
   });
 
   it('開始位置: starts が足りないと近いマスで補い、補えなければ starts を繰り返す', () => {

@@ -1,6 +1,6 @@
 # とりでの なかまたち (character-tactics)
 
-仲間（最大 8 人）を率いて、敵の本拠地へ攻め込むリアルタイム侵攻シミュレーション。
+仲間（記録は最大 15 人、場に出るのは 8 人まで）を率いて、敵の本拠地へ攻め込むリアルタイム侵攻シミュレーション。
 [ankardo](https://ankardo.com) のサブリソースとして `ankardo.com/play/character-tactics/` で公開する。
 
 - 設計: `docs/superpowers/specs/2026-09-06-map-sprite-animation-design.md`
@@ -38,7 +38,7 @@
 
 説得の相手は敵として出てくる。普通の敵と同じに扱うので、仲間は攻撃し、相手も攻撃する。決められた仲間（`persuader`）が相手から 2マス（64px）以内に入ると、加入の会話が始まり戦闘が止まる。会話が終わると相手は消え、同じ場所に新しい仲間が加わる。説得の相手の頭上には黄色い吹き出しの目印が出る。倒してしまった相手は説得できない。
 
-加入・経験値・能力値の上昇は、クリアしたときだけセーブに残る。負けたら残らない。仲間は最大 8 人で、すでに 8 人いるときは、説得は始まらず（相手は普通の敵のまま）、村の加入の会話は出るが仲間は増えない。下パネルの下の段は 8 人まで並び、ステージ選択の仲間一覧は 2 列になる。
+加入・経験値・能力値の上昇は、クリアしたときだけセーブに残る。負けたら残らない。仲間は最大 15 人まで記録でき、場に出るのは 8 人まで。場がすでに 8 人のとき、説得も村の加入も会話は流れ、仲間は記録される（そのステージでは場に出ず、クリアすると加わったときのレベルで次から出撃の候補になる）。場が 8 人を超えるときは、そのステージの開始時に加わる仲間（`joins`）→ `roster` → 加わった順の優先で 8 人を選ぶ（今は出撃を選ぶ画面が無く、残りは出撃しない）。下パネルの下の段は 8 人まで並び、ステージ選択の仲間一覧は 2 列になる。
 
 戦闘中のセリフは下パネルの上段に数秒だけ出る。時間は止まらない。同じ瞬間に複数のなかまが喋ったときは、優先度の高い1件だけを出す。盤面にはかぶらない。
 
@@ -120,7 +120,7 @@ URL に `?debug` を付けると、戦闘中だけ次の操作ができる（攻
 | `src/core/events.ts` | 村の訪問と説得の判定、加入の完了 |
 | `src/core/balance.ts` | 難易度を測るボットと、通しの実行・集計（純ロジック） |
 | `tools/balance.ts` | `npm run balance` の入口（引数の解釈と表の出力だけ） |
-| `src/core/party.ts` | 出撃できる仲間の並び（加入しうる仲間は加わるまで出ない。最大 8 人） |
+| `src/core/party.ts` | 出撃の候補になる仲間の並び（加入しうる仲間は加わるまで出ない。切らずに全員。場の 8 人は `state.ts` が決める） |
 | `src/render/` | Canvas2D 描画 |
 | `src/render/images.ts` | 画像の読み込みとキャッシュ |
 | `src/render/sprites.ts` | 画像とプレースホルダを1本にまとめた描画 |
@@ -208,8 +208,9 @@ python3 tools/anim-page.py assets/units/roran.json out/anim/roran.html
 - **敵** — `assets/enemies/<id>.json`。1 ステージの敵は、時間湧き（`spawners` の `total`）を含めて 16 体まで（`npm test` が見る）。説得の相手は数えない（`npm test` が数えるのは `enemies` と `spawners` の `total` の合計。説得の相手を入れると戦場に 17 体になるステージがある）。難易度を調整したときは、敵の 1 発で満タンの仲間が倒れない（攻撃力 16 以下）ことを決まりにした（根拠: 最も打たれ弱い ally06 が HP18・守り1 で、攻撃力 16 なら 15 ダメージで 1 発では倒れない。仲間を足したら見直す）。こちらはテストでは見ていない
 - **敵の見た目** — 見た目ごとに別の ID の定義を持つ（今は 22 個。ならず者 14・盾持ち 2・弓兵 3・まじない師 3）。同じ種類は `kind` を同じにし、強さの数値・攻撃の型・`role`・`face` を揃える（揃っているかは `src/engine/enemy-looks.test.ts` が見る）。初対面の会話とセリフの鍵は `kind` で見る。forge の絵の書き出しは「ドット絵の作りかた」の 2 段の手順で行う（`export.py` の単独実行は敵のシートが消えて失敗する）。ステージへの割り当ては、盾持ち・弓兵・まじない師はステージ番号でずらした巡回、ならず者はステージ 1 から `enemies` の出てくる順にステージをまたいで 14 通りを続けて巡回する（同じステージで同じ ID は 2 回出ない）
 - **時間湧きの敵** — ステージの `spawners` に `{ "defId": ..., "pos": ..., "firstAfter": 20, "every": 15, "total": 3 }` を並べる。`firstAfter` 秒後に1体目、以降 `every` 秒ごとに1体、合計 `total` 体まで湧く。湧いた敵の AI は `aggressive` 固定。総数上限は必須（上限がないと持久戦で詰む）
+- **守備と魔法防御** — ユニットの定義の `guard` は近接と弓のダメージを、`resist` は魔法のダメージを引く。魔法系は `resist` を高く、盾・斧系は `guard` を高くする。村の上乗せ（`stat`）にも `resist` がある。`ignoresGuard: true`（省略時 false）は、通常の近接・弓の攻撃が相手の守備を 0 として計算する（斧）。`flying: true`（省略時 false）は飛行で、歩けないマスの上を一直線に飛び、森でも遅くならない。マップの外には出ない。飛行の足元には影が出る
 - **ユニットの絵** — `assets/images/` に PNG を置き、`assets/units/<id>.json`（敵は `assets/enemies/<id>.json`）の `sprites` に書く。`role` はクラスアイコン、`face` は顔（下パネル・ステージ選択・会話・リザルト）。大きさは「アセットの大きさの規約」、`map` はフィールド上の姿。`map` だけはスプライトシートで、`{ "sheet": "<file>.png", "frame": 32, "idle": { "frames": 2, "fps": 4 }, "walk": {...}, "attack": {...} }` の形。シートは**列 = コマ、行 = 12（3状態 × 4方向）**で、行番号 = 状態index × 4 + 方向index、状態は `idle, walk, attack`、方向は `down, up, left, right` の順。コマは正方形。列数は最大コマ数にそろえ、余りは透明のまま置く。`map` が `null` のあいだは色つきの丸だけが出る（クラス名の文字は `role` が `null` のときに出る別のフォールバックで、`map` とは無関係）。`frame` と各状態の `frames` は1以上の整数、`fps` は1以上の数値であること。実寸と JSON が食い違うと `npm test` が落ちる（`src/engine/sheet-size.test.ts`）。コマの**下から 2px 上の行（32px のコマなら y=30）が足元**で、そこがユニットの位置に来るように描く（pixel-asset-forge の `unit` 規約と同じ）。HPバー・旗・リングは絵の中心を基準に置く
-- **仮の絵の作り直し** — 今の仮の絵は、味方（ally05〜08）と説得の相手（ally06-foe・ally08-foe）の分だけ（敵の絵は forge で組んだ本番の絵）。`node tools/gen-placeholder-sprites.mjs ally05 role-yari ...`。引数に書いた ID の絵だけを書く（引数なしでは何も書かずに終わる。全部を書き直すと今の本番の絵を仮の絵で上書きするため）。本番の絵が揃ったらこの生成器は消してよい。差し替えは PNG を上書きするだけで、コマ数を変えるときだけ JSON の数値を直す
+- **仮の絵の作り直し** — 今の仮の絵は、味方（ally05〜15）と説得の相手（ally06-foe・ally08-foe）の分だけ（敵の絵は forge で組んだ本番の絵）。`node tools/gen-placeholder-sprites.mjs ally05 role-yari ...`。引数に書いた ID の絵だけを書く（引数なしでは何も書かずに終わる。全部を書き直すと今の本番の絵を仮の絵で上書きするため）。本番の絵が揃ったらこの生成器は消してよい。差し替えは PNG を上書きするだけで、コマ数を変えるときだけ JSON の数値を直す
 - **攻撃の種別** — `attack` は `melee` / `bow` / `magic`。ダメージ（`bow` と `magic` では飛翔体の発射）は、攻撃モーションの最後のコマが出る時刻（`(attack.frames - 1) / attack.fps` 秒後）に出る。その前に攻撃した側か相手が倒れたら、その攻撃は出ない。`map` が `null` のユニットは攻撃した瞬間に出る。`bow` と `magic` は飛翔体として飛び、届いた瞬間にダメージが出る。`bowDamageCap` が効くのは `bow` だけ
 - **仲間の加入・村・説得** — ステージに `joins`・`persuasions`・`villages` を書く（どれも省略できる）。加入する仲間は `assets/units/<id>.json` に置く。
   - `joins` は、ステージ開始時に会話のあと加わる仲間。`talk` は会話（`intro` と同じ書き方）、`level` は加わるときのレベル。
@@ -220,7 +221,7 @@ python3 tools/anim-page.py assets/units/roran.json out/anim/roran.html
     `"villages": [{ "id": "v1", "col": 11, "row": 10, "text": "村の 人が けがの 手当てを してくれた！", "effect": { "type": "heal" } }]`
   - 本文で仲間の名前を書くときは `{<ユニットID>}`（例 `{ally05}`）と書く。読み込み時に名前へ置き換わり、知らない ID は起動時エラーになる。
   - **新しい仲間の ID は名前と関係ない `allyNN`（説得の相手の敵は `allyNN-foe`）にする。** JSON のファイル名・`assets/images/` の名前・セリフのキー・セーブのキーに名前を入れない。名前が出てよいのは、ユニットの JSON の `name` と本文（`{id}` で書く）だけ。今の4人（`roran` `ines` `mist` `gau`）の ID は変えない。
-  - 仲間は最大 8 人。セーブに 8 人を超えて入っていても、出撃は 8 人まで。
+  - 仲間は最大 15 人（`roster` と加入しうる仲間の合計。超えると読み込みで止まる。`MAX_MEMBERS`）。場に出るのは 8 人まで（`MAX_PARTY`）。
 - **セリフ** — `assets/lines/*.json`
 - **称号** — `assets/titles.json`。`counter` に使えるキーは `skill:<skillId>:uses` / `skill:<skillId>:hits` / `kill:neraiuchi` / `bond:supports`
 - **絆** — `assets/bonds.json`
@@ -228,7 +229,7 @@ python3 tools/anim-page.py assets/units/roran.json out/anim/roran.html
 
 コードが要るもの:
 
-- **新しいスキル** — `src/core/skills.ts` の `SKILL_EFFECTS` に効果を足し、`assets/skills.json` に数値を足す。`assets/skills.json` の各スキルには `params.cooldown`（秒）が必須
+- **新しいスキル** — 今あるのは踏ん張る・狙い撃ち・おまじない・駆け抜ける・引きつける・火の雨・突き・はげます・たたき割り（守備を無視する 1 体への固定ダメージ）・結界（範囲の味方の魔法防御を一定時間上げる）・急降下（指した場所へ飛び、着いた場所の周りの敵に固定ダメージ）。足すときは `src/core/skills.ts` の `SKILL_EFFECTS` に効果を足し、`assets/skills.json` に数値を足す。`assets/skills.json` の各スキルには `params.cooldown`（秒）が必須
 - **新しい AI パターン** — `src/core/ai.ts` の `AI_BEHAVIORS` に足し、`src/engine/schema.ts` の `AiDef` と `AI_KINDS` に variant を足す
 - **新しい勝敗条件** — `src/engine/schema.ts` の `VictoryCond` / `DefeatCond` に variant を足し、`src/core/objectives.ts` で判定を書く
 

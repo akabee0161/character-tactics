@@ -13,11 +13,11 @@ function makeTestUnit(s: BattleState, def: EnemyDef, pos: Vec2, ai: AiDef): Unit
   return {
     uid: `t${s.units.length + 1}`, defId: def.id, kindId: def.kind ?? def.id, side: 'enemy', controller: 'ai',
     combat: def.combat, pos: { ...pos },
-    hp: def.maxHp, maxHp: def.maxHp, power: def.power, guard: def.guard,
+    hp: def.maxHp, maxHp: def.maxHp, power: def.power, guard: def.guard, resist: def.resist, ignoresGuard: def.ignoresGuard,
     attack: def.attack, range: def.range, attackInterval: def.attackInterval, speed: def.speed,
     bowDamageCap: def.bowDamageCap, skillId: def.skillId,
     level: 1, xp: 0,
-    statBonus: { ...NO_BONUS }, stagePower: 0, cheerUntil: -1, cheerPower: 0, tauntUntil: -1, persuasion: null,
+    statBonus: { ...NO_BONUS }, stagePower: 0, cheerUntil: -1, cheerPower: 0, wardUntil: -1, wardResist: 0, flying: false, tauntUntil: -1, persuasion: null,
     goalPos: null, goalField: null, engagedWith: null, closingOn: null, attackCooldown: 0, retired: false,
     windup: 0, pendingHit: null,
     ai: { def: ai, mode: 'idle', targetUid: null, home: { ...pos }, spottedAt: null },
@@ -83,11 +83,11 @@ function spawnEnemy(s: BattleState, defId: string, pos: { x: number; y: number }
   const uid = `t${s.nextEnemyUid++}`;
   const u: Unit = {
     uid, defId, kindId: def.kind ?? defId, side: 'enemy', controller: 'ai', combat: def.combat,
-    pos: { ...pos }, hp: def.maxHp, maxHp: def.maxHp, power: def.power, guard: def.guard,
+    pos: { ...pos }, hp: def.maxHp, maxHp: def.maxHp, power: def.power, guard: def.guard, resist: def.resist, ignoresGuard: def.ignoresGuard,
     attack: def.attack, range: def.range, attackInterval: def.attackInterval, speed: def.speed,
     bowDamageCap: def.bowDamageCap, skillId: def.skillId,
     level: 1, xp: 0,
-    statBonus: { ...NO_BONUS }, stagePower: 0, cheerUntil: -1, cheerPower: 0, tauntUntil: -1, persuasion: null,
+    statBonus: { ...NO_BONUS }, stagePower: 0, cheerUntil: -1, cheerPower: 0, wardUntil: -1, wardResist: 0, flying: false, tauntUntil: -1, persuasion: null,
     goalPos: null, goalField: null, engagedWith: null, closingOn: null, attackCooldown: 0, retired: false,
     windup: 0, pendingHit: null,
     ai: { def: { kind: 'aggressive' }, mode: 'idle', targetUid: null, home: { ...pos }, spottedAt: null },
@@ -933,6 +933,76 @@ describe('近接の自動の詰め寄り', () => {
     e.hp = 0;
     for (let i = 0; i < 60; i++) step(s, [], 1 / 60);
     expect(roran.pos).toEqual(at);
+  });
+});
+
+describe('飛行', () => {
+  const WALL: StageDef = {
+    ...STAGE, mapRows: ['.....#....', '.....#....', '.....#....'], enemies: [],
+  };
+  const fly = (s: BattleState, defId = 'roran'): Unit => {
+    const u = unitOf(s, defId);
+    u.flying = true;
+    return u;
+  };
+
+  it('歩けないマスの帯の向こうへ、一直線に着く', () => {
+    const { state: s } = fresh(WALL);
+    const u = fly(s);
+    u.pos = { x: 16, y: 16 };
+    const from = { ...u.pos };
+    const dest = { x: 288, y: 80 };
+    step(s, [{ type: 'move', uid: u.uid, dest }], 1 / 60);
+    expect(u.goalField).toBeNull();
+    for (let i = 0; i < 600; i++) {
+      step(s, [], 1 / 60);
+      // from-dest の線からの距離（外積 / 長さ）
+      const cross = (dest.x - from.x) * (u.pos.y - from.y) - (dest.y - from.y) * (u.pos.x - from.x);
+      expect(Math.abs(cross) / distance(from, dest), `tick ${i}`).toBeLessThan(0.5);
+    }
+    expect(distance(u.pos, dest)).toBeLessThan(1);
+  });
+
+  it('地上のユニットは同じ指示でも帯を越えない', () => {
+    const { state: s } = fresh(WALL);
+    const u = unitOf(s, 'roran');
+    u.pos = { x: 16, y: 48 };
+    step(s, [{ type: 'move', uid: u.uid, dest: { x: 288, y: 48 } }], 1 / 60);
+    for (let i = 0; i < 600; i++) step(s, [], 1 / 60);
+    expect(u.pos.x).toBeLessThan(160);
+  });
+
+  it('マップの外への指示は、マップの内側で止まる', () => {
+    // 右端のゴール手前で勝利にならないよう、ゴールを下へずらす
+    const { state: s } = fresh({ ...WALL, victory: { type: 'reach', pos: { x: 304, y: 80 }, radius: 20, by: 'any' } });
+    const u = fly(s);
+    u.pos = { x: 16, y: 16 };
+    step(s, [{ type: 'move', uid: u.uid, dest: { x: 9999, y: -500 } }], 1 / 60);
+    expect(u.goalPos).toEqual({ x: 304, y: 16 });
+    for (let i = 0; i < 600; i++) step(s, [], 1 / 60);
+    expect(u.pos.x).toBeCloseTo(304, 0);
+    expect(u.pos.y).toBeCloseTo(16, 0);
+  });
+
+  it('森のマスでも速さが落ちない（ロランは 60px/秒）', () => {
+    const forest: StageDef = {
+      ...STAGE, mapRows: ['FFFFFFFFFF', 'FFFFFFFFFF', 'FFFFFFFFFF'], enemies: [],
+      legend: { '.': { tile: null, walkable: true }, F: { tile: null, walkable: true, speed: 0.5 } },
+    };
+    const { state: s } = fresh(forest);
+    const u = fly(s);
+    u.pos = { x: 16, y: 48 };
+    step(s, [{ type: 'move', uid: u.uid, dest: { x: 304, y: 48 } }], 1);
+    expect(u.pos.x).toBeCloseTo(76, 0);
+  });
+
+  it('敵が歩けないマスの上の飛行の仲間を狙っても、例外を出さない', () => {
+    const { state: s } = fresh({ ...WALL, enemies: [] });
+    const u = fly(s);
+    u.pos = { x: 176, y: 48 };
+    const e = spawnEnemy(s, 'narazumono', { x: 16, y: 48 });
+    for (let i = 0; i < 300; i++) step(s, [], 1 / 60);
+    expect(Number.isFinite(e.pos.x) && Number.isFinite(e.pos.y)).toBe(true);
   });
 });
 

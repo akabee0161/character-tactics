@@ -34,7 +34,7 @@ function fresh(): { state: BattleState; shooter: Unit; target: Unit } {
 
 const sourceOf = (u: Unit, over: Partial<HitSource> = {}): HitSource => ({
   uid: u.uid, defId: u.defId, attack: u.attack, pos: { ...u.pos },
-  neraiuchi: false, power: u.power, bondBonus: 0, ...over,
+  neraiuchi: false, power: u.power, bondBonus: 0, ignoresGuard: false, ...over,
 });
 
 describe('updateProjectiles', () => {

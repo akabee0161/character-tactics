@@ -6,6 +6,7 @@
   "maxHp": 36,
   "power": 5,
   "guard": 6,
+  "resist": 2,
   "attack": "melee",
   "range": 24,
   "attackInterval": 1.8,

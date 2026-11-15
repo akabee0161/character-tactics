@@ -160,7 +160,7 @@ describe('members / claimed / bonus', () => {
   });
 
   it('members・claimed・bonus が往復する', () => {
-    const bonus = { maxHp: 3, power: 1, guard: 2, speed: 0 };
+    const bonus = { maxHp: 3, power: 1, guard: 2, speed: 0, resist: 1 };
     const raw = { ...newSave(reg), members: ['gau'], claimed: ['village:a'] };
     raw.units = { ...raw.units, roran: { level: 2, xp: 1, bonus } };
     const loaded = load(raw);

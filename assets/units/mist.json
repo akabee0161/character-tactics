@@ -2,6 +2,7 @@
   "id": "mist", "name": "ミスト", "role": "魔法",
   "combat": true,
   "maxHp": 22, "power": 5, "guard": 3,
+  "resist": 7,
   "attack": "magic", "range": 140,
   "attackInterval": 2.4, "speed": 60,
   "skillId": "omajinai",

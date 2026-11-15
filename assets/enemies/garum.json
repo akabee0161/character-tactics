@@ -2,6 +2,7 @@
   "id": "garum", "name": "ガルム", "role": "敵",
   "combat": true,
   "maxHp": 40, "power": 9, "guard": 4,
+  "resist": 3,
   "attack": "melee", "range": 24,
   "attackInterval": 1.4, "speed": 41,
   "skillId": null,

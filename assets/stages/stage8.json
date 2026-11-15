@@ -78,5 +78,9 @@
   ],
   "villages": [
     {"id": "v1", "col": 2, "row": 6, "text": "村の 長老に 戦い方を 教わった！", "effect": {"type": "xp", "amount": 10}}
+  ],
+  "joins": [
+    {"unitId": "ally11", "level": 5, "talk": [{"speaker": "ally11", "text": "関所の 上を 飛んでいたら、\n皆が 見えたんだ！ 僕も 行く！"}, {"speaker": "roran", "text": "空から 頼むよ。よろしく、{ally11}！"}, {"text": "{ally11}が 仲間に 加わった！"}]},
+    {"unitId": "ally13", "level": 5, "talk": [{"speaker": "ally13", "text": "関所の 番兵は もう 懲り懲りだ。\n俺の 斧で 道を 切り開こう。"}, {"speaker": "roran", "text": "力強いな。よろしく、{ally13}！"}, {"text": "{ally13}が 仲間に 加わった！"}]}
   ]
 }

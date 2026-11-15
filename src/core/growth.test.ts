@@ -49,7 +49,7 @@ describe('awardXp', () => {
     const s = fresh();
     const u = playerOf(s, 'roran');
     const def = s.reg.units.get('roran')!;
-    u.statBonus = { maxHp: 3, power: 1, guard: 2, speed: 0 };
+    u.statBonus = { maxHp: 3, power: 1, guard: 2, speed: 0, resist: 0 };
     u.maxHp += 3; u.power += 1; u.guard += 2;
     awardXp(s, u, xpToNext(1, s.reg.growth.xpPerLevel));
     expect(u.level).toBe(2);

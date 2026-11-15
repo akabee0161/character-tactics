@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { testRegistry } from '../core/testing';
-import { MAX_PARTY } from './limits';
+import { MAX_MEMBERS, MAX_PARTY } from './limits';
 import { buildRegistry, lookupDef, skillParam } from './registry';
 
 const UNIT = {
   id: 'roran', name: 'ロラン', role: 'たて', combat: true,
-  maxHp: 30, power: 6, guard: 5, attack: 'melee', range: 24,
+  maxHp: 30, power: 6, guard: 5, resist: 0, attack: 'melee', range: 24,
   attackInterval: 1.6, speed: 60, skillId: 'funbaru', color: '#4a80c8',
 };
 const ENEMY = {
   id: 'narazumono', name: 'ならずもの', role: 'てき', combat: true,
-  maxHp: 12, power: 5, guard: 1, attack: 'melee', range: 24,
+  maxHp: 12, power: 5, guard: 1, resist: 0, attack: 'melee', range: 24,
   attackInterval: 1.6, speed: 45, skillId: null, color: '#8a5a4a',
   xpReward: 5, bowDamageCap: null, fleeAtHpRatio: null,
 };
@@ -18,7 +18,7 @@ const ENEMY = {
 // もう1人のユニットとして定義しておく（ブリーフのフィクスチャ不足を補うためのローカルな追加）
 const INES = {
   id: 'ines', name: 'イネス', role: 'ゆみ', combat: true,
-  maxHp: 20, power: 4, guard: 2, attack: 'bow', range: 120,
+  maxHp: 20, power: 4, guard: 2, resist: 0, attack: 'bow', range: 120,
   attackInterval: 1.2, speed: 50, skillId: null, color: '#c8a04a',
 };
 const GROWTH = {
@@ -443,6 +443,37 @@ describe('実アセットのステージ', () => {
   });
 });
 
+describe('実アセットの仲間', () => {
+  const reg = testRegistry();
+
+  it('仲間は 15 人', () => {
+    expect(reg.units.size).toBe(MAX_MEMBERS);
+  });
+
+  it.each([
+    ['stage5', 'ally09', 3], ['stage6', 'ally12', 4], ['stage7', 'ally10', 4], ['stage8', 'ally11', 5],
+    ['stage8', 'ally13', 5], ['stage9', 'ally14', 6], ['stage10', 'ally15', 7],
+  ])('%s の joins に %s（レベル %i）がある', (stageId, unitId, level) => {
+    const stage = reg.stages.find((x) => x.id === stageId)!;
+    const j = stage.joins.find((x) => x.unitId === unitId);
+    expect(j?.level).toBe(level);
+    expect(j!.talk.length).toBe(3);
+  });
+
+  it('ally09・ally13 は守備を無視し、ally11 は飛ぶ', () => {
+    expect(reg.units.get('ally09')!.ignoresGuard).toBe(true);
+    expect(reg.units.get('ally13')!.ignoresGuard).toBe(true);
+    expect(reg.units.get('ally11')!.flying).toBe(true);
+    expect(reg.units.get('ally10')!.resist).toBe(10);
+    expect(reg.units.get('ally10')!.skillId).toBe('kekkai');
+  });
+
+  it('7 人ぶんの加入がステージに書かれている', () => {
+    const joined = new Set(reg.stages.flatMap((x) => x.joins.map((j) => j.unitId)));
+    expect(joined.size).toBeGreaterThanOrEqual(7);
+  });
+});
+
 describe('buildRegistry: joins / persuasions / villages', () => {
   const ALLY5 = { ...INES, id: 'ally05', name: 'ごにん' };
   const ALLY6 = { ...INES, id: 'ally06', name: 'ろくにん' };
@@ -523,14 +554,23 @@ describe('buildRegistry: joins / persuasions / villages', () => {
     expect(rs).toContain('persuasions[0].persuader');
   });
 
-  it('roster と加入しうる仲間の合計が 8 人を超えるとエラー', () => {
+  const withJoins = (n: number) => {
     const extra: Record<string, unknown> = {};
     const joins: unknown[] = [];
-    for (let i = 0; i < MAX_PARTY; i++) {
+    for (let i = 0; i < n; i++) {
       extra[`assets/units/x${i}.json`] = { ...INES, id: `x${i}`, name: `x${i}` };
       joins.push({ unitId: `x${i}`, level: 1, talk: TALK });
     }
-    const r = base({ joins }, extra);
-    expect(reasons(r).some((s) => s.includes(`${MAX_PARTY} 人を こえている`))).toBe(true);
+    return base({ joins }, extra);
+  };
+
+  it('roster と加入しうる仲間の合計が 15 人を超えるとエラー', () => {
+    const r = withJoins(MAX_MEMBERS);
+    expect(reasons(r).some((s) => s.includes(`${MAX_MEMBERS} 人を こえている`))).toBe(true);
+  });
+
+  it('合計が 8 人を超えても 15 人以内ならエラーにならない', () => {
+    const r = withJoins(MAX_PARTY);
+    expect(reasons(r).some((s) => s.includes('人を こえている'))).toBe(false);
   });
 });

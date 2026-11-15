@@ -14,13 +14,14 @@ import type { BattleState, Grid, PartyProgress, StatBonus, Unit, Vec2 } from './
  */
 export function statsForLevel(
   def: UnitDef | EnemyDef, level: number, growth: GrowthDef, bonus: StatBonus = NO_BONUS,
-): { maxHp: number; power: number; guard: number; speed: number } {
+): { maxHp: number; power: number; guard: number; speed: number; resist: number } {
   const steps = Math.max(0, level - 1);
   return {
     maxHp: def.maxHp + steps * growth.hpPerLevel + bonus.maxHp,
     power: def.power + Math.floor(steps / growth.levelsPerPower) + bonus.power,
     guard: def.guard + bonus.guard,
     speed: def.speed + bonus.speed,
+    resist: def.resist + bonus.resist,
   };
 }
 
@@ -45,7 +46,7 @@ type MakeUnitArgs = {
 
 export function makeUnit(a: MakeUnitArgs): Unit {
   const statBonus = { ...(a.bonus ?? NO_BONUS) };
-  const { maxHp, power, guard, speed } = statsForLevel(a.def, a.level, a.growth, statBonus);
+  const { maxHp, power, guard, speed, resist } = statsForLevel(a.def, a.level, a.growth, statBonus);
   const enemyDef = 'bowDamageCap' in a.def ? a.def : null;
   return {
     uid: a.uid,
@@ -57,6 +58,8 @@ export function makeUnit(a: MakeUnitArgs): Unit {
     pos: { ...a.pos },
     hp: maxHp, maxHp, power,
     guard,
+    resist,
+    ignoresGuard: a.def.ignoresGuard,
     attack: a.def.attack,
     range: a.def.range,
     attackInterval: a.def.attackInterval,
@@ -64,7 +67,7 @@ export function makeUnit(a: MakeUnitArgs): Unit {
     bowDamageCap: enemyDef?.bowDamageCap ?? null,
     skillId: a.def.skillId,
     level: a.level, xp: a.xp,
-    statBonus, stagePower: 0, cheerUntil: -1, cheerPower: 0, tauntUntil: -1, persuasion: null,
+    statBonus, stagePower: 0, cheerUntil: -1, cheerPower: 0, wardUntil: -1, wardResist: 0, flying: a.def.flying ?? false, tauntUntil: -1, persuasion: null,
     goalPos: null, goalField: null, engagedWith: null, closingOn: null, attackCooldown: 0, retired: false,
     windup: windupOf(a.def), pendingHit: null,
     ai: a.ai === null
@@ -121,35 +124,40 @@ export function createBattleState(
 ): BattleState {
   const grid = makeGrid(stage.cell, stage.mapRows, stage.legend);
 
-  // 味方の並び: roster、続けて加わった仲間、続けて開始時の加入（MAX_PARTY で切る）
-  const entries: { defId: string; level: number; xp: number; bonus?: StatBonus }[] = [];
-  const have = new Set<string>();
-  const addEntry = (defId: string, level: number, xp: number, bonus?: StatBonus): void => {
-    if (have.has(defId) || entries.length >= MAX_PARTY) return;
-    have.add(defId);
-    entries.push({ defId, level, xp, bonus });
-  };
-  const progressOf = (defId: string) => ({
-    level: party.units[defId]?.level ?? 1, xp: party.units[defId]?.xp ?? 0, bonus: party.units[defId]?.bonus,
+  // 場に出る味方。並びは roster、続けて加わった仲間、続けて開始時の加入。
+  // 8 人を超えるときに誰を残すかは、開始時の加入 → roster → 加わった順（members）の優先で決める
+  type Entry = { defId: string; level: number; xp: number; bonus?: StatBonus };
+  const progressOf = (defId: string): Entry => ({
+    defId, level: party.units[defId]?.level ?? 1, xp: party.units[defId]?.xp ?? 0, bonus: party.units[defId]?.bonus,
   });
   for (const defId of stage.roster) {
     if (!reg.units.has(defId)) throw new Error(`roster に しらない ユニット: ${defId}`);
-    const p = progressOf(defId);
-    addEntry(defId, p.level, p.xp, p.bonus);
   }
   // roster に無いのに出るのは、加わった仲間（members）だけ。加入しうる仲間でない units は roster が決める
-  for (const defId of partyIds(reg, party.members).filter((id) => party.members.includes(id))) {
-    const p = progressOf(defId);
-    addEntry(defId, p.level, p.xp, p.bonus);
-  }
+  const memberIds = partyIds(reg, party.members).filter((id) => party.members.includes(id));
   const joined: string[] = [];
+  const joinEntries: Entry[] = [];
   for (const j of stage.joins) {
-    if (party.members.includes(j.unitId) || have.has(j.unitId)) continue;
+    if (party.members.includes(j.unitId) || stage.roster.includes(j.unitId) || joined.includes(j.unitId)) continue;
     if (!reg.units.has(j.unitId)) throw new Error(`joins に しらない ユニット: ${j.unitId}`);
-    if (entries.length >= MAX_PARTY) continue;
-    addEntry(j.unitId, j.level, 0);
+    // 場に出られなくても、加入の記録は必ず残す
     joined.push(j.unitId);
+    joinEntries.push({ defId: j.unitId, level: j.level, xp: 0 });
   }
+  const inOrder: Entry[] = [];
+  const seen = new Set<string>();
+  const push = (e: Entry): void => {
+    if (seen.has(e.defId)) return;
+    seen.add(e.defId);
+    inOrder.push(e);
+  };
+  for (const defId of stage.roster) push(progressOf(defId));
+  for (const defId of memberIds) push(progressOf(defId));
+  for (const e of joinEntries) push(e);
+  const priority = [
+    ...joinEntries.map((e) => e.defId), ...stage.roster, ...memberIds,
+  ].filter((id, i, all) => all.indexOf(id) === i).slice(0, MAX_PARTY);
+  const entries = inOrder.filter((e) => priority.includes(e.defId));
 
   const starts = startPositions(stage, grid, entries.length);
   const roster = entries.map((e, i) => makeUnit({
@@ -184,6 +192,9 @@ export function createBattleState(
     projectiles: [],
     nextProjectileId: 1,
     joined,
+    benchedRecruits: joinEntries
+      .filter((e) => !entries.some((x) => x.defId === e.defId))
+      .map((e) => ({ defId: e.defId, level: e.level })),
     claimed: [],
     visited: [],
     pendingRecruit: null,

@@ -2,6 +2,7 @@
   "id": "roran", "name": "ロラン", "role": "盾",
   "combat": true,
   "maxHp": 30, "power": 6, "guard": 5,
+  "resist": 2,
   "attack": "melee", "range": 24,
   "attackInterval": 1.6, "speed": 60,
   "skillId": "funbaru",
