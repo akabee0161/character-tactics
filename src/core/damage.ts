@@ -2,6 +2,11 @@ import { computeDamage, isFunbaruActive } from './combat';
 import { PINCH_RATIO } from './constants';
 import type { BattleState, HitSource, Unit } from './types';
 
+/** 結界の分を足した、いまの魔法防御 */
+export function effectiveResist(u: Unit, time: number): number {
+  return u.resist + (time < u.wardUntil ? u.wardResist : 0);
+}
+
 /**
  * 命中1回ぶんを解決する。近接の攻撃も飛翔体の着弾も必ずここを通す。
  * 2箇所に分けて書くと、ピンチの判定やカウンタの積み方がすぐに食い違う
@@ -11,7 +16,7 @@ export function applyDamage(state: BattleState, source: HitSource, target: Unit)
   const dmg = computeDamage({
     power: source.power,
     guard: target.guard,
-    resist: target.resist,
+    resist: effectiveResist(target, state.time),
     ignoresGuard: source.ignoresGuard,
     attackKind: source.attack,
     bowDamageCap: target.bowDamageCap,

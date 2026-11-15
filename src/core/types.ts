@@ -82,6 +82,9 @@ export type Unit = {
   /** はげますの効果。シム時刻 cheerUntil 未満の間 cheerPower を攻撃力に足す */
   cheerUntil: number;
   cheerPower: number;
+  /** 結界の効果。シム時刻 wardUntil 未満の間 wardResist を魔法防御に足す */
+  wardUntil: number;
+  wardResist: number;
   /** 引きつけるの効果。シム時刻 tauntUntil 未満の間有効 */
   tauntUntil: number;
   /** 説得の相手なら stage.persuasions の添字 */

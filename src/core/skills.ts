@@ -19,6 +19,9 @@ export const TSUKI_DAMAGE = 7;
 export const HAGEMASU_RANGE = 120;
 export const HAGEMASU_POWER = 2;
 export const HAGEMASU_DURATION = 8;
+export const KEKKAI_RANGE = 120;
+export const KEKKAI_RESIST = 6;
+export const KEKKAI_DURATION = 8;
 export const TATAKIWARI_DAMAGE = 14;
 export const TATAKIWARI_RANGE = 32;
 export const DEFAULT_SKILL_COOLDOWN = 10;
@@ -157,6 +160,18 @@ export const SKILL_EFFECTS: Record<string, SkillEffect> = {
     for (const a of allies) {
       a.cheerUntil = until;
       a.cheerPower = power;
+    }
+    return allies.length;
+  },
+
+  kekkai: ({ state, self }) => {
+    const range = skillParam(state.reg, 'kekkai', 'range', KEKKAI_RANGE);
+    const resist = skillParam(state.reg, 'kekkai', 'resist', KEKKAI_RESIST);
+    const until = state.time + skillParam(state.reg, 'kekkai', 'duration', KEKKAI_DURATION);
+    const allies = playerUnits(state).filter((u) => u.hp > 0 && distance(self.pos, u.pos) <= range);
+    for (const a of allies) {
+      a.wardUntil = until;
+      a.wardResist = resist;
     }
     return allies.length;
   },
