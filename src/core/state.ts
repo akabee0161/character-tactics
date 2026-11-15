@@ -67,7 +67,7 @@ export function makeUnit(a: MakeUnitArgs): Unit {
     bowDamageCap: enemyDef?.bowDamageCap ?? null,
     skillId: a.def.skillId,
     level: a.level, xp: a.xp,
-    statBonus, stagePower: 0, cheerUntil: -1, cheerPower: 0, wardUntil: -1, wardResist: 0, tauntUntil: -1, persuasion: null,
+    statBonus, stagePower: 0, cheerUntil: -1, cheerPower: 0, wardUntil: -1, wardResist: 0, flying: a.def.flying ?? false, tauntUntil: -1, persuasion: null,
     goalPos: null, goalField: null, engagedWith: null, closingOn: null, attackCooldown: 0, retired: false,
     windup: windupOf(a.def), pendingHit: null,
     ai: a.ai === null

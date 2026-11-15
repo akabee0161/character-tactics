@@ -173,3 +173,14 @@ describe('guard', () => {
     expect(run('guard', self, [p]).mode).toBe('idle');
   });
 });
+
+describe('aggressive: 飛行の相手', () => {
+  it('歩けないマスの上にいる飛行の仲間も追う（例外を出さない）', () => {
+    const self = unit('e1', 48, 48, { kind: 'aggressive' });
+    const flyer = unit('p1', 96, 96, null); // 壁の行（y:96 は '#' の段）
+    expect(GRID.walkable[3 * GRID.cols + 3]).toBe(false);
+    const d = run('aggressive', self, [flyer]);
+    expect(d.mode).toBe('chase');
+    expect(d.goal).toEqual({ x: 96, y: 96 });
+  });
+});

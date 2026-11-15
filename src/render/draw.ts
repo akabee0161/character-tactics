@@ -281,6 +281,9 @@ function drawHpBar(
   ctx.fillRect(p.x - w / 2, p.y - half - 9, w * Math.max(0, Math.min(1, ratio)), 4);
 }
 
+/** 飛行のユニットの絵を持ち上げる高さ（px） */
+const FLYING_LIFT = 5;
+
 function drawUnits(
   ctx: CanvasRenderingContext2D,
   reg: Registry,
@@ -301,9 +304,18 @@ function drawUnits(
     const def = defOf(reg, unit.defId);
     const radius = isAlly ? UNIT_R : enemyRadius(unit.maxHp);
     // unit.pos は足元。絵と、絵に付いて回る HPバー・旗・リングは絵の中心を基準に置く
-    const p = bodyCenter(
-      mapToLogical({ x: unit.pos.x + kbOffset.x, y: unit.pos.y + kbOffset.y }), def, radius,
-    );
+    const foot = mapToLogical({ x: unit.pos.x + kbOffset.x, y: unit.pos.y + kbOffset.y });
+    const p = bodyCenter(foot, def, radius);
+    if (unit.flying) {
+      // 飛んでいる印。足元に影を落とし、絵を少し持ち上げる（HPバーなども絵に付いて上がる）
+      if (phase !== 'marks') {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        ctx.beginPath();
+        ctx.ellipse(foot.x, foot.y, radius * 0.8, radius * 0.35, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      p.y -= FLYING_LIFT;
+    }
     const sheet = def.sprites.map;
     const frame = sheet === null ? STILL : frameFor(anim, unit.uid, sheet, state.time);
     // 絵が入ると 22px から 32px になる。HPバーやリングはこの half を基準にする

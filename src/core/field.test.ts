@@ -4,6 +4,7 @@ import {
   ORTHO_COST,
   cellCenter,
   cellIndexAt,
+  clampToMap,
   computeFlowField,
   distance,
   distanceToSegment,
@@ -474,5 +475,19 @@ describe('slideStep', () => {
   it('出発点に箱が収まらないときは、足元の1点で判定して抜け出せる', () => {
     // (28,48) は箱が壁にかかっている。左へ動くなら点は歩けるので進む
     expect(slideStep(makeGrid(32, RING), { x: 28, y: 48 }, { x: 27, y: 48 })).toEqual({ x: 27, y: 48 });
+  });
+});
+
+describe('clampToMap', () => {
+  const g = makeGrid(32, MAP);
+
+  it('マップの外の点を、半マスだけ内側へ寄せる', () => {
+    expect(clampToMap(g, { x: -50, y: -5 })).toEqual({ x: 16, y: 16 });
+    expect(clampToMap(g, { x: 999, y: 999 })).toEqual({ x: 144, y: 80 });
+  });
+
+  it('内側の点はそのまま返す（歩けないマスの上でも）', () => {
+    expect(clampToMap(g, { x: 48, y: 48 })).toEqual({ x: 48, y: 48 });
+    expect(clampToMap(g, { x: 16, y: 80 })).toEqual({ x: 16, y: 80 });
   });
 });

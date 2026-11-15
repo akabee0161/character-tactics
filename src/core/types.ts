@@ -85,6 +85,8 @@ export type Unit = {
   /** 結界の効果。シム時刻 wardUntil 未満の間 wardResist を魔法防御に足す */
   wardUntil: number;
   wardResist: number;
+  /** 歩けないマスの上も一直線に飛ぶ（移動はフローフィールドを使わず、速さの倍率も受けない） */
+  flying: boolean;
   /** 引きつけるの効果。シム時刻 tauntUntil 未満の間有効 */
   tauntUntil: number;
   /** 説得の相手なら stage.persuasions の添字 */

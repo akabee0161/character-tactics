@@ -176,6 +176,8 @@ export type UnitDef = {
   resist: number;
   /** 通常の近接・弓の攻撃で相手の守備を 0 として計算する（斧）。JSON では省略でき、そのとき false */
   ignoresGuard: boolean;
+  /** true なら歩けないマスの上も一直線に飛ぶ。JSON では省略でき、そのとき false */
+  flying?: boolean;
   attack: AttackKind;
   range: number;
   attackInterval: number;
@@ -207,6 +209,7 @@ function readUnitFields(ctx: Ctx, o: Record<string, unknown>): UnitDef {
     guard: requireNumber(ctx, 'guard', o.guard, { min: 0 }) ?? 0,
     resist: requireNumber(ctx, 'resist', o.resist, { min: 0 }) ?? 0,
     ignoresGuard: o.ignoresGuard === undefined ? false : (requireBoolean(ctx, 'ignoresGuard', o.ignoresGuard) ?? false),
+    ...(o.flying === undefined ? {} : { flying: requireBoolean(ctx, 'flying', o.flying) ?? false }),
     attack: requireEnum(ctx, 'attack', o.attack, ATTACK_KINDS) ?? 'melee',
     range: requireNumber(ctx, 'range', o.range, { min: 1 }) ?? 1,
     attackInterval: requireNumber(ctx, 'attackInterval', o.attackInterval, { min: 0.1 }) ?? 1,
