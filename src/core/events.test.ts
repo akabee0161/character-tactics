@@ -356,6 +356,19 @@ describe('completeRecruit', () => {
     expect(s.benchedRecruits).toEqual([{ defId: 'ally05', level: 3 }]);
   });
 
+  it('倒れた味方も場の人数に数える（下の段の枠は倒れた人も含めた 8 人）', () => {
+    const { s } = withPersuasion();
+    roranOf(s).pos = { x: 310, y: 300 };
+    updatePersuasions(s);
+    const base = players(s)[0]!;
+    while (players(s).length < MAX_PARTY) s.units.push({ ...base, uid: `x${s.units.length}` });
+    players(s)[3]!.retired = true;
+    const n = s.units.length;
+    expect(completeRecruit(s)).toBeNull();
+    expect(s.units.length).toBe(n);
+    expect(s.benchedRecruits).toEqual([{ defId: 'ally05', level: 3 }]);
+  });
+
   it('場に空きがあれば benchedRecruits は空のまま', () => {
     const { s } = withPersuasion();
     roranOf(s).pos = { x: 310, y: 300 };

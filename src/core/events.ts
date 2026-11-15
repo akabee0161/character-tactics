@@ -119,7 +119,8 @@ export function completeRecruit(state: BattleState): Unit | null {
     const foe = state.units.find((u) => u.uid === pending.foeUid);
     if (foe) retireUnit(state, foe);
   }
-  const allies = state.units.filter((u) => u.side === 'player' && !u.retired).length;
+  // 倒れた味方も数える。下の段の枠は倒れた人も含めた先頭 MAX_PARTY 人なので、数えないと枠の外に出てしまう
+  const allies = state.units.filter((u) => u.side === 'player').length;
   if (allies >= MAX_PARTY) {
     state.joined.push(pending.recruit.unitId);
     state.benchedRecruits.push({ defId: pending.recruit.unitId, level: pending.recruit.level });

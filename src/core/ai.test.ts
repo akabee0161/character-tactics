@@ -175,12 +175,22 @@ describe('guard', () => {
 });
 
 describe('aggressive: 飛行の相手', () => {
-  it('歩けないマスの上にいる飛行の仲間も追う（例外を出さない）', () => {
+  const wallCell = () => expect(GRID.walkable[3 * GRID.cols + 3]).toBe(false);
+
+  it('歩けないマスの上の相手しかいなければ、追わずに idle（届かない相手を追って固まらない）', () => {
     const self = unit('e1', 48, 48, { kind: 'aggressive' });
     const flyer = unit('p1', 96, 96, null); // 壁の行（y:96 は '#' の段）
-    expect(GRID.walkable[3 * GRID.cols + 3]).toBe(false);
-    const d = run('aggressive', self, [flyer]);
+    wallCell();
+    expect(run('aggressive', self, [flyer])).toEqual({ mode: 'idle', targetUid: null, goal: null });
+  });
+
+  it('歩けないマスの上の相手が一番近くても、届く相手のうち一番近い方を追う', () => {
+    const self = unit('e1', 48, 48, { kind: 'aggressive' });
+    const flyer = unit('p1', 96, 96, null);
+    const walker = unit('p2', 400, 48, null);
+    wallCell();
+    const d = run('aggressive', self, [flyer, walker]);
     expect(d.mode).toBe('chase');
-    expect(d.goal).toEqual({ x: 96, y: 96 });
+    expect(d.targetUid).toBe('p2');
   });
 });
