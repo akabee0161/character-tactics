@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { MAX_PARTY } from './constants';
 import { cellIndexAt } from './field';
 import { fieldToStatic } from './fields';
-import { beginBattle, canPlaceAt, createBattleState, makeUnit, placeUnit, rebuildForSortie, startPositions, statsForLevel, windupOf } from './state';
+import { beginBattle, canPlaceAt, createBattleState, freeStartSpot, makeUnit, placeUnit, rebuildForSortie, startPositions, statsForLevel, windupOf } from './state';
 import { initialSortie } from './sortie';
 import { testRegistry } from './testing';
 import type { Registry } from '../engine/registry';
@@ -421,5 +421,22 @@ describe('出撃の一覧を渡した戦いの状態', () => {
     expect(posOf(s, 'ines')).toEqual(kept.get('ines'));
     for (const u of players(s)) expect(canPlaceAt(s.stage, s.grid, u.pos)).toBe(true);
     expect(minPairDistance(players(s))).toBeGreaterThanOrEqual(32);
+  });
+});
+
+describe('freeStartSpot', () => {
+  const reg = testRegistry();
+  const stage9 = reg.stages.find((s) => s.id === 'stage9')!;
+  const grid = createBattleState(reg, stage9, { units: {}, members: [], claimed: [] }, 1).grid;
+
+  it('開始位置の先頭 16 か所がすべて塞がれていても、空いている位置を探す', () => {
+    const placed = startPositions(stage9, grid, MAX_PARTY * 2);
+    const spot = freeStartSpot(stage9, grid, placed);
+    expect(spot).not.toBeNull();
+    expect(canPlaceAt(stage9, grid, spot!)).toBe(true);
+    for (const p of placed) expect(Math.hypot(p.x - spot!.x, p.y - spot!.y)).toBeGreaterThanOrEqual(32);
+  });
+  it('何も置かれていなければ、最初の開始位置を返す', () => {
+    expect(freeStartSpot(stage9, grid, [])).toEqual(stage9.placement.starts[0]);
   });
 });

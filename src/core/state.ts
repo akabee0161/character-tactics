@@ -192,11 +192,28 @@ export function createBattleState(
   };
 }
 
+/**
+ * placed のどれからも START_SPACING 以上離れた開始位置を 1 つ返す。placement.starts を先頭から、
+ * 続けて配置できるマス（minY 以降）を starts[0] に近い順に、範囲全体を見る。空きが無ければ null
+ */
+export function freeStartSpot(stage: StageDef, grid: Grid, placed: readonly Vec2[]): Vec2 | null {
+  const starts = stage.placement.starts;
+  const anchor = starts[0]!;
+  const cells: Vec2[] = [];
+  for (let i = 0; i < grid.cols * grid.rows; i++) {
+    const c = cellCenter(grid, i);
+    if (c.y >= stage.placement.minY && fitsAt(grid, c)) cells.push(c);
+  }
+  cells.sort((a, b) => Math.hypot(a.x - anchor.x, a.y - anchor.y) - Math.hypot(b.x - anchor.x, b.y - anchor.y));
+  const free = (s: Vec2): boolean => placed.every((p) => Math.hypot(p.x - s.x, p.y - s.y) >= START_SPACING);
+  for (const s of [...starts, ...cells]) if (free(s)) return { ...s };
+  return null;
+}
 
 /**
  * 出撃を選び直した戦いの状態を作る（配置の場面で「決める」を押したとき）。
  * 残した仲間（kept にいる defId）は置いた場所のまま。入れた仲間は、開始位置の候補を先頭から見て、
- * すでに置いた仲間のどれとも START_SPACING 以上離れている位置に順に置く
+ * すでに置いた仲間のどれとも START_SPACING 以上離れている位置（freeStartSpot）に順に置く
  */
 export function rebuildForSortie(
   reg: Registry,
@@ -215,16 +232,16 @@ export function rebuildForSortie(
     u.pos = { ...pos };
     placed.push(u.pos);
   }
-  const spots = startPositions(stage, state.grid, MAX_PARTY * 2);
   for (const u of players) {
     if (kept.has(u.defId)) continue;
-    const spot = spots.find((s) => placed.every((p) => Math.hypot(p.x - s.x, p.y - s.y) >= START_SPACING));
-    // 空きが無いとき（候補の数を超える）は、作ったときの開始位置のまま
-    if (spot) u.pos = { ...spot };
+    // 範囲全体を探して空きが無いとき（置ける場所が足りない）は、作ったときの開始位置のまま
+    const spot = freeStartSpot(stage, state.grid, placed);
+    if (spot) u.pos = spot;
     placed.push(u.pos);
   }
   return state;
 }
+
 /**
  * そこへ配置できるか。配置の実行とドラッグプレビューの赤表示が必ずこの1本を通る。
  * 別々に書くと「プレビューは置けそうに見えるのに離すと失敗する」がすぐ起きる
