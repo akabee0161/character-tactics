@@ -181,3 +181,24 @@ describe('members / claimed / bonus', () => {
     expect(loaded.claimed).toEqual([]);
   });
 });
+
+describe('前回の出撃（sortie）', () => {
+  const reg = testRegistry();
+  const load = (raw: object) => loadSave(memoryStorage(JSON.stringify(raw)), reg)!;
+
+  it('sortie を書いて読むと同じ並び', () => {
+    const st = memoryStorage();
+    expect(writeSave(st, { ...newSave(reg), sortie: ['ines', 'roran'] })).toBe(true);
+    expect(loadSave(st, reg)!.sortie).toEqual(['ines', 'roran']);
+  });
+  it('知らない ID・文字列でない値・重複は捨てる', () => {
+    expect(load({ ...newSave(reg), sortie: ['roran', 'ghost', 3, 'roran', 'ines'] }).sortie)
+      .toEqual(['roran', 'ines']);
+  });
+  it('sortie が無いセーブ・配列でない値は []', () => {
+    const { sortie: _omit, ...without } = newSave(reg);
+    expect(load(without).sortie).toEqual([]);
+    expect(load({ ...newSave(reg), sortie: 'roran' }).sortie).toEqual([]);
+    expect(newSave(reg).sortie).toEqual([]);
+  });
+});

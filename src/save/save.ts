@@ -19,6 +19,8 @@ export type SaveData = {
   members: string[];
   /** 受け取った一度きりのごほうびの印 */
   claimed: string[];
+  /** 前回「始める」を押したときの出撃の defId。並びのまま。次のステージの最初の出撃に引き継ぐ */
+  sortie: string[];
 };
 
 function isFiniteNonNegInt(v: unknown): boolean {
@@ -53,7 +55,7 @@ export function newSave(reg: Registry): SaveData {
   for (const id of reg.units.keys()) units[id] = { level: 1, xp: 0 };
   return {
     version: SAVE_VERSION, clearedStageIds: [], readIntroStageIds: [],
-    units, members: [], claimed: [],
+    units, members: [], claimed: [], sortie: [],
   };
 }
 
@@ -91,13 +93,22 @@ function reconcile(raw: Record<string, unknown>, reg: Registry): SaveData {
     );
   }
 
-  // 旧セーブにこの 2 つは無い。[] のまま残る（SAVE_VERSION は上げない）
+  // 旧セーブにこの 3 つ（members・sortie・claimed）は無い。[] のまま残る（SAVE_VERSION は上げない）
   if (Array.isArray(raw.members)) {
     const seen = new Set<string>();
     for (const id of raw.members) {
       if (typeof id === 'string' && reg.units.has(id) && !seen.has(id)) {
         seen.add(id);
         save.members.push(id);
+      }
+    }
+  }
+  if (Array.isArray(raw.sortie)) {
+    const seen = new Set<string>();
+    for (const id of raw.sortie) {
+      if (typeof id === 'string' && reg.units.has(id) && !seen.has(id)) {
+        seen.add(id);
+        save.sortie.push(id);
       }
     }
   }
