@@ -6,7 +6,9 @@ import {
   hpBarIn, portraitSlot, resultSlot, roleBadgeIn, rosterSlot, speechLines, stageSlot,
   STAGE_LIST_VIEW, stageListContentH,
   CARD_CLOSE_BTN, ENEMY_LIST, ENEMY_LIST_CLOSE_BTN, STAT_CARD, enemyBtnIn, enemyListRow,
+  SORTIE_BTN, SORTIE_DECIDE_BTN, SORTIE_MESSAGE_Y, SORTIE_SHEET, START_BTN, sortieSlot, sortieStrengthBtn,
 } from './layout';
+import type { Rect } from './hit';
 import { MAX_PARTY } from '../core/constants';
 import { MAX_MEMBERS } from '../engine/limits';
 import { LOGICAL_H, LOGICAL_W, MAP_ORIGIN } from '../render/viewport';
@@ -219,5 +221,33 @@ describe('札と敵の一覧', () => {
     expect(inside(enemyListRow(5), ENEMY_LIST)).toBe(true);
     expect(enemyListRow(5).y + enemyListRow(5).h).toBeLessThanOrEqual(ENEMY_LIST_CLOSE_BTN.y);
     expect(enemyListRow(1).y).toBeGreaterThanOrEqual(enemyListRow(0).y + enemyListRow(0).h);
+  });
+});
+
+describe('出撃の一覧のレイアウト', () => {
+  const inside = (r: Rect, o: Rect) => r.x >= o.x && r.y >= o.y && r.x + r.w <= o.x + o.w && r.y + r.h <= o.y + o.h;
+  const overlap = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+
+  it('出撃の 15 枠と決めるボタンがシートに収まり、互いに重ならない', () => {
+    const slots = Array.from({ length: 15 }, (_, i) => sortieSlot(i));
+    for (const s of slots) {
+      expect(inside(s, SORTIE_SHEET)).toBe(true);
+      expect(inside(sortieStrengthBtn(s), s)).toBe(true);
+    }
+    for (let i = 0; i < slots.length; i++) {
+      for (let j = i + 1; j < slots.length; j++) expect(overlap(slots[i]!, slots[j]!)).toBe(false);
+      expect(overlap(slots[i]!, SORTIE_DECIDE_BTN)).toBe(false);
+    }
+    expect(inside(SORTIE_DECIDE_BTN, SORTIE_SHEET)).toBe(true);
+    // 断りの文の行は、15 枠の下・決めるボタンの上
+    const slotsBottom = Math.max(...slots.map((s) => s.y + s.h));
+    expect(SORTIE_MESSAGE_Y).toBeGreaterThan(slotsBottom);
+    expect(SORTIE_MESSAGE_Y).toBeLessThan(SORTIE_DECIDE_BTN.y);
+  });
+
+  it('SORTIE_BTN と START_BTN が MESSAGE_BAR の中で重ならない', () => {
+    expect(inside(SORTIE_BTN, MESSAGE_BAR)).toBe(true);
+    expect(inside(START_BTN, MESSAGE_BAR)).toBe(true);
+    expect(overlap(SORTIE_BTN, START_BTN)).toBe(false);
   });
 });
