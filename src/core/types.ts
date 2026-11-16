@@ -203,4 +203,6 @@ export type BattleState = {
   nextPlayerUid: number;
   /** 開始時点のセーブの claimed */
   claimedBefore: ReadonlySet<string>;
+  /** 開始時点のセーブの members（加入済みの仲間。出撃から外していても入っている） */
+  membersBefore: ReadonlySet<string>;
 };

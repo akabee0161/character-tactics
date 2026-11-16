@@ -1,6 +1,6 @@
 import { cellCenter, fitsAt, makeGrid } from './field';
 import { MAX_PARTY } from './constants';
-import { partyIds } from './party';
+import { initialSortie, sortieCandidates, sortieProgress } from './sortie';
 import { makeFieldCache } from './fields';
 import { makeRng } from './rng';
 import type { Registry } from '../engine/registry';
@@ -121,43 +121,32 @@ export function createBattleState(
   stage: StageDef,
   party: PartyProgress,
   seed: number,
+  sortie?: readonly string[],
 ): BattleState {
   const grid = makeGrid(stage.cell, stage.mapRows, stage.legend);
 
-  // 場に出る味方。並びは roster、続けて加わった仲間、続けて開始時の加入。
-  // 8 人を超えるときに誰を残すかは、開始時の加入 → roster → 加わった順（members）の優先で決める
-  type Entry = { defId: string; level: number; xp: number; bonus?: StatBonus };
-  const progressOf = (defId: string): Entry => ({
-    defId, level: party.units[defId]?.level ?? 1, xp: party.units[defId]?.xp ?? 0, bonus: party.units[defId]?.bonus,
-  });
+  // 場に出る味方。出撃の一覧（sortie）を渡さないときは自動の決め方（initialSortie）。
+  // 一覧の先頭から MAX_PARTY 人までのうち、候補にいる仲間だけを、候補の並び（roster → 加わった順 → 開始時の加入）で出す
   for (const defId of stage.roster) {
     if (!reg.units.has(defId)) throw new Error(`roster に しらない ユニット: ${defId}`);
   }
-  // roster に無いのに出るのは、加わった仲間（members）だけ。加入しうる仲間でない units は roster が決める
-  const memberIds = partyIds(reg, party.members).filter((id) => party.members.includes(id));
   const joined: string[] = [];
-  const joinEntries: Entry[] = [];
+  const joinEntries: { defId: string; level: number }[] = [];
   for (const j of stage.joins) {
     if (party.members.includes(j.unitId) || stage.roster.includes(j.unitId) || joined.includes(j.unitId)) continue;
     if (!reg.units.has(j.unitId)) throw new Error(`joins に しらない ユニット: ${j.unitId}`);
     // 場に出られなくても、加入の記録は必ず残す
     joined.push(j.unitId);
-    joinEntries.push({ defId: j.unitId, level: j.level, xp: 0 });
+    joinEntries.push({ defId: j.unitId, level: j.level });
   }
-  const inOrder: Entry[] = [];
-  const seen = new Set<string>();
-  const push = (e: Entry): void => {
-    if (seen.has(e.defId)) return;
-    seen.add(e.defId);
-    inOrder.push(e);
-  };
-  for (const defId of stage.roster) push(progressOf(defId));
-  for (const defId of memberIds) push(progressOf(defId));
-  for (const e of joinEntries) push(e);
-  const priority = [
-    ...joinEntries.map((e) => e.defId), ...stage.roster, ...memberIds,
-  ].filter((id, i, all) => all.indexOf(id) === i).slice(0, MAX_PARTY);
-  const entries = inOrder.filter((e) => priority.includes(e.defId));
+  const candidates = sortieCandidates(reg, stage, party.members);
+  const requested = sortie ?? initialSortie(reg, stage, party.members, []);
+  const picked = requested
+    .filter((id, i, all) => candidates.includes(id) && all.indexOf(id) === i)
+    .slice(0, MAX_PARTY);
+  const entries = candidates
+    .filter((id) => picked.includes(id))
+    .map((defId) => ({ defId, ...sortieProgress(stage, party, defId) }));
 
   const starts = startPositions(stage, grid, entries.length);
   const roster = entries.map((e, i) => makeUnit({
@@ -199,9 +188,43 @@ export function createBattleState(
     pendingRecruit: null,
     nextPlayerUid: roster.length + 1,
     claimedBefore: new Set(party.claimed),
+    membersBefore: new Set(party.members),
   };
 }
 
+
+/**
+ * 出撃を選び直した戦いの状態を作る（配置の場面で「決める」を押したとき）。
+ * 残した仲間（kept にいる defId）は置いた場所のまま。入れた仲間は、開始位置の候補を先頭から見て、
+ * すでに置いた仲間のどれとも START_SPACING 以上離れている位置に順に置く
+ */
+export function rebuildForSortie(
+  reg: Registry,
+  stage: StageDef,
+  party: PartyProgress,
+  seed: number,
+  sortie: readonly string[],
+  kept: ReadonlyMap<string, Vec2>,
+): BattleState {
+  const state = createBattleState(reg, stage, party, seed, sortie);
+  const players = state.units.filter((u) => u.side === 'player');
+  const placed: Vec2[] = [];
+  for (const u of players) {
+    const pos = kept.get(u.defId);
+    if (!pos) continue;
+    u.pos = { ...pos };
+    placed.push(u.pos);
+  }
+  const spots = startPositions(stage, state.grid, MAX_PARTY * 2);
+  for (const u of players) {
+    if (kept.has(u.defId)) continue;
+    const spot = spots.find((s) => placed.every((p) => Math.hypot(p.x - s.x, p.y - s.y) >= START_SPACING));
+    // 空きが無いとき（候補の数を超える）は、作ったときの開始位置のまま
+    if (spot) u.pos = { ...spot };
+    placed.push(u.pos);
+  }
+  return state;
+}
 /**
  * そこへ配置できるか。配置の実行とドラッグプレビューの赤表示が必ずこの1本を通る。
  * 別々に書くと「プレビューは置けそうに見えるのに離すと失敗する」がすぐ起きる
