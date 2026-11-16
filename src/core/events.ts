@@ -55,7 +55,7 @@ function applyVillage(state: BattleState, u: Unit, v: VillageDef): void {
       break;
     case 'recruit': {
       const id = effect.recruit.unitId;
-      const present = state.joined.includes(id) || state.units.some((p) => p.side === 'player' && p.defId === id);
+      const present = state.joined.includes(id) || state.membersBefore.has(id) || state.units.some((p) => p.side === 'player' && p.defId === id);
       if (!present && state.pendingRecruit === null) {
         const pos = resolveMoveDest(state.grid, u.pos, { x: u.pos.x + 24, y: u.pos.y }) ?? u.pos;
         state.pendingRecruit = { recruit: effect.recruit, pos: { ...pos }, foeUid: null };

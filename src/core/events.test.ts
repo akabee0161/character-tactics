@@ -14,7 +14,7 @@ const V_COL = 5;
 const V_ROW = 5;
 
 /** 実ステージの写し。(V_COL, V_ROW) のマスを通れない V にして、そこへ村を置く */
-function fresh(villages: VillageDef[], claimedBefore: string[] = []): BattleState {
+function fresh(villages: VillageDef[], claimedBefore: string[] = [], members: string[] = []): BattleState {
   const reg = testRegistry();
   const base = reg.stages[0]!;
   const mapRows = base.mapRows.map((row, y) =>
@@ -28,7 +28,7 @@ function fresh(villages: VillageDef[], claimedBefore: string[] = []): BattleStat
   };
   const progress: Record<string, { level: number; xp: number }> = {};
   for (const id of reg.units.keys()) progress[id] = { level: 1, xp: 0 };
-  const s = createBattleState(reg, stage, { units: progress, members: [], claimed: claimedBefore }, 1);
+  const s = createBattleState(reg, stage, { units: progress, members, claimed: claimedBefore }, 1);
   beginBattle(s);
   return s;
 }
@@ -223,6 +223,15 @@ describe('updateVillages', () => {
     players(s2)[0]!.pos = { ...NEAR };
     updateVillages(s2);
     expect(s2.events[0]).toMatchObject({ type: 'villageVisited', text: 'もう 仲間だ' });
+  });
+
+  it('セーブで加入済みの仲間は、場にいなくても村で再加入しない', () => {
+    // 'ghost' は members にいるが units に無く、場には出ない
+    const s = fresh([{ ...village(recruit('ghost')), text: null }], [], ['ghost']);
+    placeAll(s, FAR);
+    players(s)[0]!.pos = { ...NEAR };
+    updateVillages(s);
+    expect(s.pendingRecruit).toBeNull();
   });
 
   it('加入の会話の間は加入の村を訪れ済みにせず、会話が終わった次の tick で加入が始まる', () => {

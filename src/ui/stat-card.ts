@@ -38,6 +38,8 @@ export type StatCard = {
   before: { level: number; stats: UnitStats } | null;
   skill: { label: string; summary: string } | null;
   traits: string[];
+  /** レベルアップのカードだけ。その仲間のレベルアップのセリフ。無ければ null */
+  line: string | null;
 };
 
 export type StageEnemy = { defId: string; name: string; count: number };
@@ -70,7 +72,7 @@ function baseCard(def: UnitDef | EnemyDef, stats: UnitStats, skill: StatCard['sk
   return {
     defId: def.id, name: def.name, level: null, count: null, role: def.role,
     attack: def.attack, range: def.range, note: noteOf(def.attack, def.ignoresGuard), stats, before: null, skill,
-    traits: traitsOf(def.flying === true, def.ignoresGuard, capOf(def)),
+    traits: traitsOf(def.flying === true, def.ignoresGuard, capOf(def)), line: null,
   };
 }
 

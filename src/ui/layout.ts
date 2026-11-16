@@ -127,3 +127,24 @@ export function enemyListRow(index: number): Rect {
   return { x: ENEMY_LIST.x + 12, y: ENEMY_LIST.y + 64 + index * 64, w: ENEMY_LIST.w - 24, h: 60 };
 }
 export const ENEMY_LIST_CLOSE_BTN: Rect = { x: ENEMY_LIST.x + (ENEMY_LIST.w - 200) / 2, y: ENEMY_LIST.y + ENEMY_LIST.h - 64, w: 200, h: 52 };
+
+/** 敵の一覧に並べられる行の数。最後の行の下端が「閉じる」ボタンに届かない最大の行数（ステージの敵の種類はこれ以下） */
+export const ENEMY_LIST_MAX_ROWS: number =
+  Math.floor((ENEMY_LIST_CLOSE_BTN.y - (enemyListRow(0).y + enemyListRow(0).h)) / 64) + 1;
+
+/** 配置の場面の上段。出撃を選べるときだけ、左を「出撃を 選ぶ」・右を「始める」に分ける（合わせて MESSAGE_BAR の幅） */
+export const SORTIE_BTN: Rect = { x: 8, y: 788, w: 220, h: 68 };
+export const START_BTN: Rect = { x: 236, y: 788, w: 296, h: 68 };
+
+/** 出撃の一覧。見出し・説明の下に 3 列で 15 枠、その下に断りの文、下寄りの中央に「決める」 */
+export const SORTIE_SHEET: Rect = { x: 12, y: 120, w: 516, h: 640 };
+export function sortieSlot(index: number): Rect {
+  return { x: SORTIE_SHEET.x + 8 + (index % 3) * 168, y: SORTIE_SHEET.y + 90 + Math.floor(index / 3) * 80, w: 160, h: 74 };
+}
+/** 枠の右下の「強さ」ボタン（押すとその仲間のカード） */
+export function sortieStrengthBtn(slot: Rect): Rect {
+  return { x: slot.x + slot.w - 58, y: slot.y + slot.h - 32, w: 52, h: 26 };
+}
+/** 断りの文を出す行（15 枠の下と「決める」の間）の中心の y */
+export const SORTIE_MESSAGE_Y = 642;
+export const SORTIE_DECIDE_BTN: Rect = { x: SORTIE_SHEET.x + (SORTIE_SHEET.w - 200) / 2, y: 690, w: 200, h: 56 };

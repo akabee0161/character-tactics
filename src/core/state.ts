@@ -1,6 +1,6 @@
 import { cellCenter, fitsAt, makeGrid } from './field';
 import { MAX_PARTY } from './constants';
-import { partyIds } from './party';
+import { initialSortie, sortieCandidates, sortieProgress } from './sortie';
 import { makeFieldCache } from './fields';
 import { makeRng } from './rng';
 import type { Registry } from '../engine/registry';
@@ -121,43 +121,32 @@ export function createBattleState(
   stage: StageDef,
   party: PartyProgress,
   seed: number,
+  sortie?: readonly string[],
 ): BattleState {
   const grid = makeGrid(stage.cell, stage.mapRows, stage.legend);
 
-  // 場に出る味方。並びは roster、続けて加わった仲間、続けて開始時の加入。
-  // 8 人を超えるときに誰を残すかは、開始時の加入 → roster → 加わった順（members）の優先で決める
-  type Entry = { defId: string; level: number; xp: number; bonus?: StatBonus };
-  const progressOf = (defId: string): Entry => ({
-    defId, level: party.units[defId]?.level ?? 1, xp: party.units[defId]?.xp ?? 0, bonus: party.units[defId]?.bonus,
-  });
+  // 場に出る味方。出撃の一覧（sortie）を渡さないときは自動の決め方（initialSortie）。
+  // 一覧の先頭から MAX_PARTY 人までのうち、候補にいる仲間だけを、候補の並び（roster → 加わった順 → 開始時の加入）で出す
   for (const defId of stage.roster) {
     if (!reg.units.has(defId)) throw new Error(`roster に しらない ユニット: ${defId}`);
   }
-  // roster に無いのに出るのは、加わった仲間（members）だけ。加入しうる仲間でない units は roster が決める
-  const memberIds = partyIds(reg, party.members).filter((id) => party.members.includes(id));
   const joined: string[] = [];
-  const joinEntries: Entry[] = [];
+  const joinEntries: { defId: string; level: number }[] = [];
   for (const j of stage.joins) {
     if (party.members.includes(j.unitId) || stage.roster.includes(j.unitId) || joined.includes(j.unitId)) continue;
     if (!reg.units.has(j.unitId)) throw new Error(`joins に しらない ユニット: ${j.unitId}`);
     // 場に出られなくても、加入の記録は必ず残す
     joined.push(j.unitId);
-    joinEntries.push({ defId: j.unitId, level: j.level, xp: 0 });
+    joinEntries.push({ defId: j.unitId, level: j.level });
   }
-  const inOrder: Entry[] = [];
-  const seen = new Set<string>();
-  const push = (e: Entry): void => {
-    if (seen.has(e.defId)) return;
-    seen.add(e.defId);
-    inOrder.push(e);
-  };
-  for (const defId of stage.roster) push(progressOf(defId));
-  for (const defId of memberIds) push(progressOf(defId));
-  for (const e of joinEntries) push(e);
-  const priority = [
-    ...joinEntries.map((e) => e.defId), ...stage.roster, ...memberIds,
-  ].filter((id, i, all) => all.indexOf(id) === i).slice(0, MAX_PARTY);
-  const entries = inOrder.filter((e) => priority.includes(e.defId));
+  const candidates = sortieCandidates(reg, stage, party.members);
+  const requested = sortie ?? initialSortie(reg, stage, party.members, []);
+  const picked = requested
+    .filter((id, i, all) => candidates.includes(id) && all.indexOf(id) === i)
+    .slice(0, MAX_PARTY);
+  const entries = candidates
+    .filter((id) => picked.includes(id))
+    .map((defId) => ({ defId, ...sortieProgress(stage, party, defId) }));
 
   const starts = startPositions(stage, grid, entries.length);
   const roster = entries.map((e, i) => makeUnit({
@@ -199,7 +188,58 @@ export function createBattleState(
     pendingRecruit: null,
     nextPlayerUid: roster.length + 1,
     claimedBefore: new Set(party.claimed),
+    membersBefore: new Set(party.members),
   };
+}
+
+/**
+ * placed のどれからも START_SPACING 以上離れた開始位置を 1 つ返す。placement.starts を先頭から、
+ * 続けて配置できるマス（minY 以降）を starts[0] に近い順に、範囲全体を見る。空きが無ければ null
+ */
+export function freeStartSpot(stage: StageDef, grid: Grid, placed: readonly Vec2[]): Vec2 | null {
+  const starts = stage.placement.starts;
+  const anchor = starts[0]!;
+  const cells: Vec2[] = [];
+  for (let i = 0; i < grid.cols * grid.rows; i++) {
+    const c = cellCenter(grid, i);
+    if (c.y >= stage.placement.minY && fitsAt(grid, c)) cells.push(c);
+  }
+  cells.sort((a, b) => Math.hypot(a.x - anchor.x, a.y - anchor.y) - Math.hypot(b.x - anchor.x, b.y - anchor.y));
+  const free = (s: Vec2): boolean => placed.every((p) => Math.hypot(p.x - s.x, p.y - s.y) >= START_SPACING);
+  for (const s of [...starts, ...cells]) if (free(s)) return { ...s };
+  return null;
+}
+
+/**
+ * 出撃を選び直した戦いの状態を作る（配置の場面で「決める」を押したとき）。
+ * 残した仲間（kept にいる defId）は置いた場所のまま。入れた仲間は、開始位置の候補を先頭から見て、
+ * すでに置いた仲間のどれとも START_SPACING 以上離れている位置（freeStartSpot）に順に置く
+ */
+export function rebuildForSortie(
+  reg: Registry,
+  stage: StageDef,
+  party: PartyProgress,
+  seed: number,
+  sortie: readonly string[],
+  kept: ReadonlyMap<string, Vec2>,
+): BattleState {
+  const state = createBattleState(reg, stage, party, seed, sortie);
+  const players = state.units.filter((u) => u.side === 'player');
+  const placed: Vec2[] = [];
+  for (const u of players) {
+    const pos = kept.get(u.defId);
+    if (!pos) continue;
+    u.pos = { ...pos };
+    placed.push(u.pos);
+  }
+  for (const u of players) {
+    if (kept.has(u.defId)) continue;
+    // 範囲全体を探して空きが無いとき（置ける場所が足りない）は、作ったときの開始位置のまま
+    const spot = freeStartSpot(stage, state.grid, placed);
+    if (spot) u.pos = spot;
+    placed.push(u.pos);
+  }
+  return state;
 }
 
 /**

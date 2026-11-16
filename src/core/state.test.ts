@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { MAX_PARTY } from './constants';
 import { cellIndexAt } from './field';
 import { fieldToStatic } from './fields';
-import { beginBattle, canPlaceAt, createBattleState, makeUnit, placeUnit, startPositions, statsForLevel, windupOf } from './state';
+import { beginBattle, canPlaceAt, createBattleState, freeStartSpot, makeUnit, placeUnit, rebuildForSortie, startPositions, statsForLevel, windupOf } from './state';
+import { initialSortie } from './sortie';
 import { testRegistry } from './testing';
 import type { Registry } from '../engine/registry';
 import type { StageDef } from '../engine/schema';
@@ -317,8 +318,9 @@ describe('出撃メンバーと開始位置', () => {
     // 場に出られなかった 1 人は、加わったときのレベルを benchedRecruits に残す
     const onField = new Set(players(s).map((u) => u.defId));
     const off = many.filter((id) => !onField.has(id));
-    expect(off).toHaveLength(1);
-    expect(s.benchedRecruits).toEqual([{ defId: off[0], level: 2 }]);
+    // 外せない仲間（stage[0] ではロラン）が先に 1 枠を取るので、場に出られなかったのは 2 人
+    expect(off).toHaveLength(2);
+    expect(s.benchedRecruits).toEqual(off.map((defId) => ({ defId, level: 2 })));
   });
 
   it('開始位置: starts が足りないと近いマスで補い、補えなければ starts を繰り返す', () => {
@@ -365,5 +367,76 @@ describe('出撃メンバーと開始位置', () => {
     expect(s.pendingRecruit).toBeNull();
     expect(s.nextPlayerUid).toBe(s.units.filter((u) => u.side === 'player').length + 1);
     expect(s.claimedBefore.has('x')).toBe(true);
+  });
+});
+
+describe('出撃の一覧を渡した戦いの状態', () => {
+  const reg = testRegistry();
+  const stage9 = reg.stages.find((s) => s.id === 'stage9')!;
+  const M9 = ['ally05', 'ally07', 'ally09', 'ally12', 'ally10', 'ally06', 'ally11', 'ally13'];
+  const party = () => ({ units: {}, members: M9, claimed: [] as string[] });
+  const players = (s: BattleState) => s.units.filter((u) => u.side === 'player');
+  const playerDefIds = (s: BattleState) => players(s).map((u) => u.defId);
+  const posOf = (s: BattleState, defId: string) => players(s).find((u) => u.defId === defId)!.pos;
+  const minPairDistance = (us: BattleState['units']): number => {
+    let m = Infinity;
+    for (let i = 0; i < us.length; i++) {
+      for (let j = i + 1; j < us.length; j++) {
+        m = Math.min(m, Math.hypot(us[i]!.pos.x - us[j]!.pos.x, us[i]!.pos.y - us[j]!.pos.y));
+      }
+    }
+    return m;
+  };
+
+  it('出撃の一覧を渡すと、その仲間だけが候補の並びで場に出る', () => {
+    const s = createBattleState(reg, stage9, party(), 1,
+      ['ally13', 'roran', 'ally12', 'ines', 'ally06', 'ally11', 'ally10', 'mist']);
+    expect(playerDefIds(s)).toEqual(['roran', 'ines', 'mist', 'ally12', 'ally10', 'ally06', 'ally11', 'ally13']);
+  });
+  it('一覧の 9 人目以降・候補にいない ID は場に出ない', () => {
+    const s = createBattleState(reg, stage9, party(), 1,
+      ['roran', 'ines', 'mist', 'gau', 'ally05', 'ally07', 'ally09', 'ally12', 'ally10', 'ally06', 'ghost']);
+    expect(playerDefIds(s)).toEqual(['roran', 'ines', 'mist', 'gau', 'ally05', 'ally07', 'ally09', 'ally12']);
+  });
+  it('一覧を渡さないときは今の自動の 8 人', () => {
+    expect(playerDefIds(createBattleState(reg, stage9, party(), 1)))
+      .toEqual(initialSortie(reg, stage9, M9, []));
+  });
+  it('開始時の加入を外しても加入の記録は残る', () => {
+    const s = createBattleState(reg, stage9, party(), 1,
+      ['roran', 'ines', 'mist', 'gau', 'ally05', 'ally07', 'ally09', 'ally12']);
+    expect(s.joined).toContain('ally14');
+    expect(s.benchedRecruits).toEqual([{ defId: 'ally14', level: stage9.joins[0]!.level }]);
+  });
+  it('membersBefore に加入済みの仲間が入る', () => {
+    expect(createBattleState(reg, stage9, party(), 1).membersBefore.has('ally13')).toBe(true);
+  });
+  it('残した仲間は置いた場所のまま、入れた仲間は空いた開始位置に重ならずに出る', () => {
+    const first = createBattleState(reg, stage9, party(), 1);
+    // 配置できる位置として、最初の状態のロランとイネスの位置を入れ替える
+    const kept = new Map([['roran', { ...posOf(first, 'ines') }], ['ines', { ...posOf(first, 'roran') }]]);
+    const chosen = initialSortie(reg, stage9, M9, ['ally12', 'ally10']);
+    const s = rebuildForSortie(reg, stage9, party(), 1, chosen, kept);
+    expect(posOf(s, 'roran')).toEqual(kept.get('roran'));
+    expect(posOf(s, 'ines')).toEqual(kept.get('ines'));
+    for (const u of players(s)) expect(canPlaceAt(s.stage, s.grid, u.pos)).toBe(true);
+    expect(minPairDistance(players(s))).toBeGreaterThanOrEqual(32);
+  });
+});
+
+describe('freeStartSpot', () => {
+  const reg = testRegistry();
+  const stage9 = reg.stages.find((s) => s.id === 'stage9')!;
+  const grid = createBattleState(reg, stage9, { units: {}, members: [], claimed: [] }, 1).grid;
+
+  it('開始位置の先頭 16 か所がすべて塞がれていても、空いている位置を探す', () => {
+    const placed = startPositions(stage9, grid, MAX_PARTY * 2);
+    const spot = freeStartSpot(stage9, grid, placed);
+    expect(spot).not.toBeNull();
+    expect(canPlaceAt(stage9, grid, spot!)).toBe(true);
+    for (const p of placed) expect(Math.hypot(p.x - spot!.x, p.y - spot!.y)).toBeGreaterThanOrEqual(32);
+  });
+  it('何も置かれていなければ、最初の開始位置を返す', () => {
+    expect(freeStartSpot(stage9, grid, [])).toEqual(stage9.placement.starts[0]);
   });
 });

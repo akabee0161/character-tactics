@@ -1,16 +1,10 @@
 import type { StageDef, Vec2 } from '../engine/schema';
+import { lockedIds } from '../core/sortie';
 import type { Unit } from '../core/types';
 
-/** 倒れたら即敗北するユニットの defId。定義順・重複なし */
+/** 倒れたら即敗北するユニットの defId。定義順・重複なし（出撃から外せない仲間と同じ規則） */
 export function escortDefIds(stage: StageDef): string[] {
-  const out: string[] = [];
-  for (const cond of stage.defeat) {
-    if (cond.type !== 'unitLost') continue;
-    for (const defId of cond.defIds) {
-      if (!out.includes(defId)) out.push(defId);
-    }
-  }
-  return out;
+  return lockedIds(stage);
 }
 
 export type AlertMark = { pos: Vec2; defId: string };

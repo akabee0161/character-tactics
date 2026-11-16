@@ -8,8 +8,8 @@ import { BUFF_COLOR, activeBuffs, drawUpTriangle } from '../render/buff-marks';
 import { readyGlowAlpha } from '../render/effects';
 import { LOGICAL_H, LOGICAL_W, mapToLogical } from '../render/viewport';
 import {
-  BOTTOM_PANEL_Y, BTN, FACE_PX, MESSAGE_BAR, SPEECH_BODY_X, SPEECH_FONT_PX, SPEECH_LINE_H,
-  SPEECH_MAX_LINES, STAGE_LIST_VIEW, TALK_BODY_X, TALK_FONT, TALK_LINE_H, TALK_PAD, TALK_WINDOW,
+  BOTTOM_PANEL_Y, BTN, FACE_PX, MESSAGE_BAR, SORTIE_BTN, SPEECH_BODY_X, SPEECH_FONT_PX, SPEECH_LINE_H,
+  SPEECH_MAX_LINES, STAGE_LIST_VIEW, START_BTN, TALK_BODY_X, TALK_FONT, TALK_LINE_H, TALK_PAD, TALK_WINDOW,
   enemyBtnIn, hpBarIn, portraitSlot, resultSlot, roleBadgeIn, rosterSlot, speechLines, stageListContentH, stageSlot,
 } from './layout';
 import { currentSpeaker, pageCount, visibleLines } from './talk';
@@ -180,7 +180,8 @@ function drawRoster(
   });
 }
 
-export function drawPlacement(ctx: CanvasRenderingContext2D, state: BattleState): void {
+/** 配置の場面。canChoose（出撃を選べる）のとき、上段は左「出撃を 選ぶ」・右「始める」に分かれる */
+export function drawPlacement(ctx: CanvasRenderingContext2D, state: BattleState, canChoose: boolean): void {
   ctx.fillStyle = 'rgba(16, 24, 32, 0.35)';
   ctx.fillRect(0, 0, LOGICAL_W, BOTTOM_PANEL_Y);
 
@@ -201,7 +202,12 @@ export function drawPlacement(ctx: CanvasRenderingContext2D, state: BattleState)
   ctx.font = '20px sans-serif';
   ctx.fillText('黄色い 線より 下に 仲間を 置こう', 24, 734);
   ctx.fillText('下の 顔や 敵を 押すと 強さが 見られる', 24, 762);
-  button(ctx, MESSAGE_BAR, '始める', true, true);
+  if (canChoose) {
+    button(ctx, SORTIE_BTN, '出撃を 選ぶ', true, false);
+    button(ctx, START_BTN, '始める', true, true);
+  } else {
+    button(ctx, MESSAGE_BAR, '始める', true, true);
+  }
 }
 
 export function drawBottomBar(
