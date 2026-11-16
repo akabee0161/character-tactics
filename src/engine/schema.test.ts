@@ -238,6 +238,21 @@ describe('validateSkillsFile', () => {
     if (!r.ok) expect(r.errors[0]?.path).toBe('[0].summary');
   });
 
+  it('params のキーにハイフンがあっても、summary で使える', () => {
+    const r = validateSkillsFile('skills.json', [
+      { id: 'a', label: 'A', summary: '{damage-rate} ダメージ', params: { 'damage-rate': 7, cooldown: 1 } },
+    ]);
+    expect(r.ok).toBe(true);
+  });
+
+  it('継承プロパティ名（toString など）は params に無いキーとして弾く', () => {
+    const r = validateSkillsFile('skills.json', [
+      { id: 'a', label: 'A', summary: '{toString}', params: { cooldown: 1 } },
+    ]);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors[0]?.path).toBe('[0].summary');
+  });
+
   it('params の値が数でなければ、その キーを path に含めて弾く', () => {
     const r = validateSkillsFile('skills.json', [
       { id: 'funbaru', label: 'ふんばる', summary: 'せつめい', params: { duration: 'ごびょう' } },

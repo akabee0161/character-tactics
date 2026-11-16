@@ -8,6 +8,11 @@ describe('skillSummary', () => {
       .toBe('8秒 +2');
   });
 
+  it('ハイフンを含むキーも差し込む', () => {
+    expect(skillSummary({ id: 'x', label: 'X', summary: '{damage-rate}倍', params: { 'damage-rate': 7, cooldown: 1 } }))
+      .toBe('7倍');
+  });
+
   it('本物の skills.json の全部の技に summary があり、差し込み忘れが無い', () => {
     const skills = [...testRegistry().skills.values()];
     expect(skills.length).toBeGreaterThan(0);

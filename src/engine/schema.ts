@@ -245,6 +245,8 @@ export function validateEnemyDef(file: string, raw: unknown): Validated<EnemyDef
   return finish(ctx, def);
 }
 
+/** summary の `{名前}` を見つける正規表現の元。検証（validateSkillsFile）と差し込み（skillSummary）で同じ規則を使う */
+export const SUMMARY_PLACEHOLDER = '\\{([^{}]+)\\}';
 /** summary は一言の説明。`{名前}` は params の値に置き換わる（skillSummary） */
 export type SkillDef = { id: string; label: string; summary: string; params: Record<string, number> };
 export type BondDef = { a: string; b: string; bonus: number };
@@ -290,8 +292,8 @@ export function validateSkillsFile(file: string, raw: unknown): Validated<SkillD
   return validateIdArray<SkillDef>(file, raw, (ctx, path, o) => {
     const params = readParams(ctx, `${path}.params`, o.params);
     const summary = requireString(ctx, `${path}.summary`, o.summary) ?? '';
-    for (const m of summary.matchAll(/\{(\w+)\}/g)) {
-      if (!(m[1]! in params)) fail(ctx, `${path}.summary`, `{${m[1]}} が params に ない`);
+    for (const m of summary.matchAll(new RegExp(SUMMARY_PLACEHOLDER, 'g'))) {
+      if (!Object.hasOwn(params, m[1]!)) fail(ctx, `${path}.summary`, `{${m[1]}} が params に ない`);
     }
     return {
       id: requireString(ctx, `${path}.id`, o.id) ?? '',
