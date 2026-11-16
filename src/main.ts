@@ -17,15 +17,23 @@ import { makeAnimStore, noteAttacks, resetAnim, updateMotion } from './render/an
 import { LOGICAL_H, LOGICAL_W, computeViewport, fitCanvas, logicalToMap, screenToLogical } from './render/viewport';
 import { debugKey, debugLabel, isDebugMode, makeDebugClock, simDt } from './ui/debug';
 import { clearSpeech, makeSpeechState, pushSpeech, tickSpeech } from './ui/speech';
-import { applyStageClear, canSkipIntro, isStageUnlocked, markIntroRead } from './ui/flow';
+import { applyStageClear, canSkipIntro, markIntroRead } from './ui/flow';
 import { hitRect, pickUnit } from './ui/hit';
 import { resolveMapGesture } from './ui/input';
 import type { PointerStart } from './ui/input';
 import {
   BOTTOM_PANEL_Y, BTN, MESSAGE_BAR, STAGE_LIST_VIEW, TALK_BODY_X, TALK_FONT, TALK_MAX_LINES,
-  TALK_PAD, TALK_WINDOW, portraitSlot, stageListContentH, stageSlot,
+  TALK_PAD, TALK_WINDOW, portraitSlot, resultSlot, rosterSlot, stageListContentH,
 } from './ui/layout';
 import { clampScroll, isTap, maxScroll } from './ui/scroll';
+import { drawEnemyList, drawStatCard } from './ui/card-view';
+import { closeOverlay, overlayTap } from './ui/overlay';
+import type { Overlay } from './ui/overlay';
+import { stageTapTarget } from './ui/select-tap';
+import { allyCardFromSave, cardFromGain, cardFromUnit, enemyCard, stageEnemies } from './ui/stat-card';
+import { levelUpCard, mergeLevelUps } from './ui/levelup';
+import type { LevelUpEvent } from './ui/levelup';
+import { partyIds } from './core/party';
 import {
   drawBottomBar, drawDefeat, drawLoadErrors, drawPlacement, drawResult,
   drawSpeechBar, drawStageSelect, drawTalk, drawTitle,
@@ -39,7 +47,8 @@ import type { BattleState, Unit, Vec2 } from './core/types';
 
 const FIXED_DT = 1 / 60;
 
-type Phase = 'title' | 'select' | 'talk' | 'placement' | 'battle' | 'event' | 'outro' | 'result' | 'defeat';
+type Phase =
+  | 'title' | 'select' | 'talk' | 'placement' | 'battle' | 'levelup' | 'event' | 'outro' | 'result' | 'defeat';
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const stageBox = document.getElementById('stage') as HTMLElement;
@@ -107,15 +116,35 @@ function stageScrollMax(): number {
   return maxScroll(stageListContentH(registry.stages.length), STAGE_LIST_VIEW.h);
 }
 
+/** 札や敵の一覧を重ねているとき。重ねている間は、下の画面に入力が届かない */
+let overlay: Overlay | null = null;
+/** 戦闘を止めて札を出す順番待ちのレベルアップ。先頭から 1 人ずつ出す */
+let levelUps: LevelUpEvent[] = [];
+
+/** 重ねている物の上を押したときの処理 */
+function tapOverlay(p: Vec2): void {
+  if (!overlay) return;
+  const t = overlayTap(overlay, p);
+  if (t.type === 'close') overlay = closeOverlay(overlay);
+  else if (t.type === 'open') overlay = { kind: 'card', card: t.card, back: overlay };
+}
+
+function drawOverlay(): void {
+  if (!overlay) return;
+  if (overlay.kind === 'card') drawStatCard(ctx, registry, overlay.card, images, '閉じる');
+  else drawEnemyList(ctx, registry, overlay, images);
+}
+
 /** 選択画面に入るたびに一番上へ戻す */
 function toStageSelect(): void {
   stageScrollY = 0;
+  overlay = null;
   stageDrag = null;
   phase = 'select';
 }
 
 let pendingSkill: string | null = null;
-let result: { gains: XpGain[]; newTitles: string[] } | null = null;
+let result: { gains: XpGain[] } | null = null;
 /** 護衛対象の defId。beginStage で1度だけ作る */
 let escorts: Set<string> = new Set();
 const speech = makeSpeechState();
@@ -169,6 +198,8 @@ function beginStage(index: number): void {
   stageId = registry.stages[index]!.id;
   battle = createBattleState(registry, registry.stages[index]!, save, Date.now() % 100000);
   escorts = new Set(escortDefIds(battle.stage));
+  levelUps = [];
+  overlay = null;
   selected = null;
   pendingSkill = null;
   clearSpeech(speech);
@@ -206,7 +237,7 @@ function finishStage(state: BattleState): void {
   const r = applyStageClear(registry, save, stageId, state);
   save = r.save;
   hasSave = writeSave(window.localStorage, save) || hasSave;
-  result = { gains: r.gains, newTitles: r.newTitles };
+  result = { gains: r.gains };
   phase = 'result';
 }
 
@@ -224,12 +255,24 @@ function onPointerDown(ev: PointerEvent): void {
       }
       return;
 
-    case 'select':
+    case 'select': {
+      if (overlay) {
+        tapOverlay(p);
+        return;
+      }
+      const ids = partyIds(registry, save.members);
+      for (let i = 0; i < ids.length; i++) {
+        if (hitRect(rosterSlot(i), p)) {
+          overlay = { kind: 'card', card: allyCardFromSave(registry, save, ids[i]!), back: null };
+          return;
+        }
+      }
       if (hitRect(STAGE_LIST_VIEW, p)) {
         stageDrag = { pointerId: ev.pointerId, startY: p.y, startScrollY: stageScrollY };
         canvas.setPointerCapture(ev.pointerId);
       }
       return;
+    }
 
     case 'talk': {
       if (!talk) return;
@@ -238,6 +281,12 @@ function onPointerDown(ev: PointerEvent): void {
       if (talk.done) endTalk();
       return;
     }
+
+    case 'levelup':
+      // どこを押しても札を 1 枚閉じる。全部閉じたら戦闘に戻る（加入の会話・勝利の会話は次の update で判定する）
+      levelUps.shift();
+      if (levelUps.length === 0) phase = 'battle';
+      return;
 
     case 'event': {
       // 加入の会話。「飛ばす」は無く、タップは必ず 1 行進むだけ
@@ -258,6 +307,10 @@ function onPointerDown(ev: PointerEvent): void {
 
     case 'placement': {
       if (!battle) return;
+      if (overlay) {
+        tapOverlay(p);
+        return;
+      }
       if (hitRect(MESSAGE_BAR, p)) {
         pointerStart = null;
         writeSave(window.localStorage, save); // ステージ開始時点を保存する
@@ -281,9 +334,26 @@ function onPointerDown(ev: PointerEvent): void {
       return;
     }
 
-    case 'result':
-      if (hitRect(BTN.next, p)) toStageSelect();
+    case 'result': {
+      if (overlay) {
+        tapOverlay(p);
+        return;
+      }
+      if (hitRect(BTN.next, p)) {
+        toStageSelect();
+        return;
+      }
+      // レベルアップした行を押すと、上がった能力の札が開く
+      const gains = result?.gains.slice(0, MAX_PARTY) ?? [];
+      for (let i = 0; i < gains.length; i++) {
+        const g = gains[i]!;
+        if (g.leveledUp && !g.joined && hitRect(resultSlot(i), p)) {
+          overlay = { kind: 'card', card: cardFromGain(registry, g), back: null };
+          return;
+        }
+      }
       return;
+    }
 
     case 'defeat':
       if (hitRect(BTN.retry, p)) beginStage(stageIndex);
@@ -302,6 +372,11 @@ function beginMapPointer(state: BattleState, p: Vec2, ev: PointerEvent): void {
     pointerStart = null;
     const unit = portraitUnits[i];
     if (!unit || unit.retired) return;
+    if (phase === 'placement') {
+      // 配置の場面の顔の枠は、強さを見る札を開く（選ぶ・動かすのはマップ上の仲間を押す）
+      overlay = { kind: 'card', card: cardFromUnit(registry, unit, null), back: null };
+      return;
+    }
     // ポートレートのタップは「選択して必殺技を出す」。選択の解除はマップ上の再タップで行う
     selected = unit.uid;
     if (phase !== 'battle') return;
@@ -317,6 +392,17 @@ function beginMapPointer(state: BattleState, p: Vec2, ev: PointerEvent): void {
   }
   const startMap = logicalToMap(p);
   const uid = pickUnit(playerUnits(state), startMap, undefined, unitBody);
+  if (uid === null && phase === 'placement') {
+    // 仲間に当たらず敵に当たったら、その敵の札を開く（敵は置ける範囲の外にいるので、移動の操作とぶつからない）
+    const enemyUid = pickUnit(state.units.filter((e) => e.side === 'enemy'), startMap, undefined, unitBody);
+    const enemy = state.units.find((u) => u.uid === enemyUid);
+    if (enemy) {
+      const name = lookupDef(registry, enemy.defId)?.name;
+      const count = stageEnemies(registry, state.stage).find((e) => e.name === name)?.count ?? 1;
+      overlay = { kind: 'card', card: cardFromUnit(registry, enemy, count), back: null };
+      return;
+    }
+  }
   pointerStart = {
     uid,
     startMap,
@@ -346,10 +432,17 @@ function onPointerUp(ev: PointerEvent): void {
     stageDrag = null;
     const p = toLogical(ev);
     // 指がほとんど動いていなければ選んだとみなす。動いていればスクロールだった
-    if (phase === 'select' && isTap(p.y - start.startY)) {
-      const hit = { x: p.x, y: p.y + stageScrollY };
-      for (let i = 0; i < registry.stages.length; i++) {
-        if (hitRect(stageSlot(i), hit) && isStageUnlocked(registry, save, i)) beginStage(i);
+    if (phase === 'select' && !overlay && isTap(p.y - start.startY)) {
+      const target = stageTapTarget(registry, save, { x: p.x, y: p.y + stageScrollY });
+      if (target.type === 'stage') {
+        beginStage(target.index);
+      } else if (target.type === 'enemies') {
+        const stage = registry.stages[target.index]!;
+        const enemies = stageEnemies(registry, stage);
+        overlay = {
+          kind: 'enemies', title: stage.name, enemies,
+          cards: enemies.map((e) => enemyCard(registry, e.defId, e.count)),
+        };
       }
     }
     return;
@@ -414,7 +507,20 @@ function update(realDt: number): void {
     spawnEffects(effects, battle.events);
     noteAttacks(anim, battle.events, battle.time, attackDuration);
     pushSpeech(speech, pickDialogue(battle.reg, battle.events));
+    levelUps = mergeLevelUps(levelUps, battle.events);
+    if (levelUps.length > 0) break; // レベルアップの札を出す間は戦闘を止める
     if (battle.pendingRecruit !== null) break; // 加入の会話の間は戦闘を止める
+  }
+  if (levelUps.length > 0) {
+    // 札を出し終えてから、加入の会話・勝利の会話に入る（battle の状態は止まったまま残る）
+    accumulator = 0;
+    pendingSkill = null; // 札のあとに、前のタップで構えた必殺技が勝手に出ないようにする
+    pointerStart = null;
+    dragMap = null;
+    clearSpeech(speech);
+    resetAnim(anim);
+    phase = 'levelup';
+    return;
   }
   if (battle.pendingRecruit !== null) {
     accumulator = 0;
@@ -459,6 +565,7 @@ function render(): void {
       break;
     case 'select':
       drawStageSelect(ctx, registry, save, images, stageScrollY);
+      drawOverlay();
       break;
     case 'talk':
       if (battle && talk) {
@@ -483,6 +590,14 @@ function render(): void {
         drawBattle(ctx, registry, battle, selected, effects, escorts, images, anim);
         drawBottomBar(ctx, registry, battle, selected, escorts, images);
         drawPlacement(ctx, battle);
+        drawOverlay();
+      }
+      break;
+    case 'levelup':
+      if (battle && levelUps[0]) {
+        drawBattle(ctx, registry, battle, null, effects, escorts, images, anim);
+        drawBottomBar(ctx, registry, battle, null, escorts, images);
+        drawStatCard(ctx, registry, levelUpCard(registry, levelUps[0]), images, '戦闘に 戻る');
       }
       break;
     case 'battle':
@@ -494,7 +609,8 @@ function render(): void {
       }
       break;
     case 'result':
-      if (result) drawResult(ctx, registry, result.gains, result.newTitles, images);
+      if (result) drawResult(ctx, registry, result.gains, images);
+      drawOverlay();
       break;
     case 'defeat':
       drawDefeat(ctx);

@@ -48,12 +48,17 @@ export function stageListContentH(count: number): number {
   return last.y + last.h - STAGE_LIST_VIEW.y;
 }
 
-/** ステージ選択の下に出す仲間の一覧。2列×4行（最大 8 人） */
+/** ステージ選択の下に出す仲間の一覧。3列×5行（最大 15 人）。上に見出しを出す */
 export function rosterSlot(index: number): Rect {
-  return { x: 20 + (index % 2) * 254, y: 640 + Math.floor(index / 2) * 72, w: 246, h: 64 };
+  return { x: 12 + (index % 3) * 174, y: 652 + Math.floor(index / 3) * 56, w: 168, h: 50 };
 }
 
-/** リザルトの仲間の行。2列×4行（最大 8 人）。称号の行は y 450 */
+/** ステージの枠の中の「敵を 見る」ボタン。下寄りの中央 */
+export function enemyBtnIn(slot: Rect): Rect {
+  return { x: slot.x + 50, y: slot.y + 72, w: 140, h: 36 };
+}
+
+/** リザルトの仲間の行。2列×4行（最大 8 人） */
 export function resultSlot(index: number): Rect {
   return { x: 20 + (index % 2) * 260, y: 150 + Math.floor(index / 2) * 64, w: 240, h: 56 };
 }
@@ -111,3 +116,14 @@ const measure = (t: string): number => {
 export function speechLines(text: string): string[] {
   return wrapText(text, measure, SPEECH_CONTENT_W);
 }
+
+/** 能力の札（仲間・敵・レベルアップで共通）。画面の中ほどに重ねる */
+export const STAT_CARD: Rect = { x: 30, y: 130, w: 480, h: 640 };
+export const CARD_CLOSE_BTN: Rect = { x: 170, y: 696, w: 200, h: 56 };
+
+/** ステージに出る敵の一覧。見出しの下に行を 64px ずつ並べ、下端の中央に閉じるボタン */
+export const ENEMY_LIST: Rect = { x: 30, y: 200, w: 480, h: 520 };
+export function enemyListRow(index: number): Rect {
+  return { x: ENEMY_LIST.x + 12, y: ENEMY_LIST.y + 64 + index * 64, w: ENEMY_LIST.w - 24, h: 60 };
+}
+export const ENEMY_LIST_CLOSE_BTN: Rect = { x: ENEMY_LIST.x + (ENEMY_LIST.w - 200) / 2, y: ENEMY_LIST.y + ENEMY_LIST.h - 64, w: 200, h: 52 };

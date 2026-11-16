@@ -24,6 +24,8 @@ export type FlowField = {
 import type { Rng } from './rng';
 
 export type StatBonus = Record<StatKey, number>;
+/** ユニットの能力値 5 つ（札・レベルアップのイベントで使う） */
+export type UnitStats = Record<StatKey, number>;
 export const NO_BONUS: StatBonus = Object.freeze({ maxHp: 0, power: 0, guard: 0, speed: 0, resist: 0 });
 
 export type CharProgress = { level: number; xp: number; bonus?: StatBonus };
@@ -138,7 +140,7 @@ export type SimEvent =
   | { type: 'unitFled'; uid: string; defId: string; byUid: string | null; byDefId: string | null }
   | { type: 'unitRetired'; uid: string; defId: string }
   | { type: 'bondSupport'; targetUid: string; targetDefId: string; supporterUids: string[]; pos: Vec2 }
-  | { type: 'levelUp'; uid: string; defId: string; level: number }
+  | { type: 'levelUp'; uid: string; defId: string; level: number; fromLevel: number; before: UnitStats; after: UnitStats }
   | { type: 'enemySpawned'; uid: string; defId: string; pos: Vec2 }
   | { type: 'villageVisited'; uid: string; defId: string; villageId: string; text: string };
 
@@ -183,7 +185,6 @@ export type BattleState = {
   phase: BattlePhase;
   units: Unit[];
   events: SimEvent[];
-  counters: Record<string, number>;
   rng: Rng;
   nextEnemyUid: number;
   /** 湧き口ごとに、これまで湧かせた数。stage.spawners と同じ長さ */

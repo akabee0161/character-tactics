@@ -5,8 +5,10 @@ import {
   BOTTOM_PANEL_Y, BTN, FACE_PX, MESSAGE_BAR, SPEECH_BODY_X, SPEECH_MAX_LINES, TALK_WINDOW,
   hpBarIn, portraitSlot, resultSlot, roleBadgeIn, rosterSlot, speechLines, stageSlot,
   STAGE_LIST_VIEW, stageListContentH,
+  CARD_CLOSE_BTN, ENEMY_LIST, ENEMY_LIST_CLOSE_BTN, STAT_CARD, enemyBtnIn, enemyListRow,
 } from './layout';
 import { MAX_PARTY } from '../core/constants';
+import { MAX_MEMBERS } from '../engine/limits';
 import { LOGICAL_H, LOGICAL_W, MAP_ORIGIN } from '../render/viewport';
 import { testRegistry } from '../core/testing';
 
@@ -26,6 +28,9 @@ describe('speechLines', () => {
     expect(half).toBeLessThan(full);
   });
 });
+
+const inside = (a: { x: number; y: number; w: number; h: number }, b: { x: number; y: number; w: number; h: number }): boolean =>
+  a.x >= b.x && a.y >= b.y && a.x + a.w <= b.x + b.w && a.y + a.h <= b.y + b.h;
 
 const inScreen = (r: { x: number; y: number; w: number; h: number }): boolean =>
   r.x >= 0 && r.y >= 0 && r.x + r.w <= LOGICAL_W && r.y + r.h <= LOGICAL_H;
@@ -59,11 +64,16 @@ describe('たてがたの レイアウト', () => {
     for (let i = 0; i < 6; i++) expect(inScreen(stageSlot(i))).toBe(true);
   });
 
-  it('仲間の一覧 8 人が画面に収まる（2 列）', () => {
-    for (let i = 0; i < MAX_PARTY; i++) expect(inScreen(rosterSlot(i))).toBe(true);
+  it('仲間一覧は 15 人が 3 列で画面に収まり、ステージ一覧と重ならない', () => {
+    for (let i = 0; i < MAX_MEMBERS; i++) expect(inScreen(rosterSlot(i))).toBe(true);
     expect(rosterSlot(1).y).toBe(rosterSlot(0).y);
     expect(rosterSlot(1).x).toBeGreaterThanOrEqual(rosterSlot(0).x + rosterSlot(0).w);
-    expect(rosterSlot(2).y).toBeGreaterThanOrEqual(rosterSlot(0).y + rosterSlot(0).h);
+    expect(rosterSlot(3).y).toBeGreaterThanOrEqual(rosterSlot(0).y + rosterSlot(0).h);
+    expect(STAGE_LIST_VIEW.y + STAGE_LIST_VIEW.h).toBeLessThanOrEqual(rosterSlot(0).y - 24);
+  });
+
+  it('「敵を 見る」はステージの枠の内側', () => {
+    expect(inside(enemyBtnIn(stageSlot(0)), stageSlot(0))).toBe(true);
   });
 
   it('リザルトの 8 行が次へのボタン（BTN.next）にかからない', () => {
@@ -193,5 +203,21 @@ describe('戦闘中のセリフ', () => {
         expect(speechLines(text).length, `${name} の ${key}`).toBeLessThanOrEqual(SPEECH_MAX_LINES);
       }
     }
+  });
+});
+
+
+describe('札と敵の一覧', () => {
+  it('札・閉じるボタン・敵の一覧は画面に収まる', () => {
+    for (const r of [STAT_CARD, CARD_CLOSE_BTN, ENEMY_LIST, ENEMY_LIST_CLOSE_BTN]) expect(inScreen(r)).toBe(true);
+    expect(inside(CARD_CLOSE_BTN, STAT_CARD)).toBe(true);
+    expect(inside(ENEMY_LIST_CLOSE_BTN, ENEMY_LIST)).toBe(true);
+  });
+
+  it('敵の一覧は 6 行まで、閉じるボタンと重ならずに入る', () => {
+    // 今のステージで敵の名前は最大 5 種類（魔導士の塔）。1 行の余裕を持たせて 6 行
+    expect(inside(enemyListRow(5), ENEMY_LIST)).toBe(true);
+    expect(enemyListRow(5).y + enemyListRow(5).h).toBeLessThanOrEqual(ENEMY_LIST_CLOSE_BTN.y);
+    expect(enemyListRow(1).y).toBeGreaterThanOrEqual(enemyListRow(0).y + enemyListRow(0).h);
   });
 });

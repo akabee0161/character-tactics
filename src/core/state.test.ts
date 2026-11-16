@@ -113,10 +113,6 @@ describe('createBattleState: ステージからの はいち', () => {
     expect(state.phase).toBe('placement');
   });
 
-  it('カウンタは からで しょきかされる', () => {
-    const { state } = fresh();
-    expect(state.counters).toEqual({});
-  });
 
   it('レベルが反映される', () => {
     const reg = testRegistry();

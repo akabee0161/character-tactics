@@ -185,7 +185,6 @@ export function createBattleState(
     phase: 'placement',
     units: [...roster, ...enemies],
     events: [],
-    counters: {},
     rng: makeRng(seed),
     nextEnemyUid,
     spawnCounts: stage.spawners.map(() => 0),

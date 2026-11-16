@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyXp, earnedTitles, titlesOf, xpToNext } from './progress';
+import { applyXp, xpToNext } from './progress';
 import { testRegistry } from './testing';
 import type { Registry } from '../engine/registry';
 import type { GrowthDef, StageDef } from '../engine/schema';
@@ -52,42 +52,6 @@ describe('applyXp', () => {
     const p = { level: 1, xp: 0 };
     applyXp(p, 50, growth());
     expect(p).toEqual({ level: 1, xp: 0 });
-  });
-});
-
-describe('earnedTitles', () => {
-  it('しきいちに とどいた しょうごうだけを かえす', () => {
-    const reg = testRegistry();
-    expect(earnedTitles(reg, { 'skill:funbaru:uses': 3 })).toEqual(['gamanzuyoi']);
-  });
-
-  it('しきいちの 1つ てまえでは かえさない', () => {
-    const reg = testRegistry();
-    expect(earnedTitles(reg, { 'skill:funbaru:uses': 2 })).toEqual([]);
-  });
-
-  it('カウンタが なければ かえさない', () => {
-    const reg = testRegistry();
-    expect(earnedTitles(reg, {})).toEqual([]);
-  });
-
-  it('ふくすうの しょうごうを どうじに かえす', () => {
-    const reg = testRegistry();
-    const got = earnedTitles(reg, { 'skill:funbaru:uses': 3, 'bond:supports': 20 });
-    expect(got.sort()).toEqual(['gamanzuyoi', 'nakayoshi']);
-  });
-});
-
-describe('titlesOf', () => {
-  it('もちぬしの しょうごうと ぜんいん きょうつうの しょうごうを かえす', () => {
-    const reg = testRegistry();
-    const got = titlesOf(reg, ['gamanzuyoi', 'kazenoyouni', 'nakayoshi'], 'roran');
-    expect(got.map((t) => t.id)).toEqual(['gamanzuyoi', 'nakayoshi']);
-  });
-
-  it('もっていない しょうごうは かえさない', () => {
-    const reg = testRegistry();
-    expect(titlesOf(reg, [], 'roran')).toEqual([]);
   });
 });
 

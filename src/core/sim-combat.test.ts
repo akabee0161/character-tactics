@@ -169,7 +169,6 @@ describe('攻撃の解決', () => {
       type: 'bondSupport', targetUid: roran.uid, targetDefId: 'roran', supporterUids: [ines.uid],
       pos: roran.pos,
     });
-    expect(s.counters['bond:supports']).toBe(1);
   });
 
   it('イネスはたてもちに 1 しか通らない', () => {
@@ -264,7 +263,6 @@ describe('撃破と撤退', () => {
     spawnEnemy(s, 'narazumono', { x: 100, y: 16 }, 5);
     step(s, [{ type: 'skill', uid: ines.uid }], 0.01);
     advanceFine(s, 2.3);
-    expect(s.counters['kill:neraiuchi']).toBe(1);
   });
 
   it('かけぬけるで倒すと unitDefeated イベントに byDefId が入り、けいけんちが はいる', () => {

@@ -1,6 +1,6 @@
 import { applyXp } from './progress';
 import { statsForLevel } from './state';
-import type { BattleState, Unit } from './types';
+import type { BattleState, Unit, UnitStats } from './types';
 
 /**
  * 経験値を渡し、レベルが上がったら能力を上げる。
@@ -18,6 +18,9 @@ export function awardXp(state: BattleState, unit: Unit, amount: number): void {
 
   const def = state.reg.units.get(unit.defId) ?? state.reg.enemies.get(unit.defId);
   if (!def) return;
+  const beforeStats: UnitStats = {
+    maxHp: unit.maxHp, power: unit.power, guard: unit.guard, resist: unit.resist, speed: unit.speed,
+  };
   const stats = statsForLevel(def, after.level, state.reg.growth, unit.statBonus);
   const gainedMaxHp = stats.maxHp - unit.maxHp;
   unit.maxHp = stats.maxHp;
@@ -27,7 +30,10 @@ export function awardXp(state: BattleState, unit: Unit, amount: number): void {
   unit.speed = stats.speed;
   unit.hp = Math.min(unit.maxHp, unit.hp + Math.max(0, gainedMaxHp));
 
-  state.events.push({ type: 'levelUp', uid: unit.uid, defId: unit.defId, level: after.level });
+  state.events.push({
+    type: 'levelUp', uid: unit.uid, defId: unit.defId, level: after.level,
+    fromLevel: before, before: beforeStats, after: stats,
+  });
 }
 
 /** 味方にだけ経験値を入れる。敵は育たない */

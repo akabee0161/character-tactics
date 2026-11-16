@@ -1,5 +1,6 @@
 import { bondSupporters } from '../core/bonds';
 import { isFunbaruActive } from '../core/combat';
+import { activeBuffs, drawBuffMarks } from './buff-marks';
 import { playerUnits } from '../core/sim';
 import { lookupDef } from '../engine/registry';
 import type { Registry } from '../engine/registry';
@@ -361,6 +362,7 @@ function drawUnits(
       ctx.arc(p.x, p.y, half + 7, 0, Math.PI * 2);
       ctx.stroke();
     }
+    drawBuffMarks(ctx, p.x, p.y - half - 12, activeBuffs(unit, state.time));
     const displayedHp = effects.displayedHp.get(unit.uid) ?? unit.hp;
     drawHpBar(ctx, p, half, displayedHp / unit.maxHp, isAlly ? COLORS.hpAlly : COLORS.hpEnemy);
   }

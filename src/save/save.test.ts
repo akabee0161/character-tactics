@@ -28,8 +28,6 @@ describe('loadSave', () => {
     version: 2,
     clearedStageIds: ['stage1'],
     units: { roran: { level: 3, xp: 10 }, ines: { level: 2, xp: 0 }, mist: { level: 1, xp: 5 }, gau: { level: 1, xp: 0 } },
-    counters: { 'bond:supports': 4 },
-    titles: ['nakayoshi'],
   };
 
   it('ただしい セーブを よむ', () => {
@@ -47,7 +45,7 @@ describe('loadSave', () => {
   });
 
   it('version 1 の きゅうセーブは よみすてる', () => {
-    const old = { version: 1, clearedStages: 2, chars: {}, counters: {}, titles: [] };
+    const old = { version: 1, clearedStages: 2, chars: {} };
     expect(loadSave(memoryStorage(JSON.stringify(old)), reg)).toBeNull();
   });
 
@@ -84,16 +82,6 @@ describe('loadSave', () => {
     expect(loadSave(memoryStorage(JSON.stringify(raw)), reg)?.clearedStageIds).toEqual(['stage1']);
   });
 
-  it('レジストリに ない しょうごうは おとす', () => {
-    const raw = { ...valid, titles: ['nakayoshi', 'kesareta'] };
-    expect(loadSave(memoryStorage(JSON.stringify(raw)), reg)?.titles).toEqual(['nakayoshi']);
-  });
-
-  it('カウンタの あたいが せいすうで なければ その キーだけ おとす', () => {
-    const raw = { ...valid, counters: { 'bond:supports': 4, 'kill:neraiuchi': -1 } };
-    expect(loadSave(memoryStorage(JSON.stringify(raw)), reg)?.counters).toEqual({ 'bond:supports': 4 });
-  });
-
   it('units が オブジェクトで なければ null', () => {
     expect(loadSave(memoryStorage(JSON.stringify({ ...valid, units: [] })), reg)).toBeNull();
   });
@@ -107,7 +95,7 @@ describe('readIntroStageIds', () => {
   });
 
   it('readIntroStageIds の ない きゅうセーブも よめる（バージョンは あげない）', () => {
-    const old = { version: 2, clearedStageIds: ['stage1'], units: {}, counters: {}, titles: [] };
+    const old = { version: 2, clearedStageIds: ['stage1'], units: {} };
     const loaded = loadSave(memoryStorage(JSON.stringify(old)), reg);
     expect(loaded).not.toBeNull();
     expect(loaded!.readIntroStageIds).toEqual([]);
@@ -187,7 +175,7 @@ describe('members / claimed / bonus', () => {
   });
 
   it('フィールドの無い古いセーブは [] になる', () => {
-    const old = { version: 2, clearedStageIds: [], units: {}, counters: {}, titles: [] };
+    const old = { version: 2, clearedStageIds: [], units: {} };
     const loaded = load(old);
     expect(loaded.members).toEqual([]);
     expect(loaded.claimed).toEqual([]);

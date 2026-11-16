@@ -245,17 +245,11 @@ export function validateEnemyDef(file: string, raw: unknown): Validated<EnemyDef
   return finish(ctx, def);
 }
 
-export type SkillDef = { id: string; label: string; params: Record<string, number> };
+/** summary の `{名前}` を見つける正規表現の元。検証（validateSkillsFile）と差し込み（skillSummary）で同じ規則を使う */
+export const SUMMARY_PLACEHOLDER = '\\{([^{}]+)\\}';
+/** summary は一言の説明。`{名前}` は params の値に置き換わる（skillSummary） */
+export type SkillDef = { id: string; label: string; summary: string; params: Record<string, number> };
 export type BondDef = { a: string; b: string; bonus: number };
-export type TitleDef = {
-  id: string;
-  label: string;
-  /** 持ち主の UnitDef id。null は全員共通 */
-  owner: string | null;
-  /** counters のキー。例: "skill:funbaru:uses" */
-  counter: string;
-  threshold: number;
-};
 
 /** id を持つ定義の配列を検証する共通部分。id の重複もここで見る */
 function validateIdArray<T extends { id: string }>(
@@ -295,11 +289,19 @@ function readParams(ctx: Ctx, path: string, v: unknown): Record<string, number> 
 }
 
 export function validateSkillsFile(file: string, raw: unknown): Validated<SkillDef[]> {
-  return validateIdArray<SkillDef>(file, raw, (ctx, path, o) => ({
-    id: requireString(ctx, `${path}.id`, o.id) ?? '',
-    label: requireString(ctx, `${path}.label`, o.label) ?? '',
-    params: readParams(ctx, `${path}.params`, o.params),
-  }));
+  return validateIdArray<SkillDef>(file, raw, (ctx, path, o) => {
+    const params = readParams(ctx, `${path}.params`, o.params);
+    const summary = requireString(ctx, `${path}.summary`, o.summary) ?? '';
+    for (const m of summary.matchAll(new RegExp(SUMMARY_PLACEHOLDER, 'g'))) {
+      if (!Object.hasOwn(params, m[1]!)) fail(ctx, `${path}.summary`, `{${m[1]}} が params に ない`);
+    }
+    return {
+      id: requireString(ctx, `${path}.id`, o.id) ?? '',
+      label: requireString(ctx, `${path}.label`, o.label) ?? '',
+      summary,
+      params,
+    };
+  });
 }
 
 export function validateBondsFile(file: string, raw: unknown): Validated<BondDef[]> {
@@ -320,15 +322,6 @@ export function validateBondsFile(file: string, raw: unknown): Validated<BondDef
   return finish(ctx, out);
 }
 
-export function validateTitlesFile(file: string, raw: unknown): Validated<TitleDef[]> {
-  return validateIdArray<TitleDef>(file, raw, (ctx, path, o) => ({
-    id: requireString(ctx, `${path}.id`, o.id) ?? '',
-    label: requireString(ctx, `${path}.label`, o.label) ?? '',
-    owner: o.owner === null ? null : requireString(ctx, `${path}.owner`, o.owner),
-    counter: requireString(ctx, `${path}.counter`, o.counter) ?? '',
-    threshold: requireNumber(ctx, `${path}.threshold`, o.threshold, { min: 1, int: true }) ?? 1,
-  }));
-}
 
 export function validateLinesFile(file: string, raw: unknown): Validated<Record<string, string>> {
   const ctx = makeCtx(file);
