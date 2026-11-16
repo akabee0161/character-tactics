@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { levelUpCard, mergeLevelUps } from './levelup';
 import type { LevelUpEvent } from './levelup';
 import { testRegistry } from '../core/testing';
+import { newSave } from '../save/save';
+import { allyCardFromSave, enemyCard } from './stat-card';
 
 const st = (hp: number) => ({ maxHp: hp, power: 6, guard: 5, resist: 2, speed: 60 });
 const lv = (uid: string, from: number, to: number, b: number, a: number): LevelUpEvent =>
@@ -29,10 +31,27 @@ describe('mergeLevelUps', () => {
 });
 
 describe('levelUpCard', () => {
-  it('札の前後と見出しのレベル', () => {
+  it('カードの前後と見出しのレベル', () => {
     const c = levelUpCard(testRegistry(), lv('p1', 4, 5, 33, 34));
     expect(c.level).toBe(5);
     expect(c.before).toEqual({ level: 4, stats: st(33) });
     expect(c.stats).toEqual(st(34));
+  });
+});
+
+describe('levelUpCard のセリフ', () => {
+  it('レベルアップのカードにその仲間のセリフが入る', () => {
+    expect(levelUpCard(testRegistry(), lv('p1', 4, 5, 33, 34)).line).toBe('強く なった 気が する！');
+  });
+  it('セリフが無い仲間は null', () => {
+    const reg = testRegistry();
+    const noLines = { ...reg, lines: new Map(reg.lines) };
+    noLines.lines.delete('levelup:roran');
+    expect(levelUpCard(noLines, lv('p1', 4, 5, 33, 34)).line).toBeNull();
+  });
+  it('仲間・敵のカードの line は null', () => {
+    const reg = testRegistry();
+    expect(enemyCard(reg, 'tatemochi', 1).line).toBeNull();
+    expect(allyCardFromSave(reg, newSave(reg), 'roran').line).toBeNull();
   });
 });

@@ -127,3 +127,7 @@ export function enemyListRow(index: number): Rect {
   return { x: ENEMY_LIST.x + 12, y: ENEMY_LIST.y + 64 + index * 64, w: ENEMY_LIST.w - 24, h: 60 };
 }
 export const ENEMY_LIST_CLOSE_BTN: Rect = { x: ENEMY_LIST.x + (ENEMY_LIST.w - 200) / 2, y: ENEMY_LIST.y + ENEMY_LIST.h - 64, w: 200, h: 52 };
+
+/** 敵の一覧に並べられる行の数。最後の行の下端が「閉じる」ボタンに届かない最大の行数（ステージの敵の種類はこれ以下） */
+export const ENEMY_LIST_MAX_ROWS: number =
+  Math.floor((ENEMY_LIST_CLOSE_BTN.y - (enemyListRow(0).y + enemyListRow(0).h)) / 64) + 1;

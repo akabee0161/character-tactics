@@ -70,8 +70,16 @@ export function drawStatCard(
   ctx.font = '18px sans-serif';
   ctx.fillText(card.note, left, top + 120, c.w - 48);
 
+  // レベルアップのセリフ。改行は空白にして 1 行で出し、あとの段を 32px 下げる
+  const lineShift = card.line === null ? 0 : 32;
+  if (card.line !== null) {
+    ctx.fillStyle = INK;
+    ctx.font = '20px sans-serif';
+    ctx.fillText(`「${card.line.replace(/\n/g, ' ')}」`, left, top + 148, c.w - 48);
+  }
+
   const gained = new Set(card.before ? statGains(card.before.stats, card.stats).map((g) => g.key) : []);
-  let y = top + 140;
+  let y = top + 140 + lineShift;
   for (const key of STAT_ORDER) {
     const up = gained.has(key);
     ctx.fillStyle = up ? GOLD : INK;

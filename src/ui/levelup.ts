@@ -21,11 +21,12 @@ export function mergeLevelUps(queue: LevelUpEvent[], events: SimEvent[]): LevelU
   return out;
 }
 
-/** 戦闘を止めて出す札。stats は上がった後、before は上がる前 */
+/** 戦闘を止めて出すカード（その仲間のセリフ付き）。stats は上がった後、before は上がる前 */
 export function levelUpCard(reg: Registry, ev: LevelUpEvent): StatCard {
   return {
     ...cardFromDef(reg, ev.defId, ev.after),
     level: ev.level,
     before: { level: ev.fromLevel, stats: ev.before },
+    line: reg.lines.get(`levelup:${ev.defId}`) ?? null,
   };
 }

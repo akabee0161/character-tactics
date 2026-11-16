@@ -5,6 +5,7 @@ import {
 import { beginBattle, createBattleState } from '../core/state';
 import { testRegistry } from '../core/testing';
 import { newSave } from '../save/save';
+import { ENEMY_LIST_CLOSE_BTN, ENEMY_LIST_MAX_ROWS, enemyListRow } from './layout';
 import type { CharProgress } from '../core/types';
 
 describe('stageEnemies', () => {
@@ -24,8 +25,8 @@ describe('stageEnemies', () => {
   });
 });
 
-describe('敵の札', () => {
-  it('盾持ちの札に矢の上限の特徴が出る', () => {
+describe('敵のカード', () => {
+  it('盾持ちのカードに矢の上限の特徴が出る', () => {
     const c = enemyCard(testRegistry(), 'tatemochi', 1);
     expect(c.traits).toEqual(['盾: 矢の ダメージは 1 まで']);
     expect(c.level).toBeNull();
@@ -34,8 +35,8 @@ describe('敵の札', () => {
   });
 });
 
-describe('仲間の札', () => {
-  it('セーブのレベルと加算から仲間の札の値を出す', () => {
+describe('仲間のカード', () => {
+  it('セーブのレベルと加算から仲間のカードの値を出す', () => {
     const reg = testRegistry();
     const save = newSave(reg);
     save.units.roran = { level: 7, xp: 0, bonus: { maxHp: 0, power: 0, guard: 1, speed: 0, resist: 0 } };
@@ -63,7 +64,7 @@ describe('仲間の札', () => {
   });
 });
 
-describe('レベルアップの札', () => {
+describe('レベルアップのカード', () => {
   it('上がる前と後を持つ', () => {
     const reg = testRegistry();
     const c = cardFromGain(reg, {
@@ -93,7 +94,7 @@ describe('ダメージが減る守りの案内（note）', () => {
     expect(enemyCard(testRegistry(), 'tatemochi', 1).note).toBe('相手の 守備で 減る');
   });
 
-  it('斧（守備を無視）の札は、守備で減るとは案内しない', () => {
+  it('斧（守備を無視）のカードは、守備で減るとは案内しない', () => {
     const reg = testRegistry();
     const save = newSave(reg);
     const c = allyCardFromSave(reg, save, 'ally09');
@@ -104,5 +105,19 @@ describe('ダメージが減る守りの案内（note）', () => {
   it('魔法は魔法防御で減ると案内する', () => {
     const reg = testRegistry();
     expect(allyCardFromSave(reg, newSave(reg), 'mist').note).toBe('相手の 魔法防御で 減る');
+  });
+});
+
+describe('敵の一覧の行数の上限', () => {
+  it('どのステージも敵の種類は一覧の行に収まる', () => {
+    const reg = testRegistry();
+    for (const s of reg.stages) {
+      expect(stageEnemies(reg, s).length, s.id).toBeLessThanOrEqual(ENEMY_LIST_MAX_ROWS);
+    }
+  });
+  it('上限は、最後の行の下端が「閉じる」に届かない最大の行数', () => {
+    const bottom = (i: number) => enemyListRow(i).y + enemyListRow(i).h;
+    expect(bottom(ENEMY_LIST_MAX_ROWS - 1)).toBeLessThanOrEqual(ENEMY_LIST_CLOSE_BTN.y);
+    expect(bottom(ENEMY_LIST_MAX_ROWS)).toBeGreaterThan(ENEMY_LIST_CLOSE_BTN.y);
   });
 });
