@@ -5,7 +5,8 @@ import { completeRecruit } from './core/events';
 import { MAX_PARTY } from './core/constants';
 import { pickDialogue, pickRecruitTalk, pickStageIntro, pickStageOutro } from './core/dialogue';
 import { SKILL_EFFECT_IDS } from './core/skills';
-import { beginBattle, canPlaceAt, createBattleState, placeUnit } from './core/state';
+import { beginBattle, canPlaceAt, createBattleState, placeUnit, rebuildForSortie, statsForLevel } from './core/state';
+import { canChooseSortie, initialSortie, sortieCandidates, sortieProgress } from './core/sortie';
 import { playerUnits, step } from './core/sim';
 import type { SimCommand } from './core/sim';
 import { UNIT_R, drawBattle, drawDebugOverlay, drawDragPreview } from './render/draw';
@@ -22,15 +23,17 @@ import { hitRect, pickUnit } from './ui/hit';
 import { resolveMapGesture } from './ui/input';
 import type { PointerStart } from './ui/input';
 import {
-  BOTTOM_PANEL_Y, BTN, MESSAGE_BAR, STAGE_LIST_VIEW, TALK_BODY_X, TALK_FONT, TALK_MAX_LINES,
+  BOTTOM_PANEL_Y, BTN, MESSAGE_BAR, SORTIE_BTN, START_BTN, STAGE_LIST_VIEW, TALK_BODY_X, TALK_FONT, TALK_MAX_LINES,
   TALK_PAD, TALK_WINDOW, portraitSlot, resultSlot, rosterSlot, stageListContentH,
 } from './ui/layout';
 import { clampScroll, isTap, maxScroll } from './ui/scroll';
-import { drawEnemyList, drawStatCard } from './ui/card-view';
-import { closeOverlay, overlayTap } from './ui/overlay';
-import type { Overlay } from './ui/overlay';
+import { drawEnemyList, drawSortieList, drawStatCard } from './ui/card-view';
+import { applySortieToggle, closeOverlay, overlayTap } from './ui/overlay';
+import type { Overlay, SortieOverlay } from './ui/overlay';
 import { stageTapTarget } from './ui/select-tap';
-import { allyCardFromSave, cardFromGain, cardFromUnit, enemyCard, stageEnemies } from './ui/stat-card';
+import { allyCardFromSave, cardFromDef, cardFromGain, cardFromUnit, enemyCard, stageEnemies } from './ui/stat-card';
+import type { StatCard } from './ui/stat-card';
+import type { StageDef } from './engine/schema';
 import { levelUpCard, mergeLevelUps } from './ui/levelup';
 import type { LevelUpEvent } from './ui/levelup';
 import { partyIds } from './core/party';
@@ -121,18 +124,62 @@ let overlay: Overlay | null = null;
 /** 戦闘を止めて札を出す順番待ちのレベルアップ。先頭から 1 人ずつ出す */
 let levelUps: LevelUpEvent[] = [];
 
+/**
+ * 重ねる物を開く。開いたとき、進行中のドラッグ（ステージ一覧のスクロール・マップの操作）は終える。
+ * 終えないと、別の指で押した下で、最初の指のドラッグが動き続ける。重ねる物を開くところはすべてここを通す
+ */
+function openOverlay(o: Overlay): void {
+  overlay = o;
+  stageDrag = null;
+  pointerStart = null;
+  dragMap = null;
+}
+
+/** 出撃の一覧の枠に出す名前。定義が無い id は id のまま */
+function unitName(id: string): string {
+  return lookupDef(registry, id)?.name ?? id;
+}
+
+/** 出撃の一覧の「強さ」で開くカード。出撃の候補の今の進行（レベル・能力の加算）から出す */
+function sortieCard(stage: StageDef, id: string): StatCard {
+  const def = registry.units.get(id)!;
+  const p = sortieProgress(stage, save, id);
+  return { ...cardFromDef(registry, id, statsForLevel(def, p.level, registry.growth, p.bonus)), level: p.level };
+}
+
+/** 「決める」。選んだ内容が今の場と同じなら閉じるだけ。違えば、選んだ内容で戦いの状態を作り直す */
+function decideSortie(o: SortieOverlay): void {
+  if (!battle) return;
+  const onField = battle.units.filter((u) => u.side === 'player');
+  const same = onField.length === o.chosen.length && onField.every((u) => o.chosen.includes(u.defId));
+  if (!same) {
+    const kept = new Map<string, Vec2>(onField.map((u) => [u.defId, { ...u.pos }]));
+    battle = rebuildForSortie(registry, o.stage, save, stageSeed, o.chosen, kept);
+    selected = null;
+  }
+  overlay = null;
+}
+
 /** 重ねている物の上を押したときの処理 */
 function tapOverlay(p: Vec2): void {
   if (!overlay) return;
   const t = overlayTap(overlay, p);
   if (t.type === 'close') overlay = closeOverlay(overlay);
-  else if (t.type === 'open') overlay = { kind: 'card', card: t.card, back: overlay };
+  else if (t.type === 'open') openOverlay({ kind: 'card', card: t.card, back: overlay });
+  else if (overlay.kind === 'sortie') {
+    if (t.type === 'toggle') overlay = applySortieToggle(overlay, t.id, unitName);
+    else if (t.type === 'strength') openOverlay({ kind: 'card', card: sortieCard(overlay.stage, t.id), back: overlay });
+    else if (t.type === 'decide') decideSortie(overlay);
+  }
 }
 
 function drawOverlay(): void {
   if (!overlay) return;
   if (overlay.kind === 'card') drawStatCard(ctx, registry, overlay.card, images, '閉じる');
-  else drawEnemyList(ctx, registry, overlay, images);
+  else if (overlay.kind === 'sortie') {
+    const stage = overlay.stage;
+    drawSortieList(ctx, registry, overlay, (id) => sortieProgress(stage, save, id).level, images);
+  } else drawEnemyList(ctx, registry, overlay, images);
 }
 
 /** 選択画面に入るたびに一番上へ戻す */
@@ -193,10 +240,19 @@ function toLogical(ev: PointerEvent): Vec2 {
   return screenToLogical(vp, ev.clientX - rect.left, ev.clientY - rect.top);
 }
 
-function beginStage(index: number): void {
+/** beginStage で決めた乱数の種。出撃を選び直して状態を作り直すときに使い直す */
+let stageSeed = 0;
+/** 「始める」を押したときの出撃と置き場所。負けて挑み直すとき、同じ出撃・同じ置き場所で始める */
+let retryStart: { stageId: string; sortie: string[]; positions: Map<string, Vec2> } | null = null;
+
+function beginStage(index: number, retry: boolean): void {
+  const stage = registry.stages[index]!;
   stageIndex = index;
-  stageId = registry.stages[index]!.id;
-  battle = createBattleState(registry, registry.stages[index]!, save, Date.now() % 100000);
+  stageId = stage.id;
+  stageSeed = Date.now() % 100000;
+  battle = retry && retryStart !== null && retryStart.stageId === stage.id
+    ? rebuildForSortie(registry, stage, save, stageSeed, retryStart.sortie, retryStart.positions)
+    : createBattleState(registry, stage, save, stageSeed, initialSortie(registry, stage, save.members, save.sortie));
   escorts = new Set(escortDefIds(battle.stage));
   levelUps = [];
   overlay = null;
@@ -263,7 +319,7 @@ function onPointerDown(ev: PointerEvent): void {
       const ids = partyIds(registry, save.members);
       for (let i = 0; i < ids.length; i++) {
         if (hitRect(rosterSlot(i), p)) {
-          overlay = { kind: 'card', card: allyCardFromSave(registry, save, ids[i]!), back: null };
+          openOverlay({ kind: 'card', card: allyCardFromSave(registry, save, ids[i]!), back: null });
           return;
         }
       }
@@ -311,8 +367,20 @@ function onPointerDown(ev: PointerEvent): void {
         tapOverlay(p);
         return;
       }
-      if (hitRect(MESSAGE_BAR, p)) {
+      const candidates = sortieCandidates(registry, battle.stage, save.members);
+      const canChoose = canChooseSortie(candidates);
+      if (canChoose && hitRect(SORTIE_BTN, p)) {
+        const chosen = battle.units.filter((u) => u.side === 'player').map((u) => u.defId);
+        openOverlay({ kind: 'sortie', stage: battle.stage, candidates, chosen, message: null });
+        return;
+      }
+      if (hitRect(canChoose ? START_BTN : MESSAGE_BAR, p)) {
         pointerStart = null;
+        // 今の出撃を前回の出撃としてセーブに残し、挑み直しのために出撃と置き場所も覚える
+        const players = battle.units.filter((u) => u.side === 'player');
+        const sortie = players.map((u) => u.defId);
+        save = { ...save, sortie };
+        retryStart = { stageId, sortie, positions: new Map(players.map((u) => [u.defId, { ...u.pos }])) };
         writeSave(window.localStorage, save); // ステージ開始時点を保存する
         beginBattle(battle);
         phase = 'battle';
@@ -348,7 +416,7 @@ function onPointerDown(ev: PointerEvent): void {
       for (let i = 0; i < gains.length; i++) {
         const g = gains[i]!;
         if (g.leveledUp && !g.joined && hitRect(resultSlot(i), p)) {
-          overlay = { kind: 'card', card: cardFromGain(registry, g), back: null };
+          openOverlay({ kind: 'card', card: cardFromGain(registry, g), back: null });
           return;
         }
       }
@@ -356,7 +424,7 @@ function onPointerDown(ev: PointerEvent): void {
     }
 
     case 'defeat':
-      if (hitRect(BTN.retry, p)) beginStage(stageIndex);
+      if (hitRect(BTN.retry, p)) beginStage(stageIndex, true);
       else if (hitRect(BTN.toSelect, p)) toStageSelect();
       return;
   }
@@ -374,7 +442,7 @@ function beginMapPointer(state: BattleState, p: Vec2, ev: PointerEvent): void {
     if (!unit || unit.retired) return;
     if (phase === 'placement') {
       // 配置の場面の顔の枠は、強さを見る札を開く（選ぶ・動かすのはマップ上の仲間を押す）
-      overlay = { kind: 'card', card: cardFromUnit(registry, unit, null), back: null };
+      openOverlay({ kind: 'card', card: cardFromUnit(registry, unit, null), back: null });
       return;
     }
     // ポートレートのタップは「選択して必殺技を出す」。選択の解除はマップ上の再タップで行う
@@ -399,7 +467,7 @@ function beginMapPointer(state: BattleState, p: Vec2, ev: PointerEvent): void {
     if (enemy) {
       const name = lookupDef(registry, enemy.defId)?.name;
       const count = stageEnemies(registry, state.stage).find((e) => e.name === name)?.count ?? 1;
-      overlay = { kind: 'card', card: cardFromUnit(registry, enemy, count), back: null };
+      openOverlay({ kind: 'card', card: cardFromUnit(registry, enemy, count), back: null });
       return;
     }
   }
@@ -435,14 +503,14 @@ function onPointerUp(ev: PointerEvent): void {
     if (phase === 'select' && !overlay && isTap(p.y - start.startY)) {
       const target = stageTapTarget(registry, save, { x: p.x, y: p.y + stageScrollY });
       if (target.type === 'stage') {
-        beginStage(target.index);
+        beginStage(target.index, false);
       } else if (target.type === 'enemies') {
         const stage = registry.stages[target.index]!;
         const enemies = stageEnemies(registry, stage);
-        overlay = {
+        openOverlay({
           kind: 'enemies', title: stage.name, enemies,
           cards: enemies.map((e) => enemyCard(registry, e.defId, e.count)),
-        };
+        });
       }
     }
     return;
@@ -589,7 +657,7 @@ function render(): void {
       if (battle) {
         drawBattle(ctx, registry, battle, selected, effects, escorts, images, anim);
         drawBottomBar(ctx, registry, battle, selected, escorts, images);
-        drawPlacement(ctx, battle);
+        drawPlacement(ctx, battle, canChooseSortie(sortieCandidates(registry, battle.stage, save.members)));
         drawOverlay();
       }
       break;

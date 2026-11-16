@@ -3,8 +3,13 @@ import { lookupDef } from '../engine/registry';
 import type { ImageCache } from '../render/images';
 import { drawFace, drawRoleBadge } from '../render/sprites';
 import { LOGICAL_H, LOGICAL_W } from '../render/viewport';
-import { CARD_CLOSE_BTN, ENEMY_LIST, ENEMY_LIST_CLOSE_BTN, FACE_PX, STAT_CARD, enemyListRow } from './layout';
-import type { Overlay } from './overlay';
+import {
+  CARD_CLOSE_BTN, ENEMY_LIST, ENEMY_LIST_CLOSE_BTN, FACE_PX, SORTIE_DECIDE_BTN, SORTIE_MESSAGE_Y, SORTIE_SHEET, STAT_CARD,
+  enemyListRow, sortieSlot, sortieStrengthBtn,
+} from './layout';
+import { MAX_PARTY } from '../core/constants';
+import { lockedIds } from '../core/sortie';
+import type { Overlay, SortieOverlay } from './overlay';
 import { button, panel } from './screens';
 import {
   KIND_COLOR, KIND_LABEL, STAT_LABEL, STAT_ORDER, barRatio, statGains,
@@ -142,8 +147,77 @@ export function drawEnemyList(
     ctx.fillStyle = MUTED;
     ctx.font = '16px sans-serif';
     ctx.textAlign = 'right';
-    ctx.fillText('押すと 札 ›', r.x + r.w - 14, r.y + 36);
+    ctx.fillText('押すと カード ›', r.x + r.w - 14, r.y + 36);
     ctx.textAlign = 'left';
   });
   button(ctx, ENEMY_LIST_CLOSE_BTN, '閉じる', true, true);
+}
+
+/**
+ * 出撃の一覧。見出し・「n / 8」・説明、候補の枠（3 列）、断りの文、「決める」。
+ * 出撃している枠は金色の縁と「出撃」、外せない枠は「外せない」、右下の「強さ」でカードが開く
+ */
+export function drawSortieList(
+  ctx: CanvasRenderingContext2D, reg: Registry, o: SortieOverlay, levelOf: (id: string) => number, images: ImageCache,
+): void {
+  dim(ctx);
+  panel(ctx, SORTIE_SHEET, '#16202a');
+  const left = SORTIE_SHEET.x + 16;
+  const right = SORTIE_SHEET.x + SORTIE_SHEET.w - 16;
+  ctx.fillStyle = INK;
+  ctx.font = '24px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('出撃する 仲間', left, SORTIE_SHEET.y + 40);
+  ctx.fillStyle = GOLD;
+  ctx.textAlign = 'right';
+  ctx.fillText(`${o.chosen.length} / ${MAX_PARTY}`, right, SORTIE_SHEET.y + 40);
+  ctx.textAlign = 'left';
+  ctx.fillStyle = MUTED;
+  ctx.font = '16px sans-serif';
+  ctx.fillText('押すと 入れる・外す。「強さ」で カード', left, SORTIE_SHEET.y + 68, SORTIE_SHEET.w - 32);
+
+  const locked = lockedIds(o.stage);
+  o.candidates.forEach((id, i) => {
+    const r = sortieSlot(i);
+    const on = o.chosen.includes(id);
+    ctx.fillStyle = on ? '#2b2a1f' : '#18222c';
+    ctx.fillRect(r.x, r.y, r.w, r.h);
+    ctx.strokeStyle = on ? GOLD : '#5a6673';
+    ctx.lineWidth = on ? 3 : 1.5;
+    ctx.strokeRect(r.x + 1.5, r.y + 1.5, r.w - 3, r.h - 3);
+    const def = lookupDef(reg, id);
+    if (def) drawFace(ctx, { x: r.x + 26, y: r.y + 26 }, FACE_PX.small / 2, def, images);
+    ctx.fillStyle = on ? INK : MUTED;
+    ctx.font = '17px sans-serif';
+    ctx.fillText(def?.name ?? id, r.x + 48, r.y + 22, r.w - 48 - 8);
+    ctx.fillStyle = on ? GOLD : MUTED;
+    ctx.font = '14px sans-serif';
+    ctx.fillText(`Lv${levelOf(id)}  ${def?.role ?? ''}`, r.x + 48, r.y + 39, r.w - 48 - 8);
+    const mark = locked.includes(id) ? '外せない' : on ? '出撃' : null;
+    if (mark !== null) {
+      ctx.fillStyle = locked.includes(id) ? '#e8a07a' : GOLD;
+      ctx.font = '13px sans-serif';
+      ctx.fillText(mark, r.x + 10, r.y + r.h - 12, 90);
+    }
+    const sb = sortieStrengthBtn(r);
+    ctx.fillStyle = '#2c4a63';
+    ctx.fillRect(sb.x, sb.y, sb.w, sb.h);
+    ctx.strokeStyle = INK;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(sb.x + 0.5, sb.y + 0.5, sb.w - 1, sb.h - 1);
+    ctx.fillStyle = INK;
+    ctx.font = '14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('強さ', sb.x + sb.w / 2, sb.y + 18);
+    ctx.textAlign = 'left';
+  });
+
+  if (o.message !== null) {
+    ctx.fillStyle = '#e8a07a';
+    ctx.font = '18px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(o.message, SORTIE_SHEET.x + SORTIE_SHEET.w / 2, SORTIE_MESSAGE_Y, SORTIE_SHEET.w - 32);
+    ctx.textAlign = 'left';
+  }
+  button(ctx, SORTIE_DECIDE_BTN, '決める', o.chosen.length > 0, true);
 }
