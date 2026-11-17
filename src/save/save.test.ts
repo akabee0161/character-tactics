@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { loadSave, newSave, SAVE_KEY, SAVE_VERSION, writeSave } from './save';
 import { testRegistry } from '../core/testing';
+import { applyXp } from '../core/progress';
+import { statsForLevel } from '../core/state';
+import { allyCardFromSave } from '../ui/stat-card';
 import type { StorageLike } from './save';
 
 function memoryStorage(initial?: string): StorageLike & { raw: string | null } {
@@ -200,5 +203,51 @@ describe('前回の出撃（sortie）', () => {
     expect(load(without).sortie).toEqual([]);
     expect(load({ ...newSave(reg), sortie: 'roran' }).sortie).toEqual([]);
     expect(newSave(reg).sortie).toEqual([]);
+  });
+});
+
+describe('称号を持っていたころのセーブ（titles・counters）', () => {
+  const reg = testRegistry();
+  it('titles・counters を持つ古いセーブも読め、その値は捨てる', () => {
+    const raw = {
+      ...newSave(reg),
+      units: { roran: { level: 5, xp: 3 } },
+      titles: { roran: ['neraiuchi-master'] },
+      counters: { roran: { neraiuchi: 7 } },
+    };
+    const loaded = loadSave(memoryStorage(JSON.stringify(raw)), reg);
+    expect(loaded).not.toBeNull();
+    expect(loaded!.units.roran).toEqual({ level: 5, xp: 3 });
+    expect(loaded!.clearedStageIds).toEqual([]);
+    expect(Object.keys(loaded!)).not.toContain('titles');
+    expect(Object.keys(loaded!)).not.toContain('counters');
+  });
+  it('書き戻しても titles・counters は残らない', () => {
+    const raw = { ...newSave(reg), titles: { roran: ['x'] }, counters: { roran: { x: 1 } } };
+    const st = memoryStorage(JSON.stringify(raw));
+    expect(writeSave(st, loadSave(st, reg)!)).toBe(true);
+    expect(st.raw).not.toMatch(/titles|counters/);
+  });
+});
+
+describe('上限 12 のころの古いセーブ（上限 30 の今）', () => {
+  const reg = testRegistry();
+  const raw = {
+    version: 2, clearedStageIds: ['stage1'],
+    units: { roran: { level: 12, xp: 400 }, ines: { level: 12, xp: 0 } },
+  };
+
+  it('古いセーブのレベル 12 の仲間は、新しい伸び方の能力になる', () => {
+    const save = loadSave(memoryStorage(JSON.stringify(raw)), reg)!;
+    expect(save.units.roran).toEqual({ level: 12, xp: 400 });
+    const card = allyCardFromSave(reg, save, 'roran');
+    expect(card.level).toBe(12);
+    expect(card.stats).toEqual(statsForLevel(reg.units.get('roran')!, 12));
+  });
+
+  it('ためた経験値が新しい式の必要量を超えていても読め、次に経験値が入ったときに上がる', () => {
+    const save = loadSave(memoryStorage(JSON.stringify(raw)), reg)!;
+    const after = applyXp(save.units.roran!, 1, reg.growth);
+    expect(after.level).toBeGreaterThan(12);
   });
 });

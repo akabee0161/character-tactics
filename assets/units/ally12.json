@@ -11,6 +11,7 @@
   "range": 160,
   "attackInterval": 2.2,
   "speed": 60,
+  "growth": { "maxHp": 1, "power": 0.85, "guard": 0.15, "resist": 0.2, "speed": 0 },
   "skillId": "neraiuchi",
   "color": "#58b848",
   "sprites": {

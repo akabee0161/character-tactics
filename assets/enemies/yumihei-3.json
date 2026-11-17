@@ -5,6 +5,7 @@
   "resist": 1,
   "attack": "bow", "range": 120,
   "attackInterval": 1.8, "speed": 30,
+  "growth": { "maxHp": 1, "power": 0.6, "guard": 0.1, "resist": 0.1, "speed": 0 },
   "skillId": null,
   "color": "#7a6a3a",
   "sprites": {

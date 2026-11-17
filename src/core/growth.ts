@@ -1,6 +1,13 @@
 import { applyXp } from './progress';
 import { statsForLevel } from './state';
+import type { Registry } from '../engine/registry';
 import type { BattleState, Unit, UnitStats } from './types';
+
+/** 敵を倒したときの経験値。敵のレベルが 1 上がるごとに enemyLevelXp 増える（後のステージほど稼げる） */
+export function xpForDefeat(reg: Registry, victim: Unit): number {
+  const base = reg.enemies.get(victim.defId)?.xpReward ?? 0;
+  return base + reg.growth.enemyLevelXp * Math.max(0, victim.level - 1);
+}
 
 /**
  * 経験値を渡し、レベルが上がったら能力を上げる。
@@ -21,7 +28,7 @@ export function awardXp(state: BattleState, unit: Unit, amount: number): void {
   const beforeStats: UnitStats = {
     maxHp: unit.maxHp, power: unit.power, guard: unit.guard, resist: unit.resist, speed: unit.speed,
   };
-  const stats = statsForLevel(def, after.level, state.reg.growth, unit.statBonus);
+  const stats = statsForLevel(def, after.level, unit.statBonus);
   const gainedMaxHp = stats.maxHp - unit.maxHp;
   unit.maxHp = stats.maxHp;
   unit.power = stats.power;
@@ -59,9 +66,9 @@ export function awardXpForEvents(state: BattleState): void {
     } else if (ev.type === 'heal') {
       awardXpTo(state, ev.sourceUid, healXp);
     } else if (ev.type === 'unitDefeated') {
-      const reward = state.reg.enemies.get(ev.defId)?.xpReward ?? 0;
-      if (ev.byUid !== null) awardXpTo(state, ev.byUid, reward);
       const victim = state.units.find((u) => u.uid === ev.uid);
+      const reward = victim ? xpForDefeat(state.reg, victim) : (state.reg.enemies.get(ev.defId)?.xpReward ?? 0);
+      if (ev.byUid !== null) awardXpTo(state, ev.byUid, reward);
       const assist = Math.floor(reward * assistRatio);
       for (const uid of victim?.damagedBy ?? []) {
         // とどめ役は全額を受け取っているので二重取りさせない

@@ -15,6 +15,7 @@ const STAGE: StageDef = {
   mapRows: ['..........', '..........', '..........'],
   placement: { minY: 0, starts: [{ x: 16, y: 16 }] },
   roster: ['roran', 'ines', 'mist', 'gau'],
+  enemyLevel: 1,
   enemies: [{ defId: 'narazumono', pos: { x: 304, y: 16 }, ai: { kind: 'aggressive' } }],
   spawners: [],
   joins: [],
@@ -57,7 +58,7 @@ function spawnEnemy(s: BattleState, defId: string, pos: Vec2, hp?: number): Unit
     windup: 0, pendingHit: null,
     ai: { def: { kind: 'aggressive' }, mode: 'idle', targetUid: null, home: { ...pos }, spottedAt: null },
     skillCooldownUntil: 0, funbaruUntil: -1, neraiuchiArmed: false, pinchShown: false,
-    seenDefIds: [], lastHitBy: null, lastHitNeraiuchi: false, damagedBy: [],
+    seenDefIds: [], lastHitBy: null, damagedBy: [],
   };
   s.units.push(u);
   return u;
@@ -245,7 +246,7 @@ describe('撃破と撤退', () => {
     engageAndAttack(s, 1.7);
     expect(e.retired).toBe(true);
     expect(s.events).toContainEqual({
-      type: 'unitDefeated', uid: e.uid, defId: 'narazumono', byUid: roran.uid, byDefId: 'roran', neraiuchi: false,
+      type: 'unitDefeated', uid: e.uid, defId: 'narazumono', byUid: roran.uid, byDefId: 'roran',
       pos: e.pos,
     });
     // とどめの一撃も hit イベントとして hitXp が入るので、撃破報酬に上乗せされる。
@@ -256,15 +257,6 @@ describe('撃破と撤退', () => {
     expect({ level: roran.level, xp: roran.xp }).toEqual(expected);
   });
 
-  it('ねらいうちで倒すと kill:neraiuchi が増える', () => {
-    const s = fresh();
-    const ines = unitOf(s, 'ines');
-    ines.pos = { x: 16, y: 16 };
-    spawnEnemy(s, 'narazumono', { x: 100, y: 16 }, 5);
-    step(s, [{ type: 'skill', uid: ines.uid }], 0.01);
-    advanceFine(s, 2.3);
-  });
-
   it('かけぬけるで倒すと unitDefeated イベントに byDefId が入り、けいけんちが はいる', () => {
     const s = fresh();
     const gau = unitOf(s, 'gau');
@@ -273,7 +265,7 @@ describe('撃破と撤退', () => {
     step(s, [{ type: 'skill', uid: gau.uid, dest: { x: 200, y: 16 } }], 0.01);
     expect(e.retired).toBe(true);
     expect(s.events).toContainEqual({
-      type: 'unitDefeated', uid: e.uid, defId: 'narazumono', byUid: gau.uid, byDefId: 'gau', neraiuchi: false,
+      type: 'unitDefeated', uid: e.uid, defId: 'narazumono', byUid: gau.uid, byDefId: 'gau',
       pos: e.pos,
     });
     // とどめの一撃も hit イベントとして hitXp が入るので、撃破報酬に上乗せされる。

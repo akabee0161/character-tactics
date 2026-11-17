@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
-  allyCardFromSave, barRatio, cardFromGain, cardFromUnit, enemyCard, stageEnemies, statGains,
+  BAR_MAX, allyCardFromSave, barRatio, cardFromGain, cardFromUnit, enemyCard, stageEnemies, statGains, statLabel,
 } from './stat-card';
+import { statsForLevel } from '../core/state';
 import { beginBattle, createBattleState } from '../core/state';
 import { testRegistry } from '../core/testing';
 import { newSave } from '../save/save';
@@ -27,11 +28,47 @@ describe('stageEnemies', () => {
 
 describe('敵のカード', () => {
   it('盾持ちのカードに矢の上限の特徴が出る', () => {
-    const c = enemyCard(testRegistry(), 'tatemochi', 1);
+    const reg = testRegistry();
+    const c = enemyCard(reg, 'tatemochi', 1, 1);
     expect(c.traits).toEqual(['盾: 矢の ダメージは 1 まで']);
-    expect(c.level).toBeNull();
+    expect(c.level).toBe(1);
     expect(c.count).toBe(1);
-    expect(c.stats).toEqual({ maxHp: 20, power: 12, guard: 3, resist: 0, speed: 26 });
+    expect(c.stats).toEqual(statsForLevel(reg.enemies.get('tatemochi')!, 1));
+  });
+
+  it('敵のカードはレベルを持ち、そのレベルの能力', () => {
+    const reg = testRegistry();
+    const card = enemyCard(reg, 'majinaishi', 7, 5);
+    expect(card.level).toBe(5);
+    expect(card.count).toBe(7);
+    expect(card.stats).toEqual(statsForLevel(reg.enemies.get('majinaishi')!, 5));
+  });
+});
+
+describe('statLabel（魔法のユニットは攻撃力を「魔力」と呼ぶ）', () => {
+  it('魔法の仲間と敵は power を「魔力」と呼ぶ', () => {
+    expect(statLabel('power', 'magic')).toBe('魔力');
+    expect(statLabel('power', 'melee')).toBe('攻撃力');
+    expect(statLabel('power', 'bow')).toBe('攻撃力');
+    expect(statLabel('guard', 'magic')).toBe('守備');
+    expect(statLabel('maxHp', 'magic')).toBe('HP');
+  });
+
+  it('カードの attack が魔法なら、仲間にも敵にも当てはまる（ミスト・まじない師）', () => {
+    const reg = testRegistry();
+    expect(allyCardFromSave(reg, newSave(reg), 'mist').attack).toBe('magic');
+    expect(enemyCard(reg, 'majinaishi', 1, 1).attack).toBe('magic');
+  });
+});
+
+describe('仲間のカード: 技の一言', () => {
+  it('ミストのカードの技の一言は、そのレベルの魔力を足した回復量', () => {
+    const reg = testRegistry();
+    const save = newSave(reg);
+    save.units.mist = { level: 10, xp: 0 };
+    const c = allyCardFromSave(reg, save, 'mist');
+    const heal = reg.skills.get('omajinai')!.params.heal! + c.stats.power;
+    expect(c.skill!.summary).toContain(`HPを ${heal} 回復`);
   });
 });
 
@@ -43,7 +80,9 @@ describe('仲間のカード', () => {
     const c = allyCardFromSave(reg, save, 'roran');
     expect(c.level).toBe(7);
     expect(c.count).toBeNull();
-    expect(c.stats).toEqual({ maxHp: 36, power: 8, guard: 6, resist: 2, speed: 60 });
+    expect(c.stats).toEqual(
+      statsForLevel(reg.units.get('roran')!, 7, { maxHp: 0, power: 0, guard: 1, speed: 0, resist: 0 }),
+    );
     expect(c.skill).toEqual({ label: '踏ん張る', summary: '5秒の あいだ、受ける ダメージが 半分' });
     expect(c.before).toBeNull();
   });
@@ -60,7 +99,17 @@ describe('仲間のカード', () => {
     expect(c.level).toBe(1);
     expect(c.stats.guard).toBe(7);
     const enemy = state.units.find((u) => u.side === 'enemy')!;
-    expect(cardFromUnit(reg, enemy, 3)).toMatchObject({ level: null, count: 3 });
+    expect(cardFromUnit(reg, enemy, 3)).toMatchObject({ level: enemy.level, count: 3 });
+  });
+});
+
+describe('配置の場面の敵のカード', () => {
+  it('敵のカードもそのユニットのレベルを持つ', () => {
+    const reg = testRegistry();
+    const stage = { ...reg.stages.find((s) => s.enemies.length > 0)!, enemyLevel: 6 };
+    const state = createBattleState(reg, stage, newSave(reg), 1);
+    const enemy = state.units.find((u) => u.side === 'enemy')!;
+    expect(cardFromUnit(reg, enemy, 1).level).toBe(6);
   });
 });
 
@@ -71,8 +120,9 @@ describe('レベルアップのカード', () => {
       id: 'roran', before: { level: 3, xp: 0 }, after: { level: 4, xp: 1 }, leveledUp: true, joined: false,
     });
     expect(c.level).toBe(4);
-    expect(c.before).toEqual({ level: 3, stats: { maxHp: 32, power: 6, guard: 5, resist: 2, speed: 60 } });
-    expect(c.stats).toEqual({ maxHp: 33, power: 7, guard: 5, resist: 2, speed: 60 });
+    const def = reg.units.get('roran')!;
+    expect(c.before).toEqual({ level: 3, stats: statsForLevel(def, 3) });
+    expect(c.stats).toEqual(statsForLevel(def, 4));
   });
 
   it('上がった能力だけを順に返す', () => {
@@ -83,15 +133,15 @@ describe('レベルアップのカード', () => {
 
 describe('barRatio', () => {
   it('棒は上限で止まる', () => {
-    expect(barRatio('maxHp', 80)).toBe(1);
-    expect(barRatio('guard', 4)).toBe(0.5);
+    expect(barRatio('maxHp', BAR_MAX.maxHp * 2)).toBe(1);
+    expect(barRatio('guard', BAR_MAX.guard / 2)).toBe(0.5);
     expect(barRatio('guard', -1)).toBe(0);
   });
 });
 
 describe('ダメージが減る守りの案内（note）', () => {
   it('通常の近接は守備で減ると案内する', () => {
-    expect(enemyCard(testRegistry(), 'tatemochi', 1).note).toBe('相手の 守備で 減る');
+    expect(enemyCard(testRegistry(), 'tatemochi', 1, 1).note).toBe('相手の 守備で 減る');
   });
 
   it('斧（守備を無視）のカードは、守備で減るとは案内しない', () => {
@@ -119,5 +169,20 @@ describe('敵の一覧の行数の上限', () => {
     const bottom = (i: number) => enemyListRow(i).y + enemyListRow(i).h;
     expect(bottom(ENEMY_LIST_MAX_ROWS - 1)).toBeLessThanOrEqual(ENEMY_LIST_CLOSE_BTN.y);
     expect(bottom(ENEMY_LIST_MAX_ROWS)).toBeGreaterThan(ENEMY_LIST_CLOSE_BTN.y);
+  });
+});
+
+describe('BAR_MAX（棒の長さの上限）', () => {
+  it('全員のレベル 30 と、全ステージの敵（そのステージのレベル）の能力が BAR_MAX 以下', () => {
+    const reg = testRegistry();
+    const keys = ['maxHp', 'power', 'guard', 'resist', 'speed'] as const;
+    const check = (who: string, stats: Record<(typeof keys)[number], number>) => {
+      for (const k of keys) expect(stats[k], `${who} の ${k}`).toBeLessThanOrEqual(BAR_MAX[k]);
+    };
+    for (const d of reg.units.values()) check(`${d.id} Lv30`, statsForLevel(d, 30));
+    for (const st of reg.stages) {
+      const ids = new Set([...st.enemies.map((e) => e.defId), ...st.spawners.map((e) => e.defId), ...st.persuasions.map((p) => p.foeId)]);
+      for (const id of ids) check(`${id} @${st.id}`, statsForLevel(reg.enemies.get(id)!, st.enemyLevel));
+    }
   });
 });

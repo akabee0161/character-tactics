@@ -22,7 +22,7 @@ function makeTestUnit(s: BattleState, def: EnemyDef, pos: Vec2, ai: AiDef): Unit
     windup: 0, pendingHit: null,
     ai: { def: ai, mode: 'idle', targetUid: null, home: { ...pos }, spottedAt: null },
     skillCooldownUntil: 0, funbaruUntil: -1, neraiuchiArmed: false, pinchShown: false,
-    seenDefIds: [], lastHitBy: null, lastHitNeraiuchi: false, damagedBy: [],
+    seenDefIds: [], lastHitBy: null, damagedBy: [],
   };
 }
 
@@ -33,6 +33,7 @@ const STAGE: StageDef = {
   mapRows: ['..........', '..........', '..........'],
   placement: { minY: 0, starts: [{ x: 16, y: 16 }] },
   roster: ['roran', 'ines', 'mist', 'gau'],
+  enemyLevel: 1,
   enemies: [{ defId: 'narazumono', pos: { x: 304, y: 16 }, ai: { kind: 'aggressive' } }],
   spawners: [],
   joins: [],
@@ -54,6 +55,7 @@ const AI_STAGE: StageDef = {
   mapRows: Array.from({ length: 15 }, () => '.'.repeat(30)),
   placement: { minY: 0, starts: [{ x: 16, y: 16 }] },
   roster: ['roran', 'ines', 'mist', 'gau'],
+  enemyLevel: 1,
   enemies: [],
   spawners: [],
   joins: [],
@@ -92,7 +94,7 @@ function spawnEnemy(s: BattleState, defId: string, pos: { x: number; y: number }
     windup: 0, pendingHit: null,
     ai: { def: { kind: 'aggressive' }, mode: 'idle', targetUid: null, home: { ...pos }, spottedAt: null },
     skillCooldownUntil: 0, funbaruUntil: -1, neraiuchiArmed: false, pinchShown: false,
-    seenDefIds: [], lastHitBy: null, lastHitNeraiuchi: false, damagedBy: [],
+    seenDefIds: [], lastHitBy: null, damagedBy: [],
   };
   s.units.push(u);
   return u;
@@ -598,6 +600,16 @@ describe('時間湧き', () => {
     beginBattle(state);
     return { stage, state };
   }
+
+  it('時間湧きの敵も enemyLevel で出る', () => {
+    const { stage, state } = spawnStage();
+    state.stage = { ...state.stage, enemyLevel: 6 };
+    state.time = stage.spawners[0]!.firstAfter;
+    step(state, [], 1 / 60);
+    const spawned = state.units[state.units.length - 1]!;
+    expect(spawned.side).toBe('enemy');
+    expect(spawned.level).toBe(6);
+  });
 
   it('firstAfter に達すると敵が1体増える', () => {
     const { stage, state } = spawnStage();

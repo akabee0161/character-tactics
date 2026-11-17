@@ -6,11 +6,12 @@ import type { Rect } from './hit';
 import type { Overlay } from './overlay';
 import {
   CARD_CLOSE_BTN, ENEMY_LIST, ENEMY_LIST_CLOSE_BTN, SORTIE_DECIDE_BTN, STAT_CARD, enemyListRow, sortieSlot, sortieStrengthBtn,
+  sortieStrengthHit,
 } from './layout';
 import { enemyCard } from './stat-card';
 import { testRegistry } from '../core/testing';
 
-const card = enemyCard(testRegistry(), 'tatemochi', 1);
+const card = enemyCard(testRegistry(), 'tatemochi', 1, 1);
 
 describe('overlayTap', () => {
   it('カードの外を押すと閉じる。中を押しても何も起きない', () => {
@@ -60,6 +61,29 @@ describe('出撃の一覧', () => {
     const slot = sortieSlot(1);
     expect(overlayTap(o, { x: slot.x + 10, y: slot.y + 10 })).toEqual({ type: 'toggle', id: candidates[1] });
     expect(overlayTap(o, center(sortieStrengthBtn(slot)))).toEqual({ type: 'strength', id: candidates[1] });
+  });
+  it('「強さ」の当たり判定は見た目より広く、見た目を含み、枠の中に収まる', () => {
+    const slot = sortieSlot(0);
+    const hit = sortieStrengthHit(slot);
+    const btn = sortieStrengthBtn(slot);
+    expect(hit.w * hit.h).toBeGreaterThan(btn.w * btn.h);
+    expect(hit.x).toBeLessThanOrEqual(btn.x);
+    expect(hit.y).toBeLessThanOrEqual(btn.y);
+    expect(hit.x + hit.w).toBeGreaterThanOrEqual(btn.x + btn.w);
+    expect(hit.y + hit.h).toBeGreaterThanOrEqual(btn.y + btn.h);
+    expect(hit.x).toBeGreaterThanOrEqual(slot.x);
+    expect(hit.y).toBeGreaterThanOrEqual(slot.y);
+    expect(hit.x + hit.w).toBeLessThanOrEqual(slot.x + slot.w);
+    expect(hit.y + hit.h).toBeLessThanOrEqual(slot.y + slot.h);
+  });
+  it('「強さ」の見た目のすぐ上・左を押してもカードが開く。枠の左半分は入れ外しのまま', () => {
+    const o = make(full);
+    const slot = sortieSlot(1);
+    const btn = sortieStrengthBtn(slot);
+    expect(overlayTap(o, { x: btn.x + btn.w / 2, y: btn.y - 8 })).toEqual({ type: 'strength', id: candidates[1] });
+    expect(overlayTap(o, { x: btn.x - 8, y: btn.y + btn.h / 2 })).toEqual({ type: 'strength', id: candidates[1] });
+    expect(overlayTap(o, { x: slot.x + 10, y: slot.y + slot.h - 10 })).toEqual({ type: 'toggle', id: candidates[1] });
+    expect(overlayTap(o, { x: slot.x + slot.w / 2 - 4, y: slot.y + 10 })).toEqual({ type: 'toggle', id: candidates[1] });
   });
   it('一覧の外を押しても閉じない', () => {
     expect(overlayTap(make(full), { x: 2, y: 2 })).toEqual({ type: 'none' });

@@ -5,6 +5,7 @@
   "resist": 3,
   "attack": "melee", "range": 24,
   "attackInterval": 1.6, "speed": 100,
+  "growth": { "maxHp": 1.2, "power": 0.75, "guard": 0.3, "resist": 0.3, "speed": 0 },
   "skillId": "kakenukeru",
   "color": "#e0a03c",
   "sprites": {

@@ -129,7 +129,6 @@ export function completeRecruit(state: BattleState): Unit | null {
   const unit = makeUnit({
     uid: `p${state.nextPlayerUid++}`, def: state.reg.units.get(pending.recruit.unitId)!, side: 'player',
     controller: 'player', pos: { ...pending.pos }, level: pending.recruit.level, xp: 0, ai: null,
-    growth: state.reg.growth,
   });
   state.units.push(unit);
   state.joined.push(pending.recruit.unitId);

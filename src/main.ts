@@ -144,7 +144,7 @@ function unitName(id: string): string {
 function sortieCard(stage: StageDef, id: string): StatCard {
   const def = registry.units.get(id)!;
   const p = sortieProgress(stage, save, id);
-  return { ...cardFromDef(registry, id, statsForLevel(def, p.level, registry.growth, p.bonus)), level: p.level };
+  return { ...cardFromDef(registry, id, statsForLevel(def, p.level, p.bonus)), level: p.level };
 }
 
 /** 「決める」。選んだ内容が今の場と同じなら閉じるだけ。違えば、選んだ内容で戦いの状態を作り直す */
@@ -509,7 +509,7 @@ function onPointerUp(ev: PointerEvent): void {
         const enemies = stageEnemies(registry, stage);
         openOverlay({
           kind: 'enemies', title: stage.name, enemies,
-          cards: enemies.map((e) => enemyCard(registry, e.defId, e.count)),
+          cards: enemies.map((e) => enemyCard(registry, e.defId, e.count, stage.enemyLevel)),
         });
       }
     }

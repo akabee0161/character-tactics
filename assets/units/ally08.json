@@ -11,6 +11,7 @@
   "range": 24,
   "attackInterval": 1.6,
   "speed": 65,
+  "growth": { "maxHp": 1.6, "power": 0.6, "guard": 0.3, "resist": 0.6, "speed": 0 },
   "skillId": "hagemasu",
   "color": "#5ab0b8",
   "sprites": {

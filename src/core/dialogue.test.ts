@@ -38,7 +38,7 @@ describe('pickDialogue', () => {
   it('スキル・ピンチ・勝利・撤退のセリフが出る', () => {
     const reg = testRegistry();
     const skillReq = pickDialogue(reg, [
-      { type: 'skill', uid: 'p2', defId: 'ines', skillId: 'neraiuchi', hits: 0, fromPos: { x: 0, y: 0 }, toPos: { x: 0, y: 0 } },
+      { type: 'skill', uid: 'p2', defId: 'ines', skillId: 'neraiuchi', fromPos: { x: 0, y: 0 }, toPos: { x: 0, y: 0 } },
     ])[0]!;
     expect(skillReq.lineId).toBe('skill:ines');
     expect(skillReq.uid).toBe('p2');
@@ -70,7 +70,7 @@ describe('pickDialogue', () => {
         sourcePos: { x: 10, y: 0 }, neraiuchi: false,
       },
       { type: 'bondSupport', targetUid: 'p1', targetDefId: 'roran', supporterUids: ['p2'], pos: { x: 0, y: 0 } },
-      { type: 'unitDefeated', uid: 'e1', defId: 'narazumono', byUid: 'p4', byDefId: 'gau', neraiuchi: false, pos: { x: 0, y: 0 } },
+      { type: 'unitDefeated', uid: 'e1', defId: 'narazumono', byUid: 'p4', byDefId: 'gau', pos: { x: 0, y: 0 } },
     ];
     expect(pickDialogue(reg, events)).toEqual([]);
   });
@@ -80,7 +80,7 @@ describe('pickDialogue', () => {
     const events: SimEvent[] = [
       { type: 'unitRetired', uid: 'p1', defId: 'roran' },
       { type: 'pinch', uid: 'p3', defId: 'mist' },
-      { type: 'skill', uid: 'p4', defId: 'gau', skillId: 'kakenukeru', hits: 0, fromPos: { x: 0, y: 0 }, toPos: { x: 0, y: 0 } },
+      { type: 'skill', uid: 'p4', defId: 'gau', skillId: 'kakenukeru', fromPos: { x: 0, y: 0 }, toPos: { x: 0, y: 0 } },
       { type: 'engage', uid: 'p3', defId: 'mist', targetUid: 'e1', targetDefId: 'narazumono', firstMeeting: true },
       { type: 'engage', uid: 'p2', defId: 'ines', targetUid: 'g1', targetDefId: 'garum', firstMeeting: true },
       { type: 'unitFled', uid: 'g1', defId: 'garum', byUid: 'p4', byDefId: 'gau' },
@@ -146,7 +146,7 @@ describe('levelUp の トリガ', () => {
     const got = pickDialogue(reg, [
       { type: 'pinch', uid: 'p1', defId: 'roran' },
       lvEv('p1', 'roran'),
-      { type: 'skill', uid: 'p1', defId: 'roran', skillId: 'funbaru', hits: 0, fromPos: { x: 0, y: 0 }, toPos: { x: 0, y: 0 } },
+      { type: 'skill', uid: 'p1', defId: 'roran', skillId: 'funbaru', fromPos: { x: 0, y: 0 }, toPos: { x: 0, y: 0 } },
     ]);
     expect(got.map((d) => d.lineId)).toEqual(['skill:roran', 'levelup:roran', 'pinch:roran']);
   });

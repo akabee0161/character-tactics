@@ -11,6 +11,7 @@
   "range": 24,
   "attackInterval": 1.6,
   "speed": 34,
+  "growth": { "maxHp": 1, "power": 0.3, "guard": 0.2, "resist": 0.3, "speed": 0 },
   "skillId": null,
   "color": "#5ab0b8",
   "sprites": {

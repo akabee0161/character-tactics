@@ -14,10 +14,9 @@ describe('xpToNext', () => {
 describe('applyXp', () => {
   // 実際の assets/growth.json の値には依存しない（xpPerLevel はステージ数に合わせて変わりうる）
   const growth = (): GrowthDef => ({
-    maxLevel: 12,
+    maxLevel: 30,
     xpPerLevel: 12,
-    hpPerLevel: 1,
-    levelsPerPower: 3,
+    enemyLevelXp: 2,
     hitXp: 1,
     healXp: 1,
     assistRatio: 0.5,
@@ -41,6 +40,12 @@ describe('applyXp', () => {
   it('一度に複数レベル上がる', () => {
     // Lv2 まで 12、Lv3 まで 24
     expect(applyXp({ level: 1, xp: 0 }, 36, growth()).level).toBe(3);
+  });
+
+  it('レベル 30 で止まり、経験値は 0（上限を越える経験値を入れても）', () => {
+    const g = growth();
+    expect(g.maxLevel).toBe(30);
+    expect(applyXp({ level: 29, xp: 0 }, 999_999, g)).toEqual({ level: 30, xp: 0 });
   });
 
   it('上限に達したら増えない', () => {
@@ -76,10 +81,13 @@ describe('10ステージぶんの成長曲線', () => {
     return sum;
   }
 
-  it('全ステージを通せば 上限レベルに届く', () => {
+  // 見積りは撃破報酬の山分けとクリアボーナスだけ（命中・アシスト・敵のレベルの加算は入らない）。実際に入る量は
+  // これより多いので、ここで確かめるのは「見積りの下限が上限までの合計を超えない」こと。通しの実際のレベルは
+  // `npm run balance` の平均Lv（stage3 で 15〜18）で見る
+  it('撃破報酬とクリアボーナスだけの下限の見積りでは、全ステージを通しても 上限レベルまでの合計に届かない', () => {
     const reg = testRegistry();
     const total = reg.stages.reduce((sum, s) => sum + floorXpPerStage(reg, s), 0);
-    expect(total).toBeGreaterThanOrEqual(xpToMaxLevel(reg.growth));
+    expect(total).toBeLessThan(xpToMaxLevel(reg.growth));
   });
 
   it('前半5ステージでは まだ上限に届かない', () => {

@@ -13,6 +13,14 @@ describe('skillSummary', () => {
       .toBe('7倍');
   });
 
+  it('{heal}・{damage} には技を使う人の攻撃力（魔力）を足す。ほかの値は足さない', () => {
+    const omajinai = { id: 'x', label: 'X', summary: 'HPを {heal} 回復（{range}）', params: { heal: 12, range: 200, cooldown: 1 } };
+    expect(skillSummary(omajinai, 7)).toBe('HPを 19 回復（200）');
+    expect(skillSummary(omajinai)).toBe('HPを 12 回復（200）');
+    const dmg = { id: 'y', label: 'Y', summary: '{damage} ダメージ {power}', params: { damage: 14, power: 2, cooldown: 1 } };
+    expect(skillSummary(dmg, 5)).toBe('19 ダメージ 2');
+  });
+
   it('本物の skills.json の全部の技に summary があり、差し込み忘れが無い', () => {
     const skills = [...testRegistry().skills.values()];
     expect(skills.length).toBeGreaterThan(0);

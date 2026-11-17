@@ -145,6 +145,15 @@ export function sortieSlot(index: number): Rect {
 export function sortieStrengthBtn(slot: Rect): Rect {
   return { x: slot.x + slot.w - 58, y: slot.y + slot.h - 32, w: 52, h: 26 };
 }
+/**
+ * 「強さ」ボタンの当たり判定。見た目（sortieStrengthBtn、52×26）は小さいので、上・左・下に広げる。
+ * 枠の右下の半分程度までにとどめ、枠そのもの（入れる・外す）を押せる場所を残す。枠の中に収まる
+ */
+export function sortieStrengthHit(slot: Rect): Rect {
+  const w = 80;
+  const h = 44;
+  return { x: slot.x + slot.w - w, y: slot.y + slot.h - h, w, h };
+}
 /** 断りの文を出す行（15 枠の下と「決める」の間）の中心の y */
 export const SORTIE_MESSAGE_Y = 642;
 export const SORTIE_DECIDE_BTN: Rect = { x: SORTIE_SHEET.x + (SORTIE_SHEET.w - 200) / 2, y: 690, w: 200, h: 56 };
