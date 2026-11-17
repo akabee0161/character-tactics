@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { newSave } from '../save/save';
 import {
   BATTLE_DT, BATTLE_TIME_LIMIT, botCommands, MAX_ATTEMPTS, TARGET_BANDS, formatTable, isOutOfBand, measure, playThrough, runBattle,
+  boostLevels, goalSafeDest, routeAvoidingGoal, walkableSafeDest,
 } from './balance';
+import { distanceToSegment, isWalkableAt } from './field';
 import type { StageStat } from './balance';
 import { step } from './sim';
 import { beginBattle, createBattleState } from './state';
@@ -116,8 +118,17 @@ describe('measure', () => {
 
 describe('TARGET_BANDS / formatTable', () => {
   it('isOutOfBand は帯の端を含み、外を真にする', () => {
-    const row = (r: number): StageStat => ({ stageId: 'stage1', name: '', reached: 1, firstTryRate: r, avgDeployed: 0, avgSurvivors: 0 });
-    expect([row(90), row(100), row(89.9)].map(isOutOfBand)).toEqual([false, false, true]);
+    const row = (r: number, grownRate = 100): StageStat => ({
+      stageId: 'stage1', name: '', reached: 1, firstTryRate: r, avgDeployed: 0, avgSurvivors: 0, grownRate, avgLevel: 1, leftoverRate: 0,
+    });
+    expect([row(95), row(100), row(94.9)].map(isOutOfBand)).toEqual([false, false, true]);
+  });
+
+  it('育てた場合が 80〜100 の外でも帯の外になる', () => {
+    const row = (grownRate: number): StageStat => ({
+      stageId: 'stage1', name: '', reached: 1, firstTryRate: 100, avgDeployed: 0, avgSurvivors: 0, grownRate, avgLevel: 1, leftoverRate: 0,
+    });
+    expect([row(80), row(100), row(79.9)].map(isOutOfBand)).toEqual([false, false, true]);
   });
 
   it('キーがステージの id と一致する', () => {
@@ -126,7 +137,7 @@ describe('TARGET_BANDS / formatTable', () => {
 
   it('帯の外の行だけに「帯の外」が出る', () => {
     const row = (stageId: string, firstTryRate: number): StageStat => ({
-      stageId, name: stageId, reached: 10, firstTryRate, avgDeployed: 4, avgSurvivors: 3,
+      stageId, name: stageId, reached: 10, firstTryRate, avgDeployed: 4, avgSurvivors: 3, grownRate: 100, avgLevel: 5, leftoverRate: 0,
     });
     const [lo, hi] = TARGET_BANDS['stage1']!;
     const lines = formatTable([row('stage1', (lo + hi) / 2), row('stage2', 0)]).split('\n');
@@ -195,5 +206,88 @@ describe('botCommands の動き', () => {
     expect(state.units.some((u) => u.side === 'enemy' && u.persuasion === null)).toBe(true);
     const toFoe = moves(botCommands(state, 0)).filter((c) => c.dest.x === foe.pos.x && c.dest.y === foe.pos.y);
     expect(toFoe.map((c) => c.uid)).toEqual([persuader.uid]);
+  });
+});
+
+describe('goalSafeDest', () => {
+  const victory = { type: 'reach', pos: { x: 240, y: 48 }, radius: 40, by: 'any' } as const;
+  it('ゴールの内側の点は半径 + 20 の円周へ押し出す', () => {
+    expect(goalSafeDest({ x: 240, y: 68 }, victory)).toEqual({ x: 240, y: 108 });
+  });
+  it('外側の点はそのまま', () => {
+    expect(goalSafeDest({ x: 240, y: 200 }, victory)).toEqual({ x: 240, y: 200 });
+  });
+  it('中心と同じ点は真下へ押し出す', () => {
+    expect(goalSafeDest({ x: 240, y: 48 }, victory)).toEqual({ x: 240, y: 108 });
+  });
+});
+
+describe('boostLevels', () => {
+  it('全員を +3、上限で止め、経験値を 0 にする。元は変えない', () => {
+    const save = newSave(reg);
+    save.units.roran = { level: 29, xp: 5 };
+    save.units.ines = { level: 4, xp: 3 };
+    const out = boostLevels(save, 3, 30);
+    expect(out.units.roran).toEqual({ level: 30, xp: 0 });
+    expect(out.units.ines).toEqual({ level: 7, xp: 0 });
+    expect(save.units.roran).toEqual({ level: 29, xp: 5 });
+  });
+});
+
+it('ボットは敵が残っている間、ゴールの半径 + 20 の内側へ move を出さない', () => {
+  const state = createBattleState(reg, stage('stage1'), newSave(reg), 1);
+  beginBattle(state);
+  const { pos, radius } = state.stage.victory;
+  const foe = state.units.find((u) => u.side === 'enemy')!;
+  foe.pos = { x: pos.x + 5, y: pos.y + 5 }; // ゴールの中に敵がいる
+  const ms = botCommands(state, 0, new Map()).filter((c) => c.type === 'move');
+  expect(ms.length).toBeGreaterThan(0);
+  for (const c of ms) {
+    if (c.type !== 'move') continue;
+    expect(Math.hypot(c.dest.x - pos.x, c.dest.y - pos.y)).toBeGreaterThanOrEqual(radius + 20 - 1e-6);
+  }
+});
+
+it('runBattle は終了時の敵の残り（生きている敵 + 湧き残り）を返す', () => {
+  const out = runBattle(reg, stage('stage1'), newSave(reg), 1);
+  const alive = out.state.units.filter((u) => u.side === 'enemy' && !u.retired && u.hp > 0).length;
+  const spawnLeft = out.state.stage.spawners.reduce((a, sp, i) => a + sp.total - (out.state.spawnCounts[i] ?? 0), 0);
+  expect(out.enemiesLeft).toBe(alive + spawnLeft);
+});
+
+describe('playThrough の育てた場合・平均レベル', () => {
+  it('各ステージに grownWon・avgLevel・leftover がある', () => {
+    const runs = playThrough(reg, 1);
+    expect(runs.length).toBeGreaterThan(0);
+    for (const r of runs) {
+      expect(typeof r.grownWon).toBe('boolean');
+      if (r.cleared) expect(r.avgLevel).toBeGreaterThanOrEqual(1);
+      expect(typeof r.leftover).toBe('boolean');
+    }
+  }, 120_000);
+});
+
+describe('ゴールの円を避ける目的地', () => {
+  const s6 = () => createBattleState(reg, stage('stage6'), newSave(reg), 1);
+  it('walkableSafeDest: 押し出した先が石のマスなら、円の外の歩けるマスへ寄せる（s6 の湧き位置）', () => {
+    const state = s6();
+    const v = state.stage.victory;
+    const out = walkableSafeDest(state.grid, { x: 240, y: 80 }, v);
+    expect(isWalkableAt(state.grid, out)).toBe(true);
+    expect(Math.hypot(out.x - v.pos.x, out.y - v.pos.y)).toBeGreaterThanOrEqual(v.radius + 20 - 1e-6);
+  });
+  it('routeAvoidingGoal: 最短の道がゴールを横切るとき、円を通らない道の途中の点を返す（s6 の上の通路）', () => {
+    const state = s6();
+    const v = state.stage.victory;
+    const from = { x: 270, y: 230 };
+    const dest = { x: 112, y: 100 };
+    const w = routeAvoidingGoal(state.grid, from, dest, v);
+    expect(w).not.toEqual(dest);
+    expect(distanceToSegment(v.pos, from, w)).toBeGreaterThanOrEqual(v.radius + 20 - 1e-6);
+  });
+  it('routeAvoidingGoal: まっすぐ行けて円を通らないなら dest のまま', () => {
+    const state = s6();
+    const dest = { x: 240, y: 560 };
+    expect(routeAvoidingGoal(state.grid, { x: 240, y: 620 }, dest, state.stage.victory)).toEqual(dest);
   });
 });
