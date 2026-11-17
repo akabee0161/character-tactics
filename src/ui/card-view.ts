@@ -12,7 +12,7 @@ import { lockedIds } from '../core/sortie';
 import type { Overlay, SortieOverlay } from './overlay';
 import { button, panel } from './screens';
 import {
-  KIND_COLOR, KIND_LABEL, STAT_LABEL, STAT_ORDER, barRatio, statGains,
+  KIND_COLOR, KIND_LABEL, STAT_ORDER, barRatio, statGains, statLabel,
 } from './stat-card';
 import type { StatCard } from './stat-card';
 import { wrapText } from './talk';
@@ -64,6 +64,11 @@ export function drawStatCard(
   ctx.textAlign = 'right';
   if (card.level !== null) ctx.fillText(`Lv${card.level}`, right, top + 28);
   else if (card.count !== null) ctx.fillText(`×${card.count}`, right, top + 28);
+  if (card.level !== null && card.count !== null) {
+    // 敵は Lv の下に出る数
+    ctx.font = '20px sans-serif';
+    ctx.fillText(`×${card.count}`, right, top + 58);
+  }
   ctx.textAlign = 'left';
 
   ctx.fillStyle = KIND_COLOR[card.attack];
@@ -89,7 +94,7 @@ export function drawStatCard(
     const up = gained.has(key);
     ctx.fillStyle = up ? GOLD : INK;
     ctx.font = '20px sans-serif';
-    ctx.fillText(STAT_LABEL[key], left, y + 22, 100);
+    ctx.fillText(statLabel(key, card.attack), left, y + 22, 100);
     ctx.fillStyle = '#2a3642';
     ctx.fillRect(left + 108, y + 8, 200, 14);
     ctx.fillStyle = up ? GOLD : '#7fb3e0';

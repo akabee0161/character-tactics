@@ -10,7 +10,7 @@ import {
 import { enemyCard } from './stat-card';
 import { testRegistry } from '../core/testing';
 
-const card = enemyCard(testRegistry(), 'tatemochi', 1);
+const card = enemyCard(testRegistry(), 'tatemochi', 1, 1);
 
 describe('overlayTap', () => {
   it('カードの外を押すと閉じる。中を押しても何も起きない', () => {

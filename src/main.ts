@@ -509,7 +509,7 @@ function onPointerUp(ev: PointerEvent): void {
         const enemies = stageEnemies(registry, stage);
         openOverlay({
           kind: 'enemies', title: stage.name, enemies,
-          cards: enemies.map((e) => enemyCard(registry, e.defId, e.count)),
+          cards: enemies.map((e) => enemyCard(registry, e.defId, e.count, stage.enemyLevel)),
         });
       }
     }

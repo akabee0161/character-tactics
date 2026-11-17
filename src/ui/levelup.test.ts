@@ -51,7 +51,7 @@ describe('levelUpCard のセリフ', () => {
   });
   it('仲間・敵のカードの line は null', () => {
     const reg = testRegistry();
-    expect(enemyCard(reg, 'tatemochi', 1).line).toBeNull();
+    expect(enemyCard(reg, 'tatemochi', 1, 1).line).toBeNull();
     expect(allyCardFromSave(reg, newSave(reg), 'roran').line).toBeNull();
   });
 });

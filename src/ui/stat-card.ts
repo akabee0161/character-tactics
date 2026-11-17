@@ -12,6 +12,14 @@ export const STAT_ORDER: readonly StatKey[] = ['maxHp', 'power', 'guard', 'resis
 export const STAT_LABEL: Record<StatKey, string> = {
   maxHp: 'HP', power: '攻撃力', guard: '守備', resist: '魔法防御', speed: '速さ',
 };
+
+/**
+ * 能力の名前。魔法で攻撃するユニット（仲間も敵も）は、攻撃力（power）を「魔力」と呼ぶ。
+ * 中身は同じ power で、別のパラメータではない
+ */
+export function statLabel(key: StatKey, attack: AttackKind): string {
+  return key === 'power' && attack === 'magic' ? '魔力' : STAT_LABEL[key];
+}
 /** 棒の長さの上限。仲間と敵で共通（同じ物差しで比べられるように） */
 export const BAR_MAX: Record<StatKey, number> = { maxHp: 40, power: 18, guard: 8, resist: 12, speed: 100 };
 export const KIND_LABEL: Record<AttackKind, string> = { melee: '近接', bow: '弓', magic: '魔法' };
@@ -24,7 +32,7 @@ export const KIND_NOTE: Record<AttackKind, string> = {
 export type StatCard = {
   defId: string;
   name: string;
-  /** 仲間だけ。敵は null */
+  /** 仲間も敵も持つ（敵はそのステージの enemyLevel）。持たない札は null */
   level: number | null;
   /** 敵だけ。ステージに出る数。仲間は null */
   count: number | null;
@@ -97,18 +105,18 @@ export function cardFromUnit(reg: Registry, unit: Unit, count: number | null): S
   }, skillOf(reg, unit.skillId, unit.power));
   return {
     ...card,
-    level: unit.side === 'player' ? unit.level : null,
+    level: unit.level,
     count,
     note: noteOf(unit.attack, unit.ignoresGuard),
     traits: traitsOf(unit.flying, unit.ignoresGuard, unit.bowDamageCap),
   };
 }
 
-/** 敵の札。敵は育たないので定義の値のまま */
-export function enemyCard(reg: Registry, defId: string, count: number): StatCard {
+/** 敵の札。level はそのステージの enemyLevel（敵は戦闘の中では育たない） */
+export function enemyCard(reg: Registry, defId: string, count: number, level: number): StatCard {
   const def = defOf(reg, defId);
-  const stats = statsForLevel(def, 1);
-  return { ...baseCard(def, stats, skillOf(reg, def.skillId, stats.power)), count };
+  const stats = statsForLevel(def, level);
+  return { ...baseCard(def, stats, skillOf(reg, def.skillId, stats.power)), level, count };
 }
 
 /** ステージに出る敵を名前ごとにまとめる。並びは最初に出てきた順 */

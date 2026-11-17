@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
-  allyCardFromSave, barRatio, cardFromGain, cardFromUnit, enemyCard, stageEnemies, statGains,
+  allyCardFromSave, barRatio, cardFromGain, cardFromUnit, enemyCard, stageEnemies, statGains, statLabel,
 } from './stat-card';
+import { statsForLevel } from '../core/state';
 import { beginBattle, createBattleState } from '../core/state';
 import { testRegistry } from '../core/testing';
 import { newSave } from '../save/save';
@@ -27,11 +28,36 @@ describe('stageEnemies', () => {
 
 describe('敵のカード', () => {
   it('盾持ちのカードに矢の上限の特徴が出る', () => {
-    const c = enemyCard(testRegistry(), 'tatemochi', 1);
+    const reg = testRegistry();
+    const c = enemyCard(reg, 'tatemochi', 1, 1);
     expect(c.traits).toEqual(['盾: 矢の ダメージは 1 まで']);
-    expect(c.level).toBeNull();
+    expect(c.level).toBe(1);
     expect(c.count).toBe(1);
-    expect(c.stats).toEqual({ maxHp: 20, power: 12, guard: 3, resist: 0, speed: 26 });
+    expect(c.stats).toEqual(statsForLevel(reg.enemies.get('tatemochi')!, 1));
+  });
+
+  it('敵のカードはレベルを持ち、そのレベルの能力', () => {
+    const reg = testRegistry();
+    const card = enemyCard(reg, 'majinaishi', 7, 5);
+    expect(card.level).toBe(5);
+    expect(card.count).toBe(7);
+    expect(card.stats).toEqual(statsForLevel(reg.enemies.get('majinaishi')!, 5));
+  });
+});
+
+describe('statLabel（魔法のユニットは攻撃力を「魔力」と呼ぶ）', () => {
+  it('魔法の仲間と敵は power を「魔力」と呼ぶ', () => {
+    expect(statLabel('power', 'magic')).toBe('魔力');
+    expect(statLabel('power', 'melee')).toBe('攻撃力');
+    expect(statLabel('power', 'bow')).toBe('攻撃力');
+    expect(statLabel('guard', 'magic')).toBe('守備');
+    expect(statLabel('maxHp', 'magic')).toBe('HP');
+  });
+
+  it('カードの attack が魔法なら、仲間にも敵にも当てはまる（ミスト・まじない師）', () => {
+    const reg = testRegistry();
+    expect(allyCardFromSave(reg, newSave(reg), 'mist').attack).toBe('magic');
+    expect(enemyCard(reg, 'majinaishi', 1, 1).attack).toBe('magic');
   });
 });
 
@@ -71,7 +97,17 @@ describe('仲間のカード', () => {
     expect(c.level).toBe(1);
     expect(c.stats.guard).toBe(7);
     const enemy = state.units.find((u) => u.side === 'enemy')!;
-    expect(cardFromUnit(reg, enemy, 3)).toMatchObject({ level: null, count: 3 });
+    expect(cardFromUnit(reg, enemy, 3)).toMatchObject({ level: enemy.level, count: 3 });
+  });
+});
+
+describe('配置の場面の敵のカード', () => {
+  it('敵のカードもそのユニットのレベルを持つ', () => {
+    const reg = testRegistry();
+    const stage = { ...reg.stages.find((s) => s.enemies.length > 0)!, enemyLevel: 6 };
+    const state = createBattleState(reg, stage, newSave(reg), 1);
+    const enemy = state.units.find((u) => u.side === 'enemy')!;
+    expect(cardFromUnit(reg, enemy, 1).level).toBe(6);
   });
 });
 
@@ -102,7 +138,7 @@ describe('barRatio', () => {
 
 describe('ダメージが減る守りの案内（note）', () => {
   it('通常の近接は守備で減ると案内する', () => {
-    expect(enemyCard(testRegistry(), 'tatemochi', 1).note).toBe('相手の 守備で 減る');
+    expect(enemyCard(testRegistry(), 'tatemochi', 1, 1).note).toBe('相手の 守備で 減る');
   });
 
   it('斧（守備を無視）のカードは、守備で減るとは案内しない', () => {
