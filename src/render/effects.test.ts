@@ -81,7 +81,7 @@ describe('spawnEffects', () => {
   it('kakenukeru の skill イベントから trail を追加する', () => {
     const state = makeEffectState();
     const events: SimEvent[] = [{
-      type: 'skill', uid: 'p4', defId: 'gau', skillId: 'kakenukeru', hits: 1,
+      type: 'skill', uid: 'p4', defId: 'gau', skillId: 'kakenukeru',
       fromPos: { x: 0, y: 0 }, toPos: { x: 100, y: 0 },
     }];
     spawnEffects(state, events);
@@ -93,7 +93,7 @@ describe('spawnEffects', () => {
   it('funbaru の skill イベントから skillCast を追加する', () => {
     const state = makeEffectState();
     const events: SimEvent[] = [{
-      type: 'skill', uid: 'p1', defId: 'roran', skillId: 'funbaru', hits: 0,
+      type: 'skill', uid: 'p1', defId: 'roran', skillId: 'funbaru',
       fromPos: { x: 10, y: 10 }, toPos: { x: 10, y: 10 },
     }];
     spawnEffects(state, events);
@@ -105,7 +105,7 @@ describe('spawnEffects', () => {
   it('neraiuchi の skill イベントから skillCast を追加する', () => {
     const state = makeEffectState();
     const events: SimEvent[] = [{
-      type: 'skill', uid: 'p2', defId: 'ines', skillId: 'neraiuchi', hits: 0,
+      type: 'skill', uid: 'p2', defId: 'ines', skillId: 'neraiuchi',
       fromPos: { x: 5, y: 5 }, toPos: { x: 5, y: 5 },
     }];
     spawnEffects(state, events);
@@ -117,7 +117,7 @@ describe('spawnEffects', () => {
   it('unitDefeated イベントから defeat を追加する', () => {
     const state = makeEffectState();
     const events: SimEvent[] = [
-      { type: 'unitDefeated', uid: 'e1', defId: 'narazumono', byUid: 'p1', byDefId: 'roran', neraiuchi: false, pos: { x: 30, y: 40 } },
+      { type: 'unitDefeated', uid: 'e1', defId: 'narazumono', byUid: 'p1', byDefId: 'roran', pos: { x: 30, y: 40 } },
     ];
     spawnEffects(state, events);
     expect(state.items).toEqual([{ kind: 'defeat', pos: { x: 30, y: 40 }, ttl: DEFEAT_DURATION }]);

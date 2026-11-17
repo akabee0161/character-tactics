@@ -3,7 +3,7 @@ import type { Vec2 } from '../core/types';
 import type { StageDef } from '../engine/schema';
 import { hitRect } from './hit';
 import {
-  CARD_CLOSE_BTN, ENEMY_LIST, ENEMY_LIST_CLOSE_BTN, SORTIE_DECIDE_BTN, STAT_CARD, enemyListRow, sortieSlot, sortieStrengthBtn,
+  CARD_CLOSE_BTN, ENEMY_LIST, ENEMY_LIST_CLOSE_BTN, SORTIE_DECIDE_BTN, STAT_CARD, enemyListRow, sortieSlot, sortieStrengthHit,
 } from './layout';
 import type { StageEnemy, StatCard } from './stat-card';
 
@@ -29,7 +29,7 @@ export function overlayTap(o: Overlay, p: Vec2): OverlayTap {
     if (hitRect(SORTIE_DECIDE_BTN, p)) return o.chosen.length === 0 ? { type: 'none' } : { type: 'decide' };
     for (let i = 0; i < o.candidates.length; i++) {
       const slot = sortieSlot(i);
-      if (hitRect(sortieStrengthBtn(slot), p)) return { type: 'strength', id: o.candidates[i]! };
+      if (hitRect(sortieStrengthHit(slot), p)) return { type: 'strength', id: o.candidates[i]! };
       if (hitRect(slot, p)) return { type: 'toggle', id: o.candidates[i]! };
     }
     return { type: 'none' };

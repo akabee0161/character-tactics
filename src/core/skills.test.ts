@@ -32,7 +32,7 @@ function addEnemy(s: BattleState, x: number, y: number, hp = 12): Unit {
     windup: 0, pendingHit: null,
     ai: { def: { kind: 'aggressive' }, mode: 'idle', targetUid: null, home: { x, y }, spottedAt: null },
     skillCooldownUntil: 0, funbaruUntil: -1, neraiuchiArmed: false, pinchShown: false,
-    seenDefIds: [], lastHitBy: null, lastHitNeraiuchi: false, damagedBy: [],
+    seenDefIds: [], lastHitBy: null, damagedBy: [],
   };
   s.units.push(e);
   return e;
@@ -88,7 +88,7 @@ describe('ふんばる', () => {
     expect(useSkill(s, roran.uid)).toBe(true);
     expect(unitOf(s, 'roran').funbaruUntil).toBe(10 + FUNBARU_DURATION);
     expect(s.events).toContainEqual({
-      type: 'skill', uid: roran.uid, defId: 'roran', skillId: 'funbaru', hits: 0,
+      type: 'skill', uid: roran.uid, defId: 'roran', skillId: 'funbaru',
       fromPos: roran.pos, toPos: roran.pos,
     });
   });
@@ -183,7 +183,7 @@ describe('かけぬける', () => {
     expect(onPath.hp).toBe(onPath.maxHp - (KAKENUKERU_DAMAGE + gau.power));
     expect(offPath.hp).toBe(offPath.maxHp);
     expect(s.events).toContainEqual({
-      type: 'skill', uid: gau.uid, defId: 'gau', skillId: 'kakenukeru', hits: 1,
+      type: 'skill', uid: gau.uid, defId: 'gau', skillId: 'kakenukeru',
       fromPos: { x: 80, y: 208 }, toPos: { x: 260, y: 208 },
     });
   });
@@ -266,7 +266,6 @@ describe('かけぬける', () => {
     const e = addEnemy(s, 160, 208, 3);
     expect(useSkill(s, gau.uid, { x: 260, y: 208 })).toBe(true);
     expect(e.lastHitBy).toBe(gau.uid);
-    expect(e.lastHitNeraiuchi).toBe(false);
   });
 
   it('交戦は解除される', () => {
@@ -328,7 +327,7 @@ describe('火の雨', () => {
     expect(a.hp).toBe(a.maxHp - rain);
     expect(b.hp).toBe(b.maxHp - rain);
     expect(far.hp).toBe(far.maxHp);
-    expect(s.events).toContainEqual(expect.objectContaining({ type: 'skill', skillId: 'hinoame', hits: 2 }));
+    expect(s.events).toContainEqual(expect.objectContaining({ type: 'skill', skillId: 'hinoame' }));
   });
 
   it('火の雨は行き先が無いと出ない', () => {
@@ -356,7 +355,7 @@ describe('突き', () => {
     expect(aside.hp).toBe(aside.maxHp);
     expect(near.lastHitBy).toBe(lancer.uid);
     expect(unitOf(s, 'roran').pos).toEqual({ x: 80, y: 208 });
-    expect(s.events).toContainEqual(expect.objectContaining({ type: 'skill', skillId: 'tsuki', hits: 2 }));
+    expect(s.events).toContainEqual(expect.objectContaining({ type: 'skill', skillId: 'tsuki' }));
   });
 
   it('交戦中でなければ、長さの内で最寄りの敵の向きへ突く', () => {
@@ -403,7 +402,7 @@ describe('引きつける', () => {
     addEnemy(s, 400, 208);
     expect(useSkill(s, tank.uid)).toBe(true);
     expect(tank.tauntUntil).toBe(s.time + 6);
-    expect(s.events).toContainEqual(expect.objectContaining({ type: 'skill', skillId: 'hikitsukeru', hits: 1 }));
+    expect(s.events).toContainEqual(expect.objectContaining({ type: 'skill', skillId: 'hikitsukeru' }));
   });
 });
 
@@ -427,7 +426,7 @@ describe('はげます', () => {
     expect(attackPower(far, s.time)).toBe(far.power + far.stagePower);
     expect(retired.cheerUntil).toBe(-1);
     expect(attackPower(near, s.time + 8)).toBe(base);
-    expect(s.events).toContainEqual(expect.objectContaining({ type: 'skill', skillId: 'hagemasu', hits: 2 }));
+    expect(s.events).toContainEqual(expect.objectContaining({ type: 'skill', skillId: 'hagemasu' }));
   });
 
   it('重ねがけせず上書きする', () => {
@@ -462,7 +461,7 @@ describe('結界', () => {
     expect(effectiveResist(far, s.time)).toBe(far.resist);
     expect(retired.wardUntil).toBe(-1);
     expect(effectiveResist(near, s.time + 8)).toBe(base);
-    expect(s.events).toContainEqual(expect.objectContaining({ type: 'skill', skillId: 'kekkai', hits: 2 }));
+    expect(s.events).toContainEqual(expect.objectContaining({ type: 'skill', skillId: 'kekkai' }));
   });
 
   it('重ねがけせず上書きする', () => {
@@ -495,7 +494,7 @@ describe('急降下', () => {
     expect(u.pos).toEqual({ x: 176, y: 48 });
     expect(near.hp).toBe(30 - (skillParam(s.reg, 'kyuukouka', 'damage', 0) + u.power));
     expect(far.hp).toBe(30);
-    expect(s.events).toContainEqual(expect.objectContaining({ type: 'skill', skillId: 'kyuukouka', hits: 1 }));
+    expect(s.events).toContainEqual(expect.objectContaining({ type: 'skill', skillId: 'kyuukouka' }));
   });
 
   it('行き先がマップの外なら内側に寄せる', () => {
@@ -527,7 +526,7 @@ describe('たたき割り', () => {
     expect(near.hp).toBe(30 - (skillParam(s.reg, 'tatakiwari', 'damage', 0) + axe.power));
     expect(other.hp).toBe(30);
     expect(near.lastHitBy).toBe(axe.uid);
-    expect(s.events).toContainEqual(expect.objectContaining({ type: 'skill', skillId: 'tatakiwari', hits: 1 }));
+    expect(s.events).toContainEqual(expect.objectContaining({ type: 'skill', skillId: 'tatakiwari' }));
   });
 
   it('32 より遠い敵しかいなければ出さず、待ち時間も使わない', () => {

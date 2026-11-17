@@ -415,8 +415,7 @@ function resolveRemoval(state: BattleState): void {
         u.hp = 0;
         u.retired = true;
         state.events.push({
-          type: 'unitDefeated', uid: u.uid, defId: u.defId, byUid, byDefId,
-          neraiuchi: u.lastHitNeraiuchi, pos: { ...u.pos },
+          type: 'unitDefeated', uid: u.uid, defId: u.defId, byUid, byDefId, pos: { ...u.pos },
         });
       }
     } else if (u.hp <= 0) {

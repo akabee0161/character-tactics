@@ -22,7 +22,7 @@ function makeTestUnit(s: BattleState, def: EnemyDef, pos: Vec2, ai: AiDef): Unit
     windup: 0, pendingHit: null,
     ai: { def: ai, mode: 'idle', targetUid: null, home: { ...pos }, spottedAt: null },
     skillCooldownUntil: 0, funbaruUntil: -1, neraiuchiArmed: false, pinchShown: false,
-    seenDefIds: [], lastHitBy: null, lastHitNeraiuchi: false, damagedBy: [],
+    seenDefIds: [], lastHitBy: null, damagedBy: [],
   };
 }
 
@@ -94,7 +94,7 @@ function spawnEnemy(s: BattleState, defId: string, pos: { x: number; y: number }
     windup: 0, pendingHit: null,
     ai: { def: { kind: 'aggressive' }, mode: 'idle', targetUid: null, home: { ...pos }, spottedAt: null },
     skillCooldownUntil: 0, funbaruUntil: -1, neraiuchiArmed: false, pinchShown: false,
-    seenDefIds: [], lastHitBy: null, lastHitNeraiuchi: false, damagedBy: [],
+    seenDefIds: [], lastHitBy: null, damagedBy: [],
   };
   s.units.push(u);
   return u;

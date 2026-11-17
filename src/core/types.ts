@@ -118,7 +118,6 @@ export type Unit = {
   /** このステージで交戦したことのある相手の kindId */
   seenDefIds: string[];
   lastHitBy: string | null;
-  lastHitNeraiuchi: boolean;
   /** このユニットにダメージを与えた相手の uid（重複なし）。撃破時のアシスト配分に使う */
   damagedBy: string[];
 };
@@ -130,13 +129,12 @@ export type BattlePhase = 'placement' | 'battle' | 'victory' | 'defeat';
 export type SimEvent =
   | { type: 'engage'; uid: string; defId: string; targetUid: string; targetDefId: string; firstMeeting: boolean }
   | { type: 'attack'; uid: string; defId: string; pos: Vec2; targetPos: Vec2 }
-  | { type: 'skill'; uid: string; defId: string; skillId: string; hits: number; fromPos: Vec2; toPos: Vec2 }
+  | { type: 'skill'; uid: string; defId: string; skillId: string; fromPos: Vec2; toPos: Vec2 }
   | { type: 'pinch'; uid: string; defId: string }
   | { type: 'hit'; targetUid: string; targetPos: Vec2; amount: number;
       sourceUid: string; sourceDefId: string; attackKind: AttackKind; sourcePos: Vec2; neraiuchi: boolean }
   | { type: 'heal'; targetPos: Vec2; amount: number; sourceUid: string; sourceDefId: string; sourcePos: Vec2 }
-  | { type: 'unitDefeated'; uid: string; defId: string; byUid: string | null; byDefId: string | null;
-      neraiuchi: boolean; pos: Vec2 }
+  | { type: 'unitDefeated'; uid: string; defId: string; byUid: string | null; byDefId: string | null; pos: Vec2 }
   | { type: 'unitFled'; uid: string; defId: string; byUid: string | null; byDefId: string | null }
   | { type: 'unitRetired'; uid: string; defId: string }
   | { type: 'bondSupport'; targetUid: string; targetDefId: string; supporterUids: string[]; pos: Vec2 }

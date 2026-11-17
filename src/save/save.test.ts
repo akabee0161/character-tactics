@@ -206,6 +206,30 @@ describe('前回の出撃（sortie）', () => {
   });
 });
 
+describe('称号を持っていたころのセーブ（titles・counters）', () => {
+  const reg = testRegistry();
+  it('titles・counters を持つ古いセーブも読め、その値は捨てる', () => {
+    const raw = {
+      ...newSave(reg),
+      units: { roran: { level: 5, xp: 3 } },
+      titles: { roran: ['neraiuchi-master'] },
+      counters: { roran: { neraiuchi: 7 } },
+    };
+    const loaded = loadSave(memoryStorage(JSON.stringify(raw)), reg);
+    expect(loaded).not.toBeNull();
+    expect(loaded!.units.roran).toEqual({ level: 5, xp: 3 });
+    expect(loaded!.clearedStageIds).toEqual([]);
+    expect(Object.keys(loaded!)).not.toContain('titles');
+    expect(Object.keys(loaded!)).not.toContain('counters');
+  });
+  it('書き戻しても titles・counters は残らない', () => {
+    const raw = { ...newSave(reg), titles: { roran: ['x'] }, counters: { roran: { x: 1 } } };
+    const st = memoryStorage(JSON.stringify(raw));
+    expect(writeSave(st, loadSave(st, reg)!)).toBe(true);
+    expect(st.raw).not.toMatch(/titles|counters/);
+  });
+});
+
 describe('上限 12 のころの古いセーブ（上限 30 の今）', () => {
   const reg = testRegistry();
   const raw = {

@@ -76,7 +76,7 @@ export function makeUnit(a: MakeUnitArgs): Unit {
       ? null
       : { def: a.ai, mode: 'idle', targetUid: null, home: { ...a.pos }, spottedAt: null },
     skillCooldownUntil: 0, funbaruUntil: -1, neraiuchiArmed: false, pinchShown: false,
-    seenDefIds: [], lastHitBy: null, lastHitNeraiuchi: false, damagedBy: [],
+    seenDefIds: [], lastHitBy: null, damagedBy: [],
   };
 }
 

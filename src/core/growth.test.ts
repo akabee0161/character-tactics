@@ -181,7 +181,7 @@ describe('awardXpForEvents', () => {
     e.damagedBy = [roran.uid, ines.uid];
     s.events = [{
       type: 'unitDefeated', uid: e.uid, defId: e.defId, byUid: roran.uid, byDefId: 'roran',
-      neraiuchi: false, pos: { x: 0, y: 0 },
+      pos: { x: 0, y: 0 },
     }];
     awardXpForEvents(s);
     const assist = Math.floor(reward * s.reg.growth.assistRatio);
@@ -198,7 +198,7 @@ describe('awardXpForEvents', () => {
     e.damagedBy = [roran.uid];
     s.events = [{
       type: 'unitDefeated', uid: e.uid, defId: e.defId, byUid: roran.uid, byDefId: 'roran',
-      neraiuchi: false, pos: { x: 0, y: 0 },
+      pos: { x: 0, y: 0 },
     }];
     awardXpForEvents(s);
     expect(totalXp(s.reg, roran)).toBe(reward);
@@ -227,7 +227,7 @@ describe('撃破の経験値（敵のレベルで増える）', () => {
     const reward = s.reg.enemies.get(e.defId)!.xpReward + 3 * 3;
     s.events = [{
       type: 'unitDefeated', uid: e.uid, defId: e.defId, byUid: roran.uid, byDefId: 'roran',
-      neraiuchi: false, pos: { x: 0, y: 0 },
+      pos: { x: 0, y: 0 },
     }];
     awardXpForEvents(s);
     expect(totalXp(s.reg, roran)).toBe(reward);

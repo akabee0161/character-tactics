@@ -32,8 +32,8 @@ export const DEFAULT_SKILL_COOLDOWN = 10;
 export type SkillContext = { state: BattleState; self: Unit; dest?: Vec2 };
 
 /**
- * 効果の本体。戻り値は「当てた数」（`skill` イベントの `hits` に残る）。
- * 発動できなかった場合だけ null を返す。呼び出し側はそのとき使用回数も消費させない。
+ * 効果の本体。戻り値は「当てた数」。発動できなかった場合だけ null を返す
+ * （呼び出し側はそのとき使用回数も消費させない。数そのものは今は読まれない）。
  */
 export type SkillEffect = (ctx: SkillContext) => number | null;
 
@@ -41,7 +41,6 @@ export type SkillEffect = (ctx: SkillContext) => number | null;
 export function skillHit(state: BattleState, self: Unit, enemy: Unit, damage: number, fromPos: Vec2): void {
   enemy.hp -= damage;
   enemy.lastHitBy = self.uid;
-  enemy.lastHitNeraiuchi = false;
   if (!enemy.damagedBy.includes(self.uid)) enemy.damagedBy.push(self.uid);
   state.events.push({
     type: 'hit', targetUid: enemy.uid, targetPos: { ...enemy.pos }, amount: damage,
@@ -226,13 +225,12 @@ export function useSkill(state: BattleState, uid: string, dest?: Vec2): boolean 
   if (!effect) return false;
 
   const fromPos = { ...self.pos };
-  const hits = effect({ state, self, dest });
-  if (hits === null) return false;
+  if (effect({ state, self, dest }) === null) return false;
 
   const cooldown = skillParam(state.reg, self.skillId!, 'cooldown', DEFAULT_SKILL_COOLDOWN);
   self.skillCooldownUntil = state.time + cooldown;
   state.events.push({
-    type: 'skill', uid: self.uid, defId: self.defId, skillId: self.skillId!, hits,
+    type: 'skill', uid: self.uid, defId: self.defId, skillId: self.skillId!,
     fromPos, toPos: { ...self.pos },
   });
   return true;

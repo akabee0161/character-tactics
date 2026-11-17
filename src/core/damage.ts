@@ -9,7 +9,7 @@ export function effectiveResist(u: Unit, time: number): number {
 
 /**
  * 命中1回ぶんを解決する。近接の攻撃も飛翔体の着弾も必ずここを通す。
- * 2箇所に分けて書くと、ピンチの判定やカウンタの積み方がすぐに食い違う
+ * 2箇所に分けて書くと、ピンチの判定などがすぐに食い違う
  */
 export function applyDamage(state: BattleState, source: HitSource, target: Unit): number {
   const before = target.hp;
@@ -27,7 +27,6 @@ export function applyDamage(state: BattleState, source: HitSource, target: Unit)
 
   target.hp -= dmg;
   target.lastHitBy = source.uid;
-  target.lastHitNeraiuchi = source.neraiuchi;
   if (!target.damagedBy.includes(source.uid)) target.damagedBy.push(source.uid);
 
   state.events.push({
