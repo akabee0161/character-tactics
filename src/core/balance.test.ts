@@ -291,3 +291,42 @@ describe('ゴールの円を避ける目的地', () => {
     expect(routeAvoidingGoal(state.grid, { x: 240, y: 620 }, dest, state.stage.victory)).toEqual(dest);
   });
 });
+
+describe('ゴールの円に入りかけた味方', () => {
+  const s6 = () => createBattleState(reg, stage('stage6'), newSave(reg), 1);
+  it('routeAvoidingGoal: 円の中にいる点からは、まず円の外（半径 + 20 以上、すぐ近く）へ出る点を返す', () => {
+    const state = s6();
+    const v = state.stage.victory;
+    const from = { x: v.pos.x - 16, y: v.pos.y + 30 }; // 円の中（距離 34）
+    const w = routeAvoidingGoal(state.grid, from, { x: 112, y: 100 }, v);
+    const d = Math.hypot(w.x - v.pos.x, w.y - v.pos.y);
+    expect(d).toBeGreaterThanOrEqual(v.radius + 20 - 1e-6);
+    expect(d).toBeLessThanOrEqual(v.radius + 20 + state.grid.cell * 1.5); // 押し出し先が石なら、近くの歩けるマスの中心
+  });
+
+  it('ボットは、敵が残るのに半径 + 14 の内側へ入りかけた味方へ、60 tick を待たず move を出し直す', () => {
+    const state = s6();
+    beginBattle(state);
+    const v = state.stage.victory;
+    const roran = state.units.find((u) => u.side === 'player' && u.defId === 'roran')!;
+    roran.pos = { x: v.pos.x + 10, y: v.pos.y + v.radius + 6 }; // 縁のすぐ外（距離 46 < 54）
+    roran.engagedWith = null;
+    const memory = new Map();
+    const moveFor = (tick: number) => botCommands(state, tick, memory).filter((c) => c.type === 'move' && c.uid === roran.uid);
+    expect(moveFor(0).length).toBe(1);
+    expect(moveFor(1).length).toBe(1); // 同じ目標でも、縁の近くなら 1 tick 後にも出す
+  });
+
+  it('縁から遠い味方には、今までどおり 60 tick は出し直さない', () => {
+    const state = s6();
+    beginBattle(state);
+    const v = state.stage.victory;
+    const roran = state.units.find((u) => u.side === 'player' && u.defId === 'roran')!;
+    roran.pos = { x: v.pos.x, y: v.pos.y + 300 };
+    roran.engagedWith = null;
+    const memory = new Map();
+    const moveFor = (tick: number) => botCommands(state, tick, memory).filter((c) => c.type === 'move' && c.uid === roran.uid);
+    expect(moveFor(0).length).toBe(1);
+    expect(moveFor(1).length).toBe(0);
+  });
+});

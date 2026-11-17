@@ -49,6 +49,8 @@ const MOVE_REISSUE_TICKS = 60;
 const MAX_REACTION_DELAY = 1.5; // 秒
 /** 敵が残る間、ゴールの半径にこの余白を足した円の内側へは向かわない */
 export const GOAL_KEEP_OUT_MARGIN = 20;
+/** 敵が残るのに、ゴールの半径にこの余白を足した円の内側へ入りかけた味方には、60 tick を待たず move を出し直す */
+export const GOAL_ALERT_MARGIN = 14;
 /** 育てた場合の測定で、通しの各ステージに着いたときのセーブの全員に足すレベル */
 export const GROWN_LEVEL_BOOST = 3;
 
@@ -139,6 +141,8 @@ function avoidanceField(grid: Grid, dest: Vec2, victory: VictoryCond): { blocked
 export function routeAvoidingGoal(grid: Grid, from: Vec2, dest: Vec2, victory: VictoryCond): Vec2 {
   const keep = victory.radius + GOAL_KEEP_OUT_MARGIN;
   const clearOf = (a: Vec2, b: Vec2): boolean => hasClearPath(grid, a, b) && distanceToSegment(victory.pos, a, b) >= keep;
+  // すでに円の中にいる（壁沿いにすべるなどで入りかけた）なら、まず円の外へ出る
+  if (distance(from, victory.pos) < keep) return walkableSafeDest(grid, from, victory);
   if (clearOf(from, dest)) return dest;
   const { blocked, field } = avoidanceField(grid, dest, victory);
   let pos = from;
@@ -237,7 +241,9 @@ export function botCommands(
     // 交戦中は出さない（相手が倒れて交戦が解けたら、次の tick で新しい目標へ出す）
     if (t && u.engagedWith === null) {
       const mem = memory.get(u.uid);
-      if (!mem || mem.key !== t.key || tick - mem.tick >= MOVE_REISSUE_TICKS) {
+      const v = state.stage.victory;
+      const nearGoal = t.key !== 'goal' && distance(u.pos, v.pos) < v.radius + GOAL_ALERT_MARGIN;
+      if (!mem || mem.key !== t.key || nearGoal || tick - mem.tick >= MOVE_REISSUE_TICKS) {
         cmds.push({ type: 'move', uid: u.uid, dest: t.dest() });
         memory.set(u.uid, { key: t.key, tick });
       }
