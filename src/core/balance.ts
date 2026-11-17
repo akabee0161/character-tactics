@@ -150,7 +150,11 @@ export function routeAvoidingGoal(grid: Grid, from: Vec2, dest: Vec2, victory: V
   const { blocked, field } = avoidanceField(grid, dest, victory);
   // 出発のマスそのものが円の中扱い（マスの中心が円の中）なら、道の探索の外にいる。まず円の外のマスへ出る
   const fromCell = cellIndexAt(grid, from);
-  if (fromCell >= 0 && grid.walkable[fromCell] === true && blocked.walkable[fromCell] !== true) return walkableSafeDest(grid, from, victory);
+  if (fromCell >= 0 && grid.walkable[fromCell] === true && blocked.walkable[fromCell] !== true) {
+    // 脱出先まで直進でき、その線がゴールの勝利半径に入らないときだけ向かう。無ければその場に留まる
+    const esc = walkableSafeDest(grid, from, victory);
+    return hasClearPath(grid, from, esc) && distanceToSegment(victory.pos, from, esc) >= victory.radius + 1 ? esc : from;
+  }
   // 円を避けては dest へ行けない（道が見つからない）なら、円を横切る dest へは向かわず、その場に留まる
   if ((field.dist[fromCell] ?? -1) < 0) return from;
   let pos = from;

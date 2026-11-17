@@ -364,3 +364,15 @@ describe('出発のマスの中心が円の中のとき（レビューの指摘 
     expect(Math.hypot(c.x - victory.pos.x, c.y - victory.pos.y)).toBeGreaterThanOrEqual(victory.radius + 20 - 1e-6);
   });
 });
+
+describe('出発のマスの中心が円の中のとき: 脱出先までの経路（レビューの指摘 3）', () => {
+  const victory = { type: 'reach', pos: { x: 112, y: 112 }, radius: 40, by: 'any' } as const;
+  it('脱出先への線がゴールの勝利半径を横切るなら、向かわずその場に留まる', () => {
+    // 行 4 だけが細い通路（col 1〜4）。円の外へ出る道が、ゴールのすぐそばを通る
+    const rows = Array.from({ length: 10 }, (_, y) => (y === 4 ? '#....#####' : '##########'));
+    const grid = makeGrid(32, rows);
+    const from = { x: 155, y: 155 }; // 円の外（距離 約 61）。マスの中心 (144,144) は円の中
+    const w = routeAvoidingGoal(grid, from, { x: 48, y: 144 }, victory);
+    expect(w).toEqual(from);
+  });
+});
