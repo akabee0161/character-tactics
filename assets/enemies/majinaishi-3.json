@@ -5,7 +5,7 @@
   "resist": 6,
   "attack": "magic", "range": 140,
   "attackInterval": 2.6, "speed": 24,
-  "growth": { "maxHp": 1, "power": 0.34, "guard": 0, "resist": 0, "speed": 0 },
+  "growth": { "maxHp": 0.8, "power": 0.4, "guard": 0, "resist": 0.7, "speed": 0 },
   "skillId": null,
   "color": "#6a4a8a",
   "sprites": {

@@ -442,13 +442,27 @@ describe('実アセットの仲間', () => {
     expect(reg.units.size).toBe(MAX_MEMBERS);
   });
 
+  it('どの仲間も、伸びが 0.5 以上の能力を 1 つ以上持つ（育てても強くならない仲間を作らない）', () => {
+    for (const def of reg.units.values()) {
+      const best = Math.max(...Object.values(def.growth));
+      expect(best, `${def.id} の伸び`).toBeGreaterThanOrEqual(0.5);
+    }
+  });
+
+  it('速さの伸びは 0（移動の速さが上がりすぎて操作が難しくなるため）', () => {
+    for (const def of [...reg.units.values(), ...reg.enemies.values()]) {
+      expect(def.growth.speed, `${def.id} の速さの伸び`).toBe(0);
+    }
+  });
+
+  // 加わったときのレベルの数字は、成長の調整のたびに変わる（勝率の帯に合わせる）ので、ここでは固定しない
   it.each([
-    ['stage5', 'ally09', 3], ['stage6', 'ally12', 4], ['stage7', 'ally10', 4], ['stage8', 'ally11', 5],
-    ['stage8', 'ally13', 5], ['stage9', 'ally14', 6], ['stage10', 'ally15', 7],
-  ])('%s の joins に %s（レベル %i）がある', (stageId, unitId, level) => {
+    ['stage5', 'ally09'], ['stage6', 'ally12'], ['stage7', 'ally10'], ['stage8', 'ally11'],
+    ['stage8', 'ally13'], ['stage9', 'ally14'], ['stage10', 'ally15'],
+  ])('%s の joins に %s がある（1 以上の整数のレベルで、会話が 3 行）', (stageId, unitId) => {
     const stage = reg.stages.find((x) => x.id === stageId)!;
     const j = stage.joins.find((x) => x.unitId === unitId);
-    expect(j?.level).toBe(level);
+    expect(Number.isInteger(j?.level) && j!.level >= 1).toBe(true);
     expect(j!.talk.length).toBe(3);
   });
 

@@ -12,7 +12,7 @@
   "range": 24,
   "attackInterval": 2.6,
   "speed": 50,
-  "growth": { "maxHp": 1, "power": 0.34, "guard": 0, "resist": 0, "speed": 0 },
+  "growth": { "maxHp": 1.8, "power": 1, "guard": 0.3, "resist": 0.1, "speed": 0 },
   "skillId": "tatakiwari",
   "color": "#b05030",
   "sprites": {

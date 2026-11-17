@@ -81,9 +81,10 @@ describe('awardXp', () => {
     const u = playerOf(s, 'roran');
     awardXp(s, u, xpToNext(1, s.reg.growth.xpPerLevel));
     const ev = s.events.find((e) => e.type === 'levelUp')!;
+    const def = s.reg.units.get('roran')!;
     expect(ev).toMatchObject({
       uid: u.uid, defId: 'roran', fromLevel: 1, level: 2,
-      before: { maxHp: 30, power: 6 }, after: { maxHp: 31, power: 6 },
+      before: statsForLevel(def, 1), after: statsForLevel(def, 2),
     });
   });
 

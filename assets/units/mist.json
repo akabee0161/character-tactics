@@ -5,7 +5,7 @@
   "resist": 7,
   "attack": "magic", "range": 140,
   "attackInterval": 2.4, "speed": 60,
-  "growth": { "maxHp": 1, "power": 0.34, "guard": 0, "resist": 0, "speed": 0 },
+  "growth": { "maxHp": 1.2, "power": 0.8, "guard": 0.15, "resist": 0.4, "speed": 0 },
   "skillId": "omajinai",
   "color": "#c86fb0",
   "sprites": {

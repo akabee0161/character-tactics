@@ -45,7 +45,7 @@
       { "x": 240, "y": 592 }
     ]
   },
-  "enemyLevel": 1,
+  "enemyLevel": 9,
   "roster": ["roran", "ines", "mist", "gau"],
   "enemies": [
     { "defId": "majinaishi-3", "pos": { "x": 144, "y": 432 }, "ai": { "kind": "sentry", "sightRange": 140 } },
@@ -77,9 +77,9 @@
     { "speaker": "roran", "text": "次はガルムの本拠地だ。" }
   ],
   "persuasions": [
-    {"unitId": "ally08", "level": 5, "foeId": "ally08-foe", "pos": {"x": 240, "y": 368}, "ai": {"kind": "sentry", "sightRange": 90}, "persuader": "gau", "talk": [{"speaker": "gau", "text": "{ally08}！ こんな ところで 何してるんだ"}, {"speaker": "ally08", "text": "{gau}……！ もう ガルムの 手下は やめる。\n力を 貸すよ！"}, {"text": "{ally08}が 仲間に 加わった！"}]}
+    {"unitId": "ally08", "level": 9, "foeId": "ally08-foe", "pos": {"x": 240, "y": 368}, "ai": {"kind": "sentry", "sightRange": 90}, "persuader": "gau", "talk": [{"speaker": "gau", "text": "{ally08}！ こんな ところで 何してるんだ"}, {"speaker": "ally08", "text": "{gau}……！ もう ガルムの 手下は やめる。\n力を 貸すよ！"}, {"text": "{ally08}が 仲間に 加わった！"}]}
   ],
   "joins": [
-    {"unitId": "ally14", "level": 6, "talk": [{"speaker": "ally14", "text": "夜の 野営地を 守るのが 俺の 役目だ。\n今度は 皆を 守らせてくれ。"}, {"speaker": "roran", "text": "心強いよ。よろしく、{ally14}！"}, {"text": "{ally14}が 仲間に 加わった！"}]}
+    {"unitId": "ally14", "level": 9, "talk": [{"speaker": "ally14", "text": "夜の 野営地を 守るのが 俺の 役目だ。\n今度は 皆を 守らせてくれ。"}, {"speaker": "roran", "text": "心強いよ。よろしく、{ally14}！"}, {"text": "{ally14}が 仲間に 加わった！"}]}
   ]
 }

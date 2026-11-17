@@ -11,7 +11,7 @@
   "range": 24,
   "attackInterval": 1.8,
   "speed": 45,
-  "growth": { "maxHp": 1, "power": 0.34, "guard": 0, "resist": 0, "speed": 0 },
+  "growth": { "maxHp": 2.6, "power": 0.3, "guard": 1, "resist": 0.2, "speed": 0 },
   "skillId": "hikitsukeru",
   "color": "#7a8a9a",
   "sprites": {

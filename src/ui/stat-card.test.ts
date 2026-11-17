@@ -80,7 +80,9 @@ describe('仲間のカード', () => {
     const c = allyCardFromSave(reg, save, 'roran');
     expect(c.level).toBe(7);
     expect(c.count).toBeNull();
-    expect(c.stats).toEqual({ maxHp: 36, power: 8, guard: 6, resist: 2, speed: 60 });
+    expect(c.stats).toEqual(
+      statsForLevel(reg.units.get('roran')!, 7, { maxHp: 0, power: 0, guard: 1, speed: 0, resist: 0 }),
+    );
     expect(c.skill).toEqual({ label: '踏ん張る', summary: '5秒の あいだ、受ける ダメージが 半分' });
     expect(c.before).toBeNull();
   });
@@ -118,8 +120,9 @@ describe('レベルアップのカード', () => {
       id: 'roran', before: { level: 3, xp: 0 }, after: { level: 4, xp: 1 }, leveledUp: true, joined: false,
     });
     expect(c.level).toBe(4);
-    expect(c.before).toEqual({ level: 3, stats: { maxHp: 32, power: 6, guard: 5, resist: 2, speed: 60 } });
-    expect(c.stats).toEqual({ maxHp: 33, power: 7, guard: 5, resist: 2, speed: 60 });
+    const def = reg.units.get('roran')!;
+    expect(c.before).toEqual({ level: 3, stats: statsForLevel(def, 3) });
+    expect(c.stats).toEqual(statsForLevel(def, 4));
   });
 
   it('上がった能力だけを順に返す', () => {

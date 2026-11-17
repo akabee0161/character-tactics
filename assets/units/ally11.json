@@ -12,7 +12,7 @@
   "range": 28,
   "attackInterval": 1.5,
   "speed": 95,
-  "growth": { "maxHp": 1, "power": 0.34, "guard": 0, "resist": 0, "speed": 0 },
+  "growth": { "maxHp": 1.1, "power": 0.8, "guard": 0.2, "resist": 0.5, "speed": 0 },
   "skillId": "kyuukouka",
   "color": "#78c8e8",
   "sprites": {

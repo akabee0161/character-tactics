@@ -127,9 +127,10 @@ describe('createBattleState: ステージからの はいち', () => {
     for (const id of reg.units.keys()) progress[id] ??= { level: 1, xp: 0 };
     const state = createBattleState(reg, stage, { units: progress, members: [], claimed: [] }, 1);
     const roran = unitOf(state, 'roran');
-    expect(roran.maxHp).toBe(32);
-    expect(roran.hp).toBe(32);
-    expect(roran.power).toBe(6);
+    const expected = statsForLevel(reg.units.get('roran')!, 3);
+    expect(roran.maxHp).toBe(expected.maxHp);
+    expect(roran.hp).toBe(expected.maxHp);
+    expect(roran.power).toBe(expected.power);
   });
 
   it('フィールドキャッシュは からで しょきかされる', () => {
