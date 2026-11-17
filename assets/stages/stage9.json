@@ -45,7 +45,7 @@
       { "x": 240, "y": 592 }
     ]
   },
-  "enemyLevel": 9,
+  "enemyLevel": 8,
   "roster": ["roran", "ines", "mist", "gau"],
   "enemies": [
     { "defId": "majinaishi-3", "pos": { "x": 144, "y": 432 }, "ai": { "kind": "sentry", "sightRange": 140 } },

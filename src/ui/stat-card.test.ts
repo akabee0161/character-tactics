@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  allyCardFromSave, barRatio, cardFromGain, cardFromUnit, enemyCard, stageEnemies, statGains, statLabel,
+  BAR_MAX, allyCardFromSave, barRatio, cardFromGain, cardFromUnit, enemyCard, stageEnemies, statGains, statLabel,
 } from './stat-card';
 import { statsForLevel } from '../core/state';
 import { beginBattle, createBattleState } from '../core/state';
@@ -133,8 +133,8 @@ describe('レベルアップのカード', () => {
 
 describe('barRatio', () => {
   it('棒は上限で止まる', () => {
-    expect(barRatio('maxHp', 80)).toBe(1);
-    expect(barRatio('guard', 4)).toBe(0.5);
+    expect(barRatio('maxHp', BAR_MAX.maxHp * 2)).toBe(1);
+    expect(barRatio('guard', BAR_MAX.guard / 2)).toBe(0.5);
     expect(barRatio('guard', -1)).toBe(0);
   });
 });
@@ -169,5 +169,20 @@ describe('敵の一覧の行数の上限', () => {
     const bottom = (i: number) => enemyListRow(i).y + enemyListRow(i).h;
     expect(bottom(ENEMY_LIST_MAX_ROWS - 1)).toBeLessThanOrEqual(ENEMY_LIST_CLOSE_BTN.y);
     expect(bottom(ENEMY_LIST_MAX_ROWS)).toBeGreaterThan(ENEMY_LIST_CLOSE_BTN.y);
+  });
+});
+
+describe('BAR_MAX（棒の長さの上限）', () => {
+  it('全員のレベル 30 と、全ステージの敵（そのステージのレベル）の能力が BAR_MAX 以下', () => {
+    const reg = testRegistry();
+    const keys = ['maxHp', 'power', 'guard', 'resist', 'speed'] as const;
+    const check = (who: string, stats: Record<(typeof keys)[number], number>) => {
+      for (const k of keys) expect(stats[k], `${who} の ${k}`).toBeLessThanOrEqual(BAR_MAX[k]);
+    };
+    for (const d of reg.units.values()) check(`${d.id} Lv30`, statsForLevel(d, 30));
+    for (const st of reg.stages) {
+      const ids = new Set([...st.enemies.map((e) => e.defId), ...st.spawners.map((e) => e.defId), ...st.persuasions.map((p) => p.foeId)]);
+      for (const id of ids) check(`${id} @${st.id}`, statsForLevel(reg.enemies.get(id)!, st.enemyLevel));
+    }
   });
 });
