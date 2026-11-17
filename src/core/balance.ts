@@ -82,12 +82,14 @@ export function goalSafeDest(dest: Vec2, victory: VictoryCond, margin: number = 
 /**
  * 目的地を、歩けるマスで、ゴールの立入禁止の円の外にある点にする。
  * goalSafeDest で押し出した先が歩けないマス（石など）だと、ゲームが最寄りの歩けるマスに置き換え、
- * それが円の中になることがある（s6 の石の列の裏）。歩けないときは、円の外の歩けるマスの中心のうち最も近いものにする
+ * それが円の中になることがある（s6 の石の列の裏）。歩けないときは、円の外の歩けるマスの中心のうち最も近いものにする。
+ * 押し出した点が歩けるマスでも、そのマスの中心が円の中なら同じく寄せる（円の中のマスは経路の探索から外すので、
+ * 目的地がそのマスだと道が見つからず、円を横切る目的地に戻ってしまう）
  */
 export function walkableSafeDest(grid: Grid, dest: Vec2, victory: VictoryCond): Vec2 {
   const keep = victory.radius + GOAL_KEEP_OUT_MARGIN;
   const safe = goalSafeDest(dest, victory);
-  if (isWalkableAt(grid, safe)) return safe;
+  if (isWalkableAt(grid, safe) && distance(cellCenter(grid, cellIndexAt(grid, safe)), victory.pos) >= keep) return safe;
   let best: Vec2 | null = null;
   let bestD = Infinity;
   for (let i = 0; i < grid.walkable.length; i++) {
@@ -135,7 +137,8 @@ function avoidanceField(grid: Grid, dest: Vec2, victory: VictoryCond): { blocked
 /**
  * from から dest へ向かう途中でゴールの立入禁止の円（半径 + margin）に入らないための、次の目的地。
  * まっすぐ行けて円を通らなければ dest のまま。そうでなければ、円の中を歩けないことにした地図で
- * 最短の道を作り、その道をたどって「直進でき、円を通らない」いちばん先の点を返す（なければ dest）。
+ * 最短の道を作り、その道をたどって「直進でき、円を通らない」いちばん先の点を返す（途中の点が取れなければ dest。
+ * 道そのものが無いときは from）。
  * ステージによっては、敵のいる所への最短の道がゴールを横切る（s6 の上の通路など）ため。
  */
 export function routeAvoidingGoal(grid: Grid, from: Vec2, dest: Vec2, victory: VictoryCond): Vec2 {
@@ -145,6 +148,8 @@ export function routeAvoidingGoal(grid: Grid, from: Vec2, dest: Vec2, victory: V
   if (distance(from, victory.pos) < keep) return walkableSafeDest(grid, from, victory);
   if (clearOf(from, dest)) return dest;
   const { blocked, field } = avoidanceField(grid, dest, victory);
+  // 円を避けては dest へ行けない（道が見つからない）なら、円を横切る dest へは向かわず、その場に留まる
+  if ((field.dist[cellIndexAt(grid, from)] ?? -1) < 0) return from;
   let pos = from;
   let best: Vec2 | null = null;
   for (let walked = 0; walked < WAYPOINT_LOOKAHEAD; walked += WAYPOINT_STEP) {

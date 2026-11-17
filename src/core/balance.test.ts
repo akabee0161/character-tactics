@@ -4,7 +4,7 @@ import {
   BATTLE_DT, BATTLE_TIME_LIMIT, botCommands, MAX_ATTEMPTS, TARGET_BANDS, formatTable, isOutOfBand, measure, playThrough, runBattle,
   boostLevels, goalSafeDest, routeAvoidingGoal, walkableSafeDest,
 } from './balance';
-import { distanceToSegment, isWalkableAt } from './field';
+import { cellCenter, cellIndexAt, distanceToSegment, isWalkableAt, makeGrid } from './field';
 import type { StageStat } from './balance';
 import { step } from './sim';
 import { beginBattle, createBattleState } from './state';
@@ -328,5 +328,25 @@ describe('ゴールの円に入りかけた味方', () => {
     const moveFor = (tick: number) => botCommands(state, tick, memory).filter((c) => c.type === 'move' && c.uid === roran.uid);
     expect(moveFor(0).length).toBe(1);
     expect(moveFor(1).length).toBe(0);
+  });
+});
+
+describe('目的地のマスの中心が円の中のとき（レビューの指摘）', () => {
+  // 32px の開けた 10×10。ゴールは (112,112)、半径 40（立入禁止の円は半径 60）。敵はゴールの中の (117,117)
+  const open = makeGrid(32, Array.from({ length: 10 }, () => '.'.repeat(10)));
+  const victory = { type: 'reach', pos: { x: 112, y: 112 }, radius: 40, by: 'any' } as const;
+  const enemy = { x: 117, y: 117 };
+
+  it('walkableSafeDest: 押し出した点が円の外でも、そのマスの中心が円の中なら、中心も円の外のマスへ寄せる', () => {
+    const dest = walkableSafeDest(open, enemy, victory);
+    const cellC = cellCenter(open, cellIndexAt(open, dest));
+    expect(Math.hypot(cellC.x - victory.pos.x, cellC.y - victory.pos.y)).toBeGreaterThanOrEqual(victory.radius + 20 - 1e-6);
+  });
+
+  it('routeAvoidingGoal: 経路が円を通らない（円の反対側から、円の中の敵へ向かうとき）', () => {
+    const dest = walkableSafeDest(open, enemy, victory);
+    const from = { x: 16, y: 16 };
+    const w = routeAvoidingGoal(open, from, dest, victory);
+    expect(distanceToSegment(victory.pos, from, w)).toBeGreaterThanOrEqual(victory.radius + 20 - 1e-6);
   });
 });

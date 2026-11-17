@@ -81,7 +81,10 @@ describe('10ステージぶんの成長曲線', () => {
     return sum;
   }
 
-  it('寄り道せずに全ステージを通しただけでは 上限レベルに届かない（上限は前のステージで稼いだときに届く）', () => {
+  // 見積りは撃破報酬の山分けとクリアボーナスだけ（命中・アシスト・敵のレベルの加算は入らない）。実際に入る量は
+  // これより多いので、ここで確かめるのは「見積りの下限が上限までの合計を超えない」こと。通しの実際のレベルは
+  // `npm run balance` の平均Lv（stage3 で 15〜18）で見る
+  it('撃破報酬とクリアボーナスだけの下限の見積りでは、全ステージを通しても 上限レベルまでの合計に届かない', () => {
     const reg = testRegistry();
     const total = reg.stages.reduce((sum, s) => sum + floorXpPerStage(reg, s), 0);
     expect(total).toBeLessThan(xpToMaxLevel(reg.growth));
