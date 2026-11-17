@@ -15,7 +15,7 @@ npm install
 npm run dev     # 開発サーバ
 npm test        # ユニットテスト (Vitest)
 npm run build   # 型チェック + 本番ビルド (out/play/character-tactics/)
-npm run balance # ステージの難易度を測る（ボットで全ステージを通し、勝率を表にする。40 シード、約 47 秒）
+npm run balance # ステージの難易度を測る（ボットで全ステージを通し、通しと育てた場合の勝率を表にする。40 シード、約 4 分）
 ```
 
 ## テスト方針
