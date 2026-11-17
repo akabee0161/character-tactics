@@ -31,3 +31,13 @@ Task 8: Ruling: 帯に合わせるため まじない師の攻撃の伸び 0.4�
 Task 8: --check 終了コード 0（40 シード）。stage3 通し 45.0・育てた 82.5 は「端」。stage3 のクリア後の平均Lv 15.5。BAR_MAX を HP 120・攻撃 40・守備 36・魔法防御 36 に（テスト追加）
 Task 8: complete (commits c0f11d7..101b45c, tests: npm test →    Duration  54.95s (transform 2.18s, setup 0ms, collect 9.06s, tests 29.44s, environment 19ms, prepare 4.75s))
 Task 9: 画面を依頼者が承認。README・CLAUDE.md・HANDOVER を更新、撮影・表・数字の道具を削除（ワークスペースの測定ログは最終レビュー後に消す）
+Task 9: complete (commits 101b45c..350fa09, tests: npm test →    Duration  56.35s (transform 2.31s, setup 0ms, collect 11.26s, tests 29.89s, environment 13ms, prepare 4.66s))
+Final review: 最も能力の高いモデル 1 人（Critical なし・Important 2・Minor 7）
+Final: fixed Important 1（敵のレベルが stage8=10 > stage9=8 と逆転）— 「enemyLevel は遊ぶ順に下がらない」テスト RED→GREEN、suite 1145/1145。直すために stage8・9 を 10、stage7 を 6、stage10 を 12、stage3 を 16、盾持ちの HP の伸びを 2.0→1.2、stage9 の加入 2 人を 9→10 にして測り直した（結果の文書の測定 12〜14）。--check 終了コード 0
+Final: Ruling: Important 2（stage3 の敵のレベル 14 が「16 くらい」から外れ、依頼者の承認を取っていない）— 上の直しで 16 に戻った（設計どおり）ので指摘は解消 — 依頼者が承認した表は 15 の時点。16 になったのは Task 8 後の変更なので、最終報告で伝える
+Final: minor (deferred): README の古い記述（敵の攻撃力 16 以下の決まり）と句点抜け 2 か所 — 直した（README だけの修正）
+Final: minor (deferred): 説得の相手（xpReward 0）を倒しても、敵のレベルの加算で経験値が入る（s7 で 12、s9 で 14）。説得せず倒す方が得になる向き
+Final: minor (deferred): 「育てた」測定で、そのステージの開始時に加わる仲間は +3 されない（測定が厳しい側に出るだけ）
+Final: minor (deferred): avoidanceField のキーを毎回 368 マスの文字列で作る（約 4 分で収まっている）
+Final: minor (deferred): 「稼げば 30 に届く」側の保証テストが無い（現状は s3 のならず者 1 体で 34 入るので問題なし）
+Final: minor (deferred): sortieStrengthHit（80×44）は枠の右下 約 30%。枠の右下で入れ外しするとカードが開く（依頼者が画面を承認済み）

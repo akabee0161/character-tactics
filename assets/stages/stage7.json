@@ -47,7 +47,7 @@
       { "x": 240, "y": 592 }
     ]
   },
-  "enemyLevel": 7,
+  "enemyLevel": 6,
   "roster": ["roran", "ines", "mist", "gau"],
   "enemies": [
     { "defId": "narazumono-11", "pos": { "x": 112, "y": 432 }, "ai": { "kind": "sentry", "sightRange": 100 } },

@@ -26,3 +26,14 @@ describe('ステージの敵の総数', () => {
     }
   });
 });
+
+describe('敵のレベル（enemyLevel）', () => {
+  it('遊ぶ順に下がらない（進むほど敵は強くなる。カードで見えるレベルが逆戻りしない）', () => {
+    const reg = testRegistry();
+    for (let i = 1; i < reg.stages.length; i++) {
+      const prev = reg.stages[i - 1]!;
+      const cur = reg.stages[i]!;
+      expect(cur.enemyLevel, `${cur.id} は ${prev.id} より後なのでレベルが下がらない`).toBeGreaterThanOrEqual(prev.enemyLevel);
+    }
+  });
+});

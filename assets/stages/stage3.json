@@ -45,7 +45,7 @@
       { "x": 240, "y": 592 }
     ]
   },
-  "enemyLevel": 14,
+  "enemyLevel": 16,
   "roster": ["roran", "ines", "mist", "gau"],
   "enemies": [
     { "defId": "tatemochi",  "pos": { "x": 176, "y": 496 }, "ai": { "kind": "aggressive" } },
