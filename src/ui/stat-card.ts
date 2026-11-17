@@ -50,10 +50,11 @@ function defOf(reg: Registry, defId: string): UnitDef | EnemyDef {
   return def;
 }
 
-function skillOf(reg: Registry, skillId: string | null): StatCard['skill'] {
+/** power はそのユニットの攻撃力（魔力）。技の一言の {damage}・{heal} に足す */
+function skillOf(reg: Registry, skillId: string | null, power: number): StatCard['skill'] {
   if (skillId === null) return null;
   const skill = reg.skills.get(skillId);
-  return skill ? { label: skill.label, summary: skillSummary(skill) } : null;
+  return skill ? { label: skill.label, summary: skillSummary(skill, power) } : null;
 }
 
 function traitsOf(flying: boolean, ignoresGuard: boolean, bowDamageCap: number | null): string[] {
@@ -84,7 +85,8 @@ function progressStats(reg: Registry, def: UnitDef | EnemyDef, p: CharProgress):
 export function allyCardFromSave(reg: Registry, save: SaveData, defId: string): StatCard {
   const def = defOf(reg, defId);
   const p = save.units[defId] ?? { level: 1, xp: 0 };
-  return { ...baseCard(def, progressStats(reg, def, p), skillOf(reg, def.skillId)), level: p.level };
+  const stats = progressStats(reg, def, p);
+  return { ...baseCard(def, stats, skillOf(reg, def.skillId, stats.power)), level: p.level };
 }
 
 /** 配置の場面の札。場に出ているユニットの今の値 */
@@ -92,7 +94,7 @@ export function cardFromUnit(reg: Registry, unit: Unit, count: number | null): S
   const def = defOf(reg, unit.defId);
   const card = baseCard(def, {
     maxHp: unit.maxHp, power: unit.power, guard: unit.guard, resist: unit.resist, speed: unit.speed,
-  }, skillOf(reg, unit.skillId));
+  }, skillOf(reg, unit.skillId, unit.power));
   return {
     ...card,
     level: unit.side === 'player' ? unit.level : null,
@@ -106,7 +108,7 @@ export function cardFromUnit(reg: Registry, unit: Unit, count: number | null): S
 export function enemyCard(reg: Registry, defId: string, count: number): StatCard {
   const def = defOf(reg, defId);
   const stats = statsForLevel(def, 1);
-  return { ...baseCard(def, stats, skillOf(reg, def.skillId)), count };
+  return { ...baseCard(def, stats, skillOf(reg, def.skillId, stats.power)), count };
 }
 
 /** ステージに出る敵を名前ごとにまとめる。並びは最初に出てきた順 */
@@ -127,8 +129,9 @@ export function stageEnemies(reg: Registry, stage: StageDef): StageEnemy[] {
 /** レベルアップの札。上がる前と後を持つ */
 export function cardFromGain(reg: Registry, gain: XpGain): StatCard {
   const def = defOf(reg, gain.id);
+  const stats = progressStats(reg, def, gain.after);
   return {
-    ...baseCard(def, progressStats(reg, def, gain.after), skillOf(reg, def.skillId)),
+    ...baseCard(def, stats, skillOf(reg, def.skillId, stats.power)),
     level: gain.after.level,
     before: { level: gain.before.level, stats: progressStats(reg, def, gain.before) },
   };
@@ -152,7 +155,7 @@ export function barRatio(key: StatKey, value: number): number {
 /** 定義と能力値から札を組む（レベル・数・前後は呼び出し側が足す） */
 export function cardFromDef(reg: Registry, defId: string, stats: UnitStats): StatCard {
   const def = defOf(reg, defId);
-  return baseCard(def, stats, skillOf(reg, def.skillId));
+  return baseCard(def, stats, skillOf(reg, def.skillId, stats.power));
 }
 
 /** 攻撃がどちらの守りで減るか。斧は通常の近接・弓で守備を無視するので、守備で減るとは書かない */

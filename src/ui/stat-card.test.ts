@@ -35,6 +35,17 @@ describe('敵のカード', () => {
   });
 });
 
+describe('仲間のカード: 技の一言', () => {
+  it('ミストのカードの技の一言は、そのレベルの魔力を足した回復量', () => {
+    const reg = testRegistry();
+    const save = newSave(reg);
+    save.units.mist = { level: 10, xp: 0 };
+    const c = allyCardFromSave(reg, save, 'mist');
+    const heal = reg.skills.get('omajinai')!.params.heal! + c.stats.power;
+    expect(c.skill!.summary).toContain(`HPを ${heal} 回復`);
+  });
+});
+
 describe('仲間のカード', () => {
   it('セーブのレベルと加算から仲間のカードの値を出す', () => {
     const reg = testRegistry();

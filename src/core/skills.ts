@@ -3,6 +3,7 @@ import { nearestWithin } from './combat';
 import { MELEE_RANGE } from './constants';
 import { hostilesOf, playerUnits } from './sim';
 import { skillParam } from '../engine/registry';
+import type { Registry } from '../engine/registry';
 import { clampToMap, distance, distanceToSegment, fitInCell, hasClearPath } from './field';
 import type { BattleState, Unit, Vec2 } from './types';
 
@@ -48,6 +49,16 @@ export function skillHit(state: BattleState, self: Unit, enemy: Unit, damage: nu
   });
 }
 
+/**
+ * 技のダメージ・回復量。skills.json の基本量（damage / heal）+ 使ったユニットの攻撃力（魔力）。
+ * はげます・村の加算（cheerPower・stagePower）は含めない（カードに出る数と同じにするため）
+ */
+export function skillAmount(
+  reg: Registry, skillId: string, key: 'damage' | 'heal', fallback: number, power: number,
+): number {
+  return skillParam(reg, skillId, key, fallback) + power;
+}
+
 export const SKILL_EFFECTS: Record<string, SkillEffect> = {
   funbaru: ({ state, self }) => {
     self.funbaruUntil = state.time + skillParam(state.reg, 'funbaru', 'duration', FUNBARU_DURATION);
@@ -61,7 +72,7 @@ export const SKILL_EFFECTS: Record<string, SkillEffect> = {
 
   omajinai: ({ state, self }) => {
     const range = skillParam(state.reg, 'omajinai', 'range', BOND_RANGE);
-    const heal = skillParam(state.reg, 'omajinai', 'heal', OMAJINAI_HEAL);
+    const heal = skillAmount(state.reg, 'omajinai', 'heal', OMAJINAI_HEAL, self.power);
     const candidates = playerUnits(state).filter((u) => distance(self.pos, u.pos) <= range);
     if (candidates.length === 0) return null;
     let target = candidates[0]!;
@@ -88,7 +99,7 @@ export const SKILL_EFFECTS: Record<string, SkillEffect> = {
     const from = { ...self.pos };
     // 移動と同じ基準。点をまばらに調べると、点と点のあいだで箱が壁の角をかすめる経路を通してしまう
     if (!hasClearPath(state.grid, from, to)) return null;
-    const damage = skillParam(state.reg, 'kakenukeru', 'damage', KAKENUKERU_DAMAGE);
+    const damage = skillAmount(state.reg, 'kakenukeru', 'damage', KAKENUKERU_DAMAGE, self.power);
     let hits = 0;
     for (const enemy of hostilesOf(state, self)) {
       if (distanceToSegment(enemy.pos, from, to) > MELEE_RANGE) continue;
@@ -111,7 +122,7 @@ export const SKILL_EFFECTS: Record<string, SkillEffect> = {
   hinoame: ({ state, self, dest }) => {
     if (!dest) return null;
     const radius = skillParam(state.reg, 'hinoame', 'radius', HINOAME_RADIUS);
-    const damage = skillParam(state.reg, 'hinoame', 'damage', HINOAME_DAMAGE);
+    const damage = skillAmount(state.reg, 'hinoame', 'damage', HINOAME_DAMAGE, self.power);
     let hits = 0;
     for (const enemy of hostilesOf(state, self)) {
       if (distance(enemy.pos, dest) > radius) continue;
@@ -123,7 +134,7 @@ export const SKILL_EFFECTS: Record<string, SkillEffect> = {
 
   tsuki: ({ state, self }) => {
     const length = skillParam(state.reg, 'tsuki', 'length', TSUKI_LENGTH);
-    const damage = skillParam(state.reg, 'tsuki', 'damage', TSUKI_DAMAGE);
+    const damage = skillAmount(state.reg, 'tsuki', 'damage', TSUKI_DAMAGE, self.power);
     const hostiles = hostilesOf(state, self);
     // 向きは交戦中の相手。いなければ長さの内で最寄りの敵
     const engaged = self.engagedWith === null ? undefined : hostiles.find((e) => e.uid === self.engagedWith);
@@ -147,7 +158,7 @@ export const SKILL_EFFECTS: Record<string, SkillEffect> = {
 
   tatakiwari: ({ state, self }) => {
     const range = skillParam(state.reg, 'tatakiwari', 'range', TATAKIWARI_RANGE);
-    const damage = skillParam(state.reg, 'tatakiwari', 'damage', TATAKIWARI_DAMAGE);
+    const damage = skillAmount(state.reg, 'tatakiwari', 'damage', TATAKIWARI_DAMAGE, self.power);
     const target = nearestWithin(self.pos, hostilesOf(state, self), range);
     if (!target) return null;
     skillHit(state, self, target, damage, self.pos);
@@ -169,7 +180,7 @@ export const SKILL_EFFECTS: Record<string, SkillEffect> = {
   kyuukouka: ({ state, self, dest }) => {
     if (!dest) return null;
     const radius = skillParam(state.reg, 'kyuukouka', 'radius', KYUUKOUKA_RADIUS);
-    const damage = skillParam(state.reg, 'kyuukouka', 'damage', KYUUKOUKA_DAMAGE);
+    const damage = skillAmount(state.reg, 'kyuukouka', 'damage', KYUUKOUKA_DAMAGE, self.power);
     // 飛んで降りるので、壁の向こうでも行ける。マップの外だけは内側へ寄せる
     const to = clampToMap(state.grid, dest);
     const from = { ...self.pos };
