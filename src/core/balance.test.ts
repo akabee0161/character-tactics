@@ -350,3 +350,17 @@ describe('目的地のマスの中心が円の中のとき（レビューの指�
     expect(distanceToSegment(victory.pos, from, w)).toBeGreaterThanOrEqual(victory.radius + 20 - 1e-6);
   });
 });
+
+describe('出発のマスの中心が円の中のとき（レビューの指摘 2）', () => {
+  const open = makeGrid(32, Array.from({ length: 10 }, () => '.'.repeat(10)));
+  const victory = { type: 'reach', pos: { x: 112, y: 112 }, radius: 40, by: 'any' } as const;
+
+  it('円の外にいても、マスの中心が円の中なら、その場に留まらず円の外のマスへ出る点を返す', () => {
+    const from = { x: 155, y: 155 }; // 円の外（距離 約 61）。マスの中心 (144,144) は円の中（距離 約 45）
+    expect(Math.hypot(from.x - victory.pos.x, from.y - victory.pos.y)).toBeGreaterThanOrEqual(victory.radius + 20);
+    const w = routeAvoidingGoal(open, from, { x: 16, y: 16 }, victory);
+    expect(w).not.toEqual(from);
+    const c = cellCenter(open, cellIndexAt(open, w));
+    expect(Math.hypot(c.x - victory.pos.x, c.y - victory.pos.y)).toBeGreaterThanOrEqual(victory.radius + 20 - 1e-6);
+  });
+});
