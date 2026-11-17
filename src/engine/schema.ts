@@ -508,6 +508,8 @@ export type StageDef = {
   darkness?: number;
   placement: PlacementDef;
   roster: string[];
+  /** このステージの敵（配置・時間湧き・説得の相手）のレベル。1 以上の整数。必須 */
+  enemyLevel: number;
   enemies: EnemyPlacement[];
   spawners: SpawnerDef[];
   victory: VictoryCond;
@@ -929,6 +931,7 @@ export function validateStageDef(file: string, raw: unknown): Validated<StageDef
     mapRows,
     placement: { minY: placement.minY, starts: placement.starts },
     roster: readStringArray(ctx, 'roster', o.roster, 1),
+    enemyLevel: requireNumber(ctx, 'enemyLevel', o.enemyLevel, { min: 1, int: true }) ?? 1,
     enemies,
     spawners: readSpawners(ctx, o.spawners, checkWalkable, checkAboveLine),
     victory: readVictory(ctx, o.victory),

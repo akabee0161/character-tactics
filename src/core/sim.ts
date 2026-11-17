@@ -84,7 +84,7 @@ function runSpawns(state: BattleState): void {
     state.spawnCounts[due.index] = (state.spawnCounts[due.index] ?? 0) + 1;
     const unit = makeEnemyUnit(
       state.reg, `e${state.nextEnemyUid++}`, due.spawner.defId, due.spawner.pos,
-      { kind: 'aggressive' },
+      { kind: 'aggressive' }, state.stage.enemyLevel,
     );
     state.units.push(unit);
     state.events.push({

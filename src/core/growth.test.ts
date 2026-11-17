@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { awardXp, awardXpForEvents } from './growth';
+import { awardXp, awardXpForEvents, xpForDefeat } from './growth';
 import { xpToNext } from './progress';
 import { beginBattle, createBattleState, statsForLevel } from './state';
 import { testRegistry } from './testing';
@@ -196,6 +196,35 @@ describe('awardXpForEvents', () => {
     const e = enemy(s);
     const reward = s.reg.enemies.get(e.defId)!.xpReward;
     e.damagedBy = [roran.uid];
+    s.events = [{
+      type: 'unitDefeated', uid: e.uid, defId: e.defId, byUid: roran.uid, byDefId: 'roran',
+      neraiuchi: false, pos: { x: 0, y: 0 },
+    }];
+    awardXpForEvents(s);
+    expect(totalXp(s.reg, roran)).toBe(reward);
+  });
+});
+
+describe('撃破の経験値（敵のレベルで増える）', () => {
+  it('xpForDefeat は xpReward + enemyLevelXp × (レベル − 1)', () => {
+    const reg = testRegistry();
+    const growth = { ...reg.growth, enemyLevelXp: 2 };
+    const s = fresh();
+    const e = s.units.find((u) => u.side === 'enemy')!;
+    const base = reg.enemies.get(e.defId)!.xpReward;
+    e.level = 5;
+    expect(xpForDefeat({ ...reg, growth }, e)).toBe(base + 2 * 4);
+    e.level = 1;
+    expect(xpForDefeat({ ...reg, growth }, e)).toBe(base);
+  });
+
+  it('撃破でとどめ役に入る経験値は敵のレベルのぶん多い', () => {
+    const s = fresh();
+    s.reg = { ...s.reg, growth: { ...s.reg.growth, enemyLevelXp: 3 } };
+    const roran = playerOf(s, 'roran');
+    const e = s.units.find((u) => u.side === 'enemy')!;
+    e.level = 4;
+    const reward = s.reg.enemies.get(e.defId)!.xpReward + 3 * 3;
     s.events = [{
       type: 'unitDefeated', uid: e.uid, defId: e.defId, byUid: roran.uid, byDefId: 'roran',
       neraiuchi: false, pos: { x: 0, y: 0 },

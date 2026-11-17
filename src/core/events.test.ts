@@ -323,6 +323,18 @@ describe('updatePersuasions', () => {
   });
 });
 
+describe('completeRecruit: レベル', () => {
+  it('説得して加わった仲間は、加わったときのレベル（enemyLevel ではない）', () => {
+    const { s } = withPersuasion();
+    s.stage = { ...s.stage, enemyLevel: 9 };
+    roranOf(s).pos = { x: 310, y: 300 };
+    updatePersuasions(s);
+    const joined = completeRecruit(s);
+    expect(joined?.defId).toBe('ally05');
+    expect(joined?.level).toBe(3);
+  });
+});
+
 describe('completeRecruit', () => {
   it('加入すると敵が消え、同じ位置に味方が現れる', () => {
     const { s, foe } = withPersuasion();

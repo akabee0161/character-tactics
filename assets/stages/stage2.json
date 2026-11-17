@@ -48,6 +48,7 @@
       { "x": 240, "y": 592 }
     ]
   },
+  "enemyLevel": 1,
   "roster": ["roran", "ines", "mist", "gau"],
   "enemies": [
     { "defId": "narazumono-4", "pos": { "x": 240, "y": 336 }, "ai": { "kind": "sentry", "sightRange": 110 } },

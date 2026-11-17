@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { MAX_PARTY } from './constants';
 import { cellIndexAt } from './field';
 import { fieldToStatic } from './fields';
-import { beginBattle, canPlaceAt, createBattleState, freeStartSpot, makeUnit, placeUnit, rebuildForSortie, startPositions, statsForLevel, windupOf } from './state';
+import { newSave } from '../save/save';
+import { beginBattle, canPlaceAt, createBattleState, freeStartSpot, makeEnemyUnit, makeUnit, placeUnit, rebuildForSortie, startPositions, statsForLevel, windupOf } from './state';
 import { initialSortie } from './sortie';
 import { testRegistry } from './testing';
 import type { Registry } from '../engine/registry';
@@ -232,6 +233,37 @@ describe('windupOf', () => {
   it('シートが無ければ 0（即時）', () => {
     const def = { ...testRegistry().units.get('roran')!, sprites: { role: null, face: null, map: null } };
     expect(windupOf(def)).toBe(0);
+  });
+});
+
+describe('敵のレベル（ステージの enemyLevel）', () => {
+  const reg = testRegistry();
+  const progress = () => newSave(reg);
+
+  it('makeEnemyUnit は渡されたレベルの能力で出す', () => {
+    const def = reg.enemies.get('narazumono')!;
+    const u = makeEnemyUnit(reg, 'e1', 'narazumono', { x: 0, y: 0 }, { kind: 'aggressive' }, 5);
+    expect(u.level).toBe(5);
+    expect(u.maxHp).toBe(statsForLevel(def, 5).maxHp);
+    expect(u.power).toBe(statsForLevel(def, 5).power);
+  });
+
+  it('配置の敵は enemyLevel で出る', () => {
+    const stage = { ...reg.stages.find((s) => s.enemies.length > 0)!, enemyLevel: 5 };
+    const s = createBattleState(reg, stage, progress(), 1);
+    const foes = s.units.filter((u) => u.side === 'enemy');
+    expect(foes.length).toBeGreaterThan(0);
+    for (const f of foes) {
+      expect(f.level).toBe(5);
+      expect(f.maxHp).toBe(statsForLevel(reg.enemies.get(f.defId)!, 5).maxHp);
+    }
+  });
+
+  it('説得の相手も enemyLevel で出る', () => {
+    const stage = { ...reg.stages.find((s) => s.persuasions.length > 0)!, enemyLevel: 7 };
+    const s = createBattleState(reg, stage, progress(), 1);
+    const foe = s.units.find((u) => u.side === 'enemy' && u.persuasion !== null)!;
+    expect(foe.level).toBe(7);
   });
 });
 

@@ -9,6 +9,7 @@ const STAGE: StageDef = {
   mapRows: ['..........', '..........', '..........'],
   placement: { minY: 0, starts: [{ x: 16, y: 16 }] },
   roster: ['roran', 'ines', 'mist', 'gau'],
+  enemyLevel: 1,
   enemies: [{ defId: 'narazumono', pos: { x: 216, y: 16 }, ai: { kind: 'aggressive' } }],
   spawners: [],
   joins: [],

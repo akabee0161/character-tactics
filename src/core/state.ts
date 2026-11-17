@@ -80,14 +80,14 @@ export function makeUnit(a: MakeUnitArgs): Unit {
   };
 }
 
-/** 敵ユニットを1体つくる。ステージ開始時の配置と時間湧きの両方がここを通る */
+/** 敵ユニットを1体つくる。ステージ開始時の配置と時間湧きの両方がここを通る。level はステージの enemyLevel */
 export function makeEnemyUnit(
-  reg: Registry, uid: string, defId: string, pos: Vec2, ai: AiDef,
+  reg: Registry, uid: string, defId: string, pos: Vec2, ai: AiDef, level: number,
 ): Unit {
   const def = reg.enemies.get(defId);
   if (!def) throw new Error(`はいちに しらない てき: ${defId}`);
   return makeUnit({
-    uid, def, side: 'enemy', controller: 'ai', pos, level: 1, xp: 0, ai,
+    uid, def, side: 'enemy', controller: 'ai', pos, level, xp: 0, ai,
   });
 }
 
@@ -158,10 +158,10 @@ export function createBattleState(
 
   let nextEnemyUid = 1;
   const enemies = stage.enemies.map((placement) =>
-    makeEnemyUnit(reg, `e${nextEnemyUid++}`, placement.defId, placement.pos, placement.ai));
+    makeEnemyUnit(reg, `e${nextEnemyUid++}`, placement.defId, placement.pos, placement.ai, stage.enemyLevel));
   stage.persuasions.forEach((p, i) => {
     if (party.members.includes(p.unitId)) return;
-    const foe = makeEnemyUnit(reg, `e${nextEnemyUid++}`, p.foeId, p.pos, p.ai);
+    const foe = makeEnemyUnit(reg, `e${nextEnemyUid++}`, p.foeId, p.pos, p.ai, stage.enemyLevel);
     foe.persuasion = i;
     enemies.push(foe);
   });

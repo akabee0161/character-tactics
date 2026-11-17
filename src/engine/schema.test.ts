@@ -358,10 +358,30 @@ const VALID_STAGE = {
   mapRows: ['####', '#..#', '#..#', '####'],
   placement: { minY: 64, starts: [{ x: 48, y: 80 }] },
   roster: ['roran', 'ines'],
+  enemyLevel: 1,
   enemies: [{ defId: 'narazumono', pos: { x: 80, y: 48 }, ai: { kind: 'aggressive' } }],
   victory: { type: 'reach', pos: { x: 80, y: 80 }, radius: 24, by: 'any' },
   defeat: [{ type: 'unitLost', defIds: ['roran'] }],
 };
+
+describe('validateStageDef: enemyLevel', () => {
+  it('enemyLevel を読む', () => {
+    const r = validateStageDef('stages/stage1.json', { ...VALID_STAGE, enemyLevel: 5 });
+    expect(r.ok && r.value.enemyLevel).toBe(5);
+  });
+  it('enemyLevel が無いステージは読み込みで弾く', () => {
+    const { enemyLevel: _drop, ...missing } = VALID_STAGE;
+    const r = validateStageDef('stages/stage1.json', missing);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors.some((e) => e.path === 'enemyLevel')).toBe(true);
+  });
+  it('enemyLevel が 0・小数・文字なら弾く', () => {
+    for (const bad of [0, 1.5, -1, '3']) {
+      const r = validateStageDef('stages/stage1.json', { ...VALID_STAGE, enemyLevel: bad });
+      expect(r.ok).toBe(false);
+    }
+  });
+});
 
 describe('validateStageDef', () => {
   it('正しいステージを受け入れる', () => {
@@ -748,6 +768,7 @@ function stageRaw(over: Record<string, unknown> = {}): Record<string, unknown> {
     mapRows: ['###', '#.#', '#.#', '###'],
     placement: { minY: 64, starts: [{ x: 48, y: 80 }] },
     roster: ['roran'],
+    enemyLevel: 1,
     enemies: [],
     victory: { type: 'reach', pos: { x: 48, y: 48 }, radius: 10, by: 'any' },
     defeat: [{ type: 'allPlayerUnitsLost' }],
