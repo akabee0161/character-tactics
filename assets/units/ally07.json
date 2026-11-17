@@ -11,6 +11,7 @@
   "range": 36,
   "attackInterval": 1.7,
   "speed": 60,
+  "growth": { "maxHp": 1, "power": 0.34, "guard": 0, "resist": 0, "speed": 0 },
   "skillId": "tsuki",
   "color": "#c85a5a",
   "sprites": {

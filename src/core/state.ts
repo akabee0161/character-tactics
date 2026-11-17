@@ -4,24 +4,27 @@ import { initialSortie, sortieCandidates, sortieProgress } from './sortie';
 import { makeFieldCache } from './fields';
 import { makeRng } from './rng';
 import type { Registry } from '../engine/registry';
-import type { AiDef, EnemyDef, GrowthDef, StageDef, UnitDef } from '../engine/schema';
+import type { AiDef, EnemyDef, StageDef, StatGrowth, UnitDef } from '../engine/schema';
 import { NO_BONUS } from './types';
 import type { BattleState, Grid, PartyProgress, StatBonus, Unit, Vec2 } from './types';
 
 /**
- * レベルからステータスを出す。HP は毎レベル、攻撃力は levelsPerPower レベルごとに上がる。
- * 攻撃力を小数にしないのは computeDamage が整数前提で組まれているため
+ * レベルからステータスを出す。能力 = 初めの値 + floor(伸び × (レベル − 1)) + 村のごほうび。
+ * 伸びは仲間・敵ごとの def.growth（小数可）。毎回同じ値が上がる。
+ * 整数にそろえるのは computeDamage が整数前提で組まれているため。1e-9 は
+ * 1.16 × 25 = 28.999999999999996 のような浮動小数点の誤差で 1 つ下がるのを防ぐ
  */
 export function statsForLevel(
-  def: UnitDef | EnemyDef, level: number, growth: GrowthDef, bonus: StatBonus = NO_BONUS,
+  def: UnitDef | EnemyDef, level: number, bonus: StatBonus = NO_BONUS,
 ): { maxHp: number; power: number; guard: number; speed: number; resist: number } {
   const steps = Math.max(0, level - 1);
+  const grown = (key: keyof StatGrowth): number => Math.floor(def.growth[key] * steps + 1e-9);
   return {
-    maxHp: def.maxHp + steps * growth.hpPerLevel + bonus.maxHp,
-    power: def.power + Math.floor(steps / growth.levelsPerPower) + bonus.power,
-    guard: def.guard + bonus.guard,
-    speed: def.speed + bonus.speed,
-    resist: def.resist + bonus.resist,
+    maxHp: def.maxHp + grown('maxHp') + bonus.maxHp,
+    power: def.power + grown('power') + bonus.power,
+    guard: def.guard + grown('guard') + bonus.guard,
+    speed: def.speed + grown('speed') + bonus.speed,
+    resist: def.resist + grown('resist') + bonus.resist,
   };
 }
 
@@ -41,12 +44,11 @@ type MakeUnitArgs = {
   xp: number;
   bonus?: StatBonus;
   ai: AiDef | null;
-  growth: GrowthDef;
 };
 
 export function makeUnit(a: MakeUnitArgs): Unit {
   const statBonus = { ...(a.bonus ?? NO_BONUS) };
-  const { maxHp, power, guard, speed, resist } = statsForLevel(a.def, a.level, a.growth, statBonus);
+  const { maxHp, power, guard, speed, resist } = statsForLevel(a.def, a.level, statBonus);
   const enemyDef = 'bowDamageCap' in a.def ? a.def : null;
   return {
     uid: a.uid,
@@ -85,7 +87,7 @@ export function makeEnemyUnit(
   const def = reg.enemies.get(defId);
   if (!def) throw new Error(`はいちに しらない てき: ${defId}`);
   return makeUnit({
-    uid, def, side: 'enemy', controller: 'ai', pos, level: 1, xp: 0, ai, growth: reg.growth,
+    uid, def, side: 'enemy', controller: 'ai', pos, level: 1, xp: 0, ai,
   });
 }
 
@@ -151,7 +153,7 @@ export function createBattleState(
   const starts = startPositions(stage, grid, entries.length);
   const roster = entries.map((e, i) => makeUnit({
     uid: `p${i + 1}`, def: reg.units.get(e.defId)!, side: 'player', controller: 'player', pos: starts[i]!,
-    level: e.level, xp: e.xp, bonus: e.bonus, ai: null, growth: reg.growth,
+    level: e.level, xp: e.xp, bonus: e.bonus, ai: null,
   }));
 
   let nextEnemyUid = 1;

@@ -77,7 +77,7 @@ function baseCard(def: UnitDef | EnemyDef, stats: UnitStats, skill: StatCard['sk
 }
 
 function progressStats(reg: Registry, def: UnitDef | EnemyDef, p: CharProgress): UnitStats {
-  return statsForLevel(def, p.level, reg.growth, p.bonus);
+  return statsForLevel(def, p.level, p.bonus);
 }
 
 /** ステージ選択の仲間の札。セーブのレベルと、セーブに残った能力の加算から出す */
@@ -105,7 +105,7 @@ export function cardFromUnit(reg: Registry, unit: Unit, count: number | null): S
 /** 敵の札。敵は育たないので定義の値のまま */
 export function enemyCard(reg: Registry, defId: string, count: number): StatCard {
   const def = defOf(reg, defId);
-  const stats = statsForLevel(def, 1, reg.growth);
+  const stats = statsForLevel(def, 1);
   return { ...baseCard(def, stats, skillOf(reg, def.skillId)), count };
 }
 

@@ -12,6 +12,7 @@ const VALID_UNIT = {
   attackInterval: 1.6, speed: 60,
   skillId: 'funbaru',
   color: '#4a80c8',
+  growth: { maxHp: 1, power: 0.34, guard: 0, resist: 0, speed: 0 },
 };
 
 const VALID_ENEMY = {
@@ -20,6 +21,45 @@ const VALID_ENEMY = {
   skillId: null,
   xpReward: 8, bowDamageCap: null, fleeAtHpRatio: 0.3,
 };
+
+describe('growth（能力ごとの伸び）', () => {
+  it('growth を読む（小数可）', () => {
+    const r = validateUnitDef('units/roran.json', VALID_UNIT);
+    expect(r.ok && r.value.growth).toEqual({ maxHp: 1, power: 0.34, guard: 0, resist: 0, speed: 0 });
+  });
+
+  it('growth が無い仲間は読み込みで弾く', () => {
+    const { growth: _drop, ...missing } = VALID_UNIT;
+    const r = validateUnitDef('units/roran.json', missing);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors.some((e) => e.path === 'growth')).toBe(true);
+  });
+
+  it('growth の値が負なら弾く', () => {
+    const r = validateUnitDef('units/roran.json', { ...VALID_UNIT, growth: { ...VALID_UNIT.growth, guard: -1 } });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors.some((e) => e.path === 'growth.guard')).toBe(true);
+  });
+
+  it('growth の値が数でなければ弾く', () => {
+    const r = validateUnitDef('units/roran.json', { ...VALID_UNIT, growth: { ...VALID_UNIT.growth, power: 'x' } });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors.some((e) => e.path === 'growth.power')).toBe(true);
+  });
+
+  it('growth の能力が 1 つ欠けても弾く', () => {
+    const { speed: _drop, ...rest } = VALID_UNIT.growth;
+    const r = validateUnitDef('units/roran.json', { ...VALID_UNIT, growth: rest });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors.some((e) => e.path === 'growth.speed')).toBe(true);
+  });
+
+  it('敵の定義にも growth が要る', () => {
+    const { growth: _drop, ...missing } = VALID_ENEMY;
+    const r = validateEnemyDef('enemies/x.json', missing);
+    expect(r.ok).toBe(false);
+  });
+});
 
 describe('validateUnitDef', () => {
   it('正しい定義を受け入れる', () => {
@@ -848,7 +888,7 @@ describe('validateStageDef: 敵は配置範囲より上', () => {
 
 describe('validateGrowthFile', () => {
   const raw = () => ({
-    maxLevel: 12, xpPerLevel: 12, hpPerLevel: 1, levelsPerPower: 3,
+    maxLevel: 30, xpPerLevel: 12, enemyLevelXp: 2,
     hitXp: 1, healXp: 1, assistRatio: 0.5, clearXp: 10,
   });
 

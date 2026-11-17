@@ -41,8 +41,8 @@ describe('awardXp', () => {
     const u = playerOf(s, 'roran');
     const def = s.reg.units.get('roran')!;
     awardXp(s, u, xpToNext(1, s.reg.growth.xpPerLevel));
-    expect(u.maxHp).toBe(statsForLevel(def, 2, s.reg.growth).maxHp);
-    expect(u.power).toBe(statsForLevel(def, 2, s.reg.growth).power);
+    expect(u.maxHp).toBe(statsForLevel(def, 2).maxHp);
+    expect(u.power).toBe(statsForLevel(def, 2).power);
   });
 
   it('レベルアップしても上乗せが残る', () => {
@@ -53,8 +53,8 @@ describe('awardXp', () => {
     u.maxHp += 3; u.power += 1; u.guard += 2;
     awardXp(s, u, xpToNext(1, s.reg.growth.xpPerLevel));
     expect(u.level).toBe(2);
-    expect(u.maxHp).toBe(statsForLevel(def, 2, s.reg.growth, u.statBonus).maxHp);
-    expect(u.power).toBe(statsForLevel(def, 2, s.reg.growth, u.statBonus).power);
+    expect(u.maxHp).toBe(statsForLevel(def, 2, u.statBonus).maxHp);
+    expect(u.power).toBe(statsForLevel(def, 2, u.statBonus).power);
     expect(u.guard).toBe(def.guard + 2);
     expect(u.speed).toBe(def.speed);
   });

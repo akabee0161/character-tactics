@@ -5,6 +5,7 @@
   "resist": 3,
   "attack": "melee", "range": 24,
   "attackInterval": 1.4, "speed": 41,
+  "growth": { "maxHp": 1, "power": 0.34, "guard": 0, "resist": 0, "speed": 0 },
   "skillId": null,
   "color": "#b03a3a",
   "sprites": {

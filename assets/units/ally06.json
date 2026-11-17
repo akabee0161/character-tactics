@@ -11,6 +11,7 @@
   "range": 140,
   "attackInterval": 2.6,
   "speed": 55,
+  "growth": { "maxHp": 1, "power": 0.34, "guard": 0, "resist": 0, "speed": 0 },
   "skillId": "hinoame",
   "color": "#8a5ac8",
   "sprites": {

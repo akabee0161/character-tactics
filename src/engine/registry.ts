@@ -25,7 +25,7 @@ export type Registry = {
  * 起動しないので実際には使われない（schema.ts のヘルパと同じ流儀）
  */
 const FALLBACK_GROWTH: GrowthDef = {
-  maxLevel: 1, xpPerLevel: 1, hpPerLevel: 0, levelsPerPower: 1,
+  maxLevel: 1, xpPerLevel: 1, enemyLevelXp: 0,
   hitXp: 0, healXp: 0, assistRatio: 0, clearXp: 0,
 };
 

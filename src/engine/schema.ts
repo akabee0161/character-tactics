@@ -163,6 +163,14 @@ function readSprites(ctx: Ctx, v: unknown): Sprites {
   return { role: name('role'), face: name('face'), map: readMapSheet(ctx, o.map) };
 }
 
+/**
+ * 1 レベルあたりの伸び（0 以上の数。小数可）。能力 = 初めの値 + floor(伸び × (レベル − 1)) + 村のごほうび。
+ * 速さ（speed）は移動の速さ（px/秒）なので、伸びは基本 0
+ */
+export type StatGrowth = { maxHp: number; power: number; guard: number; resist: number; speed: number };
+
+export const STAT_GROWTH_KEYS = ['maxHp', 'power', 'guard', 'resist', 'speed'] as const;
+
 export type UnitDef = {
   id: string;
   name: string;
@@ -182,6 +190,8 @@ export type UnitDef = {
   range: number;
   attackInterval: number;
   speed: number;
+  /** 能力ごとの伸び方。必須（書き忘れで育たない仲間・敵ができるのを読み込みで止める） */
+  growth: StatGrowth;
   skillId: string | null;
   color: string;
   sprites: Sprites;
@@ -197,6 +207,16 @@ export type EnemyDef = UnitDef & {
   /** 敵の種類。省略時は id。初対面の判定・会話の鍵に使う（同じ種類なら defId が違っても初対面は 1 回） */
   kind?: string;
 };
+
+function readStatGrowth(ctx: Ctx, v: unknown): StatGrowth {
+  const out: StatGrowth = { maxHp: 0, power: 0, guard: 0, resist: 0, speed: 0 };
+  const o = requireObject(ctx, 'growth', v);
+  if (!o) return out;
+  for (const key of STAT_GROWTH_KEYS) {
+    out[key] = requireNumber(ctx, `growth.${key}`, o[key], { min: 0 }) ?? 0;
+  }
+  return out;
+}
 
 function readUnitFields(ctx: Ctx, o: Record<string, unknown>): UnitDef {
   return {
@@ -214,6 +234,7 @@ function readUnitFields(ctx: Ctx, o: Record<string, unknown>): UnitDef {
     range: requireNumber(ctx, 'range', o.range, { min: 1 }) ?? 1,
     attackInterval: requireNumber(ctx, 'attackInterval', o.attackInterval, { min: 0.1 }) ?? 1,
     speed: requireNumber(ctx, 'speed', o.speed, { min: 0 }) ?? 0,
+    growth: readStatGrowth(ctx, o.growth),
     skillId: o.skillId === null ? null : requireString(ctx, 'skillId', o.skillId),
     color: requireString(ctx, 'color', o.color) ?? '#000000',
     sprites: readSprites(ctx, o.sprites),
@@ -336,8 +357,8 @@ export function validateLinesFile(file: string, raw: unknown): Validated<Record<
 }
 
 /**
- * 成長の調整値。レベルアップの頻度（xpPerLevel）と1レベルの強化量（hpPerLevel /
- * levelsPerPower）を別々に持つので、片方だけを動かして調整できる。
+ * 成長の調整値。レベルアップの頻度（xpPerLevel）を決める。1 レベルの強化量は
+ * 仲間・敵ごとの growth（UnitDef）が持つ。
  * hitXp / healXp / clearXp を整数に縛るのは、経験値が小数になるとリザルト画面に
  * 4.5/12 のような値が出るため
  */
@@ -345,10 +366,8 @@ export type GrowthDef = {
   maxLevel: number;
   /** レベル n から n+1 に必要な経験値は n × xpPerLevel */
   xpPerLevel: number;
-  /** 1レベルあたりの最大HPの増加 */
-  hpPerLevel: number;
-  /** 攻撃力が1上がるのに必要なレベル数 */
-  levelsPerPower: number;
+  /** 敵を倒したときの経験値に、敵のレベルが 1 上がるごとに足す量（xpForDefeat） */
+  enemyLevelXp: number;
   /** 命中1回ごとに攻撃側へ入る経験値 */
   hitXp: number;
   /** 回復1回ごとに回復側へ入る経験値 */
@@ -366,8 +385,7 @@ export function validateGrowthFile(file: string, raw: unknown): Validated<Growth
   const growth: GrowthDef = {
     maxLevel: requireNumber(ctx, 'maxLevel', o.maxLevel, { min: 1, int: true }) ?? 1,
     xpPerLevel: requireNumber(ctx, 'xpPerLevel', o.xpPerLevel, { min: 1, int: true }) ?? 1,
-    hpPerLevel: requireNumber(ctx, 'hpPerLevel', o.hpPerLevel, { min: 0, int: true }) ?? 0,
-    levelsPerPower: requireNumber(ctx, 'levelsPerPower', o.levelsPerPower, { min: 1, int: true }) ?? 1,
+    enemyLevelXp: requireNumber(ctx, 'enemyLevelXp', o.enemyLevelXp, { min: 0, int: true }) ?? 0,
     hitXp: requireNumber(ctx, 'hitXp', o.hitXp, { min: 0, int: true }) ?? 0,
     healXp: requireNumber(ctx, 'healXp', o.healXp, { min: 0, int: true }) ?? 0,
     assistRatio: requireNumber(ctx, 'assistRatio', o.assistRatio, { min: 0, max: 1 }) ?? 0,

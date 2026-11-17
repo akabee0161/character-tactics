@@ -24,52 +24,56 @@ function unitOf(s: BattleState, defId: string) {
 }
 
 describe('statsForLevel', () => {
-  it('レベル1 は基礎値どおり', () => {
-    const reg = testRegistry();
-    expect(statsForLevel(reg.units.get('roran')!, 1, reg.growth)).toEqual({
-      maxHp: 30, power: 6, guard: reg.units.get('roran')!.guard, speed: reg.units.get('roran')!.speed, resist: 2,
-    });
+  it('能力は 初めの値 + floor(伸び × (レベル − 1)) + ごほうび', () => {
+    const base = testRegistry().units.get('roran')!;
+    const def = {
+      ...base, maxHp: 30, power: 6, guard: 5, resist: 2, speed: 60,
+      growth: { maxHp: 2.5, power: 0.5, guard: 0.4, resist: 0, speed: 0 },
+    };
+    expect(statsForLevel(def, 1)).toEqual({ maxHp: 30, power: 6, guard: 5, resist: 2, speed: 60 });
+    expect(statsForLevel(def, 11, { maxHp: 0, power: 1, guard: 0, resist: 0, speed: 0 }))
+      .toEqual({ maxHp: 55, power: 12, guard: 9, resist: 2, speed: 60 });
   });
 
-  it('HP は1レベルごとに+1', () => {
-    const reg = testRegistry();
-    expect(statsForLevel(reg.units.get('roran')!, 4, reg.growth).maxHp).toBe(33);
+  it('伸び 1.16 でレベル 26 は +29（浮動小数点の誤差で 1 つ下がらない）', () => {
+    const base = testRegistry().units.get('roran')!;
+    const def = { ...base, maxHp: 10, growth: { maxHp: 1.16, power: 0, guard: 0, resist: 0, speed: 0 } };
+    expect(statsForLevel(def, 26).maxHp).toBe(39);
   });
 
-  it('攻撃力は3レベルごとに+1', () => {
-    const reg = testRegistry();
-    expect(statsForLevel(reg.units.get('roran')!, 3, reg.growth).power).toBe(6);
-    expect(statsForLevel(reg.units.get('roran')!, 4, reg.growth).power).toBe(7);
+  it('伸びが 0 の能力はレベルで上がらない', () => {
+    const base = testRegistry().units.get('mist')!;
+    const def = { ...base, resist: 7, growth: { maxHp: 1, power: 1, guard: 0, resist: 0, speed: 0 } };
+    expect(statsForLevel(def, 1).resist).toBe(7);
+    expect(statsForLevel(def, 30).resist).toBe(7);
   });
 
-  it('上限レベルでも現状の上限とほぼ同じ強さ', () => {
-    const reg = testRegistry();
-    expect(statsForLevel(reg.units.get('roran')!, 12, reg.growth)).toEqual({
-      maxHp: 41, power: 9, guard: reg.units.get('roran')!.guard, speed: reg.units.get('roran')!.speed, resist: 2,
-    });
+  it('レベル 1 未満でも初めの値（レベル 0 以下を渡しても下回らない）', () => {
+    const base = testRegistry().units.get('roran')!;
+    expect(statsForLevel(base, 0).maxHp).toBe(base.maxHp);
   });
 
   it('上乗せが能力値に入る', () => {
     const reg = testRegistry();
     const def = reg.units.get('roran')!;
-    const s = statsForLevel(def, 1, reg.growth, { maxHp: 3, power: 1, guard: 2, speed: 5, resist: 4 });
+    const s = statsForLevel(def, 1, { maxHp: 3, power: 1, guard: 2, speed: 5, resist: 4 });
     expect(s).toEqual({
       maxHp: def.maxHp + 3, power: def.power + 1, guard: def.guard + 2, speed: def.speed + 5, resist: def.resist + 4,
     });
   });
 
-  it('魔法防御はレベルで上がらない', () => {
-    const reg = testRegistry();
-    const mist = reg.units.get('mist')!;
-    expect(statsForLevel(mist, 1, reg.growth).resist).toBe(7);
-    expect(statsForLevel(mist, 5, reg.growth).resist).toBe(7);
+  it('レベル 1 は初めの値どおり', () => {
+    const def = testRegistry().units.get('roran')!;
+    expect(statsForLevel(def, 1)).toEqual({
+      maxHp: def.maxHp, power: def.power, guard: def.guard, speed: def.speed, resist: def.resist,
+    });
   });
 
   it('makeUnit は魔法防御に上乗せを足す', () => {
     const reg = testRegistry();
     const u = makeUnit({
       uid: 'p1', def: reg.units.get('mist')!, side: 'player', controller: 'player', pos: { x: 0, y: 0 },
-      level: 1, xp: 0, bonus: { maxHp: 0, power: 0, guard: 0, speed: 0, resist: 2 }, ai: null, growth: reg.growth,
+      level: 1, xp: 0, bonus: { maxHp: 0, power: 0, guard: 0, speed: 0, resist: 2 }, ai: null,
     });
     expect(u.resist).toBe(9);
   });
@@ -237,17 +241,17 @@ describe('makeUnit: kindId', () => {
   it('makeUnit は敵の kind を kindId に入れる', () => {
     const reg = testRegistry();
     const def = { ...reg.enemies.get('narazumono')!, id: 'narazumono-2', kind: 'narazumono' };
-    const u = makeUnit({ ...base, uid: 'e1', def, growth: reg.growth });
+    const u = makeUnit({ ...base, uid: 'e1', def });
     expect(u.kindId).toBe('narazumono');
     expect(u.defId).toBe('narazumono-2');
   });
 
   it('makeUnit は kind が無ければ id を kindId に入れる', () => {
     const reg = testRegistry();
-    const enemy = makeUnit({ ...base, uid: 'e1', def: reg.enemies.get('garum')!, growth: reg.growth });
+    const enemy = makeUnit({ ...base, uid: 'e1', def: reg.enemies.get('garum')! });
     expect(enemy.kindId).toBe('garum');
     const ally = makeUnit({
-      ...base, side: 'player', controller: 'player', uid: 'p1', def: reg.units.get('roran')!, growth: reg.growth,
+      ...base, side: 'player', controller: 'player', uid: 'p1', def: reg.units.get('roran')!,
     });
     expect(ally.kindId).toBe('roran');
   });

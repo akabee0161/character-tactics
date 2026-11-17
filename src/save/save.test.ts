@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { loadSave, newSave, SAVE_KEY, SAVE_VERSION, writeSave } from './save';
 import { testRegistry } from '../core/testing';
+import { applyXp } from '../core/progress';
+import { statsForLevel } from '../core/state';
+import { allyCardFromSave } from '../ui/stat-card';
 import type { StorageLike } from './save';
 
 function memoryStorage(initial?: string): StorageLike & { raw: string | null } {
@@ -200,5 +203,27 @@ describe('前回の出撃（sortie）', () => {
     expect(load(without).sortie).toEqual([]);
     expect(load({ ...newSave(reg), sortie: 'roran' }).sortie).toEqual([]);
     expect(newSave(reg).sortie).toEqual([]);
+  });
+});
+
+describe('上限 12 のころの古いセーブ（上限 30 の今）', () => {
+  const reg = testRegistry();
+  const raw = {
+    version: 2, clearedStageIds: ['stage1'],
+    units: { roran: { level: 12, xp: 400 }, ines: { level: 12, xp: 0 } },
+  };
+
+  it('古いセーブのレベル 12 の仲間は、新しい伸び方の能力になる', () => {
+    const save = loadSave(memoryStorage(JSON.stringify(raw)), reg)!;
+    expect(save.units.roran).toEqual({ level: 12, xp: 400 });
+    const card = allyCardFromSave(reg, save, 'roran');
+    expect(card.level).toBe(12);
+    expect(card.stats).toEqual(statsForLevel(reg.units.get('roran')!, 12));
+  });
+
+  it('ためた経験値が新しい式の必要量を超えていても読め、次に経験値が入ったときに上がる', () => {
+    const save = loadSave(memoryStorage(JSON.stringify(raw)), reg)!;
+    const after = applyXp(save.units.roran!, 1, reg.growth);
+    expect(after.level).toBeGreaterThan(12);
   });
 });

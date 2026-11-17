@@ -21,7 +21,7 @@ export function awardXp(state: BattleState, unit: Unit, amount: number): void {
   const beforeStats: UnitStats = {
     maxHp: unit.maxHp, power: unit.power, guard: unit.guard, resist: unit.resist, speed: unit.speed,
   };
-  const stats = statsForLevel(def, after.level, state.reg.growth, unit.statBonus);
+  const stats = statsForLevel(def, after.level, unit.statBonus);
   const gainedMaxHp = stats.maxHp - unit.maxHp;
   unit.maxHp = stats.maxHp;
   unit.power = stats.power;

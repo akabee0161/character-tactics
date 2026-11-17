@@ -5,6 +5,7 @@
   "resist": 2,
   "attack": "melee", "range": 24,
   "attackInterval": 1.6, "speed": 60,
+  "growth": { "maxHp": 1, "power": 0.34, "guard": 0, "resist": 0, "speed": 0 },
   "skillId": "funbaru",
   "color": "#4a80c8",
   "sprites": {
