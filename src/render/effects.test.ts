@@ -2,10 +2,12 @@ import { describe, expect, it } from 'vitest';
 import {
   BOND_PULSE_DURATION, DAMAGE_TEXT_DURATION, DEFEAT_DURATION, HEAL_BEAM_DURATION,
   HEAL_RING_DURATION, HEAL_TEXT_DURATION, HIT_EFFECT_DURATION, HP_BAR_CATCHUP_RATE,
-  SKILL_CAST_DURATION, TRAIL_DURATION, READY_GLOW_PERIOD, readyGlowAlpha,
+  READY_GLOW_PERIOD, readyGlowAlpha, cancelDash, displayPos,
   makeEffectState, resetEffects, spawnEffects, syncDisplayedHp, tickEffects,
 } from './effects';
 import type { EffectState } from './effects';
+import { DASH_DURATION, SKILL_FX, SKILL_FX_DURATION } from './skill-fx';
+import skillsJson from '../../assets/skills.json';
 import type { SimEvent, Unit } from '../core/types';
 
 function hitEvent(overrides: Partial<Extract<SimEvent, { type: 'hit' }>> = {}): SimEvent {
@@ -77,43 +79,6 @@ describe('spawnEffects', () => {
     }]);
     expect(state.items.some((e) => (e.kind as string) === 'attackLine')).toBe(false);
   });
-
-  it('kakenukeru の skill イベントから trail を追加する', () => {
-    const state = makeEffectState();
-    const events: SimEvent[] = [{
-      type: 'skill', uid: 'p4', defId: 'gau', skillId: 'kakenukeru',
-      fromPos: { x: 0, y: 0 }, toPos: { x: 100, y: 0 }, aim: null, affected: [],
-    }];
-    spawnEffects(state, events);
-    expect(state.items).toEqual([
-      { kind: 'trail', from: { x: 0, y: 0 }, to: { x: 100, y: 0 }, ttl: TRAIL_DURATION },
-    ]);
-  });
-
-  it('funbaru の skill イベントから skillCast を追加する', () => {
-    const state = makeEffectState();
-    const events: SimEvent[] = [{
-      type: 'skill', uid: 'p1', defId: 'roran', skillId: 'funbaru',
-      fromPos: { x: 10, y: 10 }, toPos: { x: 10, y: 10 }, aim: null, affected: [],
-    }];
-    spawnEffects(state, events);
-    expect(state.items).toEqual([
-      { kind: 'skillCast', skillId: 'funbaru', pos: { x: 10, y: 10 }, ttl: SKILL_CAST_DURATION },
-    ]);
-  });
-
-  it('neraiuchi の skill イベントから skillCast を追加する', () => {
-    const state = makeEffectState();
-    const events: SimEvent[] = [{
-      type: 'skill', uid: 'p2', defId: 'ines', skillId: 'neraiuchi',
-      fromPos: { x: 5, y: 5 }, toPos: { x: 5, y: 5 }, aim: null, affected: [],
-    }];
-    spawnEffects(state, events);
-    expect(state.items).toEqual([
-      { kind: 'skillCast', skillId: 'neraiuchi', pos: { x: 5, y: 5 }, ttl: SKILL_CAST_DURATION },
-    ]);
-  });
-
   it('unitDefeated イベントから defeat を追加する', () => {
     const state = makeEffectState();
     const events: SimEvent[] = [
@@ -148,7 +113,7 @@ describe('tickEffects', () => {
   it('dt の分だけ ttl を減らす', () => {
     const state: EffectState = {
       items: [{ kind: 'hit', pos: { x: 0, y: 0 }, ttl: 0.25, critical: false }],
-      knockback: new Map(), displayedHp: new Map(),
+      knockback: new Map(), displayedHp: new Map(), dash: new Map(),
     };
     tickEffects(state, 0.1);
     expect(state.items[0]!.ttl).toBeCloseTo(0.15);
@@ -157,14 +122,14 @@ describe('tickEffects', () => {
   it('ttl が 0 以下になったら取り除く', () => {
     const state: EffectState = {
       items: [{ kind: 'hit', pos: { x: 0, y: 0 }, ttl: 0.05, critical: false }],
-      knockback: new Map(), displayedHp: new Map(),
+      knockback: new Map(), displayedHp: new Map(), dash: new Map(),
     };
     tickEffects(state, 0.1);
     expect(state.items).toEqual([]);
   });
 
   it('ノックバックの ttl が尽きたら削除する', () => {
-    const state: EffectState = { items: [], knockback: new Map([['e1', { ttl: 0.05, dir: { x: 1, y: 0 } }]]), displayedHp: new Map() };
+    const state: EffectState = { items: [], knockback: new Map([['e1', { ttl: 0.05, dir: { x: 1, y: 0 } }]]), displayedHp: new Map(), dash: new Map() };
     tickEffects(state, 0.1);
     expect(state.knockback.has('e1')).toBe(false);
   });
@@ -175,7 +140,7 @@ describe('resetEffects', () => {
     const state: EffectState = {
       items: [{ kind: 'hit', pos: { x: 0, y: 0 }, ttl: 0.25, critical: false }],
       knockback: new Map([['e1', { ttl: 0.1, dir: { x: 1, y: 0 } }]]),
-      displayedHp: new Map([['p1', 40]]),
+      displayedHp: new Map([['p1', 40]]), dash: new Map(),
     };
     resetEffects(state);
     expect(state.items).toEqual([]);
@@ -232,5 +197,95 @@ describe('readyGlowAlpha', () => {
       expect(a).toBeGreaterThanOrEqual(0.45);
       expect(a).toBeLessThanOrEqual(1);
     }
+  });
+});
+
+function skillEvent(skillId: string, overrides: Partial<Extract<SimEvent, { type: 'skill' }>> = {}): SimEvent {
+  return {
+    type: 'skill', uid: 'p1', defId: 'roran', skillId,
+    fromPos: { x: 0, y: 0 }, toPos: { x: 0, y: 0 }, aim: null, affected: [],
+    ...overrides,
+  };
+}
+
+describe('技の見た目（skillFx）', () => {
+  const ids = skillsJson.map((s) => s.id);
+
+  it.each(ids)('skill 出来事から skillFx を 1 つ足し、長さは SKILL_FX_DURATION（%s）', (id) => {
+    const state = makeEffectState();
+    spawnEffects(state, [skillEvent(id)]);
+    const fx = state.items.filter((i) => i.kind === 'skillFx');
+    expect(fx).toHaveLength(1);
+    expect(fx[0]).toMatchObject({ skillId: id, ttl: SKILL_FX_DURATION[id], duration: SKILL_FX_DURATION[id] });
+  });
+
+  it('SKILL_FX は SKILL_FX_DURATION と同じ 11 個の技を持つ', () => {
+    expect(Object.keys(SKILL_FX).sort()).toEqual([...ids].sort());
+    expect(Object.keys(SKILL_FX_DURATION).sort()).toEqual([...ids].sort());
+    expect(ids).toHaveLength(11);
+  });
+
+  it('駆け抜けるは dash を始め、displayPos は半分の時刻で中点', () => {
+    const state = makeEffectState();
+    spawnEffects(state, [skillEvent('kakenukeru', { fromPos: { x: 0, y: 0 }, toPos: { x: 100, y: 0 } })]);
+    tickEffects(state, 0.3);
+    expect(displayPos(state, 'p1', { x: 100, y: 0 })).toEqual({ x: 50, y: 0 });
+    tickEffects(state, 0.3);
+    expect(state.dash.has('p1')).toBe(false);
+    expect(displayPos(state, 'p1', { x: 100, y: 0 })).toEqual({ x: 100, y: 0 });
+  });
+
+  it('駆け抜けるの通り道の敵の hit と数字は、見た目がその敵を通る時刻まで wait する', () => {
+    const state = makeEffectState();
+    spawnEffects(state, [
+      hitEvent({ sourceUid: 'p1', targetPos: { x: 25, y: 10 } }),
+      skillEvent('kakenukeru', { fromPos: { x: 0, y: 0 }, toPos: { x: 100, y: 0 } }),
+    ]);
+    const waits = state.items.filter((i) => i.kind === 'hit' || i.kind === 'damageText').map((i) => i.wait);
+    expect(waits).toHaveLength(2);
+    for (const w of waits) expect(w).toBeCloseTo(DASH_DURATION.kakenukeru! * 0.25);
+  });
+
+  it('急降下の hit は着く時刻まで wait する', () => {
+    const state = makeEffectState();
+    spawnEffects(state, [
+      hitEvent({ sourceUid: 'p1', targetPos: { x: 90, y: 0 } }),
+      skillEvent('kyuukouka', { fromPos: { x: 0, y: 0 }, toPos: { x: 100, y: 0 } }),
+    ]);
+    const hit = state.items.find((i) => i.kind === 'hit')!;
+    expect(hit.wait).toBe(DASH_DURATION.kyuukouka);
+  });
+
+  it('滑らない技の出来事と同じ束の hit には wait を付けない', () => {
+    const state = makeEffectState();
+    spawnEffects(state, [hitEvent({ sourceUid: 'p1' }), skillEvent('hinoame')]);
+    expect(state.items.find((i) => i.kind === 'hit')!.wait).toBeUndefined();
+  });
+
+  it('wait の間は ttl が減らず、明けた分から減る', () => {
+    const state = makeEffectState();
+    state.items.push({ kind: 'hit', pos: { x: 0, y: 0 }, ttl: 0.25, critical: false, wait: 0.2 });
+    tickEffects(state, 0.1);
+    expect(state.items[0]).toMatchObject({ ttl: 0.25, wait: expect.closeTo(0.1) });
+    tickEffects(state, 0.15);
+    expect(state.items[0]!.ttl).toBeCloseTo(0.2);
+    expect(state.items[0]!.wait).toBe(0);
+  });
+
+  it('cancelDash の後は displayPos が計算の位置を返す', () => {
+    const state = makeEffectState();
+    spawnEffects(state, [skillEvent('kakenukeru', { fromPos: { x: 0, y: 0 }, toPos: { x: 100, y: 0 } })]);
+    tickEffects(state, 0.1);
+    cancelDash(state, 'p1');
+    expect(displayPos(state, 'p1', { x: 100, y: 0 })).toEqual({ x: 100, y: 0 });
+    tickEffects(state, 0.1);
+    expect(state.dash.size).toBe(0);
+  });
+
+  it('resetEffects は dash も空にする', () => {
+    const state = makeEffectState();
+    spawnEffects(state, [skillEvent('kyuukouka', { toPos: { x: 50, y: 0 } })]);
+    resetEffects(state);
+    expect(state.dash.size).toBe(0);
   });
 });

@@ -13,7 +13,9 @@ import { UNIT_R, drawBattle, drawDebugOverlay, drawDragPreview } from './render/
 import { bodyCenter } from './render/sprites';
 import { escortDefIds } from './render/objectives-view';
 import { resolveMoveDest } from './core/field';
-import { makeEffectState, resetEffects, spawnEffects, syncDisplayedHp, tickEffects } from './render/effects';
+import {
+  cancelDash, makeEffectState, resetEffects, spawnEffects, syncDisplayedHp, tickEffects,
+} from './render/effects';
 import { makeAnimStore, noteAttacks, resetAnim, updateMotion } from './render/anim';
 import { LOGICAL_H, LOGICAL_W, computeViewport, fitCanvas, logicalToMap, screenToLogical } from './render/viewport';
 import { debugKey, debugLabel, isDebugMode, makeDebugClock, simDt } from './ui/debug';
@@ -532,7 +534,10 @@ function onPointerUp(ev: PointerEvent): void {
       selected = null;
       return;
     case 'moveUnit':
-      if (phase === 'battle') commands.push({ type: 'move', uid: g.uid, dest: g.dest });
+      if (phase === 'battle') {
+        commands.push({ type: 'move', uid: g.uid, dest: g.dest });
+        cancelDash(effects, g.uid);
+      }
       else placeUnit(battle, g.uid, g.dest);
       return;
     case 'none':

@@ -18,9 +18,10 @@ import { LOGICAL_H, LOGICAL_W, MAP_ORIGIN, mapToLogical } from './viewport';
 import {
   BOND_PULSE_DURATION, DAMAGE_TEXT_DURATION, DEFEAT_DURATION,
   HEAL_BEAM_DURATION, HEAL_RING_DURATION, HEAL_TEXT_DURATION, HIT_EFFECT_DURATION,
-  KNOCKBACK_DURATION, SKILL_CAST_DURATION, SPAWN_DURATION, TRAIL_DURATION,
+  KNOCKBACK_DURATION, SPAWN_DURATION, displayLift, displayPos,
 } from './effects';
 import type { EffectState } from './effects';
+import { SKILL_FX, drawSpark, shakeOffset } from './skill-fx';
 import type { BattleState, Vec2 } from '../core/types';
 
 const COLORS = {
@@ -79,6 +80,10 @@ export function drawBattle(
   ctx.fillStyle = COLORS.sea;
   ctx.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
 
+  // たたき割りの強い揺れ。マップと演出だけをずらし、上のバーは動かさない
+  const shake = shakeOf(effects);
+  ctx.save();
+  ctx.translate(shake.x, shake.y);
   drawTerrain(ctx, state, images);
   drawVisitedVillages(ctx, state);
   if (state.stage.darkness === undefined) {
@@ -100,8 +105,21 @@ export function drawBattle(
   drawProjectiles(ctx, state);
   drawEscortMarks(ctx, state, escorts);
   drawEffects(ctx, effects);
+  ctx.restore();
   drawTopBar(ctx, state);
   ctx.restore();
+}
+
+function shakeOf(effects: EffectState): Vec2 {
+  let x = 0;
+  let y = 0;
+  for (const e of effects.items) {
+    if (e.kind !== 'skillFx' || (e.wait ?? 0) > 0) continue;
+    const o = shakeOffset(e.skillId, 1 - e.ttl / e.duration);
+    x += o.x;
+    y += o.y;
+  }
+  return { x, y };
 }
 
 function drawTerrain(ctx: CanvasRenderingContext2D, state: BattleState, images: ImageCache): void {
@@ -305,8 +323,20 @@ function drawUnits(
     const def = defOf(reg, unit.defId);
     const radius = isAlly ? UNIT_R : enemyRadius(unit.maxHp);
     // unit.pos は足元。絵と、絵に付いて回る HPバー・旗・リングは絵の中心を基準に置く
-    const foot = mapToLogical({ x: unit.pos.x + kbOffset.x, y: unit.pos.y + kbOffset.y });
+    const shown = displayPos(effects, unit.uid, unit.pos);
+    const foot = mapToLogical({ x: shown.x + kbOffset.x, y: shown.y + kbOffset.y });
     const p = bodyCenter(foot, def, radius);
+    const lift = displayLift(effects, unit.uid);
+    if (lift > 0) {
+      // 飛んでいる間は足元に影を落とし、絵と HPバーなどを持ち上げる
+      if (phase !== 'marks') {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        ctx.beginPath();
+        ctx.ellipse(foot.x, foot.y, radius * 0.8, radius * 0.35, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      p.y -= lift;
+    }
     if (unit.flying) {
       // 飛んでいる印。足元に影を落とし、絵を少し持ち上げる（HPバーなども絵に付いて上がる）
       if (phase !== 'marks') {
@@ -434,6 +464,7 @@ function drawLighting(ctx: CanvasRenderingContext2D, state: BattleState, nowMs: 
 
 function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void {
   for (const e of effects.items) {
+    if ((e.wait ?? 0) > 0) continue;
     switch (e.kind) {
       case 'hit': {
         const p = atBody(e.pos);
@@ -443,6 +474,8 @@ function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void 
         ctx.beginPath();
         ctx.arc(p.x, p.y, EFFECT_R + (1 - ratio) * (e.critical ? 20 : 14), 0, Math.PI * 2);
         ctx.stroke();
+        // 狙い撃ちが当たったときの大きな火花
+        if (e.critical) drawSpark(ctx, p, 16 + (1 - ratio) * 20, '255, 200, 90', ratio, 10);
         break;
       }
       case 'damageText': {
@@ -493,38 +526,17 @@ function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void 
         ctx.stroke();
         break;
       }
-      case 'skillCast': {
-        const p = atBody(e.pos);
-        const ratio = Math.max(0, e.ttl / SKILL_CAST_DURATION);
-        if (e.skillId === 'funbaru') {
-          ctx.strokeStyle = `rgba(255, 226, 122, ${ratio})`;
-          ctx.lineWidth = 4;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, (1 - ratio) * 34, 0, Math.PI * 2);
-          ctx.stroke();
-        } else if (e.skillId === 'neraiuchi') {
-          ctx.strokeStyle = `rgba(255, 255, 255, ${ratio})`;
-          ctx.lineWidth = 2;
-          const s = 10 + (1 - ratio) * 6;
-          ctx.beginPath();
-          ctx.moveTo(p.x - s, p.y);
-          ctx.lineTo(p.x + s, p.y);
-          ctx.moveTo(p.x, p.y - s);
-          ctx.lineTo(p.x, p.y + s);
-          ctx.stroke();
-        }
-        break;
-      }
-      case 'trail': {
-        const a = atBody(e.from);
-        const b = atBody(e.to);
-        const ratio = Math.max(0, e.ttl / TRAIL_DURATION);
-        ctx.strokeStyle = `rgba(255, 255, 255, ${ratio})`;
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.moveTo(a.x, a.y);
-        ctx.lineTo(b.x, b.y);
-        ctx.stroke();
+      case 'skillFx': {
+        const draw = SKILL_FX[e.skillId];
+        if (!draw) break;
+        const t = 1 - Math.max(0, e.ttl) / e.duration;
+        ctx.save();
+        draw(ctx, {
+          ...e,
+          from: atBody(e.from), to: atBody(e.to),
+          aim: e.aim === null ? null : atBody(e.aim), affected: e.affected.map(atBody),
+        }, t);
+        ctx.restore();
         break;
       }
       case 'defeat': {
