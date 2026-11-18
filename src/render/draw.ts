@@ -329,6 +329,8 @@ function drawUnits(
   for (const unit of state.units) {
     if (unit.retired && !effects.lingering.has(unit.uid)) {
       // 倒れた仲間は、その場で点滅してから消える（HP バー・旗・印は描かない）
+      // 暗いステージは体を膜の下（'bodies'）で描く。膜の上の回（'marks'）には描かない
+      if (phase === 'marks') continue;
       const blink = effects.fallen.get(unit.uid);
       if (blink === undefined || !isBlinkVisible(blink)) continue;
       drawFallenUnit(ctx, reg, unit, effects, images, anim, state.time);
