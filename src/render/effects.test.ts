@@ -82,7 +82,7 @@ describe('spawnEffects', () => {
     const state = makeEffectState();
     const events: SimEvent[] = [{
       type: 'skill', uid: 'p4', defId: 'gau', skillId: 'kakenukeru',
-      fromPos: { x: 0, y: 0 }, toPos: { x: 100, y: 0 },
+      fromPos: { x: 0, y: 0 }, toPos: { x: 100, y: 0 }, aim: null, affected: [],
     }];
     spawnEffects(state, events);
     expect(state.items).toEqual([
@@ -94,7 +94,7 @@ describe('spawnEffects', () => {
     const state = makeEffectState();
     const events: SimEvent[] = [{
       type: 'skill', uid: 'p1', defId: 'roran', skillId: 'funbaru',
-      fromPos: { x: 10, y: 10 }, toPos: { x: 10, y: 10 },
+      fromPos: { x: 10, y: 10 }, toPos: { x: 10, y: 10 }, aim: null, affected: [],
     }];
     spawnEffects(state, events);
     expect(state.items).toEqual([
@@ -106,7 +106,7 @@ describe('spawnEffects', () => {
     const state = makeEffectState();
     const events: SimEvent[] = [{
       type: 'skill', uid: 'p2', defId: 'ines', skillId: 'neraiuchi',
-      fromPos: { x: 5, y: 5 }, toPos: { x: 5, y: 5 },
+      fromPos: { x: 5, y: 5 }, toPos: { x: 5, y: 5 }, aim: null, affected: [],
     }];
     spawnEffects(state, events);
     expect(state.items).toEqual([

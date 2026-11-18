@@ -80,7 +80,7 @@ describe('updateVillages', () => {
     updateVillages(s);
     expect(s.visited).toEqual(['v1']);
     expect(s.events).toEqual([
-      { type: 'villageVisited', uid: players(s)[0]!.uid, defId: players(s)[0]!.defId, villageId: 'v1', text: 'むらだ' },
+      { type: 'villageVisited', uid: players(s)[0]!.uid, defId: players(s)[0]!.defId, villageId: 'v1', text: 'むらだ', fresh: true },
     ]);
   });
 
@@ -238,7 +238,7 @@ describe('updateVillages', () => {
     const s = fresh([{ ...village(recruit('ghost')), text: null }]);
     placeAll(s, FAR);
     players(s)[0]!.pos = { ...NEAR };
-    const other = { recruit: { unitId: 'ally05', level: 1, talk: [] }, pos: { x: 1, y: 2 }, foeUid: null };
+    const other = { recruit: { unitId: 'ally05', level: 1, talk: [] }, pos: { x: 1, y: 2 }, foeUid: null, village: null };
     s.pendingRecruit = other;
     updateVillages(s);
     expect(s.visited).toEqual([]);
@@ -271,11 +271,11 @@ function withPersuasion(): { s: BattleState; foe: Unit } {
 const roranOf = (s: BattleState): Unit => players(s).find((u) => u.defId === 'roran')!;
 
 describe('updatePersuasions', () => {
-  it('決められた仲間が 64px 以内に入ると説得が始まる', () => {
+  it('決められた仲間が 64px 以内に入ると説得が始まる（village は null）', () => {
     const { s, foe } = withPersuasion();
     roranOf(s).pos = { x: 364, y: 300 };
     updatePersuasions(s);
-    expect(s.pendingRecruit).toEqual({ recruit: s.stage.persuasions[0], pos: { x: 300, y: 300 }, foeUid: foe.uid });
+    expect(s.pendingRecruit).toEqual({ recruit: s.stage.persuasions[0], pos: { x: 300, y: 300 }, foeUid: foe.uid, village: null });
   });
 
   it('64px より遠いと始まらない', () => {
@@ -316,7 +316,7 @@ describe('updatePersuasions', () => {
   it('すでに加入の会話があれば何もしない', () => {
     const { s } = withPersuasion();
     roranOf(s).pos = { x: 310, y: 300 };
-    const pending = { recruit: s.stage.persuasions[0]!, pos: { x: 1, y: 2 }, foeUid: null };
+    const pending = { recruit: s.stage.persuasions[0]!, pos: { x: 1, y: 2 }, foeUid: null, village: null };
     s.pendingRecruit = pending;
     updatePersuasions(s);
     expect(s.pendingRecruit).toBe(pending);
@@ -408,5 +408,41 @@ describe('completeRecruit', () => {
     completeRecruit(s);
     step(s, [], 1 / 60);
     expect(s.phase).toBe('victory');
+  });
+});
+
+describe('村の出来事の fresh と pendingRecruit.village', () => {
+  const visit = (s: BattleState) => {
+    placeAll(s, FAR);
+    players(s)[0]!.pos = { ...NEAR };
+    updateVillages(s);
+  };
+  const recruit = (unitId: string) => ({
+    type: 'recruit' as const,
+    recruit: { unitId, level: 1, talk: [{ speaker: null, lineId: null, text: 'よろしく' }] },
+  });
+
+  it('初めての talk の村は fresh が true', () => {
+    const s = fresh([village({ type: 'talk' })]);
+    visit(s);
+    expect(s.events[0]).toMatchObject({ type: 'villageVisited', fresh: true });
+  });
+
+  it('受け取り済みの xp の村は fresh が false で text は VILLAGE_DONE_TEXT', () => {
+    const t = fresh([village({ type: 'xp', amount: 1 })], [rewardKey(fresh([]).stage.id, 'v1')]);
+    visit(t);
+    expect(t.events[0]).toMatchObject({ type: 'villageVisited', fresh: false, text: VILLAGE_DONE_TEXT });
+  });
+
+  it('すでに仲間の recruit の村は fresh が false', () => {
+    const s = fresh([{ ...village(recruit('roran')), text: 'もう 仲間だ' }]);
+    visit(s);
+    expect(s.events[0]).toMatchObject({ type: 'villageVisited', fresh: false });
+  });
+
+  it('recruit の村の pendingRecruit は village に村の id と訪れた仲間の defId を持つ', () => {
+    const s = fresh([{ ...village(recruit('ghost')), text: null }]);
+    visit(s);
+    expect(s.pendingRecruit!.village).toEqual({ villageId: 'v1', visitorDefId: players(s)[0]!.defId });
   });
 });

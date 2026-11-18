@@ -58,18 +58,21 @@ function applyVillage(state: BattleState, u: Unit, v: VillageDef): void {
       const present = state.joined.includes(id) || state.membersBefore.has(id) || state.units.some((p) => p.side === 'player' && p.defId === id);
       if (!present && state.pendingRecruit === null) {
         const pos = resolveMoveDest(state.grid, u.pos, { x: u.pos.x + 24, y: u.pos.y }) ?? u.pos;
-        state.pendingRecruit = { recruit: effect.recruit, pos: { ...pos }, foeUid: null };
+        state.pendingRecruit = {
+          recruit: effect.recruit, pos: { ...pos }, foeUid: null,
+          village: { villageId: v.id, visitorDefId: u.defId },
+        };
         return;
       }
       // すでに仲間のとき。村に文があればそれを出し、無ければ何も出さない
       if (text !== null) {
-        state.events.push({ type: 'villageVisited', uid: u.uid, defId: u.defId, villageId: v.id, text });
+        state.events.push({ type: 'villageVisited', uid: u.uid, defId: u.defId, villageId: v.id, text, fresh: false });
       }
       return;
     }
   }
   if (text === null) return;
-  state.events.push({ type: 'villageVisited', uid: u.uid, defId: u.defId, villageId: v.id, text });
+  state.events.push({ type: 'villageVisited', uid: u.uid, defId: u.defId, villageId: v.id, text, fresh: text !== VILLAGE_DONE_TEXT });
 }
 
 /** 生きている味方を state.units の順に見て、まだ訪れていない村に着いた最初の 1 人に効果を出す */
@@ -102,7 +105,7 @@ export function updatePersuasions(state: BattleState): void {
         && distance(u.pos, foe.pos) <= PERSUADE_RANGE,
     );
     if (!near) continue;
-    state.pendingRecruit = { recruit: def, pos: { ...foe.pos }, foeUid: foe.uid };
+    state.pendingRecruit = { recruit: def, pos: { ...foe.pos }, foeUid: foe.uid, village: null };
     return;
   }
 }

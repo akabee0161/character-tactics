@@ -29,7 +29,10 @@ export const TATAKIWARI_DAMAGE = 14;
 export const TATAKIWARI_RANGE = 32;
 export const DEFAULT_SKILL_COOLDOWN = 10;
 
-export type SkillContext = { state: BattleState; self: Unit; dest?: Vec2 };
+/** 技の見た目を描くための値。効果が書くだけで、計算には使わない */
+export type SkillOut = { aim: Vec2 | null; affected: Vec2[] };
+
+export type SkillContext = { state: BattleState; self: Unit; dest?: Vec2; out: SkillOut };
 
 /**
  * 効果の本体。戻り値は「当てた数」。発動できなかった場合だけ null を返す
@@ -69,7 +72,7 @@ export const SKILL_EFFECTS: Record<string, SkillEffect> = {
     return 0;
   },
 
-  omajinai: ({ state, self }) => {
+  omajinai: ({ state, self, out }) => {
     const range = skillParam(state.reg, 'omajinai', 'range', BOND_RANGE);
     const heal = skillAmount(state.reg, 'omajinai', 'heal', OMAJINAI_HEAL, self.power);
     const candidates = playerUnits(state).filter((u) => distance(self.pos, u.pos) <= range);
@@ -82,6 +85,7 @@ export const SKILL_EFFECTS: Record<string, SkillEffect> = {
     target.hp = Math.min(target.maxHp, target.hp + heal);
     const healed = target.hp - before;
     if (healed > 0) {
+      out.affected.push({ ...target.pos });
       state.events.push({
         type: 'heal', targetPos: { ...target.pos }, amount: healed,
         sourceUid: self.uid, sourceDefId: self.defId, sourcePos: { ...self.pos },
@@ -90,7 +94,7 @@ export const SKILL_EFFECTS: Record<string, SkillEffect> = {
     return 0;
   },
 
-  kakenukeru: ({ state, self, dest }) => {
+  kakenukeru: ({ state, self, dest, out }) => {
     if (!dest) return null;
     // 壁の脇を指しても、足元の箱が壁にかからない位置へ寄せる
     const to = fitInCell(state.grid, dest);
@@ -103,8 +107,10 @@ export const SKILL_EFFECTS: Record<string, SkillEffect> = {
     for (const enemy of hostilesOf(state, self)) {
       if (distanceToSegment(enemy.pos, from, to) > MELEE_RANGE) continue;
       skillHit(state, self, enemy, damage, from);
+      out.affected.push({ ...enemy.pos });
       hits++;
     }
+    out.aim = { ...to };
     self.pos = { ...to };
     self.goalField = null;
     self.goalPos = null;
@@ -112,26 +118,30 @@ export const SKILL_EFFECTS: Record<string, SkillEffect> = {
     return hits;
   },
 
-  hikitsukeru: ({ state, self }) => {
+  hikitsukeru: ({ state, self, out }) => {
     const range = skillParam(state.reg, 'hikitsukeru', 'range', HIKITSUKERU_RANGE);
     self.tauntUntil = state.time + skillParam(state.reg, 'hikitsukeru', 'duration', HIKITSUKERU_DURATION);
-    return hostilesOf(state, self).filter((e) => distance(self.pos, e.pos) <= range).length;
+    const taunted = hostilesOf(state, self).filter((e) => distance(self.pos, e.pos) <= range);
+    for (const e of taunted) out.affected.push({ ...e.pos });
+    return taunted.length;
   },
 
-  hinoame: ({ state, self, dest }) => {
+  hinoame: ({ state, self, dest, out }) => {
     if (!dest) return null;
     const radius = skillParam(state.reg, 'hinoame', 'radius', HINOAME_RADIUS);
     const damage = skillAmount(state.reg, 'hinoame', 'damage', HINOAME_DAMAGE, self.power);
+    out.aim = { ...dest };
     let hits = 0;
     for (const enemy of hostilesOf(state, self)) {
       if (distance(enemy.pos, dest) > radius) continue;
       skillHit(state, self, enemy, damage, self.pos);
+      out.affected.push({ ...enemy.pos });
       hits++;
     }
     return hits;
   },
 
-  tsuki: ({ state, self }) => {
+  tsuki: ({ state, self, out }) => {
     const length = skillParam(state.reg, 'tsuki', 'length', TSUKI_LENGTH);
     const damage = skillAmount(state.reg, 'tsuki', 'damage', TSUKI_DAMAGE, self.power);
     const hostiles = hostilesOf(state, self);
@@ -146,25 +156,29 @@ export const SKILL_EFFECTS: Record<string, SkillEffect> = {
       x: self.pos.x + ((target.pos.x - self.pos.x) / d) * length,
       y: self.pos.y + ((target.pos.y - self.pos.y) / d) * length,
     };
+    out.aim = { ...to };
     let hits = 0;
     for (const enemy of hostiles) {
       if (distanceToSegment(enemy.pos, self.pos, to) > MELEE_RANGE / 2) continue;
       skillHit(state, self, enemy, damage, self.pos);
+      out.affected.push({ ...enemy.pos });
       hits++;
     }
     return hits;
   },
 
-  tatakiwari: ({ state, self }) => {
+  tatakiwari: ({ state, self, out }) => {
     const range = skillParam(state.reg, 'tatakiwari', 'range', TATAKIWARI_RANGE);
     const damage = skillAmount(state.reg, 'tatakiwari', 'damage', TATAKIWARI_DAMAGE, self.power);
     const target = nearestWithin(self.pos, hostilesOf(state, self), range);
     if (!target) return null;
     skillHit(state, self, target, damage, self.pos);
+    out.aim = { ...target.pos };
+    out.affected.push({ ...target.pos });
     return 1;
   },
 
-  hagemasu: ({ state, self }) => {
+  hagemasu: ({ state, self, out }) => {
     const range = skillParam(state.reg, 'hagemasu', 'range', HAGEMASU_RANGE);
     const power = skillParam(state.reg, 'hagemasu', 'power', HAGEMASU_POWER);
     const until = state.time + skillParam(state.reg, 'hagemasu', 'duration', HAGEMASU_DURATION);
@@ -172,11 +186,12 @@ export const SKILL_EFFECTS: Record<string, SkillEffect> = {
     for (const a of allies) {
       a.cheerUntil = until;
       a.cheerPower = power;
+      out.affected.push({ ...a.pos });
     }
     return allies.length;
   },
 
-  kyuukouka: ({ state, self, dest }) => {
+  kyuukouka: ({ state, self, dest, out }) => {
     if (!dest) return null;
     const radius = skillParam(state.reg, 'kyuukouka', 'radius', KYUUKOUKA_RADIUS);
     const damage = skillAmount(state.reg, 'kyuukouka', 'damage', KYUUKOUKA_DAMAGE, self.power);
@@ -187,8 +202,10 @@ export const SKILL_EFFECTS: Record<string, SkillEffect> = {
     for (const enemy of hostilesOf(state, self)) {
       if (distance(enemy.pos, to) > radius) continue;
       skillHit(state, self, enemy, damage, from);
+      out.affected.push({ ...enemy.pos });
       hits++;
     }
+    out.aim = { ...to };
     self.pos = to;
     self.goalField = null;
     self.goalPos = null;
@@ -196,7 +213,7 @@ export const SKILL_EFFECTS: Record<string, SkillEffect> = {
     return hits;
   },
 
-  kekkai: ({ state, self }) => {
+  kekkai: ({ state, self, out }) => {
     const range = skillParam(state.reg, 'kekkai', 'range', KEKKAI_RANGE);
     const resist = skillParam(state.reg, 'kekkai', 'resist', KEKKAI_RESIST);
     const until = state.time + skillParam(state.reg, 'kekkai', 'duration', KEKKAI_DURATION);
@@ -204,6 +221,7 @@ export const SKILL_EFFECTS: Record<string, SkillEffect> = {
     for (const a of allies) {
       a.wardUntil = until;
       a.wardResist = resist;
+      out.affected.push({ ...a.pos });
     }
     return allies.length;
   },
@@ -225,13 +243,14 @@ export function useSkill(state: BattleState, uid: string, dest?: Vec2): boolean 
   if (!effect) return false;
 
   const fromPos = { ...self.pos };
-  if (effect({ state, self, dest }) === null) return false;
+  const out: SkillOut = { aim: null, affected: [] };
+  if (effect({ state, self, dest, out }) === null) return false;
 
   const cooldown = skillParam(state.reg, self.skillId!, 'cooldown', DEFAULT_SKILL_COOLDOWN);
   self.skillCooldownUntil = state.time + cooldown;
   state.events.push({
     type: 'skill', uid: self.uid, defId: self.defId, skillId: self.skillId!,
-    fromPos, toPos: { ...self.pos },
+    fromPos, toPos: { ...self.pos }, aim: out.aim, affected: out.affected,
   });
   return true;
 }
