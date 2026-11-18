@@ -1,6 +1,6 @@
 {
   "id": "npc03",
-  "name": "村の 人",
+  "name": "薬師",
   "color": "#a08860",
   "sprites": { "face": "npc03-face.png" }
 }

@@ -74,6 +74,6 @@
     { "text": "川を越えて一行は先に進む。" }
   ],
   "villages": [
-    {"id": "v1", "col": 2, "row": 9, "effect": {"type": "recruit", "unitId": "ally07", "level": 3, "talk": [{"speaker": "ally07", "text": "村まで 来てくれて ありがとう。\nこの 槍で 力を 貸すよ"}, {"text": "{ally07}が 仲間に 加わった！"}]}}
+    {"id": "v1", "col": 2, "row": 9, "npc": "npc02", "talk": [{"speaker": "npc02", "text": "川の 向こうの 敵に こまって いるんだ。"}, {"speaker": "npc02", "text": "村に 槍の うまい 子が いるよ。 会って いくかい？"}, {"speaker": "$visitor", "text": "会ってみます。"}], "effect": {"type": "recruit", "unitId": "ally07", "level": 3, "talk": [{"speaker": "ally07", "text": "村まで 来てくれて ありがとう。\nこの 槍で 力を 貸すよ"}, {"text": "{ally07}が 仲間に 加わった！"}]}}
   ]
 }

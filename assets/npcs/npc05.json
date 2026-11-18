@@ -1,6 +1,6 @@
 {
   "id": "npc05",
-  "name": "村の 人",
+  "name": "長老",
   "color": "#a08860",
   "sprites": { "face": "npc05-face.png" }
 }

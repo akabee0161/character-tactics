@@ -64,6 +64,6 @@
     { "speaker": "roran", "text": "よし、無事辿り着いた。次に進もう！" }
   ],
   "villages": [
-    {"id": "v1", "col": 3, "row": 4, "text": "村の 人が 『ガルムの 砦は 北だよ』と 教えてくれた", "effect": {"type": "talk"}}
+    {"id": "v1", "col": 3, "row": 4, "text": "{visitor}は 『ガルムの 砦は 北』と 教わった", "npc": "npc01", "talk": [{"speaker": "npc01", "text": "旅の 人かい？ この 先は 魔物が 多いよ。"}, {"speaker": "npc01", "text": "ガルムの 砦は 北だよ。 気を つけてね。"}, {"speaker": "$visitor", "text": "ありがとう。 行ってきます！"}], "effect": {"type": "talk"}}
   ]
 }

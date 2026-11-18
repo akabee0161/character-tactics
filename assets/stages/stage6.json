@@ -74,7 +74,7 @@
     { "speaker": "ines", "text": "やっと越えたわね。\n道はまだ続いているわ。" }
   ],
   "villages": [
-    {"id": "v1", "col": 3, "row": 10, "text": "村の 鍛冶屋が 武器を といでくれた！ 攻撃力が 上がった", "effect": {"type": "powerUp", "amount": 2}}
+    {"id": "v1", "col": 3, "row": 10, "text": "{visitor}の 攻撃力が 上がった！", "npc": "npc04", "talk": [{"speaker": "npc04", "text": "いい 武器だ。 といで あげよう。"}, {"speaker": "$visitor", "text": "お願いします！"}], "effect": {"type": "powerUp", "amount": 2}}
   ],
   "joins": [
     {"unitId": "ally12", "level": 6, "talk": [{"speaker": "ally12", "text": "石切り場の 見張りだったの。\n遠くの 敵なら 私に 任せて！"}, {"speaker": "roran", "text": "助かるよ。よろしく、{ally12}！"}, {"text": "{ally12}が 仲間に 加わった！"}]}

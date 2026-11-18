@@ -69,7 +69,7 @@
     { "speaker": "gau", "text": "抜けた！この先には何があるんだ？" }
   ],
   "villages": [
-    {"id": "v1", "col": 11, "row": 10, "text": "村の 人が けがの 手当てを してくれた！", "effect": {"type": "heal"}}
+    {"id": "v1", "col": 11, "row": 10, "text": "村の 人に 手当てを してもらい、 みんなの HPが 全部 回復した！", "npc": "npc03", "talk": [{"speaker": "npc03", "text": "ひどい けがだね。 手当てを して あげよう。"}, {"speaker": "$visitor", "text": "助かります。"}], "effect": {"type": "heal"}}
   ],
   "joins": [
     {"unitId": "ally09", "level": 5, "talk": [{"speaker": "ally09", "text": "森の 木こりを していたが、\nそろそろ 腕試しに 出たいと 思っていたんだ。"}, {"speaker": "roran", "text": "頼もしいね。よろしく、{ally09}！"}, {"text": "{ally09}が 仲間に 加わった！"}]}

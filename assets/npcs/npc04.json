@@ -1,6 +1,6 @@
 {
   "id": "npc04",
-  "name": "村の 人",
+  "name": "鍛冶屋",
   "color": "#a08860",
   "sprites": { "face": "npc04-face.png" }
 }
