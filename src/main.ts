@@ -3,7 +3,9 @@ import { makeImageCache } from './render/images';
 import { lookupDef, skillParam } from './engine/registry';
 import { completeRecruit } from './core/events';
 import { MAX_PARTY } from './core/constants';
-import { pickDialogue, pickRecruitTalk, pickStageIntro, pickStageOutro } from './core/dialogue';
+import {
+  pickDialogue, pickRecruitTalk, pickStageIntro, pickStageOutro, pickVillageTalk,
+} from './core/dialogue';
 import { SKILL_EFFECT_IDS } from './core/skills';
 import { beginBattle, canPlaceAt, createBattleState, placeUnit, rebuildForSortie, statsForLevel } from './core/state';
 import { canChooseSortie, initialSortie, sortieCandidates, sortieProgress } from './core/sortie';
@@ -39,6 +41,8 @@ import { stageTapTarget } from './ui/select-tap';
 import { allyCardFromSave, cardFromDef, cardFromGain, cardFromUnit, enemyCard, stageEnemies } from './ui/stat-card';
 import type { StatCard } from './ui/stat-card';
 import type { StageDef } from './engine/schema';
+import { nextInterrupt } from './ui/interrupts';
+import type { Interrupt } from './ui/interrupts';
 import { levelUpCard, mergeLevelUps } from './ui/levelup';
 import type { LevelUpEvent } from './ui/levelup';
 import { partyIds } from './core/party';
@@ -288,6 +292,15 @@ function endTalk(): void {
   phase = 'placement';
 }
 
+/** phase が 'event' の会話が、加入の会話（true）か村の会話（false）か。村と説得が同じ tick に起きても取り違えない */
+let eventTalkIsRecruit = false;
+
+/** 村の会話を終える。残っているレベルアップのカードがあれば先に出し、なければ戦闘へ戻る */
+function endVillageTalk(): void {
+  talk = null;
+  phase = levelUps.length > 0 ? 'levelup' : 'battle';
+}
+
 /** 加入の会話を終える。仲間を足して戦闘へ戻る */
 function endRecruitTalk(state: BattleState): void {
   completeRecruit(state);
@@ -355,7 +368,11 @@ function onPointerDown(ev: PointerEvent): void {
       // 加入の会話。「飛ばす」は無く、タップは必ず 1 行進むだけ
       if (!talk || !battle) return;
       advanceTalk(talk, talkMeasure, talkMaxWidth, TALK_MAX_LINES);
-      if (talk.done) endRecruitTalk(battle);
+      if (talk.done) {
+        // 加入の会話なら仲間を足す。村の会話なら、残るカードがあれば先に出す
+        if (eventTalkIsRecruit) endRecruitTalk(battle);
+        else endVillageTalk();
+      }
       return;
     }
 
@@ -581,6 +598,7 @@ function update(realDt: number): void {
   tickFallen(fallen, realDt);
 
   accumulator += dt;
+  let interrupt: Interrupt | null = null;
   while (accumulator >= FIXED_DT) {
     accumulator -= FIXED_DT;
     const batch = commands.splice(0, commands.length);
@@ -590,28 +608,39 @@ function update(realDt: number): void {
     noteAttacks(anim, battle.events, battle.time, attackDuration);
     pushSpeech(speech, pickDialogue(battle.reg, battle.events));
     levelUps = mergeLevelUps(levelUps, battle.events);
-    if (levelUps.length > 0) break; // レベルアップの札を出す間は戦闘を止める
-    if (battle.pendingRecruit !== null) break; // 加入の会話の間は戦闘を止める
+    // 村の会話・加入の会話・レベルアップのカードの間は戦闘を止める（先に出す順は nextInterrupt）
+    interrupt = nextInterrupt(battle.events, levelUps, battle.pendingRecruit);
+    if (interrupt !== null) break;
   }
-  if (levelUps.length > 0) {
-    // 札を出し終えてから、加入の会話・勝利の会話に入る（battle の状態は止まったまま残る）
+  if (interrupt !== null) {
+    // 会話・カードのあとに、前のタップで構えた必殺技が勝手に出ないようにする。battle の状態は止まったまま残る
     accumulator = 0;
-    pendingSkill = null; // 札のあとに、前のタップで構えた必殺技が勝手に出ないようにする
+    pendingSkill = null;
     pointerStart = null;
     dragMap = null;
     clearSpeech(speech);
     resetAnim(anim);
-    phase = 'levelup';
-    return;
-  }
-  if (battle.pendingRecruit !== null) {
-    accumulator = 0;
-    pendingSkill = null; // 会話のあとに、前のタップで構えた必殺技が勝手に出ないようにする
-    clearSpeech(speech);
-    resetAnim(anim);
-    talk = makeTalkState(
-      pickRecruitTalk(registry, battle.pendingRecruit.recruit), talkMeasure, talkMaxWidth, TALK_MAX_LINES,
-    );
+    if (interrupt.kind === 'levelUp') {
+      phase = 'levelup';
+      return;
+    }
+    if (interrupt.kind === 'village') {
+      talk = makeTalkState(
+        pickVillageTalk(registry, battle.stage, interrupt.villageId, interrupt.visitorDefId),
+        talkMeasure, talkMaxWidth, TALK_MAX_LINES,
+      );
+      eventTalkIsRecruit = false;
+      if (talk.done) endVillageTalk();
+      else phase = 'event';
+      return;
+    }
+    // 村の加入は村人との会話から、説得は加入の会話だけ
+    const pending = battle.pendingRecruit!;
+    const lines = pending.village !== null
+      ? pickVillageTalk(registry, battle.stage, pending.village.villageId, pending.village.visitorDefId)
+      : pickRecruitTalk(registry, pending.recruit);
+    talk = makeTalkState(lines, talkMeasure, talkMaxWidth, TALK_MAX_LINES);
+    eventTalkIsRecruit = true;
     if (talk.done) endRecruitTalk(battle);
     else phase = 'event';
     return;
