@@ -53,10 +53,12 @@ export type EffectState = {
   knockback: Map<string, { ttl: number; dir: Vec2 }>;
   displayedHp: Map<string, number>;
   dash: Map<string, Dash>;
+  /** 滑る技で倒された敵の uid → 残りの秒。計算では先に退場しているが、見た目が通るまで姿を残す */
+  lingering: Map<string, number>;
 };
 
 export function makeEffectState(): EffectState {
-  return { items: [], knockback: new Map(), displayedHp: new Map(), dash: new Map() };
+  return { items: [], knockback: new Map(), displayedHp: new Map(), dash: new Map(), lingering: new Map() };
 }
 
 /** 滑っている間は from→to を線形に補間した位置、それ以外は計算の位置 */
@@ -86,6 +88,7 @@ export function resetEffects(state: EffectState): void {
   state.knockback.clear();
   state.displayedHp.clear();
   state.dash.clear();
+  state.lingering.clear();
 }
 
 function knockbackDir(from: Vec2, to: Vec2): Vec2 {
@@ -111,17 +114,20 @@ export function spawnEffects(state: EffectState, events: SimEvent[]): void {
   for (const ev of events) {
     if (ev.type === 'skill' && DASH_DURATION[ev.skillId] !== undefined) dashers.set(ev.uid, ev);
   }
+  /** 滑る技が出した出来事を、見た目がその場所を通る（着く）時刻まで待たせる秒数。滑る技でなければ undefined */
+  const dashWait = (sourceUid: string | null, at: Vec2): number | undefined => {
+    const dasher = sourceUid === null ? undefined : dashers.get(sourceUid);
+    if (!dasher) return undefined;
+    const dur = DASH_DURATION[dasher.skillId]!;
+    // 駆け抜けるは通り道を通る時刻、急降下は着く時刻
+    return dasher.skillId === 'kakenukeru' ? dur * alongSegment(at, dasher.fromPos, dasher.toPos) : dur;
+  };
   for (const ev of events) {
     if (ev.type === 'hit') {
-      const dasher = dashers.get(ev.sourceUid);
-      let wait: number | undefined;
-      if (dasher) {
-        const dur = DASH_DURATION[dasher.skillId]!;
-        // 駆け抜けるは通り道を通る時刻、急降下は着く時刻
-        wait = dasher.skillId === 'kakenukeru'
-          ? dur * alongSegment(ev.targetPos, dasher.fromPos, dasher.toPos)
-          : dur;
-      }
+      let wait = dashWait(ev.sourceUid, ev.targetPos);
+      // 滑っている最中の仲間への攻撃は、着くまで待たせる（行き先で先に殴られて見えないように）
+      const sliding = state.dash.get(ev.targetUid);
+      if (sliding) wait = Math.max(wait ?? 0, sliding.duration - sliding.elapsed);
       const w = wait === undefined ? {} : { wait };
       state.items.push({ kind: 'hit', pos: { ...ev.targetPos }, ttl: HIT_EFFECT_DURATION, critical: ev.neraiuchi, ...w });
       state.items.push({
@@ -148,7 +154,9 @@ export function spawnEffects(state: EffectState, events: SimEvent[]): void {
         });
       }
     } else if (ev.type === 'unitDefeated') {
-      state.items.push({ kind: 'defeat', pos: { ...ev.pos }, ttl: DEFEAT_DURATION });
+      const wait = dashWait(ev.byUid, ev.pos);
+      state.items.push({ kind: 'defeat', pos: { ...ev.pos }, ttl: DEFEAT_DURATION, ...(wait === undefined ? {} : { wait }) });
+      if (wait !== undefined) state.lingering.set(ev.uid, wait);
     } else if (ev.type === 'bondSupport') {
       state.items.push({ kind: 'bondPulse', pos: { ...ev.pos }, ttl: BOND_PULSE_DURATION });
     } else if (ev.type === 'enemySpawned') {
@@ -169,6 +177,10 @@ export function tickEffects(state: EffectState, dt: number): void {
   }
   state.items = state.items.filter((e) => e.ttl > 0);
 
+  for (const [uid, left] of state.lingering) {
+    if (left - dt <= 0) state.lingering.delete(uid);
+    else state.lingering.set(uid, left - dt);
+  }
   for (const [uid, d] of state.dash) {
     d.elapsed += dt;
     if (d.elapsed >= d.duration) state.dash.delete(uid);

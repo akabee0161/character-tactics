@@ -314,7 +314,7 @@ function drawUnits(
   phase: 'all' | 'bodies' | 'marks',
 ): void {
   for (const unit of state.units) {
-    if (unit.retired) continue;
+    if (unit.retired && !effects.lingering.has(unit.uid)) continue;
     const isAlly = unit.side === 'player';
     const kb = effects.knockback.get(unit.uid);
     const kbOffset = kb
@@ -462,7 +462,7 @@ function drawLighting(ctx: CanvasRenderingContext2D, state: BattleState, nowMs: 
   ctx.restore();
 }
 
-function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void {
+export function drawEffects(ctx: CanvasRenderingContext2D, effects: EffectState): void {
   for (const e of effects.items) {
     if ((e.wait ?? 0) > 0) continue;
     switch (e.kind) {

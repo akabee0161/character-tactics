@@ -113,7 +113,7 @@ describe('tickEffects', () => {
   it('dt の分だけ ttl を減らす', () => {
     const state: EffectState = {
       items: [{ kind: 'hit', pos: { x: 0, y: 0 }, ttl: 0.25, critical: false }],
-      knockback: new Map(), displayedHp: new Map(), dash: new Map(),
+      knockback: new Map(), displayedHp: new Map(), dash: new Map(), lingering: new Map(),
     };
     tickEffects(state, 0.1);
     expect(state.items[0]!.ttl).toBeCloseTo(0.15);
@@ -122,14 +122,14 @@ describe('tickEffects', () => {
   it('ttl が 0 以下になったら取り除く', () => {
     const state: EffectState = {
       items: [{ kind: 'hit', pos: { x: 0, y: 0 }, ttl: 0.05, critical: false }],
-      knockback: new Map(), displayedHp: new Map(), dash: new Map(),
+      knockback: new Map(), displayedHp: new Map(), dash: new Map(), lingering: new Map(),
     };
     tickEffects(state, 0.1);
     expect(state.items).toEqual([]);
   });
 
   it('ノックバックの ttl が尽きたら削除する', () => {
-    const state: EffectState = { items: [], knockback: new Map([['e1', { ttl: 0.05, dir: { x: 1, y: 0 } }]]), displayedHp: new Map(), dash: new Map() };
+    const state: EffectState = { items: [], knockback: new Map([['e1', { ttl: 0.05, dir: { x: 1, y: 0 } }]]), displayedHp: new Map(), dash: new Map(), lingering: new Map() };
     tickEffects(state, 0.1);
     expect(state.knockback.has('e1')).toBe(false);
   });
@@ -140,7 +140,7 @@ describe('resetEffects', () => {
     const state: EffectState = {
       items: [{ kind: 'hit', pos: { x: 0, y: 0 }, ttl: 0.25, critical: false }],
       knockback: new Map([['e1', { ttl: 0.1, dir: { x: 1, y: 0 } }]]),
-      displayedHp: new Map([['p1', 40]]), dash: new Map(),
+      displayedHp: new Map([['p1', 40]]), dash: new Map(), lingering: new Map(),
     };
     resetEffects(state);
     expect(state.items).toEqual([]);
@@ -287,5 +287,50 @@ describe('技の見た目（skillFx）', () => {
     spawnEffects(state, [skillEvent('kyuukouka', { toPos: { x: 50, y: 0 } })]);
     resetEffects(state);
     expect(state.dash.size).toBe(0);
+  });
+});
+
+describe('滑る技で倒した敵・滑っている仲間への攻撃', () => {
+  const defeated = (uid: string, byUid: string, pos: { x: number; y: number }): SimEvent => ({
+    type: 'unitDefeated', uid, defId: 'narazumono', byUid, byDefId: 'gau', pos,
+  });
+
+  it('駆け抜けるで倒した敵の白い輪は、その敵を通る時刻まで wait し、それまで姿が残る', () => {
+    const state = makeEffectState();
+    spawnEffects(state, [
+      defeated('e3', 'p1', { x: 75, y: 0 }),
+      skillEvent('kakenukeru', { fromPos: { x: 0, y: 0 }, toPos: { x: 100, y: 0 } }),
+    ]);
+    const ring = state.items.find((i) => i.kind === 'defeat')!;
+    expect(ring.wait).toBeCloseTo(DASH_DURATION.kakenukeru! * 0.75);
+    expect(state.lingering.get('e3')).toBeCloseTo(DASH_DURATION.kakenukeru! * 0.75);
+    tickEffects(state, 0.5);
+    expect(state.lingering.has('e3')).toBe(false);
+  });
+
+  it('急降下で倒した敵は着く時刻まで姿が残る', () => {
+    const state = makeEffectState();
+    spawnEffects(state, [
+      defeated('e1', 'p1', { x: 90, y: 0 }),
+      skillEvent('kyuukouka', { fromPos: { x: 0, y: 0 }, toPos: { x: 100, y: 0 } }),
+    ]);
+    expect(state.items.find((i) => i.kind === 'defeat')!.wait).toBe(DASH_DURATION.kyuukouka);
+    expect(state.lingering.get('e1')).toBe(DASH_DURATION.kyuukouka);
+  });
+
+  it('滑らない技で倒した敵は wait も lingering も無い', () => {
+    const state = makeEffectState();
+    spawnEffects(state, [defeated('e1', 'p1', { x: 5, y: 5 }), skillEvent('hinoame')]);
+    expect(state.items.find((i) => i.kind === 'defeat')!.wait).toBeUndefined();
+    expect(state.lingering.size).toBe(0);
+  });
+
+  it('滑っている仲間への攻撃の hit は、着く時刻まで wait する', () => {
+    const state = makeEffectState();
+    spawnEffects(state, [skillEvent('kakenukeru', { fromPos: { x: 0, y: 0 }, toPos: { x: 100, y: 0 } })]);
+    tickEffects(state, 0.2);
+    spawnEffects(state, [hitEvent({ sourceUid: 'e9', targetUid: 'p1', targetPos: { x: 100, y: 0 } })]);
+    const hit = state.items.find((i) => i.kind === 'hit')!;
+    expect(hit.wait).toBeCloseTo(DASH_DURATION.kakenukeru! - 0.2);
   });
 });
