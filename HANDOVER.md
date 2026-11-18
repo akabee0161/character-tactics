@@ -12,7 +12,7 @@
 7. テストプレイ（全部の工程が終わってから依頼者が行う）
 段階: 実装計画
 次にやること:
-- 工程 6 の実装計画（`docs/superpowers/plans/2026-11-18-clear-score.md`）を依頼者が読み、進め方を決める
+- 工程 6 の実装計画（`docs/superpowers/plans/2026-11-18-clear-score.md`）を、次のセッションでネイティブ（executing-plans）で実装する。Task 1 から
 - 工程 5 の村の会話の文は、依頼者があとで直す（下書きのまま入っている）
 
 工程 5 の結果（2026-11-18、feat/battle-direction）:
