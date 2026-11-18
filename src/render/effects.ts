@@ -9,6 +9,9 @@ export const HEAL_BEAM_DURATION = 0.3;
 export const DEFEAT_DURATION = 0.5;
 export const BOND_PULSE_DURATION = 0.3;
 export const SPAWN_DURATION = 0.5;
+/** 倒れた仲間が消えるまでの点滅（画面の時間の秒） */
+export const FALLEN_BLINK_DURATION = 2.5;
+const BLINK_STEP = 0.15;
 export const KNOCKBACK_DURATION = 0.15;
 export const HP_BAR_CATCHUP_RATE = 6;
 /** 発動可能を示す枠の明滅の周期（秒） */
@@ -55,10 +58,18 @@ export type EffectState = {
   dash: Map<string, Dash>;
   /** 滑る技で倒された敵の uid → 残りの秒。計算では先に退場しているが、見た目が通るまで姿を残す */
   lingering: Map<string, number>;
+  /** 倒れた仲間の uid → 点滅の残りの秒 */
+  fallen: Map<string, number>;
 };
 
 export function makeEffectState(): EffectState {
-  return { items: [], knockback: new Map(), displayedHp: new Map(), dash: new Map(), lingering: new Map() };
+  return { items: [], knockback: new Map(), displayedHp: new Map(), dash: new Map(), lingering: new Map(), fallen: new Map() };
+}
+
+/** 点滅の残りの秒から、今見える側かどうか（始めは見える。0.15 秒ごとに切り替わる） */
+export function isBlinkVisible(remaining: number): boolean {
+  const elapsed = FALLEN_BLINK_DURATION - remaining;
+  return Math.floor(elapsed / BLINK_STEP) % 2 === 0;
 }
 
 /** 滑っている間は from→to を線形に補間した位置、それ以外は計算の位置 */
@@ -89,6 +100,7 @@ export function resetEffects(state: EffectState): void {
   state.displayedHp.clear();
   state.dash.clear();
   state.lingering.clear();
+  state.fallen.clear();
 }
 
 function knockbackDir(from: Vec2, to: Vec2): Vec2 {
@@ -157,6 +169,8 @@ export function spawnEffects(state: EffectState, events: SimEvent[]): void {
       const wait = dashWait(ev.byUid, ev.pos);
       state.items.push({ kind: 'defeat', pos: { ...ev.pos }, ttl: DEFEAT_DURATION, ...(wait === undefined ? {} : { wait }) });
       if (wait !== undefined) state.lingering.set(ev.uid, wait);
+    } else if (ev.type === 'unitRetired') {
+      state.fallen.set(ev.uid, FALLEN_BLINK_DURATION);
     } else if (ev.type === 'bondSupport') {
       state.items.push({ kind: 'bondPulse', pos: { ...ev.pos }, ttl: BOND_PULSE_DURATION });
     } else if (ev.type === 'enemySpawned') {
@@ -177,6 +191,10 @@ export function tickEffects(state: EffectState, dt: number): void {
   }
   state.items = state.items.filter((e) => e.ttl > 0);
 
+  for (const [uid, left] of state.fallen) {
+    if (left - dt <= 0) state.fallen.delete(uid);
+    else state.fallen.set(uid, left - dt);
+  }
   for (const [uid, left] of state.lingering) {
     if (left - dt <= 0) state.lingering.delete(uid);
     else state.lingering.set(uid, left - dt);

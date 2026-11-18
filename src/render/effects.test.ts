@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   BOND_PULSE_DURATION, DAMAGE_TEXT_DURATION, DEFEAT_DURATION, HEAL_BEAM_DURATION,
   HEAL_RING_DURATION, HEAL_TEXT_DURATION, HIT_EFFECT_DURATION, HP_BAR_CATCHUP_RATE,
-  READY_GLOW_PERIOD, readyGlowAlpha, cancelDash, displayPos,
+  FALLEN_BLINK_DURATION, READY_GLOW_PERIOD, cancelDash, displayPos, isBlinkVisible, readyGlowAlpha,
   makeEffectState, resetEffects, spawnEffects, syncDisplayedHp, tickEffects,
 } from './effects';
 import type { EffectState } from './effects';
@@ -113,7 +113,7 @@ describe('tickEffects', () => {
   it('dt の分だけ ttl を減らす', () => {
     const state: EffectState = {
       items: [{ kind: 'hit', pos: { x: 0, y: 0 }, ttl: 0.25, critical: false }],
-      knockback: new Map(), displayedHp: new Map(), dash: new Map(), lingering: new Map(),
+      knockback: new Map(), displayedHp: new Map(), dash: new Map(), lingering: new Map(), fallen: new Map(),
     };
     tickEffects(state, 0.1);
     expect(state.items[0]!.ttl).toBeCloseTo(0.15);
@@ -122,14 +122,14 @@ describe('tickEffects', () => {
   it('ttl が 0 以下になったら取り除く', () => {
     const state: EffectState = {
       items: [{ kind: 'hit', pos: { x: 0, y: 0 }, ttl: 0.05, critical: false }],
-      knockback: new Map(), displayedHp: new Map(), dash: new Map(), lingering: new Map(),
+      knockback: new Map(), displayedHp: new Map(), dash: new Map(), lingering: new Map(), fallen: new Map(),
     };
     tickEffects(state, 0.1);
     expect(state.items).toEqual([]);
   });
 
   it('ノックバックの ttl が尽きたら削除する', () => {
-    const state: EffectState = { items: [], knockback: new Map([['e1', { ttl: 0.05, dir: { x: 1, y: 0 } }]]), displayedHp: new Map(), dash: new Map(), lingering: new Map() };
+    const state: EffectState = { items: [], knockback: new Map([['e1', { ttl: 0.05, dir: { x: 1, y: 0 } }]]), displayedHp: new Map(), dash: new Map(), lingering: new Map(), fallen: new Map() };
     tickEffects(state, 0.1);
     expect(state.knockback.has('e1')).toBe(false);
   });
@@ -140,7 +140,7 @@ describe('resetEffects', () => {
     const state: EffectState = {
       items: [{ kind: 'hit', pos: { x: 0, y: 0 }, ttl: 0.25, critical: false }],
       knockback: new Map([['e1', { ttl: 0.1, dir: { x: 1, y: 0 } }]]),
-      displayedHp: new Map([['p1', 40]]), dash: new Map(), lingering: new Map(),
+      displayedHp: new Map([['p1', 40]]), dash: new Map(), lingering: new Map(), fallen: new Map(),
     };
     resetEffects(state);
     expect(state.items).toEqual([]);
@@ -332,5 +332,32 @@ describe('滑る技で倒した敵・滑っている仲間への攻撃', () => {
     spawnEffects(state, [hitEvent({ sourceUid: 'e9', targetUid: 'p1', targetPos: { x: 100, y: 0 } })]);
     const hit = state.items.find((i) => i.kind === 'hit')!;
     expect(hit.wait).toBeCloseTo(DASH_DURATION.kakenukeru! - 0.2);
+  });
+});
+
+describe('倒れた仲間の点滅', () => {
+  it('unitRetired で点滅を 2.5 秒始め、時間がたつと消える', () => {
+    const state = makeEffectState();
+    spawnEffects(state, [{ type: 'unitRetired', uid: 'p1', defId: 'roran' }]);
+    expect(state.fallen.get('p1')).toBe(FALLEN_BLINK_DURATION);
+    expect(FALLEN_BLINK_DURATION).toBe(2.5);
+    tickEffects(state, 1);
+    expect(state.fallen.get('p1')).toBeCloseTo(1.5);
+    tickEffects(state, 1.5);
+    expect(state.fallen.has('p1')).toBe(false);
+  });
+
+  it('isBlinkVisible は 0.15 秒ごとに切り替わる', () => {
+    expect(isBlinkVisible(2.5)).toBe(true);
+    expect(isBlinkVisible(2.5 - 0.1)).toBe(true);
+    expect(isBlinkVisible(2.5 - 0.2)).toBe(false);
+    expect(isBlinkVisible(2.5 - 0.4)).toBe(true);
+  });
+
+  it('resetEffects は点滅も空にする', () => {
+    const state = makeEffectState();
+    spawnEffects(state, [{ type: 'unitRetired', uid: 'p1', defId: 'roran' }]);
+    resetEffects(state);
+    expect(state.fallen.size).toBe(0);
   });
 });

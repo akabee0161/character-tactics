@@ -18,11 +18,11 @@ import { LOGICAL_H, LOGICAL_W, MAP_ORIGIN, mapToLogical } from './viewport';
 import {
   BOND_PULSE_DURATION, DAMAGE_TEXT_DURATION, DEFEAT_DURATION,
   HEAL_BEAM_DURATION, HEAL_RING_DURATION, HEAL_TEXT_DURATION, HIT_EFFECT_DURATION,
-  KNOCKBACK_DURATION, SPAWN_DURATION, displayLift, displayPos,
+  KNOCKBACK_DURATION, SPAWN_DURATION, displayLift, displayPos, isBlinkVisible,
 } from './effects';
 import type { EffectState } from './effects';
 import { SKILL_FX, drawSpark, shakeOffset } from './skill-fx';
-import type { BattleState, Vec2 } from '../core/types';
+import type { BattleState, Unit, Vec2 } from '../core/types';
 
 const COLORS = {
   sea: '#12303f',
@@ -303,6 +303,19 @@ function drawHpBar(
 /** 飛行のユニットの絵を持ち上げる高さ（px） */
 const FLYING_LIFT = 5;
 
+/** 点滅中の倒れた仲間。コマは今の frameFor のまま、体だけを描く */
+function drawFallenUnit(
+  ctx: CanvasRenderingContext2D, reg: Registry, unit: Unit, effects: EffectState,
+  images: ImageCache, anim: AnimStore, time: number,
+): void {
+  const def = defOf(reg, unit.defId);
+  const foot = mapToLogical(displayPos(effects, unit.uid, unit.pos));
+  const p = bodyCenter(foot, def, UNIT_R);
+  const sheet = def.sprites.map;
+  const frame = sheet === null ? STILL : frameFor(anim, unit.uid, sheet, time);
+  drawMapUnit(ctx, p, UNIT_R, def, images, frame);
+}
+
 function drawUnits(
   ctx: CanvasRenderingContext2D,
   reg: Registry,
@@ -314,7 +327,13 @@ function drawUnits(
   phase: 'all' | 'bodies' | 'marks',
 ): void {
   for (const unit of state.units) {
-    if (unit.retired && !effects.lingering.has(unit.uid)) continue;
+    if (unit.retired && !effects.lingering.has(unit.uid)) {
+      // 倒れた仲間は、その場で点滅してから消える（HP バー・旗・印は描かない）
+      const blink = effects.fallen.get(unit.uid);
+      if (blink === undefined || !isBlinkVisible(blink)) continue;
+      drawFallenUnit(ctx, reg, unit, effects, images, anim, state.time);
+      continue;
+    }
     const isAlly = unit.side === 'player';
     const kb = effects.knockback.get(unit.uid);
     const kbOffset = kb
