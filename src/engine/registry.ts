@@ -2,7 +2,7 @@ import { MAX_MEMBERS } from './limits';
 import { fillNames } from './names';
 import {
   validateBondsFile, validateEnemyDef, validateGrowthFile, validateLinesFile, validateNpcDef,
-  validateSkillsFile, validateStageDef, validateUnitDef,
+  validateSkillsFile, validateStageDef, validateUnitDef, VISITOR_SPEAKER,
 } from './schema';
 import type {
   BondDef, EnemyDef, GrowthDef, IntroLine, NpcDef, RecruitDef, SkillDef, Sprites, StageDef, UnitDef, Validated,
@@ -226,9 +226,11 @@ export function buildRegistry(
         }
       });
     });
-    const checkLines = (kind: string, lines: IntroLine[] | undefined): void => {
+    const checkLines = (kind: string, lines: IntroLine[] | undefined, allowVisitor = false): void => {
       lines?.forEach((line, i) => {
-        if (line.speaker !== null && lookupSpeaker(reg, line.speaker) === null) {
+        if (allowVisitor && line.speaker === VISITOR_SPEAKER) {
+          // 訪れた仲間は遊ぶたびに違うので、話し手の ID は引かない
+        } else if (line.speaker !== null && lookupSpeaker(reg, line.speaker) === null) {
           errors.push({ file, path: `${kind}[${i}].speaker`, reason: `しらない はなして: ${line.speaker}` });
         }
         if (line.lineId !== null && !reg.lines.has(line.lineId)) {
@@ -268,6 +270,10 @@ export function buildRegistry(
     });
     stage.villages.forEach((v, i) => {
       if (v.effect.type === 'recruit') checkRecruit(`villages[${i}].effect`, v.effect.recruit);
+      if (v.npc !== null && !reg.npcs.has(v.npc)) {
+        errors.push({ file, path: `villages[${i}].npc`, reason: `npcs に ない id: ${v.npc}` });
+      }
+      checkLines(`villages[${i}].talk`, v.talk, true);
     });
   }
 
@@ -293,8 +299,8 @@ export function buildRegistry(
   const originalEnemyNames = new Map([...reg.enemies].map(([id, d]) => [id, d.name]));
   const nameOf = (id: string): string | null =>
     reg.units.get(id)?.name ?? originalEnemyNames.get(id) ?? null;
-  const fill = (file: string, path: string, text: string): string => {
-    const r = fillNames(text, nameOf);
+  const fill = (file: string, path: string, text: string, keep: readonly string[] = []): string => {
+    const r = fillNames(text, nameOf, keep);
     for (const id of r.unknown) errors.push({ file, path, reason: `しらない なまえの id: ${id}` });
     return r.text;
   };
@@ -313,7 +319,12 @@ export function buildRegistry(
     stage.joins.forEach((j, i) => fillLines(`joins[${i}].talk`, j.talk));
     stage.persuasions.forEach((p, i) => fillLines(`persuasions[${i}].talk`, p.talk));
     stage.villages.forEach((v, i) => {
-      if (v.text !== null) v.text = fill(file, `villages[${i}].text`, v.text);
+      // 村の talk と text の {visitor} は、訪れた仲間が決まる実行時に置き換える
+      const keep = ['visitor'];
+      if (v.text !== null) v.text = fill(file, `villages[${i}].text`, v.text, keep);
+      v.talk.forEach((line, j) => {
+        if (line.text !== null) line.text = fill(file, `villages[${i}].talk[${j}].text`, line.text, keep);
+      });
       if (v.effect.type === 'recruit') fillLines(`villages[${i}].effect.talk`, v.effect.recruit.talk);
     });
   }

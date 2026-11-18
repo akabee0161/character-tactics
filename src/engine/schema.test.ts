@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  validateBondsFile, validateEnemyDef, validateGrowthFile, validateLinesFile, validateNpcDef, validateSkillsFile,
+  validateBondsFile, validateEnemyDef, validateGrowthFile, validateLinesFile, validateNpcDef, validateSkillsFile, VISITOR_SPEAKER,
   validateStageDef, validateUnitDef,
 } from './schema';
 
@@ -974,7 +974,7 @@ describe('validateStageDef: joins / persuasions / villages', () => {
     expect(r.value.joins).toEqual([{ unitId: 'ally05', level: 2, talk: [{ speaker: 'roran', text: 'よろしく', lineId: null }] }]);
     expect(r.value.persuasions[0]!.foeId).toBe('ally06-foe');
     expect(r.value.persuasions[0]!.persuader).toBe('mist');
-    expect(r.value.villages[0]).toEqual({ id: 'v1', col: 2, row: 2, text: '休めそうだ', effect: { type: 'heal' } });
+    expect(r.value.villages[0]).toEqual({ id: 'v1', col: 2, row: 2, text: '休めそうだ', npc: null, talk: [], effect: { type: 'heal' } });
     const v2 = r.value.villages[1]!;
     expect(v2.text).toBeNull();
     expect(v2.effect.type === 'recruit' && v2.effect.recruit.unitId).toBe('ally07');
@@ -1128,5 +1128,45 @@ describe('村人', () => {
   it('name が無いと不正', () => {
     const { name: _name, ...rest } = NPC;
     expect(validateNpcDef('npcs/npc01.json', rest).ok).toBe(false);
+  });
+});
+
+describe('validateStageDef: 村の npc と talk', () => {
+  const WIDE = {
+    ...VALID_STAGE,
+    mapRows: ['########', '#......#', '#.#....#', '#......#', '#......#', '########'],
+    placement: { minY: 96, starts: [{ x: 48, y: 112 }] },
+    enemies: [],
+  };
+  const village = (extra: Record<string, unknown>) => ({
+    id: 'v1', col: 2, row: 2, text: '{visitor}は 休めた', effect: { type: 'heal' }, ...extra,
+  });
+  const read = (v: unknown, extra: Record<string, unknown> = {}) =>
+    validateStageDef('stages/x.json', { ...WIDE, villages: [v], ...extra });
+
+  it('村は npc と talk を書ける', () => {
+    const r = read(village({ npc: 'npc01', talk: [{ speaker: 'npc01', text: 'ようこそ' }] }));
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.value.villages[0]).toMatchObject({
+      npc: 'npc01', talk: [{ speaker: 'npc01', text: 'ようこそ', lineId: null }],
+    });
+  });
+
+  it('npc と talk を省略すると null と空の配列', () => {
+    const r = read(village({}));
+    expect(r.ok && r.value.villages[0]).toMatchObject({ npc: null, talk: [] });
+  });
+
+  it('talk の話し手に $visitor を書ける', () => {
+    const r = read(village({ talk: [{ speaker: VISITOR_SPEAKER, text: 'こんにちは' }] }));
+    expect(r.ok).toBe(true);
+    expect(VISITOR_SPEAKER).toBe('$visitor');
+  });
+
+  it('intro の話し手に $visitor は書けない', () => {
+    const r = read(village({}), { intro: [{ speaker: VISITOR_SPEAKER, text: 'こんにちは' }] });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors.some((e) => e.path === 'intro[0].speaker')).toBe(true);
   });
 });

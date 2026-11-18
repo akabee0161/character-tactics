@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { pickDialogue, pickRecruitTalk, pickStageIntro, pickStageOutro } from './dialogue';
+import {
+  pickDialogue, pickRecruitTalk, pickStageIntro, pickStageOutro, pickVillageTalk, villageStops,
+} from './dialogue';
 import { testRegistry } from './testing';
 import type { SimEvent } from './types';
 import type { StageDef } from '../engine/schema';
@@ -225,11 +227,11 @@ describe('pickStageOutro', () => {
 });
 
 describe('village', () => {
-  it('村のセリフは一番先に出る', () => {
+  it('村のセリフ（fresh でない）は一番先に出る', () => {
     const reg = testRegistry();
     const events: SimEvent[] = [
-      { type: 'unitRetired', uid: 'p2', defId: 'ines' },
-      { type: 'villageVisited', uid: 'p1', defId: 'gau', villageId: 'v1', text: 'むらだ', fresh: true },
+      { type: 'skill', uid: 'p2', defId: 'ines', skillId: 'neraiuchi', fromPos: { x: 0, y: 0 }, toPos: { x: 0, y: 0 }, aim: null, affected: [] },
+      { type: 'villageVisited', uid: 'p1', defId: 'gau', villageId: 'v1', text: 'むらだ', fresh: false },
     ];
     const out = pickDialogue(reg, events);
     expect(out[0]).toEqual({
@@ -242,5 +244,53 @@ describe('仲間が倒れたときのセリフ', () => {
   it('仲間が倒れたときのセリフはセリフ欄に出さない（帯で出す）', () => {
     const reg = testRegistry();
     expect(pickDialogue(reg, [{ type: 'unitRetired', uid: 'p1', defId: 'roran' }])).toEqual([]);
+  });
+});
+
+describe('pickVillageTalk と villageStops', () => {
+  const reg = testRegistry();
+  const talk = [
+    { speaker: 'npc01', text: 'ようこそ', lineId: null },
+    { speaker: '$visitor', text: '{visitor}です。よろしく', lineId: null },
+  ];
+  const stageWith = (village: Partial<StageDef['villages'][number]>): StageDef => ({
+    ...reg.stages[0]!,
+    villages: [{ id: 'v1', col: 0, row: 0, text: '{visitor}の HPが 回復した！', npc: 'npc01', talk, effect: { type: 'heal' }, ...village }],
+  });
+
+  it('pickVillageTalk は村人の行・訪れた仲間の行・何が起きたかの行の順', () => {
+    const lines = pickVillageTalk(reg, stageWith({}), 'v1', 'gau');
+    expect(lines).toEqual([
+      { speaker: 'npc01', text: 'ようこそ' },
+      { speaker: 'gau', text: 'ガウです。よろしく' },
+      { speaker: null, text: 'ガウの HPが 回復した！' },
+    ]);
+  });
+
+  it('recruit の村は村人の行の後に加入の会話', () => {
+    const recruit = { unitId: 'ally05', level: 1, talk: [{ speaker: 'ally05', text: '連れて いって', lineId: null }] };
+    const lines = pickVillageTalk(reg, stageWith({ text: null, effect: { type: 'recruit', recruit } }), 'v1', 'gau');
+    expect(lines).toEqual([
+      { speaker: 'npc01', text: 'ようこそ' },
+      { speaker: 'gau', text: 'ガウです。よろしく' },
+      { speaker: 'ally05', text: '連れて いって' },
+    ]);
+  });
+
+  it('talk の無い村は何が起きたかの行だけ', () => {
+    const lines = pickVillageTalk(reg, stageWith({ talk: [], npc: null }), 'v1', 'gau');
+    expect(lines).toEqual([{ speaker: null, text: 'ガウの HPが 回復した！' }]);
+  });
+
+  it('fresh な村の出来事はセリフ欄に出さない', () => {
+    const ev = { type: 'villageVisited', uid: 'p1', defId: 'gau', villageId: 'v1', text: 'むらだ', fresh: true } as const;
+    expect(villageStops(ev)).toBe(true);
+    expect(pickDialogue(reg, [ev])).toEqual([]);
+  });
+
+  it('fresh でない村の出来事はセリフ欄に出す', () => {
+    const ev = { type: 'villageVisited', uid: 'p1', defId: 'gau', villageId: 'v1', text: '村の 人が 手を ふっている', fresh: false } as const;
+    expect(villageStops(ev)).toBe(false);
+    expect(pickDialogue(reg, [ev])[0]).toMatchObject({ lineId: 'village:v1', text: '村の 人が 手を ふっている' });
   });
 });

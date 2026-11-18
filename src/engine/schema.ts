@@ -479,8 +479,17 @@ export type VillageEffect =
   | { type: 'stat'; stat: StatKey; amount: number }
   | { type: 'recruit'; recruit: RecruitDef };
 
-/** recruit の村は text が null（会話が text の代わり）。それ以外は必ず text がある */
-export type VillageDef = { id: string; col: number; row: number; text: string | null; effect: VillageEffect };
+/** 村の talk の話し手にだけ書ける。村を訪れた仲間に話させる（本文の {visitor} は訪れた仲間の名前） */
+export const VISITOR_SPEAKER = '$visitor';
+
+/**
+ * recruit の村は text が null（会話が text の代わり）。それ以外は必ず text がある。
+ * npc は話す村人の ID、talk は村人と訪れた仲間のやりとり（intro と同じ行。どちらも省略できる）
+ */
+export type VillageDef = {
+  id: string; col: number; row: number; text: string | null; npc: string | null; talk: IntroLine[];
+  effect: VillageEffect;
+};
 
 /**
  * legend の speed の下限。これより遅いマスは事実上通れないので walkable: false を使う。
@@ -749,7 +758,7 @@ function readSpawners(
  * text と lineId は排他にする。片方を優先する暗黙のルールを作ると、
  * 直したつもりが効いていない事故が起きるため、両方書いたらエラーにする。
  */
-function readIntroLine(ctx: Ctx, path: string, v: unknown): IntroLine {
+function readIntroLine(ctx: Ctx, path: string, v: unknown, allowVisitor = false): IntroLine {
   const o = requireObject(ctx, path, v);
   if (!o) return { speaker: null, text: null, lineId: null };
 
@@ -758,17 +767,21 @@ function readIntroLine(ctx: Ctx, path: string, v: unknown): IntroLine {
   if (hasText && hasLineId) fail(ctx, path, 'text と lineId は どちらか いっぽうだけ');
   else if (!hasText && !hasLineId) fail(ctx, path, 'text か lineId の どちらかが ひつよう');
 
+  // speaker は「省略」と「明示的な null」を同じ意味（地の文）として扱う
+  const speaker = o.speaker == null ? null : requireString(ctx, `${path}.speaker`, o.speaker);
+  if (speaker === VISITOR_SPEAKER && !allowVisitor) {
+    fail(ctx, `${path}.speaker`, `${VISITOR_SPEAKER} は 村の talk にだけ かける`);
+  }
   return {
-    // speaker は「省略」と「明示的な null」を同じ意味（地の文）として扱う
-    speaker: o.speaker == null ? null : requireString(ctx, `${path}.speaker`, o.speaker),
+    speaker,
     text: hasText ? requireString(ctx, `${path}.text`, o.text) : null,
     lineId: hasLineId ? requireString(ctx, `${path}.lineId`, o.lineId) : null,
   };
 }
 
-function readTalk(ctx: Ctx, path: string, v: unknown): IntroLine[] {
+function readTalk(ctx: Ctx, path: string, v: unknown, allowVisitor = false): IntroLine[] {
   const arr = requireArray(ctx, path, v, { min: 1 }) ?? [];
-  return arr.map((item, i) => readIntroLine(ctx, `${path}[${i}]`, item));
+  return arr.map((item, i) => readIntroLine(ctx, `${path}[${i}]`, item, allowVisitor));
 }
 
 function readRecruit(ctx: Ctx, path: string, o: Record<string, unknown>): RecruitDef {
@@ -885,7 +898,9 @@ function readVillages(
     } else {
       text = requireString(ctx, `${path}.text`, o.text);
     }
-    out.push({ id, col, row, text, effect });
+    const npc = o.npc === undefined || o.npc === null ? null : requireString(ctx, `${path}.npc`, o.npc);
+    const talk = o.talk === undefined ? [] : readTalk(ctx, `${path}.talk`, o.talk, true);
+    out.push({ id, col, row, text, npc, talk, effect });
   });
   return out;
 }

@@ -34,7 +34,7 @@ function fresh(villages: VillageDef[], claimedBefore: string[] = [], members: st
 }
 
 const village = (effect: VillageDef['effect'], id = 'v1'): VillageDef => ({
-  id, col: V_COL, row: V_ROW, text: 'むらだ', effect,
+  id, col: V_COL, row: V_ROW, text: 'むらだ', npc: null, talk: [], effect,
 });
 
 const NEAR = { x: V_COL * 32 - 8, y: V_ROW * 32 + 16 };

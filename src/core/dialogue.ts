@@ -1,4 +1,6 @@
+import { lookupDef } from '../engine/registry';
 import type { Registry } from '../engine/registry';
+import { VISITOR_SPEAKER } from '../engine/schema';
 import type { IntroLine, RecruitDef } from '../engine/schema';
 import type { Speaker, SimEvent, StageDef } from './types';
 
@@ -50,6 +52,8 @@ export function pickDialogue(reg: Registry, events: SimEvent[]): DialogueRequest
         break;
       // 仲間が倒れたとき（unitRetired）の最期の言葉は、セリフ欄ではなく帯で出す（ui/fallen.ts）
       case 'villageVisited':
+        // 初めての村は戦闘を止めて会話で出す（pickVillageTalk）。セリフ欄に出すのは、止めない村だけ
+        if (ev.fresh) break;
         push('village', { uid: ev.uid, speaker: ally(ev.defId), lineId: `village:${ev.villageId}`, text: ev.text });
         break;
       default:
@@ -81,6 +85,31 @@ function pickTalk(reg: Registry, lines: IntroLine[] | undefined): TalkLine[] {
 /** 加わる会話 */
 export function pickRecruitTalk(reg: Registry, recruit: RecruitDef): TalkLine[] {
   return pickTalk(reg, recruit.talk);
+}
+
+/** 村の出来事が戦闘を止める会話になるか（初めて受け取るときだけ。受け取り済み・すでに仲間の村は止めない） */
+export function villageStops(ev: Extract<SimEvent, { type: 'villageVisited' }>): boolean {
+  return ev.fresh;
+}
+
+/**
+ * 村の会話。村人と訪れた仲間のやりとり（talk）の後に、recruit の村は加入の会話、
+ * それ以外は何が起きたかの 1 行（text。地の文）が続く。$visitor は訪れた仲間、{visitor} はその名前
+ */
+export function pickVillageTalk(
+  reg: Registry, stage: StageDef, villageId: string, visitorDefId: string,
+): TalkLine[] {
+  const village = stage.villages.find((v) => v.id === villageId);
+  if (!village) return [];
+  const visitorName = lookupDef(reg, visitorDefId)?.name ?? visitorDefId;
+  const fill = (text: string): string => text.replaceAll('{visitor}', visitorName);
+  const out: TalkLine[] = pickTalk(reg, village.talk).map((l) => ({
+    speaker: l.speaker === VISITOR_SPEAKER ? visitorDefId : l.speaker,
+    text: fill(l.text),
+  }));
+  if (village.effect.type === 'recruit') out.push(...pickRecruitTalk(reg, village.effect.recruit));
+  else if (village.text !== null) out.push({ speaker: null, text: fill(village.text) });
+  return out;
 }
 
 /** ステージ開始時の会話。intro の後に、まだ仲間でない joins の加入の会話が続く */

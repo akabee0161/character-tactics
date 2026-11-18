@@ -632,3 +632,53 @@ describe('村人', () => {
     expect(r.ok).toBe(false);
   });
 });
+
+describe('村の会話の検証と {visitor}', () => {
+  const NPC = { id: 'npc01', name: '村の 人', color: '#a08860', sprites: { face: 'npc01-face.png' } };
+  const village = (extra: Record<string, unknown> = {}) => ({
+    id: 'v1', col: 0, row: 0, text: '{visitor}の HPが 回復した！', effect: { type: 'heal' }, ...extra,
+  });
+  const withVillage = (v: Record<string, unknown>, stageExtra: Record<string, unknown> = {}) =>
+    files({
+      'assets/npcs/npc01.json': NPC,
+      'assets/stages/stage1.json': { ...STAGE, villages: [v], ...stageExtra },
+    });
+  const IMAGES = ['npc01-face.png'];
+
+  it('村の npc が村人に無いと起動時エラー', () => {
+    const r = buildRegistry(withVillage(village({ npc: 'npc99' })), KNOWN_SKILLS, IMAGES);
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.errors.some((e) => e.path === 'villages[0].npc' && e.reason.includes('npc99'))).toBe(true);
+  });
+
+  it('村の talk と text の {visitor} は知らない名前にならない（本文は {visitor} のまま残る）', () => {
+    const v = village({
+      npc: 'npc01',
+      talk: [{ speaker: 'npc01', text: 'ようこそ' }, { speaker: '$visitor', text: '{visitor}です' }],
+    });
+    const r = buildRegistry(withVillage(v), KNOWN_SKILLS, IMAGES);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    const got = r.value.stages[0]!.villages[0]!;
+    expect(got.text).toBe('{visitor}の HPが 回復した！');
+    expect(got.talk[1]).toMatchObject({ speaker: '$visitor', text: '{visitor}です' });
+  });
+
+  it('村の talk の話し手は村人でも仲間でもよく、知らない話し手はエラー', () => {
+    const bad = village({ talk: [{ speaker: 'nobody', text: 'x' }] });
+    const r = buildRegistry(withVillage(bad), KNOWN_SKILLS, IMAGES);
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.errors.some((e) => e.path === 'villages[0].talk[0].speaker')).toBe(true);
+  });
+
+  it('intro の {visitor} は知らない名前のエラーになる', () => {
+    const r = buildRegistry(
+      withVillage(village(), { intro: [{ speaker: null, text: '{visitor}が 来た' }] }), KNOWN_SKILLS, IMAGES,
+    );
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.errors.some((e) => e.reason.includes('visitor'))).toBe(true);
+  });
+});
