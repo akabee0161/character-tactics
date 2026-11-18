@@ -49,9 +49,6 @@ describe('pickDialogue', () => {
     ])[0]!;
     expect(fledReq.lineId).toBe('win:gau');
     expect(fledReq.uid).toBe('p4');
-    expect(pickDialogue(reg, [
-      { type: 'unitRetired', uid: 'p1', defId: 'roran' },
-    ])[0]!.lineId).toBe('retire:roran');
   });
 
   it('だれが倒したか分からない撃退ではセリフを出さない', () => {
@@ -75,10 +72,9 @@ describe('pickDialogue', () => {
     expect(pickDialogue(reg, events)).toEqual([]);
   });
 
-  it('複数同時なら 優先度順（いんねん → はじめまして → スキル → ピンチ → 勝利 → たいきゃく）', () => {
+  it('複数同時なら 優先度順（いんねん → はじめまして → スキル → ピンチ → 勝利）', () => {
     const reg = testRegistry();
     const events: SimEvent[] = [
-      { type: 'unitRetired', uid: 'p1', defId: 'roran' },
       { type: 'pinch', uid: 'p3', defId: 'mist' },
       { type: 'skill', uid: 'p4', defId: 'gau', skillId: 'kakenukeru', fromPos: { x: 0, y: 0 }, toPos: { x: 0, y: 0 }, aim: null, affected: [] },
       { type: 'engage', uid: 'p3', defId: 'mist', targetUid: 'e1', targetDefId: 'narazumono', firstMeeting: true },
@@ -91,7 +87,6 @@ describe('pickDialogue', () => {
       'skill:gau',
       'pinch:mist',
       'win:gau',
-      'retire:roran',
     ]);
   });
 });
@@ -240,5 +235,12 @@ describe('village', () => {
     expect(out[0]).toEqual({
       uid: 'p1', speaker: { side: 'ally', id: 'gau' }, lineId: 'village:v1', text: 'むらだ',
     });
+  });
+});
+
+describe('仲間が倒れたときのセリフ', () => {
+  it('仲間が倒れたときのセリフはセリフ欄に出さない（帯で出す）', () => {
+    const reg = testRegistry();
+    expect(pickDialogue(reg, [{ type: 'unitRetired', uid: 'p1', defId: 'roran' }])).toEqual([]);
   });
 });

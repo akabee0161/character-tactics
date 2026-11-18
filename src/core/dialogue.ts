@@ -5,7 +5,7 @@ import type { Speaker, SimEvent, StageDef } from './types';
 export type DialogueRequest = { uid: string; speaker: Speaker; lineId: string; text: string };
 
 /** 小さいほど先に表示する */
-const PRIORITY = ['village', 'rival', 'first', 'skill', 'levelup', 'pinch', 'win', 'retire'] as const;
+const PRIORITY = ['village', 'rival', 'first', 'skill', 'levelup', 'pinch', 'win'] as const;
 
 function ally(id: string): Speaker {
   return { side: 'ally', id };
@@ -48,9 +48,7 @@ export function pickDialogue(reg: Registry, events: SimEvent[]): DialogueRequest
         // 喋るのは撃退した側なので byUid を使う
         if (ev.byDefId && ev.byUid) push('win', make(reg, ev.byUid, ally(ev.byDefId), `win:${ev.byDefId}`));
         break;
-      case 'unitRetired':
-        push('retire', make(reg, ev.uid, ally(ev.defId), `retire:${ev.defId}`));
-        break;
+      // 仲間が倒れたとき（unitRetired）の最期の言葉は、セリフ欄ではなく帯で出す（ui/fallen.ts）
       case 'villageVisited':
         push('village', { uid: ev.uid, speaker: ally(ev.defId), lineId: `village:${ev.villageId}`, text: ev.text });
         break;

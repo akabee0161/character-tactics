@@ -20,6 +20,9 @@ import { makeAnimStore, noteAttacks, resetAnim, updateMotion } from './render/an
 import { LOGICAL_H, LOGICAL_W, computeViewport, fitCanvas, logicalToMap, screenToLogical } from './render/viewport';
 import { debugKey, debugLabel, isDebugMode, makeDebugClock, simDt } from './ui/debug';
 import { clearSpeech, makeSpeechState, pushSpeech, tickSpeech } from './ui/speech';
+import {
+  clearFallen, currentBanner, makeFallenState, noteFallen, tickFallen, timeScale,
+} from './ui/fallen';
 import { applyStageClear, canSkipIntro, markIntroRead } from './ui/flow';
 import { hitRect, pickUnit } from './ui/hit';
 import { resolveMapGesture } from './ui/input';
@@ -41,7 +44,7 @@ import type { LevelUpEvent } from './ui/levelup';
 import { partyIds } from './core/party';
 import {
   drawBottomBar, drawDefeat, drawLoadErrors, drawPlacement, drawResult,
-  drawSpeechBar, drawStageSelect, drawTalk, drawTitle,
+  drawFallenBanner, drawSpeechBar, drawStageSelect, drawTalk, drawTitle,
 } from './ui/screens';
 import { advanceTalk, makeTalkState, skipTalk, tickTalk } from './ui/talk';
 import type { Measure, TalkState } from './ui/talk';
@@ -208,6 +211,7 @@ const talkMeasure: Measure = (t) => {
 };
 const talkMaxWidth = TALK_WINDOW.w - TALK_BODY_X - TALK_PAD;
 const effects = makeEffectState();
+const fallen = makeFallenState();
 const anim = makeAnimStore();
 
 /** 攻撃モーションの長さ。シートを持たないユニットは null */
@@ -262,6 +266,7 @@ function beginStage(index: number, retry: boolean): void {
   pendingSkill = null;
   clearSpeech(speech);
   resetEffects(effects);
+  clearFallen(fallen);
   resetAnim(anim);
   pointerStart = null;
   dragMap = null;
@@ -562,7 +567,9 @@ canvas.addEventListener('pointercancel', onPointerCancel);
 
 function update(realDt: number): void {
   // 一時停止とスロー再生は戦闘中だけ。会話や画面遷移まで止めると操作できなくなる
-  const dt = debugMode && phase === 'battle' ? simDt(debugClock, realDt, FIXED_DT) : realDt;
+  const base = debugMode && phase === 'battle' ? simDt(debugClock, realDt, FIXED_DT) : realDt;
+  // 仲間が倒れた間は画面の時間をゆっくりにする（帯の長さは実時間で数える）
+  const dt = phase === 'battle' ? base * timeScale(fallen) : base;
   tickEffects(effects, dt);
   if ((phase === 'talk' || phase === 'outro' || phase === 'event') && talk) {
     tickTalk(talk, dt);
@@ -571,6 +578,7 @@ function update(realDt: number): void {
   if (phase !== 'battle' || !battle) return;
   syncDisplayedHp(effects, battle.units, dt);
   tickSpeech(speech, dt);
+  tickFallen(fallen, realDt);
 
   accumulator += dt;
   while (accumulator >= FIXED_DT) {
@@ -578,6 +586,7 @@ function update(realDt: number): void {
     const batch = commands.splice(0, commands.length);
     step(battle, batch, FIXED_DT);
     spawnEffects(effects, battle.events);
+    noteFallen(fallen, battle.reg, battle.events);
     noteAttacks(anim, battle.events, battle.time, attackDuration);
     pushSpeech(speech, pickDialogue(battle.reg, battle.events));
     levelUps = mergeLevelUps(levelUps, battle.events);
@@ -679,6 +688,8 @@ function render(): void {
         drawBottomBar(ctx, registry, battle, selected, escorts, images);
         if (debugMode) drawDebugOverlay(ctx, registry, battle, anim, debugLabel(debugClock));
         if (speech.current !== null) drawSpeechBar(ctx, registry, speech.current, images);
+        const banner = currentBanner(fallen);
+        if (banner !== null) drawFallenBanner(ctx, registry, banner, images);
       }
       break;
     case 'result':

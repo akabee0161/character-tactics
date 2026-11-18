@@ -19,6 +19,7 @@ import { resultLine } from './result-text';
 import { KIND_COLOR, KIND_LABEL } from './stat-card';
 import type { Speech } from './speech';
 import type { TalkState } from './talk';
+import type { FallenBanner } from './fallen';
 import type { XpGain } from './flow';
 import type { Registry } from '../engine/registry';
 import type { ValidationError } from '../engine/schema';
@@ -318,6 +319,36 @@ export function drawSpeechBar(
   const top = r.y + (r.h - lines.length * SPEECH_LINE_H) / 2 + SPEECH_FONT_PX * 0.875;
   lines.forEach((line, i) => {
     ctx.fillText(line, r.x + SPEECH_BODY_X, top + i * SPEECH_LINE_H);
+  });
+}
+
+/** 仲間が倒れたときの帯。マップの上に重ね、顔・名前・最期の言葉を大きく出す。自動で消えるので操作は受けない */
+export const FALLEN_BANNER = { x: 0, y: 300, w: LOGICAL_W, h: 150 };
+
+export function drawFallenBanner(
+  ctx: CanvasRenderingContext2D,
+  reg: Registry,
+  banner: FallenBanner,
+  images: ImageCache,
+): void {
+  const r = FALLEN_BANNER;
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.72)';
+  ctx.fillRect(r.x, r.y, r.w, r.h);
+  ctx.fillStyle = INK;
+  ctx.fillRect(r.x, r.y, r.w, 2);
+  ctx.fillRect(r.x, r.y + r.h - 2, r.w, 2);
+
+  const def = lookupDef(reg, banner.defId) ?? { ...FALLBACK_DEF, name: banner.defId };
+  drawFace(ctx, { x: r.x + 24 + FACE_PX.large / 2, y: r.y + r.h / 2 }, FACE_PX.large / 2, def, images);
+
+  const bodyX = r.x + 24 + FACE_PX.large + 24;
+  ctx.fillStyle = INK;
+  ctx.font = '20px sans-serif';
+  ctx.fillText(def.name, bodyX, r.y + 42);
+  ctx.font = '30px sans-serif';
+  const lines = banner.text === null ? ['倒れた……'] : banner.text.split('\n');
+  lines.slice(0, 3).forEach((line, i) => {
+    ctx.fillText(line, bodyX, r.y + 88 + i * 38);
   });
 }
 
