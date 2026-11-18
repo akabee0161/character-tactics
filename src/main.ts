@@ -305,7 +305,8 @@ function endVillageTalk(): void {
 function endRecruitTalk(state: BattleState): void {
   completeRecruit(state);
   talk = null;
-  phase = 'battle';
+  // 同じ tick のレベルアップのカードが残っていれば、戦闘が進む前に出す
+  phase = levelUps.length > 0 ? 'levelup' : 'battle';
 }
 
 /** 勝利の後始末。会話があってもなくても、必ずここを1度だけ通す */
@@ -586,7 +587,9 @@ function update(realDt: number): void {
   // 一時停止とスロー再生は戦闘中だけ。会話や画面遷移まで止めると操作できなくなる
   const base = debugMode && phase === 'battle' ? simDt(debugClock, realDt, FIXED_DT) : realDt;
   // 仲間が倒れた間は画面の時間をゆっくりにする（帯の長さは実時間で数える）
-  const dt = phase === 'battle' ? base * timeScale(fallen) : base;
+  // 一時停止中のコマ送り（1 入力 = 1 歩）にはゆっくりを掛けない
+  const stepping = debugMode && debugClock.paused;
+  const dt = phase === 'battle' && !stepping ? base * timeScale(fallen) : base;
   tickEffects(effects, dt);
   if ((phase === 'talk' || phase === 'outro' || phase === 'event') && talk) {
     tickTalk(talk, dt);
@@ -609,7 +612,8 @@ function update(realDt: number): void {
     pushSpeech(speech, pickDialogue(battle.reg, battle.events));
     levelUps = mergeLevelUps(levelUps, battle.events);
     // 村の会話・加入の会話・レベルアップのカードの間は戦闘を止める（先に出す順は nextInterrupt）
-    interrupt = nextInterrupt(battle.events, levelUps, battle.pendingRecruit);
+    // 負けが決まった tick は止めず、そのまま負けの画面へ進む
+    interrupt = battle.phase === 'defeat' ? null : nextInterrupt(battle.events, levelUps, battle.pendingRecruit);
     if (interrupt !== null) break;
   }
   if (interrupt !== null) {

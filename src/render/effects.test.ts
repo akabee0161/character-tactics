@@ -318,6 +318,15 @@ describe('滑る技で倒した敵・滑っている仲間への攻撃', () => {
     expect(state.lingering.get('e1')).toBe(DASH_DURATION.kyuukouka);
   });
 
+  it('始点に接する敵を駆け抜けるで倒しても、待ち 0 秒の lingering は作らない', () => {
+    const state = makeEffectState();
+    spawnEffects(state, [
+      defeated('e1', 'p1', { x: 0, y: 0 }),
+      skillEvent('kakenukeru', { fromPos: { x: 0, y: 0 }, toPos: { x: 100, y: 0 } }),
+    ]);
+    expect(state.lingering.has('e1')).toBe(false);
+  });
+
   it('滑らない技で倒した敵は wait も lingering も無い', () => {
     const state = makeEffectState();
     spawnEffects(state, [defeated('e1', 'p1', { x: 5, y: 5 }), skillEvent('hinoame')]);

@@ -168,7 +168,8 @@ export function spawnEffects(state: EffectState, events: SimEvent[]): void {
     } else if (ev.type === 'unitDefeated') {
       const wait = dashWait(ev.byUid, ev.pos);
       state.items.push({ kind: 'defeat', pos: { ...ev.pos }, ttl: DEFEAT_DURATION, ...(wait === undefined ? {} : { wait }) });
-      if (wait !== undefined) state.lingering.set(ev.uid, wait);
+      // 待ち 0 秒（始点に接する敵）は、普通の撃破と同じにその場で消える
+      if (wait !== undefined && wait > 0) state.lingering.set(ev.uid, wait);
     } else if (ev.type === 'unitRetired') {
       state.fallen.set(ev.uid, FALLEN_BLINK_DURATION);
     } else if (ev.type === 'bondSupport') {

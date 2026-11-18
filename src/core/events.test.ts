@@ -209,14 +209,17 @@ describe('updateVillages', () => {
     expect(s.time).toBe(time);
   });
 
-  it('加入済みの仲間の村は pendingRecruit を立てない。text があればその文を出し、無ければ何も出さない', () => {
+  it('加入済みの仲間の村は pendingRecruit を立てない。text があればその文、無ければ受け取り済みの文を出す', () => {
     const s = fresh([{ ...village(recruit('roran')), text: null }]);
     placeAll(s, FAR);
     players(s)[0]!.pos = { ...NEAR };
     updateVillages(s);
     expect(s.pendingRecruit).toBeNull();
     expect(s.visited).toEqual(['v1']);
-    expect(s.events).toEqual([]);
+    // 加入の村は text を書けない（null）ので、受け取り済みの文を 1 行だけ出す（止めない）
+    expect(s.events).toEqual([
+      expect.objectContaining({ type: 'villageVisited', text: VILLAGE_DONE_TEXT, fresh: false }),
+    ]);
 
     const s2 = fresh([{ ...village(recruit('roran')), text: 'もう 仲間だ' }]);
     placeAll(s2, FAR);
@@ -444,5 +447,11 @@ describe('村の出来事の fresh と pendingRecruit.village', () => {
     const s = fresh([{ ...village(recruit('ghost')), text: null }]);
     visit(s);
     expect(s.pendingRecruit!.village).toEqual({ villageId: 'v1', visitorDefId: players(s)[0]!.defId });
+  });
+
+  it('未受領の xp の村は、本文が受け取り済みの文と同じでも fresh が true', () => {
+    const s = fresh([{ ...village({ type: 'xp', amount: 1 }), text: VILLAGE_DONE_TEXT }]);
+    visit(s);
+    expect(s.events[0]).toMatchObject({ type: 'villageVisited', fresh: true, text: VILLAGE_DONE_TEXT });
   });
 });

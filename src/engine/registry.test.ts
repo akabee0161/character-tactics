@@ -625,6 +625,16 @@ describe('村人', () => {
     expect(r.errors.some((e) => e.reason.includes('roran'))).toBe(true);
   });
 
+  it('村人のエラーは実際のファイルパスを指す（ファイル名と id が違っても）', () => {
+    const r = buildRegistry(
+      files({ 'assets/npcs/shopkeeper.json': { ...NPC, id: 'npc03', sprites: { face: 'nai.png' } } }),
+      KNOWN_SKILLS, [],
+    );
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.errors[0]).toMatchObject({ file: 'assets/npcs/shopkeeper.json', path: 'sprites.face' });
+  });
+
   it('同じ id の村人が 2 つあれば弾く', () => {
     const r = buildRegistry(
       withNpc({ 'assets/npcs/npc01b.json': NPC }), KNOWN_SKILLS, ['npc01-face.png'],

@@ -347,7 +347,8 @@ export function drawFallenBanner(
   ctx.fillText(def.name, bodyX, r.y + 42);
   ctx.font = '30px sans-serif';
   const lines = banner.text === null ? ['倒れた……'] : banner.text.split('\n');
-  lines.slice(0, 3).forEach((line, i) => {
+  // 帯の高さに収まる 2 行まで（最期の言葉は 2 行以内。lines のテストが見る）
+  lines.slice(0, 2).forEach((line, i) => {
     ctx.fillText(line, bodyX, r.y + 88 + i * 38);
   });
 }

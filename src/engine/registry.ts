@@ -14,6 +14,8 @@ export type Registry = {
   enemies: Map<string, EnemyDef>;
   /** 村人（会話の話し手だけ。戦場には出ない） */
   npcs: Map<string, NpcDef>;
+  /** 村人の定義を読んだファイルのパス（エラーの出どころ。ファイル名と id が違っても正しく指す） */
+  npcFiles: Map<string, string>;
   /** 順序を持つのでこれだけ配列。order の昇順 */
   stages: StageDef[];
   skills: Map<string, SkillDef>;
@@ -48,7 +50,7 @@ export function buildRegistry(
 ): Validated<Registry> {
   const errors: ValidationError[] = [];
   const reg: Registry = {
-    units: new Map(), enemies: new Map(), npcs: new Map(), stages: [],
+    units: new Map(), enemies: new Map(), npcs: new Map(), npcFiles: new Map(), stages: [],
     skills: new Map(), bonds: [], lines: new Map(),
     growth: FALLBACK_GROWTH,
   };
@@ -84,6 +86,7 @@ export function buildRegistry(
           errors.push({ file: path, path: 'id', reason: `id が じゅうふくしている: ${d.id}` });
         } else {
           reg.npcs.set(d.id, d);
+          reg.npcFiles.set(d.id, path);
         }
       });
     } else if (inDir(path, 'stages')) {
@@ -175,13 +178,14 @@ export function buildRegistry(
       errors.push({ file, path: 'sprites.map.sheet', reason: `assets/images/ に ない ファイル: ${sheet}` });
     }
   };
+  const npcFile = (id: string): string => reg.npcFiles.get(id) ?? `assets/npcs/${id}.json`;
   for (const [id, def] of reg.npcs) {
     if (reg.units.has(id) || reg.enemies.has(id)) {
-      errors.push({ file: `assets/npcs/${id}.json`, path: 'id', reason: `仲間・敵の id と かさなっている: ${id}` });
+      errors.push({ file: npcFile(id), path: 'id', reason: `仲間・敵の id と かさなっている: ${id}` });
     }
     const face = def.sprites.face;
     if (face !== null && !images.has(face)) {
-      errors.push({ file: `assets/npcs/${id}.json`, path: 'sprites.face', reason: `assets/images/ に ない ファイル: ${face}` });
+      errors.push({ file: npcFile(id), path: 'sprites.face', reason: `assets/images/ に ない ファイル: ${face}` });
     }
   }
   for (const [id, def] of reg.units) checkSprites(`assets/units/${id}.json`, def.sprites);
