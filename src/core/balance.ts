@@ -25,6 +25,12 @@
  *   味方 1 人ごとに 0〜1.5 秒（seed から決める）が過ぎるまで、その人に move を出さない（必殺技は出す）。
  * - pendingRecruit が立ったら、次の tick の前に completeRecruit を呼ぶ（本物は会話のあとに呼ぶ）。
  * - 乱数は使わない。1 戦は戦闘時間 BATTLE_TIME_LIMIT 秒まで。超えたら timeout（負け扱い）。
+ * 突っ込み・急ぎ（runRush）: 戦い方が違うだけで、舞台は runBattle と同じ（配置の並べ替えも反応の遅れも入れない）。
+ * - 走らせる仲間（RushKind。walker = 飛行でない仲間で一番足が速い 1 人・flyer = 飛行の仲間 1 人・gau = ガウ 1 人・
+ *   all = 全員）だけが、交戦中でも止まらずに victory.pos へ move する（60 tick ごとに出し直す）。ほかの仲間は何も出さず、
+ *   開始位置で待つ（近接の自動の詰め寄りだけはゲームのとおり働く）。技は canUseSkill が真なら出し、needsDest のものは
+ *   ゴールへの向きに、技の届く距離（maxCells）で止めた点を dest にする。
+ * - 突っ込み（walker・flyer・gau）で勝つ割合が RUSH_MAX を超えたら帯の外。all は「急ぎ」で、速さの目安の時間を測るだけ。
  * 通し・集計の決まりは各関数のコメントを参照。
  */
 import { skillParam } from '../engine/registry';
@@ -38,7 +44,7 @@ import { cellCenter, cellIndexAt, computeFlowField, distance, distanceToSegment,
 import { makeRng, nextFloat } from './rng';
 import { step } from './sim';
 import type { SimCommand } from './sim';
-import { canUseSkill } from './skills';
+import { canUseSkill, limitReach } from './skills';
 import { beginBattle, createBattleState, placeUnit } from './state';
 import type { BattleState, FlowField, Grid, PartyProgress, Unit, Vec2 } from './types';
 
@@ -53,6 +59,10 @@ export const GOAL_KEEP_OUT_MARGIN = 20;
 export const GOAL_ALERT_MARGIN = 14;
 /** 育てた場合の測定で、通しの各ステージに着いたときのセーブの全員に足すレベル */
 export const GROWN_LEVEL_BOOST = 3;
+/** 突っ込み・急ぎを測る通しのシード（1..RUSH_SEEDS）。通しの全シードで測ると時間がかかるため */
+export const RUSH_SEEDS = 10;
+/** 突っ込み（歩き・飛行・ガウ）で勝ってよい割合の上限（％）。超えたら帯の外 */
+export const RUSH_MAX = 10;
 
 export type BattleOutcome = {
   result: 'victory' | 'defeat' | 'timeout';
@@ -193,7 +203,7 @@ function fastestPlayer(state: BattleState): Unit | null {
   return best;
 }
 
-type MoveMemory = Map<string, { key: string; tick: number }>;
+export type MoveMemory = Map<string, { key: string; tick: number }>;
 
 function nearestOf(from: Vec2, units: Unit[]): Unit | null {
   let best: Unit | null = null;
@@ -280,6 +290,34 @@ export function botCommands(
   return cmds;
 }
 
+function outcomeOf(state: BattleState, result: BattleOutcome['result']): BattleOutcome {
+  const finalPlayers = state.units.filter((u) => u.side === 'player');
+  const spawnLeft = state.stage.spawners.reduce((a, sp, i) => a + Math.max(0, sp.total - (state.spawnCounts[i] ?? 0)), 0);
+  return {
+    result,
+    seconds: state.time,
+    deployed: finalPlayers.length,
+    survivors: finalPlayers.filter(alive).length,
+    enemiesLeft: state.units.filter((u) => u.side === 'enemy' && alive(u)).length + spawnLeft,
+    state,
+  };
+}
+
+/** 勝敗が付く（または時間切れ）まで、毎 tick commands の返すコマンドで進める */
+function runLoop(state: BattleState, commands: (tick: number) => SimCommand[]): BattleOutcome {
+  let tick = 0;
+  let result: BattleOutcome['result'] = 'timeout';
+  for (;;) {
+    if (state.pendingRecruit !== null) completeRecruit(state);
+    if (state.phase === 'victory') { result = 'victory'; break; }
+    if (state.phase === 'defeat') { result = 'defeat'; break; }
+    if (state.time >= BATTLE_TIME_LIMIT) break;
+    step(state, commands(tick), BATTLE_DT);
+    tick++;
+  }
+  return outcomeOf(state, result);
+}
+
 export function runBattle(reg: Registry, stage: StageDef, party: PartyProgress, seed: number): BattleOutcome {
   const state = createBattleState(reg, stage, party, seed);
   const rng = makeRng(seed);
@@ -298,26 +336,62 @@ export function runBattle(reg: Registry, stage: StageDef, party: PartyProgress, 
   });
   beginBattle(state);
   const memory: MoveMemory = new Map();
-  let tick = 0;
-  let result: BattleOutcome['result'] = 'timeout';
-  for (;;) {
-    if (state.pendingRecruit !== null) completeRecruit(state);
-    if (state.phase === 'victory') { result = 'victory'; break; }
-    if (state.phase === 'defeat') { result = 'defeat'; break; }
-    if (state.time >= BATTLE_TIME_LIMIT) break;
-    step(state, botCommands(state, tick, memory, delays), BATTLE_DT);
-    tick++;
+  return runLoop(state, (tick) => botCommands(state, tick, memory, delays));
+}
+
+export type RushKind = 'walker' | 'flyer' | 'gau' | 'all';
+/** 測る順（playThrough のシードの i もこの順） */
+export const RUSH_KINDS: readonly RushKind[] = ['walker', 'flyer', 'gau', 'all'];
+/** RUSH_MAX と比べる種類（all は急ぎの時間を測るだけ） */
+const RUSH_JUDGED: readonly RushKind[] = ['walker', 'flyer', 'gau'];
+
+/** 走らせる仲間（いなければ空）。walker・flyer・gau は 1 人、all は生きている全員 */
+export function pickRushers(state: BattleState, kind: RushKind): Unit[] {
+  const mine = state.units.filter((u) => u.side === 'player' && alive(u));
+  switch (kind) {
+    case 'all': return mine;
+    case 'flyer': return mine.filter((u) => u.flying).slice(0, 1);
+    case 'gau': return mine.filter((u) => u.defId === 'gau').slice(0, 1);
+    case 'walker': {
+      let best: Unit | null = null;
+      for (const u of mine) if (!u.flying && (best === null || u.speed > best.speed)) best = u;
+      return best ? [best] : [];
+    }
   }
-  const finalPlayers = state.units.filter((u) => u.side === 'player');
-  const spawnLeft = state.stage.spawners.reduce((a, sp, i) => a + Math.max(0, sp.total - (state.spawnCounts[i] ?? 0)), 0);
-  return {
-    result,
-    seconds: state.time,
-    deployed: finalPlayers.length,
-    survivors: finalPlayers.filter(alive).length,
-    enemiesLeft: state.units.filter((u) => u.side === 'enemy' && alive(u)).length + spawnLeft,
-    state,
-  };
+}
+
+/** 走らせる仲間だけが、交戦中でも止まらずゴールへ向かい、技もゴールの向きに出す。ほかには何も出さない */
+export function rushCommands(state: BattleState, rushers: Set<string>, tick: number, memory: MoveMemory): SimCommand[] {
+  const cmds: SimCommand[] = [];
+  const goal = state.stage.victory.pos;
+  for (const u of state.units) {
+    if (u.side !== 'player' || !alive(u) || !rushers.has(u.uid)) continue;
+    const mem = memory.get(u.uid);
+    if (!mem || tick - mem.tick >= MOVE_REISSUE_TICKS) {
+      cmds.push({ type: 'move', uid: u.uid, dest: { ...goal } });
+      memory.set(u.uid, { key: 'goal', tick });
+    }
+    if (u.skillId !== null && canUseSkill(state, u.uid)) {
+      if (skillParam(state.reg, u.skillId, 'needsDest', 0) === 1) {
+        const maxCells = skillParam(state.reg, u.skillId, 'maxCells', 0);
+        const dest = maxCells > 0 ? limitReach(u.pos, goal, maxCells * state.grid.cell) : { ...goal };
+        cmds.push({ type: 'skill', uid: u.uid, dest });
+      } else {
+        cmds.push({ type: 'skill', uid: u.uid });
+      }
+    }
+  }
+  return cmds;
+}
+
+/** 走らせる仲間（kind）だけをゴールへ向かわせて 1 戦する。走らせる仲間がいなければ null */
+export function runRush(reg: Registry, stage: StageDef, party: PartyProgress, seed: number, kind: RushKind): BattleOutcome | null {
+  const state = createBattleState(reg, stage, party, seed);
+  const rushers = new Set(pickRushers(state, kind).map((u) => u.uid));
+  if (rushers.size === 0) return null;
+  beginBattle(state);
+  const memory: MoveMemory = new Map();
+  return runLoop(state, (tick) => rushCommands(state, rushers, tick, memory));
 }
 
 export type StageRun = {
@@ -328,6 +402,10 @@ export type StageRun = {
   avgLevel: number;
   /** 1 回目で勝ち、そのとき敵が残っていた（enemiesLeft > 0） */
   leftover: boolean;
+  /** 1 回目で勝ったときのその秒（勝てなかったら 0） */
+  seconds: number;
+  /** 突っ込み・急ぎの結果。シードが RUSH_SEEDS 以下のときだけ入る。走らせる仲間がいない種類は入らない */
+  rush: Partial<Record<RushKind, { won: boolean; seconds: number }>>;
 };
 
 /** 全員のレベルを by 上げ（上限 maxLevel）、経験値を 0 にしたセーブを返す。元は変えない */
@@ -355,6 +433,14 @@ export function playThrough(reg: Registry, seed: number): StageRun[] {
     let cleared = false;
     let leftover = false;
     let avgLevel = 0;
+    let seconds = 0;
+    const rush: StageRun['rush'] = {};
+    if (seed <= RUSH_SEEDS) {
+      RUSH_KINDS.forEach((kind, i) => {
+        const out = runRush(reg, stage, save, seed * 100 + 60 + i, kind);
+        if (out) rush[kind] = { won: out.result === 'victory', seconds: out.seconds };
+      });
+    }
     const grown = boostLevels(save, GROWN_LEVEL_BOOST, reg.growth.maxLevel);
     const grownWon = runBattle(reg, stage, grown, seed * 100 + 50).result === 'victory';
     while (attempts < MAX_ATTEMPTS) {
@@ -364,6 +450,7 @@ export function playThrough(reg: Registry, seed: number): StageRun[] {
         cleared = true;
         firstTryWon = attempts === 1;
         leftover = firstTryWon && last.enemiesLeft > 0;
+        seconds = firstTryWon ? last.seconds : 0;
         save = applyStageClear(reg, save, stage.id, last.state).save;
         const ids = last.state.units.filter((u) => u.side === 'player').map((u) => u.defId);
         avgLevel = ids.length === 0 ? 0 : ids.reduce((a, id) => a + (save.units[id]?.level ?? 1), 0) / ids.length;
@@ -372,7 +459,7 @@ export function playThrough(reg: Registry, seed: number): StageRun[] {
     }
     runs.push({
       stageId: stage.id, firstTryWon, attempts, cleared,
-      deployed: last!.deployed, survivors: last!.survivors, grownWon, avgLevel, leftover,
+      deployed: last!.deployed, survivors: last!.survivors, grownWon, avgLevel, leftover, seconds, rush,
     });
     if (!cleared) break;
   }
@@ -387,7 +474,20 @@ export type StageStat = {
   avgLevel: number;
   /** 1 回目の勝ちのうち、敵が残っていた割合（％） */
   leftoverRate: number;
+  /** 1 回目の勝ちの秒の中央値（無ければ 0） */
+  medianSeconds: number;
+  /** 突っ込み・急ぎで勝った割合（％。測った回数に対する。測っていない種類は入らない） */
+  rushRates: Partial<Record<RushKind, number>>;
+  /** 急ぎ（all）で勝った回の秒の中央値（無ければ 0） */
+  fastMedianSeconds: number;
 };
+
+function median(xs: number[]): number {
+  if (xs.length === 0) return 0;
+  const a = [...xs].sort((x, y) => x - y);
+  const m = a.length >> 1;
+  return a.length % 2 === 1 ? a[m]! : (a[m - 1]! + a[m]!) / 2;
+}
 
 /**
  * シード 1..seeds の通しを回して集計する。1 回目の勝率 = 1 回目で勝った通し ÷ そのステージに到達した通し（％）。
@@ -402,6 +502,12 @@ export function measure(reg: Registry, seeds: number): StageStat[] {
     const won = reached.filter((x) => x.cleared);
     const mean = (xs: number[]): number => (xs.length === 0 ? 0 : xs.reduce((a, b) => a + b, 0) / xs.length);
     const firstWins = reached.filter((x) => x.firstTryWon);
+    const rushRates: StageStat['rushRates'] = {};
+    for (const kind of RUSH_KINDS) {
+      const measured = reached.flatMap((x) => (x.rush[kind] ? [x.rush[kind]!] : []));
+      if (measured.length > 0) rushRates[kind] = (measured.filter((m) => m.won).length / measured.length) * 100;
+    }
+    const fastWon = reached.flatMap((x) => (x.rush.all?.won ? [x.rush.all.seconds] : []));
     return {
       stageId: stage.id,
       name: stage.name,
@@ -412,6 +518,9 @@ export function measure(reg: Registry, seeds: number): StageStat[] {
       grownRate: reached.length === 0 ? 0 : (reached.filter((x) => x.grownWon).length / reached.length) * 100,
       avgLevel: mean(won.map((x) => x.avgLevel)),
       leftoverRate: firstWins.length === 0 ? 0 : (firstWins.filter((x) => x.leftover).length / firstWins.length) * 100,
+      medianSeconds: median(firstWins.map((x) => x.seconds)),
+      rushRates,
+      fastMedianSeconds: median(fastWon),
     };
   });
 }
@@ -446,23 +555,33 @@ export function isOutOfBandGrown(s: StageStat): boolean {
   return outside(s.grownRate, GROWN_BAND);
 }
 
-/** 通しか育てたのどちらかが帯の外か */
+/** 突っ込み（歩き・飛行・ガウ）のどれかで、勝った割合が RUSH_MAX を超えたか（all は見ない） */
+export function isOutOfBandRush(s: StageStat): boolean {
+  return RUSH_JUDGED.some((k) => (s.rushRates[k] ?? 0) > RUSH_MAX);
+}
+
+/** 通し・育てた・突っ込みのどれかが帯の外か */
 export function isOutOfBand(s: StageStat): boolean {
-  return isOutOfBandThrough(s) || isOutOfBandGrown(s);
+  return isOutOfBandThrough(s) || isOutOfBandGrown(s) || isOutOfBandRush(s);
 }
 
 export function formatTable(stats: StageStat[]): string {
   const lines = [
-    '| ステージ | 名前 | 到達 | 1回目の勝率(%) | 目標(%) | 育てた(%) | 目標(育てた) | 出撃(平均) | 生き残り(平均) | 平均Lv | 敵が残った勝ち(%) | 判定 |',
-    '|---|---|---|---|---|---|---|---|---|---|---|---|',
+    '| ステージ | 名前 | 到達 | 1回目の勝率(%) | 目標(%) | 育てた(%) | 目標(育てた) | 出撃(平均) | 生き残り(平均) | 平均Lv | 敵が残った勝ち(%) | クリア(秒) | 突っ込み(歩き)(%) | 突っ込み(飛行)(%) | 突っ込み(ガウ)(%) | 急ぎ(%) | 急ぎ(秒) | 判定 |',
+    '|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|',
   ];
+  const rate = (s: StageStat, k: RushKind): string => (s.rushRates[k] === undefined ? '-' : s.rushRates[k]!.toFixed(1));
+  const secs = (v: number): string => (v > 0 ? v.toFixed(1) : '-');
   for (const s of stats) {
     const band = TARGET_BANDS[s.stageId];
-    const flags = [isOutOfBandThrough(s) ? '帯の外(通し)' : '', isOutOfBandGrown(s) ? '帯の外(育てた)' : ''].filter((x) => x);
+    const flags = [
+      isOutOfBandThrough(s) ? '帯の外(通し)' : '', isOutOfBandGrown(s) ? '帯の外(育てた)' : '', isOutOfBandRush(s) ? '帯の外(突っ込み)' : '',
+    ].filter((x) => x);
     lines.push(
       `| ${s.stageId} | ${s.name} | ${s.reached} | ${s.firstTryRate.toFixed(1)} | ${band ? `${band[0]}〜${band[1]}` : '-'}`
       + ` | ${s.grownRate.toFixed(1)} | ${GROWN_BAND[0]}〜${GROWN_BAND[1]}`
       + ` | ${s.avgDeployed.toFixed(1)} | ${s.avgSurvivors.toFixed(1)} | ${s.avgLevel.toFixed(1)} | ${s.leftoverRate.toFixed(1)}`
+      + ` | ${secs(s.medianSeconds)} | ${rate(s, 'walker')} | ${rate(s, 'flyer')} | ${rate(s, 'gau')} | ${rate(s, 'all')} | ${secs(s.fastMedianSeconds)}`
       + ` | ${flags.join('・')} |`,
     );
   }
