@@ -344,8 +344,8 @@ describe('step: skill コマンド', () => {
 
   it('かけぬけるは dest つきで発動する', () => {
     const { state: s } = fresh();
-    step(s, [{ type: 'skill', uid: unitOf(s, 'gau').uid, dest: { x: 200, y: 80 } }], 0.1);
-    expect(unitOf(s, 'gau').pos).toEqual({ x: 200, y: 80 });
+    step(s, [{ type: 'skill', uid: unitOf(s, 'gau').uid, dest: { x: 120, y: 80 } }], 0.1);
+    expect(unitOf(s, 'gau').pos).toEqual({ x: 120, y: 80 });
   });
 });
 

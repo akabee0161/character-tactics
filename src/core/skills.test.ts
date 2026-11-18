@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { beginBattle, createBattleState } from './state';
 import { isFunbaruActive } from './combat';
 import { skillParam } from '../engine/registry';
-import { canUseSkill, skillAmount, useSkill, FUNBARU_DURATION, SKILL_EFFECTS, SKILL_EFFECT_IDS } from './skills';
+import { canUseSkill, limitReach, skillAmount, useSkill, FUNBARU_DURATION, SKILL_EFFECTS, SKILL_EFFECT_IDS } from './skills';
 import { attackPower } from './sim';
 import { effectiveResist } from './damage';
 import { testRegistry } from './testing';
@@ -178,13 +178,13 @@ describe('かけぬける', () => {
     gau.pos = { x: 80, y: 208 };
     const onPath = addEnemy(s, 160, 208);
     const offPath = addEnemy(s, 160, 272);
-    expect(useSkill(s, gau.uid, { x: 260, y: 208 })).toBe(true);
-    expect(unitOf(s, 'gau').pos).toEqual({ x: 260, y: 208 });
+    expect(useSkill(s, gau.uid, { x: 200, y: 208 })).toBe(true);
+    expect(unitOf(s, 'gau').pos).toEqual({ x: 200, y: 208 });
     expect(onPath.hp).toBe(onPath.maxHp - (skillParam(s.reg, 'kakenukeru', 'damage', 0) + gau.power));
     expect(offPath.hp).toBe(offPath.maxHp);
     expect(s.events).toContainEqual({
       type: 'skill', uid: gau.uid, defId: 'gau', skillId: 'kakenukeru',
-      fromPos: { x: 80, y: 208 }, toPos: { x: 260, y: 208 }, aim: { x: 260, y: 208 }, affected: [{ x: 160, y: 208 }],
+      fromPos: { x: 80, y: 208 }, toPos: { x: 200, y: 208 }, aim: { x: 200, y: 208 }, affected: [{ x: 160, y: 208 }],
     });
   });
 
@@ -206,6 +206,7 @@ describe('かけぬける', () => {
     };
     const s = fresh(stage);
     const gau = unitOf(s, 'gau');
+    gau.pos = { x: 160, y: 208 };
     expect(useSkill(s, gau.uid, { x: 224, y: 208 })).toBe(false);
     expect(canUseSkill(s, gau.uid)).toBe(true);
   });
@@ -488,10 +489,10 @@ describe('急降下', () => {
     u.skillId = 'kyuukouka';
     u.flying = true;
     u.pos = { x: 16, y: 48 };
-    const near = addEnemy(s, 190, 48, 30);
+    const near = addEnemy(s, 140, 48, 30);
     const far = addEnemy(s, 280, 48, 30);
-    expect(useSkill(s, u.uid, { x: 176, y: 48 })).toBe(true);
-    expect(u.pos).toEqual({ x: 176, y: 48 });
+    expect(useSkill(s, u.uid, { x: 126, y: 48 })).toBe(true);
+    expect(u.pos).toEqual({ x: 126, y: 48 });
     expect(near.hp).toBe(30 - (skillParam(s.reg, 'kyuukouka', 'damage', 0) + u.power));
     expect(far.hp).toBe(30);
     expect(s.events).toContainEqual(expect.objectContaining({ type: 'skill', skillId: 'kyuukouka' }));
@@ -502,8 +503,11 @@ describe('急降下', () => {
     const u = unitOf(s, 'roran');
     u.skillId = 'kyuukouka';
     u.pos = { x: 16, y: 48 };
-    expect(useSkill(s, u.uid, { x: 9999, y: -80 })).toBe(true);
-    expect(u.pos).toEqual({ x: 304, y: 16 });
+    u.pos = { x: 300, y: 40 };
+    expect(useSkill(s, u.uid, { x: 330, y: -80 })).toBe(true);
+    expect(u.pos.x).toBeGreaterThan(300);
+    expect(u.pos.x).toBeLessThanOrEqual(304);
+    expect(u.pos.y).toBe(16);
   });
 
   it('行き先なしなら使えない', () => {
@@ -636,5 +640,56 @@ describe('技の出来事の描画用の値（aim・affected）', () => {
     expect(affected).toContainEqual({ x: 80, y: 208 });
     expect(affected).toContainEqual({ x: 140, y: 208 });
     expect(affected).not.toContainEqual({ x: 600, y: 208 });
+  });
+});
+
+describe('limitReach', () => {
+  it('上限より近ければそのまま', () => {
+    expect(limitReach({ x: 0, y: 0 }, { x: 30, y: 40 }, 128)).toEqual({ x: 30, y: 40 });
+  });
+  it('上限より遠ければ、向きを保って上限の距離で止める', () => {
+    const p = limitReach({ x: 0, y: 0 }, { x: 300, y: 400 }, 128);
+    expect(p.x).toBeCloseTo(76.8, 6);
+    expect(p.y).toBeCloseTo(102.4, 6);
+  });
+  it('自分の位置を指してもそのまま', () => {
+    expect(limitReach({ x: 5, y: 5 }, { x: 5, y: 5 }, 128)).toEqual({ x: 5, y: 5 });
+  });
+});
+
+describe('技の届く距離（maxCells）', () => {
+  it('assets/skills.json の駆け抜ける・急降下の maxCells は 4', () => {
+    const reg = testRegistry();
+    expect(skillParam(reg, 'kakenukeru', 'maxCells', 0)).toBe(4);
+    expect(skillParam(reg, 'kyuukouka', 'maxCells', 0)).toBe(4);
+  });
+  it('駆け抜けるは maxCells マスより遠くを指すと、その向きの maxCells × cell の所で止まる', () => {
+    const s = fresh();
+    const gau = unitOf(s, 'gau');
+    gau.pos = { x: 80, y: 208 };
+    expect(useSkill(s, gau.uid, { x: 80 + 8 * s.grid.cell, y: 208 })).toBe(true);
+    const max = skillParam(s.reg, 'kakenukeru', 'maxCells', 0) * s.grid.cell;
+    const moved = Math.hypot(gau.pos.x - 80, gau.pos.y - 208);
+    expect(moved).toBeGreaterThan(max - 0.5);
+    expect(moved).toBeLessThan(max + 0.5);
+  });
+  it('駆け抜けるは止めた所が壁なら出ない', () => {
+    const reg = testRegistry();
+    const rows = reg.stages[0]!.mapRows.map((r, i) => (i === 6 ? r.slice(0, 6) + '###' + r.slice(9) : r));
+    const s = fresh({ ...reg.stages[0]!, mapRows: rows });
+    const gau = unitOf(s, 'gau');
+    gau.pos = { x: 80, y: 208 };
+    expect(useSkill(s, gau.uid, { x: 80 + 8 * s.grid.cell, y: 208 })).toBe(false);
+    expect(gau.pos).toEqual({ x: 80, y: 208 });
+  });
+  it('急降下は maxCells マスより遠くを指すと、その向きの maxCells × cell の所に降りる', () => {
+    const s = fresh();
+    const u = unitOf(s, 'roran');
+    u.skillId = 'kyuukouka';
+    u.flying = true;
+    u.pos = { x: 16, y: 208 };
+    expect(useSkill(s, u.uid, { x: 16 + 8 * s.grid.cell, y: 208 })).toBe(true);
+    expect(u.pos.x - 16).toBeCloseTo(skillParam(s.reg, 'kyuukouka', 'maxCells', 0) * s.grid.cell, 6);
+    expect(u.pos.y).toBe(208);
   });
 });
