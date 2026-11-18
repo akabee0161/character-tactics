@@ -1,4 +1,4 @@
-import { lookupDef, skillParam } from '../engine/registry';
+import { lookupDef, lookupSpeaker, skillParam } from '../engine/registry';
 import { MAX_PARTY } from '../core/constants';
 import { partyIds } from '../core/party';
 import { DEFAULT_SKILL_COOLDOWN } from '../core/skills';
@@ -373,7 +373,7 @@ export function drawTalk(
   const bodyX = r.x + (speaker === null ? TALK_PAD : TALK_BODY_X);
 
   if (speaker !== null) {
-    const info = lookupDef(reg, speaker) ?? { ...FALLBACK_DEF, name: speaker };
+    const info = lookupSpeaker(reg, speaker) ?? { ...FALLBACK_DEF, name: speaker };
     drawFace(ctx, { x: r.x + 54, y: r.y + 60 }, FACE_PX.large / 2, info, images);
     ctx.fillStyle = '#1a1a1a';
     ctx.font = '20px sans-serif';

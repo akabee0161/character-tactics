@@ -266,6 +266,29 @@ export function validateEnemyDef(file: string, raw: unknown): Validated<EnemyDef
   return finish(ctx, def);
 }
 
+/**
+ * 村人。会話の話し手になるだけで、戦場には出ない。顔だけを持つ（本番の絵に替えるときは PNG と name を直すだけ）。
+ * ID は名前と関係ない npcNN
+ */
+export type NpcDef = { id: string; name: string; color: string; sprites: { face: string | null } };
+
+export function validateNpcDef(file: string, raw: unknown): Validated<NpcDef> {
+  const ctx = makeCtx(file);
+  const o = requireObject(ctx, '', raw);
+  if (!o) return { ok: false, errors: ctx.errors };
+  let face: string | null = null;
+  if (o.sprites !== undefined) {
+    const s = requireObject(ctx, 'sprites', o.sprites);
+    if (s && s.face !== undefined && s.face !== null) face = requireString(ctx, 'sprites.face', s.face);
+  }
+  return finish(ctx, {
+    id: requireString(ctx, 'id', o.id) ?? '',
+    name: requireString(ctx, 'name', o.name) ?? '',
+    color: requireString(ctx, 'color', o.color) ?? '#000000',
+    sprites: { face },
+  });
+}
+
 /** summary の `{名前}` を見つける正規表現の元。検証（validateSkillsFile）と差し込み（skillSummary）で同じ規則を使う */
 export const SUMMARY_PLACEHOLDER = '\\{([^{}]+)\\}';
 /** summary は一言の説明。`{名前}` は params の値に置き換わる（skillSummary） */

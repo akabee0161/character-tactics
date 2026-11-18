@@ -223,6 +223,9 @@ const CHARS = [
   { id: 'ally15', color: '#d89a5a', weapon: 'spear', frame: 32 },
 ];
 
+// 村人。顔だけを書く（戦場には出ないので、シートは無い）
+const NPCS = ['npc01', 'npc02', 'npc03', 'npc04', 'npc05', 'npc06'].map((id) => ({ id, color: '#a08860' }));
+
 const ROLES = [
   ['role-tate', 'shield', '#4a80c8'],
   ['role-yumi', 'bow', '#3faa6a'],
@@ -244,7 +247,7 @@ if (ids.length === 0) {
   console.error('引数が無いときは何も書きません（今の絵を上書きしないため）');
   process.exit(1);
 }
-const known = new Set([...CHARS.map((d) => d.id), ...ROLES.map(([n]) => n)]);
+const known = new Set([...CHARS.map((d) => d.id), ...NPCS.map((d) => d.id), ...ROLES.map(([n]) => n)]);
 const unknown = ids.filter((id) => !known.has(id));
 if (unknown.length > 0) {
   console.error(`知らない ID です: ${unknown.join(' ')}`);
@@ -257,6 +260,11 @@ for (const def of CHARS) {
   writeFileSync(join(OUT, `${def.id}-map.png`), encodePng(sheet));
   writeFileSync(join(OUT, `${def.id}-face.png`), encodePng(faceFor(def)));
   console.log(`${def.id}-map.png ${sheet.w}x${sheet.h}`);
+}
+for (const def of NPCS) {
+  if (!ids.includes(def.id)) continue;
+  writeFileSync(join(OUT, `${def.id}-face.png`), encodePng(faceFor(def)));
+  console.log(`${def.id}-face.png 128x128`);
 }
 for (const [name, weapon, color] of ROLES) {
   if (!ids.includes(name)) continue;

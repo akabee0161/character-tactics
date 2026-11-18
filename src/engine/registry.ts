@@ -1,17 +1,19 @@
 import { MAX_MEMBERS } from './limits';
 import { fillNames } from './names';
 import {
-  validateBondsFile, validateEnemyDef, validateGrowthFile, validateLinesFile, validateSkillsFile,
-  validateStageDef, validateUnitDef,
+  validateBondsFile, validateEnemyDef, validateGrowthFile, validateLinesFile, validateNpcDef,
+  validateSkillsFile, validateStageDef, validateUnitDef,
 } from './schema';
 import type {
-  BondDef, EnemyDef, GrowthDef, IntroLine, RecruitDef, SkillDef, Sprites, StageDef, UnitDef, Validated,
+  BondDef, EnemyDef, GrowthDef, IntroLine, NpcDef, RecruitDef, SkillDef, Sprites, StageDef, UnitDef, Validated,
   ValidationError,
 } from './schema';
 
 export type Registry = {
   units: Map<string, UnitDef>;
   enemies: Map<string, EnemyDef>;
+  /** 村人（会話の話し手だけ。戦場には出ない） */
+  npcs: Map<string, NpcDef>;
   /** 順序を持つのでこれだけ配列。order の昇順 */
   stages: StageDef[];
   skills: Map<string, SkillDef>;
@@ -46,7 +48,7 @@ export function buildRegistry(
 ): Validated<Registry> {
   const errors: ValidationError[] = [];
   const reg: Registry = {
-    units: new Map(), enemies: new Map(), stages: [],
+    units: new Map(), enemies: new Map(), npcs: new Map(), stages: [],
     skills: new Map(), bonds: [], lines: new Map(),
     growth: FALLBACK_GROWTH,
   };
@@ -74,6 +76,14 @@ export function buildRegistry(
           errors.push({ file: path, path: 'id', reason: `id が じゅうふくしている: ${d.id}` });
         } else {
           reg.enemies.set(d.id, d);
+        }
+      });
+    } else if (inDir(path, 'npcs')) {
+      take(validateNpcDef(path, raw), (d) => {
+        if (reg.npcs.has(d.id)) {
+          errors.push({ file: path, path: 'id', reason: `id が じゅうふくしている: ${d.id}` });
+        } else {
+          reg.npcs.set(d.id, d);
         }
       });
     } else if (inDir(path, 'stages')) {
@@ -165,6 +175,15 @@ export function buildRegistry(
       errors.push({ file, path: 'sprites.map.sheet', reason: `assets/images/ に ない ファイル: ${sheet}` });
     }
   };
+  for (const [id, def] of reg.npcs) {
+    if (reg.units.has(id) || reg.enemies.has(id)) {
+      errors.push({ file: `assets/npcs/${id}.json`, path: 'id', reason: `仲間・敵の id と かさなっている: ${id}` });
+    }
+    const face = def.sprites.face;
+    if (face !== null && !images.has(face)) {
+      errors.push({ file: `assets/npcs/${id}.json`, path: 'sprites.face', reason: `assets/images/ に ない ファイル: ${face}` });
+    }
+  }
   for (const [id, def] of reg.units) checkSprites(`assets/units/${id}.json`, def.sprites);
   for (const [id, def] of reg.enemies) checkSprites(`assets/enemies/${id}.json`, def.sprites);
 
@@ -209,7 +228,7 @@ export function buildRegistry(
     });
     const checkLines = (kind: string, lines: IntroLine[] | undefined): void => {
       lines?.forEach((line, i) => {
-        if (line.speaker !== null && lookupDef(reg, line.speaker) === null) {
+        if (line.speaker !== null && lookupSpeaker(reg, line.speaker) === null) {
           errors.push({ file, path: `${kind}[${i}].speaker`, reason: `しらない はなして: ${line.speaker}` });
         }
         if (line.lineId !== null && !reg.lines.has(line.lineId)) {
@@ -308,6 +327,17 @@ export function buildRegistry(
 /** 味方・敵のどちらでも名前と色を引けるようにする。各種描画とセリフ欄が使う */
 export function lookupDef(reg: Registry, defId: string): UnitDef | EnemyDef | null {
   return reg.units.get(defId) ?? reg.enemies.get(defId) ?? null;
+}
+
+/** 会話の話し手の名前と絵。仲間 → 敵 → 村人の順に引く。村人は絵の形（SpriteDef）にそろえて返す */
+export type Speaker = { name: string; color: string; role: string; sprites: Sprites };
+
+export function lookupSpeaker(reg: Registry, id: string): Speaker | null {
+  const def = lookupDef(reg, id);
+  if (def !== null) return def;
+  const npc = reg.npcs.get(id);
+  if (npc === undefined) return null;
+  return { name: npc.name, color: npc.color, role: '', sprites: { role: null, face: npc.sprites.face, map: null } };
 }
 
 export function skillParam(

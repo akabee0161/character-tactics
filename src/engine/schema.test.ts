@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  validateBondsFile, validateEnemyDef, validateGrowthFile, validateLinesFile, validateSkillsFile,
+  validateBondsFile, validateEnemyDef, validateGrowthFile, validateLinesFile, validateNpcDef, validateSkillsFile,
   validateStageDef, validateUnitDef,
 } from './schema';
 
@@ -1102,5 +1102,31 @@ describe('validateStageDef: darkness と light', () => {
     const r = validateStageDef('stages/x.json', VALID_STAGE);
     expect(r.ok).toBe(true);
     if (r.ok) expect(r.value.darkness).toBeUndefined();
+  });
+});
+
+describe('村人', () => {
+  const NPC = { id: 'npc01', name: '村の 人', color: '#a08860', sprites: { face: 'npc01-face.png' } };
+
+  it('村人は id・name・color・sprites.face を持つ', () => {
+    const r = validateNpcDef('npcs/npc01.json', NPC);
+    expect(r).toEqual({ ok: true, value: NPC });
+  });
+
+  it('sprites.face は null も書ける', () => {
+    const r = validateNpcDef('npcs/npc01.json', { ...NPC, sprites: { face: null } });
+    expect(r.ok && r.value.sprites.face).toBeNull();
+  });
+
+  it('村人の sprites.face が文字列でも null でもないと不正', () => {
+    const r = validateNpcDef('npcs/npc01.json', { ...NPC, sprites: { face: 3 } });
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.errors[0]?.path).toBe('sprites.face');
+  });
+
+  it('name が無いと不正', () => {
+    const { name: _name, ...rest } = NPC;
+    expect(validateNpcDef('npcs/npc01.json', rest).ok).toBe(false);
   });
 });
