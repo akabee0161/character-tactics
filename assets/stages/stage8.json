@@ -78,7 +78,7 @@
     { "speaker": "ines", "text": "この先はガルムの領地ね。いよいよ本番よ。" }
   ],
   "villages": [
-    {"id": "v1", "col": 2, "row": 6, "text": "村の 長老に 戦い方を 教わった！", "effect": {"type": "xp", "amount": 10}}
+    {"id": "v1", "col": 2, "row": 6, "text": "{visitor}は 戦い方を 教わり、 経験値が 入った！", "npc": "npc05", "talk": [{"speaker": "npc05", "text": "関所を 越えるなら、 戦い方を 教えよう。"}, {"speaker": "npc05", "text": "止まらずに、 敵を 引きつけて 戦う ことじゃ。"}, {"speaker": "$visitor", "text": "勉強に なります！"}], "effect": {"type": "xp", "amount": 10}}
   ],
   "joins": [
     {"unitId": "ally11", "level": 8, "talk": [{"speaker": "ally11", "text": "関所の 上を 飛んでいたら、\n皆が 見えたんだ！ 僕も 行く！"}, {"speaker": "roran", "text": "空から 頼むよ。よろしく、{ally11}！"}, {"text": "{ally11}が 仲間に 加わった！"}]},

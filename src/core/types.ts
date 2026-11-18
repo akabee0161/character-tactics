@@ -34,7 +34,11 @@ export type CharProgress = { level: number; xp: number; bonus?: StatBonus };
 export type PartyProgress = { units: Record<string, CharProgress>; members: string[]; claimed: string[] };
 
 /** 加わる会話の待ち。foeUid は説得の相手の uid（村や開始時の加入なら null） */
-export type PendingRecruit = { recruit: RecruitDef; pos: Vec2; foeUid: string | null };
+/** village は村の加入のとき、どの村にどの仲間が訪れたか（説得は null） */
+export type PendingRecruit = {
+  recruit: RecruitDef; pos: Vec2; foeUid: string | null;
+  village: { villageId: string; visitorDefId: string } | null;
+};
 
 export type AiState = {
   def: AiDef;
@@ -129,7 +133,7 @@ export type BattlePhase = 'placement' | 'battle' | 'victory' | 'defeat';
 export type SimEvent =
   | { type: 'engage'; uid: string; defId: string; targetUid: string; targetDefId: string; firstMeeting: boolean }
   | { type: 'attack'; uid: string; defId: string; pos: Vec2; targetPos: Vec2 }
-  | { type: 'skill'; uid: string; defId: string; skillId: string; fromPos: Vec2; toPos: Vec2 }
+  | { type: 'skill'; uid: string; defId: string; skillId: string; fromPos: Vec2; toPos: Vec2; aim: Vec2 | null; affected: Vec2[] }
   | { type: 'pinch'; uid: string; defId: string }
   | { type: 'hit'; targetUid: string; targetPos: Vec2; amount: number;
       sourceUid: string; sourceDefId: string; attackKind: AttackKind; sourcePos: Vec2; neraiuchi: boolean }
@@ -140,7 +144,7 @@ export type SimEvent =
   | { type: 'bondSupport'; targetUid: string; targetDefId: string; supporterUids: string[]; pos: Vec2 }
   | { type: 'levelUp'; uid: string; defId: string; level: number; fromLevel: number; before: UnitStats; after: UnitStats }
   | { type: 'enemySpawned'; uid: string; defId: string; pos: Vec2 }
-  | { type: 'villageVisited'; uid: string; defId: string; villageId: string; text: string };
+  | { type: 'villageVisited'; uid: string; defId: string; villageId: string; text: string; fresh: boolean };
 
 /** 攻撃を出した時点で固定される攻撃側の値。近接も飛翔体も同じものを通す */
 export type HitSource = {

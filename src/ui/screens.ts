@@ -1,4 +1,4 @@
-import { lookupDef, skillParam } from '../engine/registry';
+import { lookupDef, lookupSpeaker, skillParam } from '../engine/registry';
 import { MAX_PARTY } from '../core/constants';
 import { partyIds } from '../core/party';
 import { DEFAULT_SKILL_COOLDOWN } from '../core/skills';
@@ -19,6 +19,7 @@ import { resultLine } from './result-text';
 import { KIND_COLOR, KIND_LABEL } from './stat-card';
 import type { Speech } from './speech';
 import type { TalkState } from './talk';
+import type { FallenBanner } from './fallen';
 import type { XpGain } from './flow';
 import type { Registry } from '../engine/registry';
 import type { ValidationError } from '../engine/schema';
@@ -321,6 +322,37 @@ export function drawSpeechBar(
   });
 }
 
+/** 仲間が倒れたときの帯。マップの上に重ね、顔・名前・最期の言葉を大きく出す。自動で消えるので操作は受けない */
+export const FALLEN_BANNER = { x: 0, y: 300, w: LOGICAL_W, h: 150 };
+
+export function drawFallenBanner(
+  ctx: CanvasRenderingContext2D,
+  reg: Registry,
+  banner: FallenBanner,
+  images: ImageCache,
+): void {
+  const r = FALLEN_BANNER;
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.72)';
+  ctx.fillRect(r.x, r.y, r.w, r.h);
+  ctx.fillStyle = INK;
+  ctx.fillRect(r.x, r.y, r.w, 2);
+  ctx.fillRect(r.x, r.y + r.h - 2, r.w, 2);
+
+  const def = lookupDef(reg, banner.defId) ?? { ...FALLBACK_DEF, name: banner.defId };
+  drawFace(ctx, { x: r.x + 24 + FACE_PX.large / 2, y: r.y + r.h / 2 }, FACE_PX.large / 2, def, images);
+
+  const bodyX = r.x + 24 + FACE_PX.large + 24;
+  ctx.fillStyle = INK;
+  ctx.font = '20px sans-serif';
+  ctx.fillText(def.name, bodyX, r.y + 42);
+  ctx.font = '30px sans-serif';
+  const lines = banner.text === null ? ['倒れた……'] : banner.text.split('\n');
+  // 帯の高さに収まる 2 行まで（最期の言葉は 2 行以内。lines のテストが見る）
+  lines.slice(0, 2).forEach((line, i) => {
+    ctx.fillText(line, bodyX, r.y + 88 + i * 38);
+  });
+}
+
 /** 会話フェーズのウィンドウ。背景のマップは呼び出し側が先に描いておく */
 export function drawTalk(
   ctx: CanvasRenderingContext2D,
@@ -342,7 +374,7 @@ export function drawTalk(
   const bodyX = r.x + (speaker === null ? TALK_PAD : TALK_BODY_X);
 
   if (speaker !== null) {
-    const info = lookupDef(reg, speaker) ?? { ...FALLBACK_DEF, name: speaker };
+    const info = lookupSpeaker(reg, speaker) ?? { ...FALLBACK_DEF, name: speaker };
     drawFace(ctx, { x: r.x + 54, y: r.y + 60 }, FACE_PX.large / 2, info, images);
     ctx.fillStyle = '#1a1a1a';
     ctx.font = '20px sans-serif';

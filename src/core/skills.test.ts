@@ -89,7 +89,7 @@ describe('ふんばる', () => {
     expect(unitOf(s, 'roran').funbaruUntil).toBe(10 + FUNBARU_DURATION);
     expect(s.events).toContainEqual({
       type: 'skill', uid: roran.uid, defId: 'roran', skillId: 'funbaru',
-      fromPos: roran.pos, toPos: roran.pos,
+      fromPos: roran.pos, toPos: roran.pos, aim: null, affected: [],
     });
   });
 
@@ -184,7 +184,7 @@ describe('かけぬける', () => {
     expect(offPath.hp).toBe(offPath.maxHp);
     expect(s.events).toContainEqual({
       type: 'skill', uid: gau.uid, defId: 'gau', skillId: 'kakenukeru',
-      fromPos: { x: 80, y: 208 }, toPos: { x: 260, y: 208 },
+      fromPos: { x: 80, y: 208 }, toPos: { x: 260, y: 208 }, aim: { x: 260, y: 208 }, affected: [{ x: 160, y: 208 }],
     });
   });
 
@@ -584,5 +584,57 @@ describe('技の量 = 技の基本量 + 使ったユニットの攻撃力（魔�
     const foe = addEnemy(s, 100, 208, 100);
     useSkill(s, axe.uid);
     expect(foe.hp).toBe(100 - (skillParam(s.reg, 'tatakiwari', 'damage', 0) + 10));
+  });
+});
+
+describe('技の出来事の描画用の値（aim・affected）', () => {
+  const skillEvent = (s: BattleState) => s.events.find((e) => e.type === 'skill') as Extract<BattleState['events'][number], { type: 'skill' }>;
+
+  it('火の雨の skill 出来事は aim に指した所、affected に当てた敵の位置を持つ', () => {
+    const s = fresh();
+    const caster = unitOf(s, 'ines');
+    caster.skillId = 'hinoame';
+    addEnemy(s, 200, 208);
+    addEnemy(s, 600, 208);
+    const dest = { x: 210, y: 208 };
+    useSkill(s, caster.uid, dest);
+    const ev = skillEvent(s);
+    expect(ev.aim).toEqual(dest);
+    expect(ev.affected).toContainEqual({ x: 200, y: 208 });
+    expect(ev.affected).not.toContainEqual({ x: 600, y: 208 });
+  });
+
+  it('突きの skill 出来事の aim は槍の先（長さ 80 の点）', () => {
+    const s = fresh();
+    const lancer = unitOf(s, 'roran');
+    lancer.skillId = 'tsuki';
+    lancer.pos = { x: 100, y: 100 };
+    const e = addEnemy(s, 100, 60);
+    lancer.engagedWith = e.uid;
+    useSkill(s, lancer.uid);
+    expect(skillEvent(s).aim).toEqual({ x: 100, y: 20 });
+  });
+
+  it('踏ん張るの skill 出来事は aim が null、affected が空', () => {
+    const s = fresh();
+    useSkill(s, unitOf(s, 'roran').uid);
+    const ev = skillEvent(s);
+    expect(ev.aim).toBeNull();
+    expect(ev.affected).toEqual([]);
+  });
+
+  it('はげますの affected は範囲の仲間の位置（自分を含む）', () => {
+    const s = fresh();
+    const caster = unitOf(s, 'mist');
+    caster.skillId = 'hagemasu';
+    caster.pos = { x: 80, y: 208 };
+    unitOf(s, 'roran').pos = { x: 140, y: 208 };
+    unitOf(s, 'gau').pos = { x: 600, y: 208 };
+    unitOf(s, 'ines').pos = { x: 900, y: 900 };
+    useSkill(s, caster.uid);
+    const affected = skillEvent(s).affected;
+    expect(affected).toContainEqual({ x: 80, y: 208 });
+    expect(affected).toContainEqual({ x: 140, y: 208 });
+    expect(affected).not.toContainEqual({ x: 600, y: 208 });
   });
 });

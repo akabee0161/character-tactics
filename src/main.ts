@@ -3,7 +3,9 @@ import { makeImageCache } from './render/images';
 import { lookupDef, skillParam } from './engine/registry';
 import { completeRecruit } from './core/events';
 import { MAX_PARTY } from './core/constants';
-import { pickDialogue, pickRecruitTalk, pickStageIntro, pickStageOutro } from './core/dialogue';
+import {
+  pickDialogue, pickRecruitTalk, pickStageIntro, pickStageOutro, pickVillageTalk,
+} from './core/dialogue';
 import { SKILL_EFFECT_IDS } from './core/skills';
 import { beginBattle, canPlaceAt, createBattleState, placeUnit, rebuildForSortie, statsForLevel } from './core/state';
 import { canChooseSortie, initialSortie, sortieCandidates, sortieProgress } from './core/sortie';
@@ -13,11 +15,16 @@ import { UNIT_R, drawBattle, drawDebugOverlay, drawDragPreview } from './render/
 import { bodyCenter } from './render/sprites';
 import { escortDefIds } from './render/objectives-view';
 import { resolveMoveDest } from './core/field';
-import { makeEffectState, resetEffects, spawnEffects, syncDisplayedHp, tickEffects } from './render/effects';
+import {
+  cancelDash, makeEffectState, resetEffects, spawnEffects, syncDisplayedHp, tickEffects,
+} from './render/effects';
 import { makeAnimStore, noteAttacks, resetAnim, updateMotion } from './render/anim';
 import { LOGICAL_H, LOGICAL_W, computeViewport, fitCanvas, logicalToMap, screenToLogical } from './render/viewport';
 import { debugKey, debugLabel, isDebugMode, makeDebugClock, simDt } from './ui/debug';
 import { clearSpeech, makeSpeechState, pushSpeech, tickSpeech } from './ui/speech';
+import {
+  clearFallen, currentBanner, makeFallenState, noteFallen, tickFallen, timeScale,
+} from './ui/fallen';
 import { applyStageClear, canSkipIntro, markIntroRead } from './ui/flow';
 import { hitRect, pickUnit } from './ui/hit';
 import { resolveMapGesture } from './ui/input';
@@ -34,12 +41,14 @@ import { stageTapTarget } from './ui/select-tap';
 import { allyCardFromSave, cardFromDef, cardFromGain, cardFromUnit, enemyCard, stageEnemies } from './ui/stat-card';
 import type { StatCard } from './ui/stat-card';
 import type { StageDef } from './engine/schema';
+import { nextInterrupt } from './ui/interrupts';
+import type { Interrupt } from './ui/interrupts';
 import { levelUpCard, mergeLevelUps } from './ui/levelup';
 import type { LevelUpEvent } from './ui/levelup';
 import { partyIds } from './core/party';
 import {
   drawBottomBar, drawDefeat, drawLoadErrors, drawPlacement, drawResult,
-  drawSpeechBar, drawStageSelect, drawTalk, drawTitle,
+  drawFallenBanner, drawSpeechBar, drawStageSelect, drawTalk, drawTitle,
 } from './ui/screens';
 import { advanceTalk, makeTalkState, skipTalk, tickTalk } from './ui/talk';
 import type { Measure, TalkState } from './ui/talk';
@@ -206,6 +215,7 @@ const talkMeasure: Measure = (t) => {
 };
 const talkMaxWidth = TALK_WINDOW.w - TALK_BODY_X - TALK_PAD;
 const effects = makeEffectState();
+const fallen = makeFallenState();
 const anim = makeAnimStore();
 
 /** 攻撃モーションの長さ。シートを持たないユニットは null */
@@ -260,6 +270,7 @@ function beginStage(index: number, retry: boolean): void {
   pendingSkill = null;
   clearSpeech(speech);
   resetEffects(effects);
+  clearFallen(fallen);
   resetAnim(anim);
   pointerStart = null;
   dragMap = null;
@@ -281,11 +292,22 @@ function endTalk(): void {
   phase = 'placement';
 }
 
+/** phase が 'event' の会話が、加入の会話（true）か村の会話（false）か。村と説得が同じ tick に起きても取り違えない */
+let eventTalkIsRecruit = false;
+
+/** 村の会話を終える。残っているレベルアップのカードがあれば先に出し、なければ戦闘へ戻る */
+function endVillageTalk(): void {
+  talk = null;
+  // 同じ tick に加入の予約があれば、カードより先に加入の会話（次の update で nextInterrupt が拾う）
+  phase = levelUps.length > 0 && battle?.pendingRecruit === null ? 'levelup' : 'battle';
+}
+
 /** 加入の会話を終える。仲間を足して戦闘へ戻る */
 function endRecruitTalk(state: BattleState): void {
   completeRecruit(state);
   talk = null;
-  phase = 'battle';
+  // 同じ tick のレベルアップのカードが残っていれば、戦闘が進む前に出す
+  phase = levelUps.length > 0 ? 'levelup' : 'battle';
 }
 
 /** 勝利の後始末。会話があってもなくても、必ずここを1度だけ通す */
@@ -348,7 +370,11 @@ function onPointerDown(ev: PointerEvent): void {
       // 加入の会話。「飛ばす」は無く、タップは必ず 1 行進むだけ
       if (!talk || !battle) return;
       advanceTalk(talk, talkMeasure, talkMaxWidth, TALK_MAX_LINES);
-      if (talk.done) endRecruitTalk(battle);
+      if (talk.done) {
+        // 加入の会話なら仲間を足す。村の会話なら、残るカードがあれば先に出す
+        if (eventTalkIsRecruit) endRecruitTalk(battle);
+        else endVillageTalk();
+      }
       return;
     }
 
@@ -532,7 +558,10 @@ function onPointerUp(ev: PointerEvent): void {
       selected = null;
       return;
     case 'moveUnit':
-      if (phase === 'battle') commands.push({ type: 'move', uid: g.uid, dest: g.dest });
+      if (phase === 'battle') {
+        commands.push({ type: 'move', uid: g.uid, dest: g.dest });
+        cancelDash(effects, g.uid);
+      }
       else placeUnit(battle, g.uid, g.dest);
       return;
     case 'none':
@@ -557,7 +586,11 @@ canvas.addEventListener('pointercancel', onPointerCancel);
 
 function update(realDt: number): void {
   // 一時停止とスロー再生は戦闘中だけ。会話や画面遷移まで止めると操作できなくなる
-  const dt = debugMode && phase === 'battle' ? simDt(debugClock, realDt, FIXED_DT) : realDt;
+  const base = debugMode && phase === 'battle' ? simDt(debugClock, realDt, FIXED_DT) : realDt;
+  // 仲間が倒れた間は画面の時間をゆっくりにする（帯の長さは実時間で数える）
+  // 一時停止中のコマ送り（1 入力 = 1 歩）にはゆっくりを掛けない
+  const stepping = debugMode && debugClock.paused;
+  const dt = phase === 'battle' && !stepping ? base * timeScale(fallen) : base;
   tickEffects(effects, dt);
   if ((phase === 'talk' || phase === 'outro' || phase === 'event') && talk) {
     tickTalk(talk, dt);
@@ -566,38 +599,53 @@ function update(realDt: number): void {
   if (phase !== 'battle' || !battle) return;
   syncDisplayedHp(effects, battle.units, dt);
   tickSpeech(speech, dt);
+  tickFallen(fallen, realDt);
 
   accumulator += dt;
+  let interrupt: Interrupt | null = null;
   while (accumulator >= FIXED_DT) {
     accumulator -= FIXED_DT;
     const batch = commands.splice(0, commands.length);
     step(battle, batch, FIXED_DT);
     spawnEffects(effects, battle.events);
+    noteFallen(fallen, battle.reg, battle.events);
     noteAttacks(anim, battle.events, battle.time, attackDuration);
     pushSpeech(speech, pickDialogue(battle.reg, battle.events));
     levelUps = mergeLevelUps(levelUps, battle.events);
-    if (levelUps.length > 0) break; // レベルアップの札を出す間は戦闘を止める
-    if (battle.pendingRecruit !== null) break; // 加入の会話の間は戦闘を止める
+    // 村の会話・加入の会話・レベルアップのカードの間は戦闘を止める（先に出す順は nextInterrupt）
+    // 負けが決まった tick は止めず、そのまま負けの画面へ進む
+    interrupt = battle.phase === 'defeat' ? null : nextInterrupt(battle.events, levelUps, battle.pendingRecruit);
+    if (interrupt !== null) break;
   }
-  if (levelUps.length > 0) {
-    // 札を出し終えてから、加入の会話・勝利の会話に入る（battle の状態は止まったまま残る）
+  if (interrupt !== null) {
+    // 会話・カードのあとに、前のタップで構えた必殺技が勝手に出ないようにする。battle の状態は止まったまま残る
     accumulator = 0;
-    pendingSkill = null; // 札のあとに、前のタップで構えた必殺技が勝手に出ないようにする
+    pendingSkill = null;
     pointerStart = null;
     dragMap = null;
     clearSpeech(speech);
     resetAnim(anim);
-    phase = 'levelup';
-    return;
-  }
-  if (battle.pendingRecruit !== null) {
-    accumulator = 0;
-    pendingSkill = null; // 会話のあとに、前のタップで構えた必殺技が勝手に出ないようにする
-    clearSpeech(speech);
-    resetAnim(anim);
-    talk = makeTalkState(
-      pickRecruitTalk(registry, battle.pendingRecruit.recruit), talkMeasure, talkMaxWidth, TALK_MAX_LINES,
-    );
+    if (interrupt.kind === 'levelUp') {
+      phase = 'levelup';
+      return;
+    }
+    if (interrupt.kind === 'village') {
+      talk = makeTalkState(
+        pickVillageTalk(registry, battle.stage, interrupt.villageId, interrupt.visitorDefId),
+        talkMeasure, talkMaxWidth, TALK_MAX_LINES,
+      );
+      eventTalkIsRecruit = false;
+      if (talk.done) endVillageTalk();
+      else phase = 'event';
+      return;
+    }
+    // 村の加入は村人との会話から、説得は加入の会話だけ
+    const pending = battle.pendingRecruit!;
+    const lines = pending.village !== null
+      ? pickVillageTalk(registry, battle.stage, pending.village.villageId, pending.village.visitorDefId)
+      : pickRecruitTalk(registry, pending.recruit);
+    talk = makeTalkState(lines, talkMeasure, talkMaxWidth, TALK_MAX_LINES);
+    eventTalkIsRecruit = true;
     if (talk.done) endRecruitTalk(battle);
     else phase = 'event';
     return;
@@ -674,6 +722,8 @@ function render(): void {
         drawBottomBar(ctx, registry, battle, selected, escorts, images);
         if (debugMode) drawDebugOverlay(ctx, registry, battle, anim, debugLabel(debugClock));
         if (speech.current !== null) drawSpeechBar(ctx, registry, speech.current, images);
+        const banner = currentBanner(fallen);
+        if (banner !== null) drawFallenBanner(ctx, registry, banner, images);
       }
       break;
     case 'result':

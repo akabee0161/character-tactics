@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { testRegistry } from '../core/testing';
 import { MAX_MEMBERS, MAX_PARTY } from './limits';
-import { buildRegistry, lookupDef, skillParam } from './registry';
+import { buildRegistry, lookupDef, lookupSpeaker, skillParam } from './registry';
 
 const UNIT = {
   id: 'roran', name: 'ロラン', role: 'たて', combat: true,
@@ -578,5 +578,127 @@ describe('buildRegistry: joins / persuasions / villages', () => {
   it('合計が 8 人を超えても 15 人以内ならエラーにならない', () => {
     const r = withJoins(MAX_PARTY);
     expect(reasons(r).some((s) => s.includes('人を こえている'))).toBe(false);
+  });
+});
+
+describe('村人', () => {
+  const NPC = { id: 'npc01', name: '村の 人', color: '#a08860', sprites: { face: 'npc01-face.png' } };
+  const withNpc = (extra: Record<string, unknown> = {}) => files({ 'assets/npcs/npc01.json': NPC, ...extra });
+
+  it('assets/npcs/ の村人を読み込む', () => {
+    const r = buildRegistry(withNpc(), KNOWN_SKILLS, ['npc01-face.png']);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.value.npcs.get('npc01')?.name).toBe('村の 人');
+  });
+
+  it('村人の顔の画像が assets/images/ に無いと起動時エラー', () => {
+    const r = buildRegistry(withNpc(), KNOWN_SKILLS, []);
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.errors[0]).toMatchObject({ file: 'assets/npcs/npc01.json', path: 'sprites.face' });
+  });
+
+  it('lookupSpeaker は村人の名前と顔を返す', () => {
+    const r = buildRegistry(withNpc(), KNOWN_SKILLS, ['npc01-face.png']);
+    if (!r.ok) throw new Error('読み込み失敗');
+    expect(lookupSpeaker(r.value, 'npc01')).toEqual({
+      name: '村の 人', color: '#a08860', role: '', sprites: { role: null, face: 'npc01-face.png', map: null },
+    });
+    expect(lookupSpeaker(r.value, 'roran')?.name).toBe('ロラン');
+    expect(lookupSpeaker(r.value, 'narazumono')?.name).toBe('ならずもの');
+    expect(lookupSpeaker(r.value, 'nobody')).toBeNull();
+  });
+
+  it('ステージの会話の話し手に村人を書ける', () => {
+    const stage = { ...STAGE, intro: [{ speaker: 'npc01', text: 'こんにちは' }] };
+    const r = buildRegistry(withNpc({ 'assets/stages/stage1.json': stage }), KNOWN_SKILLS, ['npc01-face.png']);
+    expect(r.ok).toBe(true);
+  });
+
+  it('村人の id が仲間・敵の id と重なると起動時エラー', () => {
+    const r = buildRegistry(
+      withNpc({ 'assets/npcs/roran.json': { ...NPC, id: 'roran' } }), KNOWN_SKILLS, ['npc01-face.png'],
+    );
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.errors.some((e) => e.reason.includes('roran'))).toBe(true);
+  });
+
+  it('村人のエラーは実際のファイルパスを指す（ファイル名と id が違っても）', () => {
+    const r = buildRegistry(
+      files({ 'assets/npcs/shopkeeper.json': { ...NPC, id: 'npc03', sprites: { face: 'nai.png' } } }),
+      KNOWN_SKILLS, [],
+    );
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.errors[0]).toMatchObject({ file: 'assets/npcs/shopkeeper.json', path: 'sprites.face' });
+  });
+
+  it('同じ id の村人が 2 つあれば弾く', () => {
+    const r = buildRegistry(
+      withNpc({ 'assets/npcs/npc01b.json': NPC }), KNOWN_SKILLS, ['npc01-face.png'],
+    );
+    expect(r.ok).toBe(false);
+  });
+});
+
+describe('村の会話の検証と {visitor}', () => {
+  const NPC = { id: 'npc01', name: '村の 人', color: '#a08860', sprites: { face: 'npc01-face.png' } };
+  const village = (extra: Record<string, unknown> = {}) => ({
+    id: 'v1', col: 0, row: 0, text: '{visitor}の HPが 回復した！', effect: { type: 'heal' }, ...extra,
+  });
+  const withVillage = (v: Record<string, unknown>, stageExtra: Record<string, unknown> = {}) =>
+    files({
+      'assets/npcs/npc01.json': NPC,
+      'assets/stages/stage1.json': { ...STAGE, villages: [v], ...stageExtra },
+    });
+  const IMAGES = ['npc01-face.png'];
+
+  it('村の npc が村人に無いと起動時エラー', () => {
+    const r = buildRegistry(withVillage(village({ npc: 'npc99' })), KNOWN_SKILLS, IMAGES);
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.errors.some((e) => e.path === 'villages[0].npc' && e.reason.includes('npc99'))).toBe(true);
+  });
+
+  it('村の talk と text の {visitor} は知らない名前にならない（本文は {visitor} のまま残る）', () => {
+    const v = village({
+      npc: 'npc01',
+      talk: [{ speaker: 'npc01', text: 'ようこそ' }, { speaker: '$visitor', text: '{visitor}です' }],
+    });
+    const r = buildRegistry(withVillage(v), KNOWN_SKILLS, IMAGES);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    const got = r.value.stages[0]!.villages[0]!;
+    expect(got.text).toBe('{visitor}の HPが 回復した！');
+    expect(got.talk[1]).toMatchObject({ speaker: '$visitor', text: '{visitor}です' });
+  });
+
+  it('村の talk の話し手は村人でも仲間でもよく、知らない話し手はエラー', () => {
+    const bad = village({ talk: [{ speaker: 'nobody', text: 'x' }] });
+    const r = buildRegistry(withVillage(bad), KNOWN_SKILLS, IMAGES);
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.errors.some((e) => e.path === 'villages[0].talk[0].speaker')).toBe(true);
+  });
+
+  it('intro の {visitor} は知らない名前のエラーになる', () => {
+    const r = buildRegistry(
+      withVillage(village(), { intro: [{ speaker: null, text: '{visitor}が 来た' }] }), KNOWN_SKILLS, IMAGES,
+    );
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.errors.some((e) => e.reason.includes('visitor'))).toBe(true);
+  });
+});
+
+describe('村人の予約 id', () => {
+  it('村人の id に $visitor は使えない', () => {
+    const NPC = { id: '$visitor', name: '村の 人', color: '#a08860', sprites: { face: null } };
+    const r = buildRegistry(files({ 'assets/npcs/visitor.json': NPC }), KNOWN_SKILLS, []);
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.errors.some((e) => e.file === 'assets/npcs/visitor.json' && e.path === 'id')).toBe(true);
   });
 });

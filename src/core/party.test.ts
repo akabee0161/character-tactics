@@ -14,7 +14,7 @@ function reg(ids: string[] = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']): Registry
   stage.joins = [{ unitId: 'e', level: 1, talk: [] }];
   stage.persuasions = [];
   stage.villages = [
-    { id: 'v', col: 0, row: 0, text: null, effect: { type: 'recruit', recruit: { unitId: 'f', level: 1, talk: [] } } },
+    { id: 'v', col: 0, row: 0, text: null, npc: null, talk: [], effect: { type: 'recruit', recruit: { unitId: 'f', level: 1, talk: [] } } },
   ];
   return { ...base, units, stages: [stage] };
 }
