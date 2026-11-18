@@ -82,7 +82,10 @@ export function buildRegistry(
       });
     } else if (inDir(path, 'npcs')) {
       take(validateNpcDef(path, raw), (d) => {
-        if (reg.npcs.has(d.id)) {
+        if (d.id === VISITOR_SPEAKER) {
+          // 村の talk では訪れた仲間を指す予約の話し手なので、村人の id にはできない
+          errors.push({ file: path, path: 'id', reason: `${VISITOR_SPEAKER} は よやくされた なまえ` });
+        } else if (reg.npcs.has(d.id)) {
           errors.push({ file: path, path: 'id', reason: `id が じゅうふくしている: ${d.id}` });
         } else {
           reg.npcs.set(d.id, d);

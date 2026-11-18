@@ -102,7 +102,7 @@ export function pickVillageTalk(
   const village = stage.villages.find((v) => v.id === villageId);
   if (!village) return [];
   const visitorName = lookupDef(reg, visitorDefId)?.name ?? visitorDefId;
-  const fill = (text: string): string => text.replaceAll('{visitor}', visitorName);
+  const fill = (text: string): string => text.replaceAll('{visitor}', () => visitorName);
   const out: TalkLine[] = pickTalk(reg, village.talk).map((l) => ({
     speaker: l.speaker === VISITOR_SPEAKER ? visitorDefId : l.speaker,
     text: fill(l.text),

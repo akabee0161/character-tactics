@@ -294,3 +294,21 @@ describe('pickVillageTalk と villageStops', () => {
     expect(pickDialogue(reg, [ev])[0]).toMatchObject({ lineId: 'village:v1', text: '村の 人が 手を ふっている' });
   });
 });
+
+describe('pickVillageTalk の名前の差し込み', () => {
+  it('訪れた仲間の名前に $& などが含まれても、そのまま差し込む', () => {
+    const reg = testRegistry();
+    const gau = reg.units.get('gau')!;
+    const original = gau.name;
+    gau.name = "ガ$&ウ$'";
+    try {
+      const stage: StageDef = {
+        ...reg.stages[0]!,
+        villages: [{ id: 'v1', col: 0, row: 0, text: '{visitor}が 休んだ', npc: null, talk: [], effect: { type: 'heal' } }],
+      };
+      expect(pickVillageTalk(reg, stage, 'v1', 'gau')).toEqual([{ speaker: null, text: "ガ$&ウ$'が 休んだ" }]);
+    } finally {
+      gau.name = original;
+    }
+  });
+});

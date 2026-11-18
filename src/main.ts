@@ -298,7 +298,8 @@ let eventTalkIsRecruit = false;
 /** 村の会話を終える。残っているレベルアップのカードがあれば先に出し、なければ戦闘へ戻る */
 function endVillageTalk(): void {
   talk = null;
-  phase = levelUps.length > 0 ? 'levelup' : 'battle';
+  // 同じ tick に加入の予約があれば、カードより先に加入の会話（次の update で nextInterrupt が拾う）
+  phase = levelUps.length > 0 && battle?.pendingRecruit === null ? 'levelup' : 'battle';
 }
 
 /** 加入の会話を終える。仲間を足して戦闘へ戻る */

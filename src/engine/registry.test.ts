@@ -692,3 +692,13 @@ describe('村の会話の検証と {visitor}', () => {
     expect(r.errors.some((e) => e.reason.includes('visitor'))).toBe(true);
   });
 });
+
+describe('村人の予約 id', () => {
+  it('村人の id に $visitor は使えない', () => {
+    const NPC = { id: '$visitor', name: '村の 人', color: '#a08860', sprites: { face: null } };
+    const r = buildRegistry(files({ 'assets/npcs/visitor.json': NPC }), KNOWN_SKILLS, []);
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.errors.some((e) => e.file === 'assets/npcs/visitor.json' && e.path === 'id')).toBe(true);
+  });
+});
