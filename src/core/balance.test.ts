@@ -470,6 +470,20 @@ describe('1 人の突っ込みと全員の急ぎ', () => {
     expect(skill.dest.y).toBeCloseTo(expected.y, 6);
   });
 
+  it('rushCommands は行き先の要る技を出した次の tick に、ゴールへの move を出し直す（技が移動の指示を消すため）', () => {
+    const state = battleOf('stage1');
+    const gau = players(state).find((u) => u.defId === 'gau')!;
+    gau.skillCooldownUntil = 0;
+    gau.engagedWith = 'dummy';
+    const set = new Set([gau.uid]);
+    const memory = new Map();
+    const first = rushCommands(state, set, 0, memory);
+    expect(first.some((c) => c.type === 'move')).toBe(true);
+    expect(first.some((c) => c.type === 'skill')).toBe(true);
+    const next = rushCommands(state, set, 1, memory);
+    expect(next.some((c) => c.type === 'move')).toBe(true);
+  });
+
   it('runRush は走らせる仲間がいなければ null', () => {
     expect(runRush(reg, stage('stage1'), newSave(reg), 1, 'flyer')).toBeNull();
   });

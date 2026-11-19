@@ -383,6 +383,9 @@ export function rushCommands(state: BattleState, rushers: Set<string>, tick: num
           const maxCells = skillParam(state.reg, u.skillId, 'maxCells', 0);
           const dest = maxCells > 0 ? limitReach(u.pos, goal, maxCells * state.grid.cell) : { ...goal };
           cmds.push({ type: 'skill', uid: u.uid, dest });
+          // 駆け抜ける・急降下は成功すると移動の指示（goalPos）を消す。次の tick にゴールへの move を出し直す
+          // （残すと、次の定期の出し直しまで最大 1 秒止まってしまい、技のあとも進み続ける人を測れない）
+          memory.delete(u.uid);
         }
       } else {
         cmds.push({ type: 'skill', uid: u.uid });
