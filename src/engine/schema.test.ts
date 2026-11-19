@@ -359,6 +359,7 @@ const VALID_STAGE = {
   placement: { minY: 64, starts: [{ x: 48, y: 80 }] },
   roster: ['roran', 'ines'],
   enemyLevel: 1,
+  parTimes: { gold: 10, silver: 20, bronze: 30 },
   enemies: [{ defId: 'narazumono', pos: { x: 80, y: 48 }, ai: { kind: 'aggressive' } }],
   victory: { type: 'reach', pos: { x: 80, y: 80 }, radius: 24, by: 'any' },
   defeat: [{ type: 'unitLost', defIds: ['roran'] }],
@@ -769,6 +770,7 @@ function stageRaw(over: Record<string, unknown> = {}): Record<string, unknown> {
     placement: { minY: 64, starts: [{ x: 48, y: 80 }] },
     roster: ['roran'],
     enemyLevel: 1,
+    parTimes: { gold: 10, silver: 20, bronze: 30 },
     enemies: [],
     victory: { type: 'reach', pos: { x: 48, y: 48 }, radius: 10, by: 'any' },
     defeat: [{ type: 'allPlayerUnitsLost' }],
@@ -1168,5 +1170,31 @@ describe('validateStageDef: 村の npc と talk', () => {
     const r = read(village({}), { intro: [{ speaker: VISITOR_SPEAKER, text: 'こんにちは' }] });
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.errors.some((e) => e.path === 'intro[0].speaker')).toBe(true);
+  });
+});
+
+describe('validateStageDef: parTimes（目安の時間）', () => {
+  const read = (parTimes: unknown) => validateStageDef('stages/stage1.json', { ...VALID_STAGE, parTimes });
+  it('金・銀・銅の秒を読む', () => {
+    const r = read({ gold: 30, silver: 60, bronze: 90 });
+    expect(r.ok && r.value.parTimes).toEqual({ gold: 30, silver: 60, bronze: 90 });
+  });
+  it('parTimes が無いステージは、その欄を名指しして弾く', () => {
+    const { parTimes: _drop, ...missing } = VALID_STAGE;
+    const r = validateStageDef('stages/stage1.json', missing);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors.some((e) => e.path === 'parTimes' && e.file === 'stages/stage1.json')).toBe(true);
+  });
+  it('整数でない・1 未満・文字は弾く', () => {
+    for (const bad of [{ gold: 0, silver: 60, bronze: 90 }, { gold: 30.5, silver: 60, bronze: 90 }, { gold: '30', silver: 60, bronze: 90 }, { gold: 30, silver: 60 }]) {
+      expect(read(bad).ok).toBe(false);
+    }
+  });
+  it('金 < 銀 < 銅 でなければ弾く（等しいも不可）', () => {
+    for (const bad of [{ gold: 60, silver: 60, bronze: 90 }, { gold: 30, silver: 90, bronze: 90 }, { gold: 90, silver: 60, bronze: 30 }]) {
+      const r = read(bad);
+      expect(r.ok).toBe(false);
+      if (!r.ok) expect(r.errors.some((e) => e.path.startsWith('parTimes'))).toBe(true);
+    }
   });
 });

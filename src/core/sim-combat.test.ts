@@ -16,6 +16,7 @@ const STAGE: StageDef = {
   placement: { minY: 0, starts: [{ x: 16, y: 16 }] },
   roster: ['roran', 'ines', 'mist', 'gau'],
   enemyLevel: 1,
+  parTimes: { gold: 10, silver: 20, bronze: 30 },
   enemies: [{ defId: 'narazumono', pos: { x: 304, y: 16 }, ai: { kind: 'aggressive' } }],
   spawners: [],
   joins: [],

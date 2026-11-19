@@ -49,6 +49,7 @@
     ]
   },
   "enemyLevel": 2,
+  "parTimes": { "gold": 15, "silver": 25, "bronze": 40 },
   "roster": ["roran", "ines", "mist", "gau"],
   "enemies": [
     { "defId": "tatemochi-2",  "pos": { "x": 240, "y": 144 }, "ai": { "kind": "aggressive" } },

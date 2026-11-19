@@ -44,6 +44,7 @@
     ]
   },
   "enemyLevel": 5,
+  "parTimes": { "gold": 15, "silver": 24, "bronze": 40 },
   "roster": ["roran", "ines", "mist", "gau"],
   "enemies": [
     { "defId": "yumihei-2",    "pos": { "x": 112, "y": 336 }, "ai": { "kind": "sentry", "sightRange": 130 } },

@@ -46,6 +46,7 @@
     ]
   },
   "enemyLevel": 16,
+  "parTimes": { "gold": 15, "silver": 34, "bronze": 60 },
   "roster": ["roran", "ines", "mist", "gau"],
   "enemies": [
     { "defId": "garum",      "pos": { "x": 240, "y": 112 }, "ai": { "kind": "aggressive" } },

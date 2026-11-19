@@ -46,6 +46,7 @@
     ]
   },
   "enemyLevel": 10,
+  "parTimes": { "gold": 15, "silver": 28, "bronze": 50 },
   "roster": ["roran", "ines", "mist", "gau"],
   "enemies": [
     { "defId": "majinaishi-3", "pos": { "x": 144, "y": 432 }, "ai": { "kind": "sentry", "sightRange": 140 } },

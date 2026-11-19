@@ -48,6 +48,7 @@
     ]
   },
   "enemyLevel": 3,
+  "parTimes": { "gold": 10, "silver": 19, "bronze": 30 },
   "roster": ["roran", "ines", "mist", "gau"],
   "enemies": [
     { "defId": "narazumono-8", "pos": { "x": 208, "y": 464 }, "ai": { "kind": "sentry", "sightRange": 100 } },

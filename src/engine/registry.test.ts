@@ -34,6 +34,7 @@ const STAGE = {
   placement: { minY: 64, starts: [{ x: 48, y: 80 }] },
   roster: ['roran'],
   enemyLevel: 1,
+  parTimes: { gold: 10, silver: 20, bronze: 30 },
   enemies: [{ defId: 'narazumono', pos: { x: 80, y: 48 }, ai: { kind: 'aggressive' } }],
   victory: { type: 'reach', pos: { x: 80, y: 80 }, radius: 24, by: 'any' },
   defeat: [{ type: 'unitLost', defIds: ['roran'] }],
