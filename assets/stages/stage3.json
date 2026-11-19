@@ -48,18 +48,18 @@
   "enemyLevel": 16,
   "roster": ["roran", "ines", "mist", "gau"],
   "enemies": [
-    { "defId": "tatemochi",  "pos": { "x": 176, "y": 496 }, "ai": { "kind": "aggressive" } },
-    { "defId": "tatemochi-2",  "pos": { "x": 368, "y": 496 }, "ai": { "kind": "aggressive" } },
-    { "defId": "tatemochi",  "pos": { "x": 176, "y": 304 }, "ai": { "kind": "guard", "post": { "x": 176, "y": 272 }, "leash": 140, "sightRange": 120 } },
-    { "defId": "tatemochi-2",  "pos": { "x": 336, "y": 304 }, "ai": { "kind": "guard", "post": { "x": 336, "y": 272 }, "leash": 140, "sightRange": 120 } },
     { "defId": "garum",      "pos": { "x": 240, "y": 112 }, "ai": { "kind": "aggressive" } },
     { "defId": "majinaishi-3", "pos": { "x": 176, "y": 208 }, "ai": { "kind": "aggressive" } },
     { "defId": "majinaishi", "pos": { "x": 304, "y": 208 }, "ai": { "kind": "aggressive" } },
     { "defId": "majinaishi-2", "pos": { "x": 240, "y": 240 }, "ai": { "kind": "aggressive" } },
-    { "defId": "majinaishi-3", "pos": { "x": 240, "y": 400 }, "ai": { "kind": "aggressive" } },
-    { "defId": "majinaishi", "pos": { "x": 112, "y": 400 }, "ai": { "kind": "aggressive" } },
-    { "defId": "majinaishi-2", "pos": { "x": 368, "y": 400 }, "ai": { "kind": "aggressive" } },
-    { "defId": "majinaishi-3", "pos": { "x": 240, "y": 480 }, "ai": { "kind": "aggressive" } }
+    { "defId": "tatemochi", "pos": { "x": 172, "y": 432 }, "ai": { "kind": "guard", "post": { "x": 172, "y": 432 }, "leash": 2, "sightRange": 140 } },
+    { "defId": "tatemochi-2", "pos": { "x": 396, "y": 432 }, "ai": { "kind": "guard", "post": { "x": 396, "y": 432 }, "leash": 2, "sightRange": 140 } },
+    { "defId": "majinaishi", "pos": { "x": 196, "y": 432 }, "ai": { "kind": "guard", "post": { "x": 196, "y": 432 }, "leash": 2, "sightRange": 140 } },
+    { "defId": "majinaishi-2", "pos": { "x": 420, "y": 432 }, "ai": { "kind": "guard", "post": { "x": 420, "y": 432 }, "leash": 2, "sightRange": 140 } },
+    { "defId": "majinaishi-3", "pos": { "x": 220, "y": 432 }, "ai": { "kind": "guard", "post": { "x": 220, "y": 432 }, "leash": 2, "sightRange": 140 } },
+    { "defId": "majinaishi-2", "pos": { "x": 444, "y": 432 }, "ai": { "kind": "guard", "post": { "x": 444, "y": 432 }, "leash": 2, "sightRange": 140 } },
+    { "defId": "majinaishi", "pos": { "x": 244, "y": 432 }, "ai": { "kind": "guard", "post": { "x": 244, "y": 432 }, "leash": 2, "sightRange": 140 } },
+    { "defId": "majinaishi-3", "pos": { "x": 468, "y": 432 }, "ai": { "kind": "guard", "post": { "x": 468, "y": 432 }, "leash": 2, "sightRange": 140 } }
   ],
   "spawners": [
     { "defId": "narazumono", "pos": { "x": 80, "y": 80 }, "firstAfter": 15, "every": 12, "total": 4 }

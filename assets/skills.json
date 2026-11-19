@@ -2,12 +2,12 @@
   { "id": "funbaru",    "label": "踏ん張る",   "summary": "{duration}秒の あいだ、受ける ダメージが 半分", "params": { "duration": 5, "cooldown": 15 } },
   { "id": "neraiuchi",  "label": "狙い撃ち", "summary": "次の 矢の ダメージが 2倍", "params": { "cooldown": 12 } },
   { "id": "omajinai",   "label": "おまじない", "summary": "近くで 一番 弱っている 仲間の HPを {heal} 回復", "params": { "heal": 7, "range": 200, "cooldown": 10 } },
-  { "id": "kakenukeru", "label": "駆け抜ける", "summary": "{maxCells}マス 先までの 指した 所へ 走り抜け、通り道の 敵に {damage} ダメージ", "params": { "maxCells": 4, "damage": 2, "needsDest": 1, "cooldown": 8 } },
+  { "id": "kakenukeru", "label": "駆け抜ける", "summary": "{maxCells}マス 先までの 指した 所へ 走り抜け、通り道の 敵に {damage} ダメージ", "params": { "maxCells": 4, "damage": 2, "needsDest": 1, "cooldown": 14 } },
   { "id": "hikitsukeru", "label": "引きつける", "summary": "{duration}秒の あいだ、近くの 敵を 自分に 向かわせる", "params": { "range": 96, "duration": 6, "cooldown": 16 } },
   { "id": "hinoame",    "label": "火の雨", "summary": "指した 所の まわりの 敵に {damage} ダメージ", "params": { "radius": 48, "damage": 3, "needsDest": 1, "cooldown": 14 } },
   { "id": "tsuki",      "label": "突き", "summary": "まっすぐ 突き、並んだ 敵に {damage} ダメージ", "params": { "length": 80, "damage": 4, "cooldown": 9 } },
   { "id": "hagemasu",   "label": "はげます", "summary": "{duration}秒の あいだ、近くの 仲間の 攻撃力 +{power}", "params": { "range": 120, "power": 2, "duration": 8, "cooldown": 15 } },
   { "id": "tatakiwari", "label": "たたき割り", "summary": "目の前の 敵 1体に {damage} ダメージ（守備を 無視）", "params": { "damage": 6, "range": 32, "cooldown": 12 } },
   { "id": "kekkai",     "label": "結界", "summary": "{duration}秒の あいだ、近くの 仲間の 魔法防御 +{resist}", "params": { "range": 120, "resist": 6, "duration": 8, "cooldown": 16 } },
-  { "id": "kyuukouka",  "label": "急降下", "summary": "{maxCells}マス 先までの 指した 所へ 飛び、まわりの 敵に {damage} ダメージ", "params": { "maxCells": 4, "radius": 32, "damage": 3, "needsDest": 1, "cooldown": 10 } }
+  { "id": "kyuukouka",  "label": "急降下", "summary": "{maxCells}マス 先までの 指した 所へ 飛び、まわりの 敵に {damage} ダメージ", "params": { "maxCells": 4, "radius": 32, "damage": 3, "needsDest": 1, "cooldown": 14 } }
 ]
