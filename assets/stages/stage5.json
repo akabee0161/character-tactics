@@ -44,19 +44,22 @@
     ]
   },
   "enemyLevel": 5,
+  "parTimes": { "gold": 15, "silver": 24, "bronze": 40 },
   "roster": ["roran", "ines", "mist", "gau"],
   "enemies": [
-    { "defId": "narazumono-13", "pos": { "x": 144, "y": 432 }, "ai": { "kind": "sentry", "sightRange": 90 } },
-    { "defId": "narazumono-14", "pos": { "x": 336, "y": 432 }, "ai": { "kind": "sentry", "sightRange": 90 } },
     { "defId": "yumihei-2",    "pos": { "x": 112, "y": 336 }, "ai": { "kind": "sentry", "sightRange": 130 } },
     { "defId": "tatemochi",  "pos": { "x": 240, "y": 336 }, "ai": { "kind": "sentry", "sightRange": 110 } },
     { "defId": "narazumono", "pos": { "x": 144, "y": 240 }, "ai": { "kind": "sentry", "sightRange": 90 } },
     { "defId": "narazumono-2", "pos": { "x": 336, "y": 240 }, "ai": { "kind": "sentry", "sightRange": 90 } },
     { "defId": "yumihei-3",    "pos": { "x": 240, "y": 144 }, "ai": { "kind": "sentry", "sightRange": 130 } },
-    { "defId": "narazumono-3", "pos": { "x": 240, "y": 432 }, "ai": { "kind": "sentry", "sightRange": 90 } },
     { "defId": "tatemochi-2",  "pos": { "x": 336, "y": 336 }, "ai": { "kind": "sentry", "sightRange": 110 } },
     { "defId": "yumihei",    "pos": { "x": 336, "y": 144 }, "ai": { "kind": "sentry", "sightRange": 130 } },
-    { "defId": "narazumono-4", "pos": { "x": 208, "y": 432 }, "ai": { "kind": "sentry", "sightRange": 110 } }
+    { "defId": "narazumono-13", "pos": { "x": 48, "y": 176 }, "ai": { "kind": "guard", "post": { "x": 48, "y": 176 }, "leash": 2, "sightRange": 120 } },
+    { "defId": "narazumono-14", "pos": { "x": 176, "y": 176 }, "ai": { "kind": "guard", "post": { "x": 176, "y": 176 }, "leash": 2, "sightRange": 120 } },
+    { "defId": "narazumono-3", "pos": { "x": 208, "y": 176 }, "ai": { "kind": "guard", "post": { "x": 208, "y": 176 }, "leash": 2, "sightRange": 120 } },
+    { "defId": "narazumono-4", "pos": { "x": 304, "y": 176 }, "ai": { "kind": "guard", "post": { "x": 304, "y": 176 }, "leash": 2, "sightRange": 120 } },
+    { "defId": "narazumono-5", "pos": { "x": 336, "y": 176 }, "ai": { "kind": "guard", "post": { "x": 336, "y": 176 }, "leash": 2, "sightRange": 120 } },
+    { "defId": "narazumono-6", "pos": { "x": 464, "y": 176 }, "ai": { "kind": "guard", "post": { "x": 464, "y": 176 }, "leash": 2, "sightRange": 120 } }
   ],
   "victory": { "type": "reach", "pos": { "x": 240, "y": 48 }, "radius": 40, "by": "any" },
   "defeat": [{ "type": "unitLost", "defIds": ["roran"] }],

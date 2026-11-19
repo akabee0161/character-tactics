@@ -14,15 +14,16 @@ import {
 } from './layout';
 import { currentSpeaker, pageCount, visibleLines } from './talk';
 import { isStageUnlocked } from './flow';
+import { formatClearTime, rankFor, RANK_COLOR, RANK_LABEL } from './clear-time';
 import { maxScroll } from './scroll';
 import { resultLine } from './result-text';
 import { KIND_COLOR, KIND_LABEL } from './stat-card';
 import type { Speech } from './speech';
 import type { TalkState } from './talk';
 import type { FallenBanner } from './fallen';
-import type { XpGain } from './flow';
+import type { ClearRecord, XpGain } from './flow';
 import type { Registry } from '../engine/registry';
-import type { ValidationError } from '../engine/schema';
+import type { ParTimes, ValidationError } from '../engine/schema';
 import type { SaveData } from '../save/save';
 import type { BattleState } from '../core/types';
 import type { Rect } from './hit';
@@ -115,6 +116,22 @@ export function drawStageSelect(
         ctx.textAlign = 'right';
         ctx.fillText('クリア済み', r.x + r.w - 10, r.y + 20);
         ctx.textAlign = 'center';
+        const best = save.bestTimes[stage.id];
+        if (best !== undefined) {
+          // 左上に「金 1分58秒」。評価が無い（銅より遅い）ときは時間だけ
+          const rank = rankFor(best, stage.parTimes);
+          ctx.textAlign = 'left';
+          ctx.font = '14px sans-serif';
+          let x = r.x + 10;
+          if (rank) {
+            ctx.fillStyle = RANK_COLOR[rank];
+            ctx.fillText(RANK_LABEL[rank], x, r.y + 20);
+            x += 22;
+          }
+          ctx.fillStyle = INK;
+          ctx.fillText(formatClearTime(best), x, r.y + 20);
+          ctx.textAlign = 'center';
+        }
       }
       const b = enemyBtnIn(r);
       panel(ctx, b, '#1c3144');
@@ -402,13 +419,16 @@ export function drawResult(
   ctx: CanvasRenderingContext2D,
   reg: Registry,
   gains: XpGain[],
+  clearRec: ClearRecord,
+  par: ParTimes,
   images: ImageCache,
 ): void {
   clear(ctx);
   ctx.fillStyle = INK;
   ctx.font = '28px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('敵の 本拠地に 到達！', LOGICAL_W / 2, 100);
+  ctx.fillText('敵の 本拠地に 到達！', LOGICAL_W / 2, 52);
+  drawClearTime(ctx, clearRec, par);
   ctx.textAlign = 'left';
 
   ctx.font = '19px sans-serif';
@@ -433,6 +453,37 @@ export function drawResult(
 
 
   button(ctx, BTN.next, '次へ', true, true);
+}
+
+/** 結果の画面の見出しの下: 今回の時間と評価、一番速い記録。仲間の行（y=150〜）の上に収める */
+function drawClearTime(ctx: CanvasRenderingContext2D, rec: ClearRecord, par: ParTimes): void {
+  const cx = LOGICAL_W / 2;
+  const rank = rankFor(rec.seconds, par);
+  ctx.font = '22px sans-serif';
+  const label = 'クリア ';
+  const time = formatClearTime(rec.seconds);
+  const rankText = rank ? RANK_LABEL[rank] : '';
+  const gap = rank ? 14 : 0;
+  const w = ctx.measureText(label).width + ctx.measureText(time).width + gap + (rank ? ctx.measureText(rankText).width : 0);
+  let x = cx - w / 2;
+  ctx.textAlign = 'left';
+  ctx.fillStyle = INK;
+  ctx.fillText(label + time, x, 88);
+  if (rank) {
+    x += ctx.measureText(label + time).width + gap;
+    ctx.fillStyle = RANK_COLOR[rank];
+    ctx.font = 'bold 26px sans-serif';
+    ctx.fillText(rankText, x, 88);
+  }
+  ctx.textAlign = 'center';
+  ctx.font = '17px sans-serif';
+  if (rec.isRecord) {
+    ctx.fillStyle = RANK_COLOR.gold;
+    ctx.fillText(`最高 ${formatClearTime(rec.best)}　記録更新！`, cx, 118);
+  } else {
+    ctx.fillStyle = '#9fb3c4';
+    ctx.fillText(`最高 ${formatClearTime(rec.best)}`, cx, 118);
+  }
 }
 
 export function drawDefeat(ctx: CanvasRenderingContext2D): void {

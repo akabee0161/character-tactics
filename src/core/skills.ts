@@ -97,7 +97,8 @@ export const SKILL_EFFECTS: Record<string, SkillEffect> = {
   kakenukeru: ({ state, self, dest, out }) => {
     if (!dest) return null;
     // 壁の脇を指しても、足元の箱が壁にかからない位置へ寄せる
-    const to = fitInCell(state.grid, dest);
+    const maxCells = skillParam(state.reg, 'kakenukeru', 'maxCells', 0);
+    const to = fitInCell(state.grid, maxCells > 0 ? limitReach(self.pos, dest, maxCells * state.grid.cell) : dest);
     if (!to) return null;
     const from = { ...self.pos };
     // 移動と同じ基準。点をまばらに調べると、点と点のあいだで箱が壁の角をかすめる経路を通してしまう
@@ -196,7 +197,8 @@ export const SKILL_EFFECTS: Record<string, SkillEffect> = {
     const radius = skillParam(state.reg, 'kyuukouka', 'radius', KYUUKOUKA_RADIUS);
     const damage = skillAmount(state.reg, 'kyuukouka', 'damage', KYUUKOUKA_DAMAGE, self.power);
     // 飛んで降りるので、壁の向こうでも行ける。マップの外だけは内側へ寄せる
-    const to = clampToMap(state.grid, dest);
+    const maxCells = skillParam(state.reg, 'kyuukouka', 'maxCells', 0);
+    const to = clampToMap(state.grid, maxCells > 0 ? limitReach(self.pos, dest, maxCells * state.grid.cell) : dest);
     const from = { ...self.pos };
     let hits = 0;
     for (const enemy of hostilesOf(state, self)) {
@@ -253,4 +255,12 @@ export function useSkill(state: BattleState, uid: string, dest?: Vec2): boolean 
     fromPos, toPos: { ...self.pos }, aim: out.aim, affected: out.affected,
   });
   return true;
+}
+
+/** from から dest へ向かう点を、from から max より遠くならないよう、向きを保って止める */
+export function limitReach(from: Vec2, dest: Vec2, max: number): Vec2 {
+  const d = distance(from, dest);
+  if (d <= max) return dest;
+  const k = max / d;
+  return { x: from.x + (dest.x - from.x) * k, y: from.y + (dest.y - from.y) * k };
 }

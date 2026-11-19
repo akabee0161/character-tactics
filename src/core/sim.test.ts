@@ -34,6 +34,7 @@ const STAGE: StageDef = {
   placement: { minY: 0, starts: [{ x: 16, y: 16 }] },
   roster: ['roran', 'ines', 'mist', 'gau'],
   enemyLevel: 1,
+  parTimes: { gold: 10, silver: 20, bronze: 30 },
   enemies: [{ defId: 'narazumono', pos: { x: 304, y: 16 }, ai: { kind: 'aggressive' } }],
   spawners: [],
   joins: [],
@@ -56,6 +57,7 @@ const AI_STAGE: StageDef = {
   placement: { minY: 0, starts: [{ x: 16, y: 16 }] },
   roster: ['roran', 'ines', 'mist', 'gau'],
   enemyLevel: 1,
+  parTimes: { gold: 10, silver: 20, bronze: 30 },
   enemies: [],
   spawners: [],
   joins: [],
@@ -69,6 +71,8 @@ function fresh(stage: StageDef = STAGE): { stage: StageDef; state: BattleState }
   const state = createBattleState(testRegistry(), stage, { units: LV1, members: [], claimed: [] }, 42);
   beginBattle(state);
   instantAttacks(state);
+  // 駆け抜ける・急降下は戦闘の開始からしばらく使えない（startCooldown）。この試験は使える状態から始める
+  for (const u of state.units) u.skillCooldownUntil = 0;
   // 邪魔にならない場所へ全員どける
   for (const u of state.units) if (u.side === 'player') u.pos = { x: 16, y: 80 };
   return { stage, state };
@@ -344,8 +348,8 @@ describe('step: skill コマンド', () => {
 
   it('かけぬけるは dest つきで発動する', () => {
     const { state: s } = fresh();
-    step(s, [{ type: 'skill', uid: unitOf(s, 'gau').uid, dest: { x: 200, y: 80 } }], 0.1);
-    expect(unitOf(s, 'gau').pos).toEqual({ x: 200, y: 80 });
+    step(s, [{ type: 'skill', uid: unitOf(s, 'gau').uid, dest: { x: 120, y: 80 } }], 0.1);
+    expect(unitOf(s, 'gau').pos).toEqual({ x: 120, y: 80 });
   });
 });
 

@@ -42,7 +42,10 @@ function hasBonus(b: StatBonus): boolean {
   return b.maxHp > 0 || b.power > 0 || b.guard > 0 || b.speed > 0 || b.resist > 0;
 }
 
-export type StageResult = { save: SaveData; gains: XpGain[] };
+/** 今回のクリアの時間と、一番速い記録。best は書き換えた後の値、isRecord は初めてか前より速いとき */
+export type ClearRecord = { seconds: number; best: number; prevBest: number | null; isRecord: boolean };
+
+export type StageResult = { save: SaveData; gains: XpGain[]; clear: ClearRecord };
 
 export function applyStageClear(
   reg: Registry,
@@ -81,9 +84,17 @@ export function applyStageClear(
     gains.unshift({ id: b.defId, before: rec, after: { ...rec }, leveledUp: false, joined: true });
   }
 
+  // 一番速い記録。勝ったときだけここを通るので、負けた回の時間は残らない
+  const seconds = battle.time;
+  const prevBest = save.bestTimes[stageId] ?? null;
+  const isRecord = prevBest === null || seconds < prevBest;
+  const best = isRecord ? seconds : prevBest;
+
   return {
+    clear: { seconds, best, prevBest, isRecord },
     save: {
       ...save,
+      bestTimes: isRecord ? { ...save.bestTimes, [stageId]: seconds } : save.bestTimes,
       clearedStageIds: save.clearedStageIds.includes(stageId)
         ? save.clearedStageIds
         : [...save.clearedStageIds, stageId],

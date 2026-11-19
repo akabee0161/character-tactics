@@ -10,6 +10,8 @@ import type { BattleState, CharProgress } from '../core/types';
 type UnitOver = { level: number; xp: number; retired?: boolean };
 type BattleOver = {
   units?: Partial<Record<string, UnitOver>>;
+  /** 戦闘の時計（秒）。既定は 30 */
+  time?: number;
 };
 
 /**
@@ -26,7 +28,7 @@ const battleWith = (over: BattleOver = {}): BattleState => {
     retired: p!.retired ?? true,
     statBonus: { maxHp: 0, power: 0, guard: 0, speed: 0 },
   }));
-  return { units, joined: [], benchedRecruits: [], claimed: [] } as unknown as BattleState;
+  return { units, joined: [], benchedRecruits: [], claimed: [], time: over.time ?? 30 } as unknown as BattleState;
 };
 
 /** クリアボーナスのテスト用に、実際の Unit(retired: false がデフォルト)を持つ BattleState を組む */
@@ -261,5 +263,38 @@ describe('canSkipIntro', () => {
   it('加入の会話が無いステージは既読だけで飛ばせる', () => {
     const s = markIntroRead(newSave(reg), base.id);
     expect(canSkipIntro(s, { ...base, joins: [] })).toBe(true);
+  });
+});
+
+describe('applyStageClear: 一番速いクリアの記録', () => {
+  const reg = testRegistry();
+  const clear = (bestTimes: Record<string, number>, time: number) =>
+    applyStageClear(reg, { ...newSave(reg), bestTimes }, 'stage1', battleWith({ time }));
+
+  it('初めてのクリアは記録更新で、best が今回の秒', () => {
+    const r = clear({}, 75.3);
+    expect(r.clear).toEqual({ seconds: 75.3, best: 75.3, prevBest: null, isRecord: true });
+    expect(r.save.bestTimes.stage1).toBe(75.3);
+  });
+  it('前より速ければ書き換えて記録更新', () => {
+    const r = clear({ stage1: 80 }, 70);
+    expect(r.clear).toEqual({ seconds: 70, best: 70, prevBest: 80, isRecord: true });
+    expect(r.save.bestTimes.stage1).toBe(70);
+  });
+  it('前より遅ければ変えず、記録更新でない', () => {
+    const r = clear({ stage1: 60 }, 70);
+    expect(r.clear).toEqual({ seconds: 70, best: 60, prevBest: 60, isRecord: false });
+    expect(r.save.bestTimes.stage1).toBe(60);
+  });
+  it('同じ秒は記録更新でない', () => {
+    const r = clear({ stage1: 60 }, 60);
+    expect(r.clear.isRecord).toBe(false);
+    expect(r.save.bestTimes.stage1).toBe(60);
+  });
+  it('ほかのステージの記録は変えない。元のセーブも書き換えない', () => {
+    const base = { ...newSave(reg), bestTimes: { stage2: 33 } };
+    const r = applyStageClear(reg, base, 'stage1', battleWith({ time: 50 }));
+    expect(r.save.bestTimes).toEqual({ stage2: 33, stage1: 50 });
+    expect(base.bestTimes).toEqual({ stage2: 33 });
   });
 });

@@ -54,7 +54,7 @@ import { advanceTalk, makeTalkState, skipTalk, tickTalk } from './ui/talk';
 import type { Measure, TalkState } from './ui/talk';
 import { loadSave, newSave, writeSave } from './save/save';
 import type { SaveData } from './save/save';
-import type { XpGain } from './ui/flow';
+import type { ClearRecord, XpGain } from './ui/flow';
 import type { BattleState, Unit, Vec2 } from './core/types';
 
 const FIXED_DT = 1 / 60;
@@ -200,7 +200,7 @@ function toStageSelect(): void {
 }
 
 let pendingSkill: string | null = null;
-let result: { gains: XpGain[] } | null = null;
+let result: { gains: XpGain[]; clear: ClearRecord } | null = null;
 /** 護衛対象の defId。beginStage で1度だけ作る */
 let escorts: Set<string> = new Set();
 const speech = makeSpeechState();
@@ -315,7 +315,7 @@ function finishStage(state: BattleState): void {
   const r = applyStageClear(registry, save, stageId, state);
   save = r.save;
   hasSave = writeSave(window.localStorage, save) || hasSave;
-  result = { gains: r.gains };
+  result = { gains: r.gains, clear: r.clear };
   phase = 'result';
 }
 
@@ -727,7 +727,7 @@ function render(): void {
       }
       break;
     case 'result':
-      if (result) drawResult(ctx, registry, result.gains, images);
+      if (result) drawResult(ctx, registry, result.gains, result.clear, registry.stages.find((s) => s.id === stageId)!.parTimes, images);
       drawOverlay();
       break;
     case 'defeat':

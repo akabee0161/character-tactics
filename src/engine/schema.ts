@@ -525,6 +525,9 @@ export type PlacementDef = {
   starts: Vec2[];
 };
 
+/** クリアの時間（秒）の目安。この秒以下で金・銀・銅。金 < 銀 < 銅 */
+export type ParTimes = { gold: number; silver: number; bronze: number };
+
 export type StageDef = {
   /** ファイル名と一致させる。セーブのキーになる */
   id: string;
@@ -542,6 +545,8 @@ export type StageDef = {
   roster: string[];
   /** このステージの敵（配置・時間湧き・説得の相手）のレベル。1 以上の整数。必須 */
   enemyLevel: number;
+  /** クリアの時間（秒）の金・銀・銅の目安。整数で 金 < 銀 < 銅。必須。直すと前の記録の評価も変わる */
+  parTimes: ParTimes;
   enemies: EnemyPlacement[];
   spawners: SpawnerDef[];
   victory: VictoryCond;
@@ -905,6 +910,18 @@ function readVillages(
   return out;
 }
 
+function readParTimes(ctx: Ctx, v: unknown): ParTimes {
+  const o = requireObject(ctx, 'parTimes', v);
+  const read = (key: keyof ParTimes): number | null => (o ? requireNumber(ctx, `parTimes.${key}`, o[key], { min: 1, int: true }) : null);
+  const gold = read('gold');
+  const silver = read('silver');
+  const bronze = read('bronze');
+  if (gold !== null && silver !== null && bronze !== null && !(gold < silver && silver < bronze)) {
+    fail(ctx, 'parTimes', 'gold < silver < bronze の じゅんに おおきく する');
+  }
+  return { gold: gold ?? 1, silver: silver ?? 2, bronze: bronze ?? 3 };
+}
+
 export function validateStageDef(file: string, raw: unknown): Validated<StageDef> {
   const ctx = makeCtx(file);
   const o = requireObject(ctx, '', raw);
@@ -970,6 +987,7 @@ export function validateStageDef(file: string, raw: unknown): Validated<StageDef
     placement: { minY: placement.minY, starts: placement.starts },
     roster: readStringArray(ctx, 'roster', o.roster, 1),
     enemyLevel: requireNumber(ctx, 'enemyLevel', o.enemyLevel, { min: 1, int: true }) ?? 1,
+    parTimes: readParTimes(ctx, o.parTimes),
     enemies,
     spawners: readSpawners(ctx, o.spawners, checkWalkable, checkAboveLine),
     victory: readVictory(ctx, o.victory),

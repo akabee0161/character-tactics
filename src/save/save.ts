@@ -21,6 +21,8 @@ export type SaveData = {
   claimed: string[];
   /** 前回「始める」を押したときの出撃の defId。並びのまま。次のステージの最初の出撃に引き継ぐ */
   sortie: string[];
+  /** ステージ ID → 一番速いクリアの秒（小数のまま。戦闘の時計）。勝ったときだけ書く。評価は書かず、目安の時間からその場で出す */
+  bestTimes: Record<string, number>;
 };
 
 function isFiniteNonNegInt(v: unknown): boolean {
@@ -55,7 +57,7 @@ export function newSave(reg: Registry): SaveData {
   for (const id of reg.units.keys()) units[id] = { level: 1, xp: 0 };
   return {
     version: SAVE_VERSION, clearedStageIds: [], readIntroStageIds: [],
-    units, members: [], claimed: [], sortie: [],
+    units, members: [], claimed: [], sortie: [], bestTimes: {},
   };
 }
 
@@ -110,6 +112,13 @@ function reconcile(raw: Record<string, unknown>, reg: Registry): SaveData {
         seen.add(id);
         save.sortie.push(id);
       }
+    }
+  }
+  // 旧セーブに bestTimes は無い（記録なし）。壊れた項目だけ捨てる
+  if (isPlainObject(raw.bestTimes)) {
+    const known = new Set(reg.stages.map((s) => s.id));
+    for (const [id, v] of Object.entries(raw.bestTimes)) {
+      if (known.has(id) && typeof v === 'number' && Number.isFinite(v) && v > 0) save.bestTimes[id] = v;
     }
   }
   if (Array.isArray(raw.claimed)) {

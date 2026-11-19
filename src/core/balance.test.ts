@@ -3,16 +3,19 @@ import { newSave } from '../save/save';
 import {
   BATTLE_DT, BATTLE_TIME_LIMIT, botCommands, MAX_ATTEMPTS, TARGET_BANDS, formatTable, isOutOfBand, measure, playThrough, runBattle,
   boostLevels, goalSafeDest, routeAvoidingGoal, walkableSafeDest,
+  isOutOfBandRush, pickRushers, rushCommands, runRush, RUSH_MAX, RUSH_SEEDS, RUSH_SKILL_NEAR, RUSH_EXEMPT,
 } from './balance';
 import { cellCenter, cellIndexAt, distanceToSegment, isWalkableAt, makeGrid } from './field';
 import type { StageStat } from './balance';
 import { step } from './sim';
 import { beginBattle, createBattleState } from './state';
+import { limitReach } from './skills';
 import type { BattleState } from './types';
 import { testRegistry } from './testing';
 
 const reg = testRegistry();
 const stage = (id: string) => reg.stages.find((s) => s.id === id)!;
+const NO_RUSH = { medianSeconds: 0, rushRates: {}, fastMedianSeconds: 0 };
 
 describe('runBattle', () => {
   it('ステージ1が上限の時間内に終わり、人数が合う', () => {
@@ -119,14 +122,14 @@ describe('measure', () => {
 describe('TARGET_BANDS / formatTable', () => {
   it('isOutOfBand は帯の端を含み、外を真にする', () => {
     const row = (r: number, grownRate = 100): StageStat => ({
-      stageId: 'stage1', name: '', reached: 1, firstTryRate: r, avgDeployed: 0, avgSurvivors: 0, grownRate, avgLevel: 1, leftoverRate: 0,
+      stageId: 'stage1', name: '', reached: 1, firstTryRate: r, avgDeployed: 0, avgSurvivors: 0, grownRate, avgLevel: 1, leftoverRate: 0, ...NO_RUSH,
     });
     expect([row(95), row(100), row(94.9)].map(isOutOfBand)).toEqual([false, false, true]);
   });
 
   it('育てた場合が 80〜100 の外でも帯の外になる', () => {
     const row = (grownRate: number): StageStat => ({
-      stageId: 'stage1', name: '', reached: 1, firstTryRate: 100, avgDeployed: 0, avgSurvivors: 0, grownRate, avgLevel: 1, leftoverRate: 0,
+      stageId: 'stage1', name: '', reached: 1, firstTryRate: 100, avgDeployed: 0, avgSurvivors: 0, grownRate, avgLevel: 1, leftoverRate: 0, ...NO_RUSH,
     });
     expect([row(80), row(100), row(79.9)].map(isOutOfBand)).toEqual([false, false, true]);
   });
@@ -137,7 +140,7 @@ describe('TARGET_BANDS / formatTable', () => {
 
   it('帯の外の行だけに「帯の外」が出る', () => {
     const row = (stageId: string, firstTryRate: number): StageStat => ({
-      stageId, name: stageId, reached: 10, firstTryRate, avgDeployed: 4, avgSurvivors: 3, grownRate: 100, avgLevel: 5, leftoverRate: 0,
+      stageId, name: stageId, reached: 10, firstTryRate, avgDeployed: 4, avgSurvivors: 3, grownRate: 100, avgLevel: 5, leftoverRate: 0, ...NO_RUSH,
     });
     const [lo, hi] = TARGET_BANDS['stage1']!;
     const lines = formatTable([row('stage1', (lo + hi) / 2), row('stage2', 0)]).split('\n');
@@ -375,4 +378,180 @@ describe('出発のマスの中心が円の中のとき: 脱出先までの経�
     const w = routeAvoidingGoal(grid, from, { x: 48, y: 144 }, victory);
     expect(w).toEqual(from);
   });
+});
+
+describe('1 人の突っ込みと全員の急ぎ', () => {
+  const battleOf = (id: string): BattleState => {
+    const state = createBattleState(reg, stage(id), newSave(reg), 1);
+    beginBattle(state);
+    return state;
+  };
+  const players = (state: BattleState) => state.units.filter((u) => u.side === 'player');
+
+  it('pickRushers: walker は飛行でない生きている仲間で speed が一番高い 1 人', () => {
+    const state = battleOf('stage1');
+    const got = pickRushers(state, 'walker');
+    expect(got).toHaveLength(1);
+    const best = Math.max(...players(state).filter((u) => !u.flying).map((u) => u.speed));
+    expect(got[0]!.speed).toBe(best);
+    expect(got[0]!.flying).toBe(false);
+  });
+
+  it('pickRushers: 飛行の仲間がいなければ flyer は空、gau は defId gau の 1 人、all は全員', () => {
+    const state = battleOf('stage1');
+    expect(pickRushers(state, 'flyer')).toEqual([]);
+    expect(pickRushers(state, 'gau').map((u) => u.defId)).toEqual(['gau']);
+    expect(pickRushers(state, 'all')).toHaveLength(players(state).length);
+  });
+
+  it('pickRushers: 倒れた仲間は数えない', () => {
+    const state = battleOf('stage1');
+    for (const u of players(state)) u.hp = 0;
+    expect(pickRushers(state, 'all')).toEqual([]);
+    expect(pickRushers(state, 'walker')).toEqual([]);
+  });
+
+  it('rushCommands は走らせる仲間にだけゴールへの move を出し、ほかには何も出さない', () => {
+    const state = battleOf('stage1');
+    const roran = players(state).find((u) => u.defId === 'roran')!;
+    const cmds = rushCommands(state, new Set([roran.uid]), 0, new Map());
+    expect(cmds.length).toBeGreaterThan(0);
+    expect(cmds.every((c) => c.uid === roran.uid)).toBe(true);
+    const moves = cmds.flatMap((c) => (c.type === 'move' ? [c] : []));
+    expect(moves).toHaveLength(1);
+    expect(moves[0]!.dest).toEqual(state.stage.victory.pos);
+  });
+
+  it('rushCommands は交戦中でも move を出し、60 tick は出し直さない', () => {
+    const state = battleOf('stage1');
+    const roran = players(state).find((u) => u.defId === 'roran')!;
+    roran.engagedWith = 'dummy';
+    const memory = new Map();
+    const set = new Set([roran.uid]);
+    expect(rushCommands(state, set, 0, memory).some((c) => c.type === 'move')).toBe(true);
+    expect(rushCommands(state, set, 30, memory).some((c) => c.type === 'move')).toBe(false);
+    expect(rushCommands(state, set, 60, memory).some((c) => c.type === 'move')).toBe(true);
+  });
+
+  it('rushCommands は needsDest の技を、敵が近くにいないあいだは取っておく（壁の前まで使わない人を測る）', () => {
+    const state = battleOf('stage1');
+    const gau = players(state).find((u) => u.defId === 'gau')!;
+    gau.skillCooldownUntil = 0;
+    const cmds = rushCommands(state, new Set([gau.uid]), 0, new Map());
+    expect(cmds.some((c) => c.type === 'skill')).toBe(false);
+  });
+
+  it('rushCommands は敵が近い（RUSH_SKILL_NEAR 以内）か交戦中なら、needsDest の技を出す', () => {
+    const state = battleOf('stage1');
+    const gau = players(state).find((u) => u.defId === 'gau')!;
+    gau.skillCooldownUntil = 0;
+    const foe = state.units.find((u) => u.side === 'enemy')!;
+    foe.pos = { x: gau.pos.x + RUSH_SKILL_NEAR - 1, y: gau.pos.y };
+    expect(rushCommands(state, new Set([gau.uid]), 0, new Map()).some((c) => c.type === 'skill')).toBe(true);
+    foe.pos = { x: gau.pos.x + RUSH_SKILL_NEAR + 5, y: gau.pos.y };
+    expect(rushCommands(state, new Set([gau.uid]), 0, new Map()).some((c) => c.type === 'skill')).toBe(false);
+    gau.engagedWith = foe.uid;
+    expect(rushCommands(state, new Set([gau.uid]), 0, new Map()).some((c) => c.type === 'skill')).toBe(true);
+  });
+
+  it('rushCommands は needsDest の技を、ゴールへの向きに、届く距離で止めて出す', () => {
+    const state = battleOf('stage1');
+    const gau = players(state).find((u) => u.defId === 'gau')!;
+    gau.skillCooldownUntil = 0;
+    gau.engagedWith = 'dummy';
+    const cmds = rushCommands(state, new Set([gau.uid]), 0, new Map());
+    const skill = cmds.find((c) => c.type === 'skill');
+    expect(skill).toBeDefined();
+    if (skill?.type !== 'skill' || !skill.dest) throw new Error('dest が無い');
+    expect(distanceToSegment(skill.dest, gau.pos, state.stage.victory.pos)).toBeLessThan(1);
+    const max = 4 * state.grid.cell;
+    const expected = limitReach(gau.pos, state.stage.victory.pos, max);
+    expect(skill.dest.x).toBeCloseTo(expected.x, 6);
+    expect(skill.dest.y).toBeCloseTo(expected.y, 6);
+  });
+
+  describe('行き先の要る技のあとの move', () => {
+    const setup = () => {
+      const state = battleOf('stage1');
+      const gau = players(state).find((u) => u.defId === 'gau')!;
+      gau.skillCooldownUntil = 0;
+      gau.engagedWith = 'dummy';
+      const set = new Set([gau.uid]);
+      const memory = new Map();
+      const first = rushCommands(state, set, 0, memory);
+      expect(first.some((c) => c.type === 'move')).toBe(true);
+      expect(first.some((c) => c.type === 'skill')).toBe(true);
+      return { state, gau, set, memory };
+    };
+
+    it('技が成功した（再使用の待ちが入った）次の tick に、ゴールへの move を出し直す（技が移動の指示を消すため）', () => {
+      const { state, gau, set, memory } = setup();
+      gau.skillCooldownUntil = state.time + 14; // 成功のしるし
+      const next = rushCommands(state, set, 1, memory);
+      expect(next.some((c) => c.type === 'move')).toBe(true);
+    });
+
+    it('技が壁で出なかった（再使用の待ちが入らない）なら、次の tick に move を出し直さない（交戦を解き続けないため）', () => {
+      const { state, set, memory } = setup();
+      const next = rushCommands(state, set, 1, memory);
+      expect(next.some((c) => c.type === 'move')).toBe(false);
+    });
+  });
+
+  it('runRush は走らせる仲間がいなければ null', () => {
+    expect(runRush(reg, stage('stage1'), newSave(reg), 1, 'flyer')).toBeNull();
+  });
+
+  it('runRush は同じ引数なら同じ結果になり、時間の上限で終わる', () => {
+    const a = runRush(reg, stage('stage1'), newSave(reg), 3, 'walker')!;
+    const b = runRush(reg, stage('stage1'), newSave(reg), 3, 'walker')!;
+    expect([a.result, a.seconds]).toEqual([b.result, b.seconds]);
+    expect(a.seconds).toBeLessThanOrEqual(BATTLE_TIME_LIMIT + BATTLE_DT);
+  });
+
+  it('isOutOfBandRush は RUSH_MAX ちょうどを含まず、超えたら真。all は見ない', () => {
+    const row = (rushRates: StageStat['rushRates']): StageStat => ({
+      stageId: 'stage2', name: '', reached: 1, firstTryRate: 100, avgDeployed: 0, avgSurvivors: 0, grownRate: 100, avgLevel: 1,
+      leftoverRate: 0, medianSeconds: 0, fastMedianSeconds: 0, rushRates,
+    });
+    expect(isOutOfBandRush(row({ walker: RUSH_MAX }))).toBe(false);
+    expect(isOutOfBandRush(row({ walker: RUSH_MAX + 0.1 }))).toBe(true);
+    expect(isOutOfBandRush(row({ flyer: RUSH_MAX + 1 }))).toBe(true);
+    expect(isOutOfBandRush(row({ gau: RUSH_MAX + 1 }))).toBe(true);
+    expect(isOutOfBandRush(row({ all: 100 }))).toBe(false);
+    expect(isOutOfBand(row({ gau: RUSH_MAX + 1 }))).toBe(true);
+  });
+
+  it('チュートリアルのステージ（RUSH_EXEMPT）は、突っ込みが 100% でも帯の外にしない。ほかの帯は見る', () => {
+    expect(RUSH_EXEMPT).toEqual(['stage1']);
+    const row = (stageId: string, firstTryRate: number): StageStat => ({
+      stageId, name: '', reached: 1, firstTryRate, avgDeployed: 0, avgSurvivors: 0, grownRate: 100, avgLevel: 1,
+      leftoverRate: 0, medianSeconds: 0, fastMedianSeconds: 0, rushRates: { walker: 100, gau: 100 },
+    });
+    expect(isOutOfBandRush(row('stage1', 100))).toBe(false);
+    expect(isOutOfBand(row('stage1', 100))).toBe(false);
+    expect(isOutOfBand(row('stage1', 50))).toBe(true);
+    expect(isOutOfBandRush(row('stage2', 100))).toBe(true);
+  });
+
+  it('formatTable に突っ込み・急ぎの列と、突っ込みの判定が出る', () => {
+    const s: StageStat = {
+      stageId: 'stage2', name: 'a', reached: 10, firstTryRate: 100, avgDeployed: 4, avgSurvivors: 3, grownRate: 100, avgLevel: 5,
+      leftoverRate: 0, medianSeconds: 75.3, fastMedianSeconds: 40, rushRates: { walker: 50, gau: 0, all: 100 },
+    };
+    const text = formatTable([s]);
+    for (const h of ['突っ込み(歩き)', '突っ込み(飛行)', '突っ込み(ガウ)', '急ぎ(秒)', 'クリア(秒)']) expect(text).toContain(h);
+    const line = text.split('\n').find((l) => l.includes('stage2'))!;
+    expect(line).toContain('突っ込み');
+    expect(line).toContain('75.3');
+  });
+
+  it('playThrough のシード ≤ RUSH_SEEDS は rush が入り、それより上は空', () => {
+    const small = { ...reg, stages: reg.stages.slice(0, 1) };
+    const withRush = playThrough(small, 1)[0]!;
+    expect(Object.keys(withRush.rush).length).toBeGreaterThan(0);
+    expect(withRush.rush.walker).toBeDefined();
+    const without = playThrough(small, RUSH_SEEDS + 1)[0]!;
+    expect(without.rush).toEqual({});
+  }, 120_000);
 });
