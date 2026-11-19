@@ -206,7 +206,8 @@ function fastestPlayer(state: BattleState): Unit | null {
   return best;
 }
 
-export type MoveMemory = Map<string, { key: string; tick: number }>;
+/** cooldownWas: 行き先の要る技を出した tick の再使用の待ち。次の tick に変わっていれば技が成功した（成功は移動の指示を消す） */
+export type MoveMemory = Map<string, { key: string; tick: number; cooldownWas?: number }>;
 
 function nearestOf(from: Vec2, units: Unit[]): Unit | null {
   let best: Unit | null = null;
@@ -370,9 +371,14 @@ export function rushCommands(state: BattleState, rushers: Set<string>, tick: num
   for (const u of state.units) {
     if (u.side !== 'player' || !alive(u) || !rushers.has(u.uid)) continue;
     const mem = memory.get(u.uid);
-    if (!mem || tick - mem.tick >= MOVE_REISSUE_TICKS) {
+    // 駆け抜ける・急降下は成功すると移動の指示（goalPos）を消す。成功したときだけ、次の tick にゴールへの move を出し直す
+    // （残すと次の定期の出し直しまで最大 1 秒止まる。壁で出なかった技のあとは、出し直さない。move は交戦を解くため）
+    const skillSucceeded = mem?.cooldownWas !== undefined && u.skillCooldownUntil !== mem.cooldownWas;
+    if (!mem || skillSucceeded || tick - mem.tick >= MOVE_REISSUE_TICKS) {
       cmds.push({ type: 'move', uid: u.uid, dest: { ...goal } });
       memory.set(u.uid, { key: 'goal', tick });
+    } else if (mem.cooldownWas !== undefined) {
+      memory.set(u.uid, { key: mem.key, tick: mem.tick });
     }
     if (u.skillId !== null && canUseSkill(state, u.uid)) {
       if (skillParam(state.reg, u.skillId, 'needsDest', 0) === 1) {
@@ -383,9 +389,8 @@ export function rushCommands(state: BattleState, rushers: Set<string>, tick: num
           const maxCells = skillParam(state.reg, u.skillId, 'maxCells', 0);
           const dest = maxCells > 0 ? limitReach(u.pos, goal, maxCells * state.grid.cell) : { ...goal };
           cmds.push({ type: 'skill', uid: u.uid, dest });
-          // 駆け抜ける・急降下は成功すると移動の指示（goalPos）を消す。次の tick にゴールへの move を出し直す
-          // （残すと、次の定期の出し直しまで最大 1 秒止まってしまい、技のあとも進み続ける人を測れない）
-          memory.delete(u.uid);
+          const cur = memory.get(u.uid);
+          if (cur) memory.set(u.uid, { ...cur, cooldownWas: u.skillCooldownUntil });
         }
       } else {
         cmds.push({ type: 'skill', uid: u.uid });

@@ -470,18 +470,32 @@ describe('1 人の突っ込みと全員の急ぎ', () => {
     expect(skill.dest.y).toBeCloseTo(expected.y, 6);
   });
 
-  it('rushCommands は行き先の要る技を出した次の tick に、ゴールへの move を出し直す（技が移動の指示を消すため）', () => {
-    const state = battleOf('stage1');
-    const gau = players(state).find((u) => u.defId === 'gau')!;
-    gau.skillCooldownUntil = 0;
-    gau.engagedWith = 'dummy';
-    const set = new Set([gau.uid]);
-    const memory = new Map();
-    const first = rushCommands(state, set, 0, memory);
-    expect(first.some((c) => c.type === 'move')).toBe(true);
-    expect(first.some((c) => c.type === 'skill')).toBe(true);
-    const next = rushCommands(state, set, 1, memory);
-    expect(next.some((c) => c.type === 'move')).toBe(true);
+  describe('行き先の要る技のあとの move', () => {
+    const setup = () => {
+      const state = battleOf('stage1');
+      const gau = players(state).find((u) => u.defId === 'gau')!;
+      gau.skillCooldownUntil = 0;
+      gau.engagedWith = 'dummy';
+      const set = new Set([gau.uid]);
+      const memory = new Map();
+      const first = rushCommands(state, set, 0, memory);
+      expect(first.some((c) => c.type === 'move')).toBe(true);
+      expect(first.some((c) => c.type === 'skill')).toBe(true);
+      return { state, gau, set, memory };
+    };
+
+    it('技が成功した（再使用の待ちが入った）次の tick に、ゴールへの move を出し直す（技が移動の指示を消すため）', () => {
+      const { state, gau, set, memory } = setup();
+      gau.skillCooldownUntil = state.time + 14; // 成功のしるし
+      const next = rushCommands(state, set, 1, memory);
+      expect(next.some((c) => c.type === 'move')).toBe(true);
+    });
+
+    it('技が壁で出なかった（再使用の待ちが入らない）なら、次の tick に move を出し直さない（交戦を解き続けないため）', () => {
+      const { state, set, memory } = setup();
+      const next = rushCommands(state, set, 1, memory);
+      expect(next.some((c) => c.type === 'move')).toBe(false);
+    });
   });
 
   it('runRush は走らせる仲間がいなければ null', () => {
