@@ -71,6 +71,8 @@ function fresh(stage: StageDef = STAGE): { stage: StageDef; state: BattleState }
   const state = createBattleState(testRegistry(), stage, { units: LV1, members: [], claimed: [] }, 42);
   beginBattle(state);
   instantAttacks(state);
+  // 駆け抜ける・急降下は戦闘の開始からしばらく使えない（startCooldown）。この試験は使える状態から始める
+  for (const u of state.units) u.skillCooldownUntil = 0;
   // 邪魔にならない場所へ全員どける
   for (const u of state.units) if (u.side === 'player') u.pos = { x: 16, y: 80 };
   return { stage, state };

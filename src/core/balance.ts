@@ -29,7 +29,8 @@
  * - 走らせる仲間（RushKind。walker = 飛行でない仲間で一番足が速い 1 人・flyer = 飛行の仲間 1 人・gau = ガウ 1 人・
  *   all = 全員）だけが、交戦中でも止まらずに victory.pos へ move する（60 tick ごとに出し直す）。ほかの仲間は何も出さず、
  *   開始位置で待つ（近接の自動の詰め寄りだけはゲームのとおり働く）。技は canUseSkill が真なら出し、needsDest のものは
- *   ゴールへの向きに、技の届く距離（maxCells）で止めた点を dest にする。
+ *   ゴールへの向きに、技の届く距離（maxCells）で止めた点を dest にする。ただし敵が RUSH_SKILL_NEAR 以内にいるか交戦中になるまで取っておく
+ *   （戦闘の開始から使えない時間 startCooldown の間は canUseSkill が偽）。
  * - 突っ込み（walker・flyer・gau）で勝つ割合が RUSH_MAX を超えたら帯の外。all は「急ぎ」で、速さの目安の時間を測るだけ。
  * 通し・集計の決まりは各関数のコメントを参照。
  */
@@ -63,6 +64,8 @@ export const GROWN_LEVEL_BOOST = 3;
 export const RUSH_SEEDS = 10;
 /** 突っ込み（歩き・飛行・ガウ）で勝ってよい割合の上限（％）。超えたら帯の外 */
 export const RUSH_MAX = 10;
+/** 突っ込む仲間が行き先の要る技を出す、敵との距離（px）。これより遠いあいだは技を取っておく */
+export const RUSH_SKILL_NEAR = 40;
 
 export type BattleOutcome = {
   result: 'victory' | 'defeat' | 'timeout';
@@ -373,9 +376,14 @@ export function rushCommands(state: BattleState, rushers: Set<string>, tick: num
     }
     if (u.skillId !== null && canUseSkill(state, u.uid)) {
       if (skillParam(state.reg, u.skillId, 'needsDest', 0) === 1) {
-        const maxCells = skillParam(state.reg, u.skillId, 'maxCells', 0);
-        const dest = maxCells > 0 ? limitReach(u.pos, goal, maxCells * state.grid.cell) : { ...goal };
-        cmds.push({ type: 'skill', uid: u.uid, dest });
+        // 行き先の要る技（駆け抜ける・急降下）は、敵が近いか交戦したときまで取っておく。
+        // 出だしで使い切ると、壁の前で使えず、壁で倒されてしまう。人が上手に遊ぶ（壁の前で跳び越える）ほうを測る
+        const enemyNear = state.units.some((e) => e.side === 'enemy' && alive(e) && distance(e.pos, u.pos) <= RUSH_SKILL_NEAR);
+        if (u.engagedWith !== null || enemyNear) {
+          const maxCells = skillParam(state.reg, u.skillId, 'maxCells', 0);
+          const dest = maxCells > 0 ? limitReach(u.pos, goal, maxCells * state.grid.cell) : { ...goal };
+          cmds.push({ type: 'skill', uid: u.uid, dest });
+        }
       } else {
         cmds.push({ type: 'skill', uid: u.uid });
       }

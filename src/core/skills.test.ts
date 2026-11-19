@@ -9,12 +9,14 @@ import { testRegistry } from './testing';
 import { NO_BONUS } from './types';
 import type { BattleState, CharProgress, StageDef, Unit } from './types';
 
-function fresh(stage?: StageDef): BattleState {
+/** keepStartLock が偽のときは、戦闘の開始から使えない時間（startCooldown）を外して、技が使える状態から始める */
+function fresh(stage?: StageDef, keepStartLock = false): BattleState {
   const reg = testRegistry();
   const progress: Record<string, CharProgress> = {};
   for (const id of reg.units.keys()) progress[id] = { level: 1, xp: 0 };
   const s = createBattleState(reg, stage ?? reg.stages[0]!, { units: progress, members: [], claimed: [] }, 1);
   beginBattle(s);
+  if (!keepStartLock) for (const u of s.units) u.skillCooldownUntil = 0;
   return s;
 }
 
@@ -691,5 +693,28 @@ describe('技の届く距離（maxCells）', () => {
     expect(useSkill(s, u.uid, { x: 16 + 8 * s.grid.cell, y: 208 })).toBe(true);
     expect(u.pos.x - 16).toBeCloseTo(skillParam(s.reg, 'kyuukouka', 'maxCells', 0) * s.grid.cell, 6);
     expect(u.pos.y).toBe(208);
+  });
+});
+
+describe('戦闘の開始から使えない時間（startCooldown）', () => {
+  it('駆け抜ける・急降下は startCooldown 秒たつまで使えず、たつと使える', () => {
+    const s = fresh(undefined, true);
+    const gau = unitOf(s, 'gau');
+    const start = skillParam(s.reg, 'kakenukeru', 'startCooldown', 0);
+    expect(start).toBeGreaterThan(0);
+    expect(skillParam(s.reg, 'kyuukouka', 'startCooldown', 0)).toBe(start);
+    gau.pos = { x: 80, y: 208 };
+    expect(canUseSkill(s, gau.uid)).toBe(false);
+    expect(useSkill(s, gau.uid, { x: 120, y: 208 })).toBe(false);
+    expect(gau.pos).toEqual({ x: 80, y: 208 });
+    s.time = start;
+    expect(canUseSkill(s, gau.uid)).toBe(true);
+    expect(useSkill(s, gau.uid, { x: 120, y: 208 })).toBe(true);
+  });
+  it('startCooldown の無い技は、戦闘の開始からすぐ使える', () => {
+    const s = fresh(undefined, true);
+    const roran = unitOf(s, 'roran');
+    expect(skillParam(s.reg, roran.skillId!, 'startCooldown', 0)).toBe(0);
+    expect(canUseSkill(s, roran.uid)).toBe(true);
   });
 });

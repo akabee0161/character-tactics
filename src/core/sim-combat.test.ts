@@ -35,6 +35,7 @@ function fresh(stage: StageDef = STAGE): BattleState {
   const s = createBattleState(testRegistry(), stage, { units: LV1, members: [], claimed: [] }, 42);
   beginBattle(s);
   instantAttacks(s);
+  for (const u of s.units) u.skillCooldownUntil = 0; // 戦闘の開始から使えない時間（startCooldown）を外して始める
   for (const u of s.units) if (u.side === 'player') u.pos = { x: 16, y: 300 }; // マップ外の遠くへ退避
   return s;
 }

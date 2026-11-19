@@ -3,6 +3,7 @@ import { MAX_PARTY } from './constants';
 import { initialSortie, sortieCandidates, sortieProgress } from './sortie';
 import { makeFieldCache } from './fields';
 import { makeRng } from './rng';
+import { skillParam } from '../engine/registry';
 import type { Registry } from '../engine/registry';
 import type { AiDef, EnemyDef, StageDef, StatGrowth, UnitDef } from '../engine/schema';
 import { NO_BONUS } from './types';
@@ -271,6 +272,8 @@ export function beginBattle(state: BattleState): void {
     unit.attackCooldown = 0;
     unit.goalField = null;
     unit.goalPos = null;
+    // 駆け抜ける・急降下のように、戦闘の開始からしばらく使えない技（params.startCooldown 秒）
+    if (unit.skillId !== null) unit.skillCooldownUntil = skillParam(state.reg, unit.skillId, 'startCooldown', 0);
   }
   state.events = [];
   state.time = 0;

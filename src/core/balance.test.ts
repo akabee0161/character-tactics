@@ -3,7 +3,7 @@ import { newSave } from '../save/save';
 import {
   BATTLE_DT, BATTLE_TIME_LIMIT, botCommands, MAX_ATTEMPTS, TARGET_BANDS, formatTable, isOutOfBand, measure, playThrough, runBattle,
   boostLevels, goalSafeDest, routeAvoidingGoal, walkableSafeDest,
-  isOutOfBandRush, pickRushers, rushCommands, runRush, RUSH_MAX, RUSH_SEEDS,
+  isOutOfBandRush, pickRushers, rushCommands, runRush, RUSH_MAX, RUSH_SEEDS, RUSH_SKILL_NEAR,
 } from './balance';
 import { cellCenter, cellIndexAt, distanceToSegment, isWalkableAt, makeGrid } from './field';
 import type { StageStat } from './balance';
@@ -433,9 +433,32 @@ describe('1 人の突っ込みと全員の急ぎ', () => {
     expect(rushCommands(state, set, 60, memory).some((c) => c.type === 'move')).toBe(true);
   });
 
+  it('rushCommands は needsDest の技を、敵が近くにいないあいだは取っておく（壁の前まで使わない人を測る）', () => {
+    const state = battleOf('stage1');
+    const gau = players(state).find((u) => u.defId === 'gau')!;
+    gau.skillCooldownUntil = 0;
+    const cmds = rushCommands(state, new Set([gau.uid]), 0, new Map());
+    expect(cmds.some((c) => c.type === 'skill')).toBe(false);
+  });
+
+  it('rushCommands は敵が近い（RUSH_SKILL_NEAR 以内）か交戦中なら、needsDest の技を出す', () => {
+    const state = battleOf('stage1');
+    const gau = players(state).find((u) => u.defId === 'gau')!;
+    gau.skillCooldownUntil = 0;
+    const foe = state.units.find((u) => u.side === 'enemy')!;
+    foe.pos = { x: gau.pos.x + RUSH_SKILL_NEAR - 1, y: gau.pos.y };
+    expect(rushCommands(state, new Set([gau.uid]), 0, new Map()).some((c) => c.type === 'skill')).toBe(true);
+    foe.pos = { x: gau.pos.x + RUSH_SKILL_NEAR + 5, y: gau.pos.y };
+    expect(rushCommands(state, new Set([gau.uid]), 0, new Map()).some((c) => c.type === 'skill')).toBe(false);
+    gau.engagedWith = foe.uid;
+    expect(rushCommands(state, new Set([gau.uid]), 0, new Map()).some((c) => c.type === 'skill')).toBe(true);
+  });
+
   it('rushCommands は needsDest の技を、ゴールへの向きに、届く距離で止めて出す', () => {
     const state = battleOf('stage1');
     const gau = players(state).find((u) => u.defId === 'gau')!;
+    gau.skillCooldownUntil = 0;
+    gau.engagedWith = 'dummy';
     const cmds = rushCommands(state, new Set([gau.uid]), 0, new Map());
     const skill = cmds.find((c) => c.type === 'skill');
     expect(skill).toBeDefined();

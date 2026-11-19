@@ -59,8 +59,8 @@
     { "defId": "tatemochi", "pos": { "x": 44, "y": 96 }, "ai": { "kind": "guard", "post": { "x": 44, "y": 96 }, "leash": 2, "sightRange": 140 } },
     { "defId": "tatemochi-2", "pos": { "x": 80, "y": 96 }, "ai": { "kind": "guard", "post": { "x": 80, "y": 96 }, "leash": 2, "sightRange": 140 } },
     { "defId": "tatemochi", "pos": { "x": 116, "y": 96 }, "ai": { "kind": "guard", "post": { "x": 116, "y": 96 }, "leash": 2, "sightRange": 140 } },
-    { "defId": "majinaishi", "pos": { "x": 396, "y": 96 }, "ai": { "kind": "guard", "post": { "x": 396, "y": 96 }, "leash": 2, "sightRange": 140 } },
-    { "defId": "majinaishi-2", "pos": { "x": 432, "y": 96 }, "ai": { "kind": "guard", "post": { "x": 432, "y": 96 }, "leash": 2, "sightRange": 140 } },
+    { "defId": "tatemochi-2", "pos": { "x": 396, "y": 96 }, "ai": { "kind": "guard", "post": { "x": 396, "y": 96 }, "leash": 2, "sightRange": 140 } },
+    { "defId": "tatemochi", "pos": { "x": 432, "y": 96 }, "ai": { "kind": "guard", "post": { "x": 432, "y": 96 }, "leash": 2, "sightRange": 140 } },
     { "defId": "majinaishi", "pos": { "x": 468, "y": 96 }, "ai": { "kind": "guard", "post": { "x": 468, "y": 96 }, "leash": 2, "sightRange": 140 } }
   ],
   "spawners": [
