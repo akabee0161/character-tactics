@@ -26,3 +26,4 @@ Final: minor (deferred): 結果の画面の時間の行が 2〜4px 右へずれ�
 Final: minor (deferred): 「駆け抜ける」が止めた所が壁で出なかったとき、画面で分からない
 Final: minor (deferred): 突っ込み（歩き）と（ガウ）は同じ人を測る（ガウが一番足の速い歩く仲間）。技を持たない歩く仲間は測っていない
 Final: minor (deferred): maxCells を 0 にすると距離の上限が外れる（今は 4）
+Final: Ruling（解決）: stage1 の突っ込みは、依頼者が「チュートリアルなので例外にする」と決めた（2026-11-19）。RUSH_EXEMPT=['stage1'] で isOutOfBandRush が見ない。ほかのステージの上限は緩めない

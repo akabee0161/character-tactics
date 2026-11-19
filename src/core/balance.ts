@@ -563,8 +563,15 @@ export function isOutOfBandGrown(s: StageStat): boolean {
   return outside(s.grownRate, GROWN_BAND);
 }
 
-/** 突っ込み（歩き・飛行・ガウ）のどれかで、勝った割合が RUSH_MAX を超えたか（all は見ない） */
+/**
+ * 突っ込みの帯の外を見ないステージ。ステージ 1 はチュートリアルで、敵が 3 体・15 マス幅の開けた野原のため壁が作れず、
+ * 突っ込みが 100% 勝つ。依頼者が例外にすると決めた（2026-11-19）
+ */
+export const RUSH_EXEMPT: readonly string[] = ['stage1'];
+
+/** 突っ込み（歩き・飛行・ガウ）のどれかで、勝った割合が RUSH_MAX を超えたか（all は見ない。RUSH_EXEMPT のステージは見ない） */
 export function isOutOfBandRush(s: StageStat): boolean {
+  if (RUSH_EXEMPT.includes(s.stageId)) return false;
   return RUSH_JUDGED.some((k) => (s.rushRates[k] ?? 0) > RUSH_MAX);
 }
 

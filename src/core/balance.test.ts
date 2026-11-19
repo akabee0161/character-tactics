@@ -3,7 +3,7 @@ import { newSave } from '../save/save';
 import {
   BATTLE_DT, BATTLE_TIME_LIMIT, botCommands, MAX_ATTEMPTS, TARGET_BANDS, formatTable, isOutOfBand, measure, playThrough, runBattle,
   boostLevels, goalSafeDest, routeAvoidingGoal, walkableSafeDest,
-  isOutOfBandRush, pickRushers, rushCommands, runRush, RUSH_MAX, RUSH_SEEDS, RUSH_SKILL_NEAR,
+  isOutOfBandRush, pickRushers, rushCommands, runRush, RUSH_MAX, RUSH_SEEDS, RUSH_SKILL_NEAR, RUSH_EXEMPT,
 } from './balance';
 import { cellCenter, cellIndexAt, distanceToSegment, isWalkableAt, makeGrid } from './field';
 import type { StageStat } from './balance';
@@ -483,7 +483,7 @@ describe('1 人の突っ込みと全員の急ぎ', () => {
 
   it('isOutOfBandRush は RUSH_MAX ちょうどを含まず、超えたら真。all は見ない', () => {
     const row = (rushRates: StageStat['rushRates']): StageStat => ({
-      stageId: 'stage1', name: '', reached: 1, firstTryRate: 100, avgDeployed: 0, avgSurvivors: 0, grownRate: 100, avgLevel: 1,
+      stageId: 'stage2', name: '', reached: 1, firstTryRate: 100, avgDeployed: 0, avgSurvivors: 0, grownRate: 100, avgLevel: 1,
       leftoverRate: 0, medianSeconds: 0, fastMedianSeconds: 0, rushRates,
     });
     expect(isOutOfBandRush(row({ walker: RUSH_MAX }))).toBe(false);
@@ -494,14 +494,26 @@ describe('1 人の突っ込みと全員の急ぎ', () => {
     expect(isOutOfBand(row({ gau: RUSH_MAX + 1 }))).toBe(true);
   });
 
+  it('チュートリアルのステージ（RUSH_EXEMPT）は、突っ込みが 100% でも帯の外にしない。ほかの帯は見る', () => {
+    expect(RUSH_EXEMPT).toEqual(['stage1']);
+    const row = (stageId: string, firstTryRate: number): StageStat => ({
+      stageId, name: '', reached: 1, firstTryRate, avgDeployed: 0, avgSurvivors: 0, grownRate: 100, avgLevel: 1,
+      leftoverRate: 0, medianSeconds: 0, fastMedianSeconds: 0, rushRates: { walker: 100, gau: 100 },
+    });
+    expect(isOutOfBandRush(row('stage1', 100))).toBe(false);
+    expect(isOutOfBand(row('stage1', 100))).toBe(false);
+    expect(isOutOfBand(row('stage1', 50))).toBe(true);
+    expect(isOutOfBandRush(row('stage2', 100))).toBe(true);
+  });
+
   it('formatTable に突っ込み・急ぎの列と、突っ込みの判定が出る', () => {
     const s: StageStat = {
-      stageId: 'stage1', name: 'a', reached: 10, firstTryRate: 100, avgDeployed: 4, avgSurvivors: 3, grownRate: 100, avgLevel: 5,
+      stageId: 'stage2', name: 'a', reached: 10, firstTryRate: 100, avgDeployed: 4, avgSurvivors: 3, grownRate: 100, avgLevel: 5,
       leftoverRate: 0, medianSeconds: 75.3, fastMedianSeconds: 40, rushRates: { walker: 50, gau: 0, all: 100 },
     };
     const text = formatTable([s]);
     for (const h of ['突っ込み(歩き)', '突っ込み(飛行)', '突っ込み(ガウ)', '急ぎ(秒)', 'クリア(秒)']) expect(text).toContain(h);
-    const line = text.split('\n').find((l) => l.includes('stage1'))!;
+    const line = text.split('\n').find((l) => l.includes('stage2'))!;
     expect(line).toContain('突っ込み');
     expect(line).toContain('75.3');
   });
