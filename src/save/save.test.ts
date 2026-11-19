@@ -251,3 +251,39 @@ describe('上限 12 のころの古いセーブ（上限 30 の今）', () => {
     expect(after.level).toBeGreaterThan(12);
   });
 });
+
+describe('bestTimes（ステージごとの一番速いクリアの秒）', () => {
+  const reg = testRegistry();
+  const base = { version: 2, clearedStageIds: [], units: { roran: { level: 1, xp: 0 } } };
+  const load = (extra: Record<string, unknown>) => loadSave(memoryStorage(JSON.stringify({ ...base, ...extra })), reg);
+
+  it('newSave は空', () => {
+    expect(newSave(reg).bestTimes).toEqual({});
+  });
+  it('今までのセーブ（bestTimes が無い）は記録なしで読め、ほかの欄はそのまま', () => {
+    const s = load({ clearedStageIds: ['stage1'] });
+    expect(s?.bestTimes).toEqual({});
+    expect(s?.clearedStageIds).toEqual(['stage1']);
+  });
+  it('正しい項目を読む。小数のまま', () => {
+    expect(load({ bestTimes: { stage1: 50.5, stage2: 12 } })?.bestTimes).toEqual({ stage1: 50.5, stage2: 12 });
+  });
+  it('壊れた項目だけ捨てる（知らないステージ・負・0・文字・null・無限大）', () => {
+    const raw = JSON.stringify({ ...base, bestTimes: 'X' }).replace('"X"', '{"stage1":50.5,"nope":30,"stage2":-1,"stage4":0,"stage5":"x","stage6":null,"stage7":1e999}');
+    const s = loadSave(memoryStorage(raw), reg);
+    expect(s?.bestTimes).toEqual({ stage1: 50.5 });
+  });
+  it('配列や数なら空にする。セーブ全体は捨てない', () => {
+    for (const bad of [[1, 2], 5, 'x', null]) {
+      const s = load({ bestTimes: bad, clearedStageIds: ['stage1'] });
+      expect(s?.bestTimes).toEqual({});
+      expect(s?.clearedStageIds).toEqual(['stage1']);
+    }
+  });
+  it('書いて読み直しても同じ', () => {
+    const st = memoryStorage();
+    const data = { ...newSave(reg), bestTimes: { stage1: 61.25 } };
+    writeSave(st, data);
+    expect(loadSave(st, reg)?.bestTimes).toEqual({ stage1: 61.25 });
+  });
+});
