@@ -1,0 +1,87 @@
+{
+  "unit": "borg",
+  "compose": "compose/borg.json",
+  "body": "male",
+  "head_chars": "",
+  "items": "GHJRKLMTUV",
+  "parts": {
+    "sword": {
+      "weapon": true,
+      "blade": "ij",
+      "moves": true
+    },
+    "sword_hand": {
+      "fist": true,
+      "grips": "sword",
+      "fist_sizes": [
+        "3x2"
+      ],
+      "moves": true
+    },
+    "shield": {
+      "fixed": true
+    },
+    "shield_hand": {
+      "fist": true,
+      "grips": "shield",
+      "fist_sizes": [
+        "3x2"
+      ]
+    },
+    "eye_E0": {
+      "eye": true
+    },
+    "hair_borg": {
+      "head": true
+    },
+    "cloth_borg": {}
+  },
+  "orders": {
+    "down": [
+      "CORE",
+      "eye_E0",
+      "cloth_borg",
+      "hair_borg",
+      "shield_hand",
+      "shield",
+      "sword",
+      "sword_hand"
+    ],
+    "up": [
+      "sword",
+      "shield",
+      "sword_hand",
+      "shield_hand",
+      "CORE",
+      "eye_E0",
+      "cloth_borg",
+      "hair_borg"
+    ],
+    "left": [
+      "sword",
+      "sword_hand",
+      "CORE",
+      "eye_E0",
+      "cloth_borg",
+      "hair_borg",
+      "shield_hand",
+      "shield"
+    ],
+    "right": [
+      "shield_hand",
+      "shield",
+      "CORE",
+      "eye_E0",
+      "cloth_borg",
+      "hair_borg",
+      "sword",
+      "sword_hand"
+    ]
+  },
+  "weapon_check": {
+    "depth": [
+      "down"
+    ]
+  },
+  "exceptions": []
+}

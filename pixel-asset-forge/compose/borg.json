@@ -1,0 +1,161 @@
+{
+  "unit": "borg",
+  "frames": {
+    "down_base": {
+      "body": "assets/part/body/borg/core_down_base.txt",
+      "layers": [
+        {
+          "part": "assets/part/eye/E0/eye_E0_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/borg/cloth_borg_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/borg/hair_borg_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/borg/shield_hand_down_base.txt",
+          "z": "front",
+          "hand": true
+        },
+        {
+          "part": "assets/part/equip/shield/borg/shield_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/sword/sword_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/borg/sword_hand_down_base.txt",
+          "z": "front",
+          "keep": [
+            "blade",
+            "weapon"
+          ],
+          "hand": true
+        }
+      ]
+    },
+    "up_base": {
+      "body": "assets/part/body/borg/core_up_base.txt",
+      "layers": [
+        {
+          "part": "assets/part/eye/E0/eye_E0_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/borg/cloth_borg_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/borg/hair_borg_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/borg/shield_hand_up_base.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/fist/borg/sword_hand_up_base.txt",
+          "z": "back",
+          "keep": [
+            "blade",
+            "weapon"
+          ],
+          "hand": true
+        },
+        {
+          "part": "assets/part/equip/shield/borg/shield_up_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/equip/sword/sword_up_base.txt",
+          "z": "back"
+        }
+      ]
+    },
+    "left_base": {
+      "body": "assets/part/body/borg/core_left_base.txt",
+      "layers": [
+        {
+          "part": "assets/part/eye/E0/eye_E0_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/borg/cloth_borg_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/borg/hair_borg_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/borg/sword_hand_left_base.txt",
+          "z": "back",
+          "keep": [
+            "blade",
+            "weapon"
+          ],
+          "hand": true
+        },
+        {
+          "part": "assets/part/equip/sword/sword_left_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/fist/borg/shield_hand_left_base.txt",
+          "z": "front",
+          "hand": true
+        },
+        {
+          "part": "assets/part/equip/shield/borg/shield_left_base.txt",
+          "z": "front"
+        }
+      ]
+    },
+    "right_base": {
+      "body": "assets/part/body/borg/core_right_base.txt",
+      "layers": [
+        {
+          "part": "assets/part/eye/E0/eye_E0_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/borg/cloth_borg_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/borg/hair_borg_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/shield/borg/shield_right_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/fist/borg/shield_hand_right_base.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/equip/sword/sword_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/borg/sword_hand_right_base.txt",
+          "z": "front",
+          "keep": [
+            "blade",
+            "weapon"
+          ],
+          "hand": true
+        }
+      ]
+    }
+  }
+}
