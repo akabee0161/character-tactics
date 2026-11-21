@@ -200,6 +200,7 @@ URL に `?debug` を付けると、戦闘中だけ次の操作ができる（攻
 - 物の絵は地面（草）を背景に含めて描く
 - 顔を縮小して描くときだけぼかす（`smoothFor`、`src/render/sprites.ts`）。ほかはドット絵のまま
 - 顔の枠の大きさは `FACE_PX`、役割アイコンの枠は `roleBadgeIn`（どちらも `src/ui/layout.ts`）
+- **顔グラの例外（試しの段階）:** ボルグ（`ally05-face.png`）の顔は、[illust-asset-forge](https://github.com/akabee0161/illust-asset-forge) で生成したイラストをそのまま使う（ドット絵にしない。256px）。元画像（`characters/ally05/source/face.png`、1024px）の (300,0)〜(940,640) を顔を中心に切り出し、外につながる白い背景を透明にして 256px に縮めた。ほかの顔をイラストに替えるか、表示の大きさを変えるかは、試した結果を見て決める
 - ユニットの当たり判定は足元の箱（足元の点から左右6px・下2px・上0px。`src/engine/footprint.ts`）。通れないマスに横と上からはめり込まない。下から近づいたときに頭が上のマスに重なるのは、マスの手前に立っている見え方として残す
 
 **まだ規約に追いついていないもの:** 複数マスを占める物をマップに置く仕組みはまだ無い。
@@ -258,7 +259,7 @@ python3 tools/anim-page.py assets/units/roran.json out/anim/roran.html
 - **時間湧きの敵** — ステージの `spawners` に `{ "defId": ..., "pos": ..., "firstAfter": 20, "every": 15, "total": 3 }` を並べる。`firstAfter` 秒後に1体目、以降 `every` 秒ごとに1体、合計 `total` 体まで湧く。湧いた敵の AI は `aggressive` 固定。総数上限は必須（上限がないと持久戦で詰む）
 - **守備と魔法防御** — ユニットの定義の `guard` は近接と弓のダメージを、`resist` は魔法のダメージを引く。魔法系は `resist` を高く、盾・斧系は `guard` を高くする。村の上乗せ（`stat`）にも `resist` がある。`ignoresGuard: true`（省略時 false）は、通常の近接・弓の攻撃が相手の守備を 0 として計算する（斧）。`flying: true`（省略時 false）は飛行で、歩けないマスの上を一直線に飛び、森でも遅くならない。マップの外には出ない。飛行の足元には影が出る
 - **ユニットの絵** — `assets/images/` に PNG を置き、`assets/units/<id>.json`（敵は `assets/enemies/<id>.json`）の `sprites` に書く。`role` はクラスアイコン、`face` は顔（下パネル・ステージ選択・会話・リザルト）。大きさは「アセットの大きさの規約」、`map` はフィールド上の姿。`map` だけはスプライトシートで、`{ "sheet": "<file>.png", "frame": 32, "idle": { "frames": 2, "fps": 4 }, "walk": {...}, "attack": {...} }` の形。シートは**列 = コマ、行 = 12（3状態 × 4方向）**で、行番号 = 状態index × 4 + 方向index、状態は `idle, walk, attack`、方向は `down, up, left, right` の順。コマは正方形。列数は最大コマ数にそろえ、余りは透明のまま置く。`map` が `null` のあいだは色つきの丸だけが出る（クラス名の文字は `role` が `null` のときに出る別のフォールバックで、`map` とは無関係）。`frame` と各状態の `frames` は1以上の整数、`fps` は1以上の数値であること。実寸と JSON が食い違うと `npm test` が落ちる（`src/engine/sheet-size.test.ts`）。コマの**下から 2px 上の行（32px のコマなら y=30）が足元**で、そこがユニットの位置に来るように描く（pixel-asset-forge の `unit` 規約と同じ）。HPバー・旗・リングは絵の中心を基準に置く
-- **仮の絵の作り直し** — 今の仮の絵は、味方（ally05〜15）と説得の相手（ally06-foe・ally08-foe）と村人の顔（npc01〜06。顔だけ）の分だけ（敵の絵は forge で組んだ本番の絵）。`node tools/gen-placeholder-sprites.mjs ally05 role-yari ...`。引数に書いた ID の絵だけを書く（引数なしでは何も書かずに終わる。全部を書き直すと今の本番の絵を仮の絵で上書きするため）。本番の絵が揃ったらこの生成器は消してよい。差し替えは PNG を上書きするだけで、コマ数を変えるときだけ JSON の数値を直す
+- **仮の絵の作り直し** — 今の仮の絵は、味方（ally05 のマップの絵と、ally06〜15）と説得の相手（ally06-foe・ally08-foe）と村人の顔（npc01〜06。顔だけ）の分だけ（敵の絵は forge で組んだ本番の絵）。`node tools/gen-placeholder-sprites.mjs ally05 role-yari ...`。引数に書いた ID の絵だけを書く（引数なしでは何も書かずに終わる。全部を書き直すと今の本番の絵を仮の絵で上書きするため）。本番の絵が揃ったらこの生成器は消してよい。差し替えは PNG を上書きするだけで、コマ数を変えるときだけ JSON の数値を直す
 - **攻撃の種別** — `attack` は `melee` / `bow` / `magic`。ダメージ（`bow` と `magic` では飛翔体の発射）は、攻撃モーションの最後のコマが出る時刻（`(attack.frames - 1) / attack.fps` 秒後）に出る。その前に攻撃した側か相手が倒れたら、その攻撃は出ない。`map` が `null` のユニットは攻撃した瞬間に出る。`bow` と `magic` は飛翔体として飛び、届いた瞬間にダメージが出る。`bowDamageCap` が効くのは `bow` だけ
 - **仲間の加入・村・説得** — ステージに `joins`・`persuasions`・`villages` を書く（どれも省略できる）。加入する仲間は `assets/units/<id>.json` に置く。
   - `joins` は、ステージ開始時に会話のあと加わる仲間。`talk` は会話（`intro` と同じ書き方）、`level` は加わるときのレベル。
