@@ -448,5 +448,50 @@
     "swatch": "skin_rose_deep",
     "kind": "shield",
     "note": "ガルムの盾の紋（赤紫）"
+  },
+  "hair_auburn_hi": {
+    "swatch": "auburn_hi",
+    "kind": "hair",
+    "note": "ボルグの赤茶の髪・髭（明）"
+  },
+  "hair_auburn_base": {
+    "swatch": "auburn_base",
+    "kind": "hair",
+    "note": "ボルグの赤茶の髪・髭（中）"
+  },
+  "hair_auburn_shadow": {
+    "swatch": "auburn_shadow",
+    "kind": "hair",
+    "note": "ボルグの赤茶の髪・髭（暗）"
+  },
+  "armor_grey_hi": {
+    "swatch": "plate_hi",
+    "kind": "cloth",
+    "note": "ボルグの灰色の鎧（明）"
+  },
+  "armor_grey_base": {
+    "swatch": "plate_base",
+    "kind": "cloth",
+    "note": "ボルグの灰色の鎧（中）"
+  },
+  "armor_grey_shadow": {
+    "swatch": "plate_shadow",
+    "kind": "cloth",
+    "note": "ボルグの灰色の鎧（暗）"
+  },
+  "armor_gold_hi": {
+    "swatch": "metal_hi",
+    "kind": "cloth",
+    "note": "ボルグの鎧の金の縁（明）"
+  },
+  "armor_gold_base": {
+    "swatch": "metal_base",
+    "kind": "cloth",
+    "note": "ボルグの鎧の金の縁（中）"
+  },
+  "armor_gold_shadow": {
+    "swatch": "metal_shadow",
+    "kind": "cloth",
+    "note": "ボルグの鎧の金の縁（暗）"
   }
 }
