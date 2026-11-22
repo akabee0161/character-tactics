@@ -232,32 +232,103 @@ git commit -m "feat: 見本 4 人の顔と全身を取り込み、書き出す"
 
 - [ ] **Step 7: 依頼者の指示があれば push して main への PR を作る**（PR の説明に、Colab で確かめた範囲と、確かめていないことを書く）
 
-## character-tactics 側
+## ankardo 側
 
-作業場所: `/home/ubuntu/workspace/character-tactics`、ブランチ `feat/face-gen-ai`（develop から作成済み。設計書・計画はここにコミット済み）。**forge の PR が main にマージされてから始める**
+作業場所: `/home/ubuntu/workspace/ankardo`、ブランチ `feat/illust-forge-copy`（最新の main から作る。手元は `docs/preview-first-deploy`（マージ済み）を開いたままなので、先に `git switch main && git pull --ff-only`）。**forge の PR が main にマージされてから始める**
 
-### Task 5: forge をコピーし、character-tactics 向けにする
+### Task 5: `copy-forge.sh` で illust-asset-forge もコピーできるようにし、`new-game` に手順を足す
 
 **Files:**
-- Create: `illust-asset-forge/`（forge の main の追跡ファイル。`HANDOVER.md`・`docs/superpowers/` は除く）
-- Create: `illust-asset-forge/UPSTREAM.md`
-- Create: `illust-asset-forge/characters/ally05/character.yaml`・`illust-asset-forge/characters/ally06/character.yaml`
-- Modify: `illust-asset-forge/notebooks/run.ipynb`・`illust-asset-forge/tests/test_notebook.py`・`illust-asset-forge/tests/test_repo_configs.py`・`illust-asset-forge/CLAUDE.md`
+- Modify: `scripts/copy-forge.sh`
+- Modify: `scripts/copy-forge.test.sh`
+- Modify: `.claude/skills/new-game/SKILL.md`
+- Modify: `README.md`（`copy-forge.sh` に触れている箇所があれば）
 
 **Interfaces:**
-- Consumes: forge の main（Task 1〜4 のマージ後）の commit
-- Produces: `illust-asset-forge/` のコピー（Task 6 の文書が指す）
+- Produces: `./scripts/copy-forge.sh <pixel|illust> <ゲームリポジトリのパス>`。`pixel` → コピー元 `https://github.com/akabee0161/pixel-asset-forge.git`・コピー先 `<game>/pixel-asset-forge/`。`illust` → コピー元 `https://github.com/akabee0161/illust-asset-forge.git`・コピー先 `<game>/illust-asset-forge/`、`HANDOVER.md` と `docs/superpowers/` を除く。環境変数 `FORGE_URL` はコピー元の上書き（テスト用）。Task 6 が `illust` で使う
+
+- [ ] **Step 1: 失敗するテストを書く**（`scripts/copy-forge.test.sh`）
+
+今の 1〜7 の呼び出しをすべて `copy-forge.sh pixel <game>` にする。forge の代わりのリポジトリに `HANDOVER.md` と `docs/superpowers/specs/x.md` も入れる（1 の「管理下のファイルだけが入る」は `pixel` では両方入ることを見る）。足すテスト:
+
+```bash
+# 8. illust は illust-asset-forge/ にコピーし、HANDOVER.md と docs/superpowers/ を持ち込まない
+"$here/copy-forge.sh" illust "$game" > /dev/null
+idest="$game/illust-asset-forge"
+[ -f "$idest/tools/render.py" ] || fail "illust copy missing files"
+[ ! -e "$idest/HANDOVER.md" ] || fail "illust copied HANDOVER.md"
+[ ! -e "$idest/docs/superpowers" ] || fail "illust copied docs/superpowers"
+grep -q "illust-asset-forge のコピー" "$idest/UPSTREAM.md" || fail "UPSTREAM.md names another forge"
+grep -q "$commit" "$idest/UPSTREAM.md" || fail "illust UPSTREAM.md lacks the commit"
+
+# 9. forge の名前が無い・違うときは止まり、何も作らない
+if "$here/copy-forge.sh" "$other" 2> /dev/null; then fail "missing forge name accepted"; fi
+if "$here/copy-forge.sh" voxel "$other" 2> /dev/null; then fail "unknown forge accepted"; fi
+[ -z "$(ls -A "$other")" ] || fail "left files after a bad forge name"
+```
+
+（`$other` は 4 で空のまま残ったフォルダ。4 の後なら空のはず）
+
+- [ ] **Step 2: 落ちることを確かめる**
+
+Run: `./scripts/copy-forge.test.sh`
+Expected: FAIL（今のスクリプトは引数 1 つで、`pixel` をパスとして扱い「エラー: pixel が無い」で止まる）
+
+- [ ] **Step 3: `scripts/copy-forge.sh` を直す**
+
+引数を 2 つにし、1 つ目で `name`（`pixel-asset-forge` / `illust-asset-forge`）と既定の `FORGE_URL` を決める（`case`。それ以外は使い方を出して `exit 2`）。`dest="$game/$name"`。`illust` のときは展開した `$work/out` から `HANDOVER.md` と `docs/superpowers` を消してから `UPSTREAM.md` を書く。`UPSTREAM.md` の本文の `pixel-asset-forge` と差分のコマンドのパスを `$name` にする。冒頭のコメントと使い方の文を新しい使い方に。ほかの動き（一時フォルダ、GIT_DIR を外す、上書きしない）は変えない
+
+- [ ] **Step 4: 通ることを確かめる**
+
+Run: `./scripts/copy-forge.test.sh`
+Expected: `ok`
+
+- [ ] **Step 5: `new-game` の SKILL.md を直す**
+
+- 「ドット絵を使うなら」の呼び方を `./scripts/copy-forge.sh pixel <ゲームリポジトリのパス>` に
+- その後に節「イラストを使うなら（illust-asset-forge）」（中身は設計書「ankardo 側」の 2 のとおり）: コピーする（`./scripts/copy-forge.sh illust <ゲームリポジトリのパス>`。`HANDOVER.md`・`docs/superpowers/` は入らない）／コピーした後にゲーム側で行うこと（ノートブックの 4 つの変数の値の決め方、`tests/test_notebook.py` の既定値のテストを合わせて `UPSTREAM.md` に 1 行、コピーの `CLAUDE.md` の「ゲーム側の事情を書かない」を書き換える、venv とテスト、GPU の処理は依頼者が Colab で、Colab は `develop` を取るので設定の変更は develop にマージするまで届かない）／forge とコピーの関係（pixel と同じ。重複させず「ドット絵を使うなら」の該当の節を指してよい）／経緯（character-tactics の設計書 `docs/superpowers/specs/2026-11-22-face-gen-ai-design.md` へのリンク）
+- 両方使うゲームは 2 回実行し、使わないゲームは実行しないことを 1 行で
+
+- [ ] **Step 6: 確認**
+
+Run: `grep -rn "copy-forge.sh" README.md .claude/skills/new-game/SKILL.md`
+Expected: 引数 1 つの古い呼び方が残っていない（すべて `pixel` か `illust` が付いている）
+Run: `cd site && npm test`
+Expected: PASS（`site/` は変えていない）
+
+- [ ] **Step 7: コミット**
+
+```bash
+git add scripts/copy-forge.sh scripts/copy-forge.test.sh .claude/skills/new-game/SKILL.md README.md
+git commit -m "feat: copy-forge.sh で illust-asset-forge もコピーできるようにし、new-game にイラストの手順を足す"
+```
+
+- [ ] **Step 8: 依頼者の指示があれば push して main への PR を作る**
+
+## character-tactics 側
+
+作業場所: `/home/ubuntu/workspace/character-tactics`、ブランチ `feat/face-gen-ai`（develop から作成済み。設計書・計画はここにコミット済み）。**forge と ankardo の PR が main にマージされてから始める**
+
+### Task 6: forge をコピーし、character-tactics 向けにする
+
+**Files:**
+- Create: `illust-asset-forge/`（ankardo の `copy-forge.sh illust` の出力。`UPSTREAM.md` を含む）
+- Create: `illust-asset-forge/characters/ally05/character.yaml`・`illust-asset-forge/characters/ally06/character.yaml`
+- Modify: `illust-asset-forge/UPSTREAM.md`・`illust-asset-forge/notebooks/run.ipynb`・`illust-asset-forge/tests/test_notebook.py`・`illust-asset-forge/tests/test_repo_configs.py`・`illust-asset-forge/CLAUDE.md`
+
+**Interfaces:**
+- Consumes: forge の main（Task 1〜4 のマージ後）、ankardo の main の `scripts/copy-forge.sh`（Task 5 のマージ後）
+- Produces: `illust-asset-forge/` のコピー（Task 7 の文書が指す）
 
 - [ ] **Step 1: コピーする**
 
 ```bash
-git -C ../illust-asset-forge fetch origin && git -C ../illust-asset-forge archive origin/main | tar -x -C illust-asset-forge --exclude=HANDOVER.md --exclude='docs/superpowers'
+git -C ../ankardo switch main && git -C ../ankardo pull --ff-only
+../ankardo/scripts/copy-forge.sh illust .
 ```
-（`illust-asset-forge/` を先に作る。コピー元の commit は `git -C ../illust-asset-forge rev-parse origin/main`）
+Expected: `コピーした: ./illust-asset-forge（https://github.com/akabee0161/illust-asset-forge.git の <commit>）`。`illust-asset-forge/HANDOVER.md` と `illust-asset-forge/docs/superpowers/` が無い
 
-- [ ] **Step 2: `UPSTREAM.md` を書く**
-
-`pixel-asset-forge/UPSTREAM.md` と同じ形: このフォルダは illust-asset-forge のコピーでこのゲーム専用に自由に直してよい／コピー元 `https://github.com/akabee0161/illust-asset-forge.git`・commit（Step 1 の値）・コピーした日／forge の改善を取り込む仕組みは無く、要るものは手で持ってくる／「forge に戻す候補」の欄（初めは空）／「このゲームだけの変更」の欄に、Step 3〜5 の変更を 1 行ずつ
+- [ ] **Step 2: `UPSTREAM.md` に「このゲームだけの変更」の欄を足し、Step 3〜5 の変更を 1 行ずつ書く**
 
 - [ ] **Step 3: ノートブックの 4 つの変数を character-tactics の値にし、`tests/test_notebook.py` の既定値のテストをその値に合わせる**（値は Global Constraints）
 - [ ] **Step 4: ボルグ・セラの設定を置く**
@@ -284,7 +355,7 @@ git add illust-asset-forge
 git commit -m "feat: illust-asset-forge をコピーし、ノートブックとボルグ・セラの設定を character-tactics 向けにする"
 ```
 
-### Task 6: 正典を直す
+### Task 7: 正典を直す
 
 **Files:**
 - Modify: `README.md`（構成の表、「顔グラの例外」、イラストの作りかたの節）

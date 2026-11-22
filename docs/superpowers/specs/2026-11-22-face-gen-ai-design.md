@@ -98,13 +98,30 @@ A の弱点: 1 つのコピーで画風や道具を直しても、ほかのコ�
    - README・HANDOVER の、ボルグ・セラを書いている記述を、見本 4 人の記述に直す（ゲームの名前は書かない。forge の CLAUDE.md の決まり）
    - CLAUDE.md の「受け取った画像の扱い」に、Drive のコネクターから取る流れを足す（zip の流れは残す）
 
-### character-tactics 側（develop へ PR を 1 つ。forge の PR のマージ後）
+### ankardo 側（main へ PR を 1 つ。forge の PR のマージ後）
+
+新しいゲームを作る手順は、ankardo のスキル `new-game`（`.claude/skills/new-game/SKILL.md`）に既にある。pixel-asset-forge をゲームへコピーする節「ドット絵を使うなら」と、コピーのスクリプト `scripts/copy-forge.sh`（テスト `scripts/copy-forge.test.sh`）もある。足りないのは illust-asset-forge の分だけなので、同じ形で足す（依頼者「基本的な考え方は pixel-asset-forge と同様」）。
+
+1. **`copy-forge.sh` で、どちらの forge をコピーするかを引数で選べるようにする**（依頼者が案 A を選んだ。ほかの案は、illust 用のスクリプトを別に作る B（60 行ほどが重複する）、スクリプトを作らず手順だけ書く C（除くファイルや `UPSTREAM.md` を毎回手で作るので間違えやすい））
+   - 使い方を `./scripts/copy-forge.sh <pixel|illust> <ゲームリポジトリのパス>` にする。1 回の実行で 1 つ。両方使うゲームは 2 回実行し、使わないゲームは実行しない
+   - `pixel` は今と同じ動き（コピー元 `https://github.com/akabee0161/pixel-asset-forge.git`、コピー先 `pixel-asset-forge/`）
+   - `illust` はコピー元 `https://github.com/akabee0161/illust-asset-forge.git`、コピー先 `illust-asset-forge/`。`HANDOVER.md` と `docs/superpowers/` は持ち込まない（引き継ぎはゲームの `HANDOVER.md` 1 つにする。forge の当時のログはゲームのログではない）
+   - `UPSTREAM.md` の中身は今と同じ形で、forge の名前だけが変わる
+   - 引数の 1 つ目が `pixel`・`illust` 以外なら止まる。テスト用の `FORGE_URL` の上書きは残す
+   - `copy-forge.test.sh` を両方の forge で確かめるように直す（`illust` で `HANDOVER.md`・`docs/superpowers/` が入らないこと、引数の誤りで止まることを足す）
+2. **`new-game` の SKILL.md に「イラストを使うなら（illust-asset-forge）」の節を足す**（「ドット絵を使うなら」と同じ形）
+   - コピーする: `./scripts/copy-forge.sh illust <ゲームリポジトリのパス>`
+   - コピーした後にゲーム側で行うこと: ノートブックの 4 つの変数を、そのゲームのリポジトリの URL・`develop`・`illust-asset-forge`・ゲームごとの Drive の置き場（`/content/drive/MyDrive/<ゲームのリポジトリ名>/illust-asset-forge`）に書き換える。`tests/test_notebook.py` の既定値のテストをその値に合わせ、`UPSTREAM.md` に 1 行書く。コピーの `CLAUDE.md` の「ゲーム側の事情を書かない」を書き換える。venv を作り（`uv venv illust-asset-forge/.venv && uv pip install --python illust-asset-forge/.venv/bin/python -e 'illust-asset-forge[dev]'` など）テストを通す。GPU を使う処理は依頼者が Colab で動かす
+   - forge とコピーの関係は、pixel-asset-forge と同じ（ゲーム側で自由に直してよい、直したら「forge に戻す候補」に 1 行、forge の改善は手で持ってくる）
+   - 「ドット絵を使うなら」の `copy-forge.sh` の呼び方を、新しい使い方（`pixel` を付ける）に直す
+   - 経緯: この設計書へのリンク
+3. ankardo の README の、`copy-forge.sh` に触れている箇所があれば合わせて直す
+
+### character-tactics 側（develop へ PR を 1 つ。forge と ankardo の PR のマージ後）
 
 1. **forge をコピーする**
-   - forge の PR をマージした後の main を、`illust-asset-forge/` に丸ごとコピーする（`.git`・`.venv`・`__pycache__` などは除く）
-   - `illust-asset-forge/UPSTREAM.md` を置く。中身は `pixel-asset-forge/UPSTREAM.md` と同じ形（このフォルダは forge のコピーでこのゲーム専用に直してよいこと、コピー元の URL・commit・コピーした日、「forge に戻す候補」の欄）
+   - ankardo の `./scripts/copy-forge.sh illust <character-tactics のパス>` でコピーする（手順の最初の確かめを兼ねる）。forge の main の中身が `illust-asset-forge/` に入り、`UPSTREAM.md` ができる。`HANDOVER.md`・`docs/superpowers/` は入らない
    - `.gitignore`（`illust-asset-forge/.gitignore` か根の `.gitignore`）で `.venv/`・`__pycache__/` などがコミットされないようにする。forge 自身の `.gitignore` がコピーされれば足りるかを確かめる
-   - コピーの中の `HANDOVER.md` は持ち込まない（引き継ぎは character-tactics の `HANDOVER.md` 1 つにする）。builder の判断で、`docs/superpowers/` も持ち込まない（forge の当時のログで、このゲームのログではないため）
 2. **ノートブックを character-tactics 向けにする**
    - `REPO_URL` を `https://github.com/akabee0161/character-tactics.git`、`REPO_BRANCH` を `develop`、`SUBDIR` を `illust-asset-forge`、`DRIVE_DIR` を `/content/drive/MyDrive/character-tactics/illust-asset-forge` にする（Drive の置き場は Claude の判断。forge 本体の置き場と混ざらなければよい。`develop` にするのは、機能ブランチを develop へマージした時点で Colab に届くようにするため）
    - forge の `tests/test_notebook.py` は既定値が forge 本体のものであることを確かめるので、コピーではこのテストを character-tactics の値に合わせて直し、`UPSTREAM.md` に 1 行書く
@@ -128,5 +145,4 @@ A の弱点: 1 つのコピーで画風や道具を直しても、ほかのコ�
 ## builder に任せること
 
 - ノートブックの clone 先の名前、別のリポジトリの古い clone を検出したときの止め方
-- コピーに `docs/superpowers/` を持ち込むか
 - forge の README の見本の説明の書き方

@@ -17,6 +17,8 @@
 - character-tactics の顔グラを、ドット絵でなく illust-asset-forge の生成イラストで作る。illust-asset-forge は pixel-asset-forge と同じく、汎用の部品だけを置き、このリポジトリへ丸ごとコピーして使う（取り込み方式）。画風は thick-line-flat
 - 設計は `docs/superpowers/specs/2026-11-22-face-gen-ai-design.md`。計画は工程 1 だけ。工程 2〜4 は前の工程の結果を見てその都度相談する
 - ノベルの立ち絵の種類を足すことは、作品の計画が無いのでこの作業に入れない（依頼者）
+- 新しいゲームで illust-asset-forge を使う手順は、ankardo の `new-game` スキルに足す。`scripts/copy-forge.sh` を `<pixel|illust>` で選べる形にする（依頼者が案 A を選んだ）。計画の Task 5。このリポジトリへのコピー（Task 6）もそのスクリプトで行う
+- 実装の進め方（1 つずつ／まとめて）は、依頼者が計画を見てから決める
 - 採用した絵は、Google Drive のコネクター（`download_file_content`）で PNG の条件を残したまま取れる（2026-11-22 確かめた）
 
 前の作業から残っていること:
