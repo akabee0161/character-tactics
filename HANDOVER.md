@@ -9,7 +9,7 @@
 4. 残りの顔グラ 26 枚を作る
 段階: 設計の相談
 次にやること:
-- 工程 2（ボルグを新しい画風で作り直す）の設計を相談する。最初に、依頼者が Colab で `illust-asset-forge/`（このリポジトリのコピー）から準備のセルが動くことを確かめる（コピーから動くことは未確認）
+- 工程 2（ボルグを新しい画風で作り直す）の設計書 `docs/superpowers/specs/2026-11-23-borg-restyle-design.md` の承認をもらい、計画を書く（Colab でコピーから動くことは 2026-11-23 に確かめた）
 - ankardo の `new-game` スキルの設計書リンクを、この作業の設計書が main に入ったら `blob/main/…` に直す（依頼者の指示。今はコミット固定）
 - 前の作業の残り（下の「前の作業から残っていること」）
 
@@ -26,7 +26,8 @@
 - このリポジトリの `illust-asset-forge/` は、その forge（`b9cbe53`）のコピー。ノートブックの 4 つの変数をこのゲームの値にし、ボルグ・セラの設定（`characters/ally05/`・`ally06/`。絵は無い）を置いた。変更の記録は `illust-asset-forge/UPSTREAM.md`。テストは `cd illust-asset-forge && .venv/bin/pytest`
 - 見本の絵（顔・全身 8 枚）は Colab（T4）で作り、騎士・魔法使いの 4 枚は、画風を洗練したときに選んだ絵と画素まで一致した
 - PR #60 の CodeRabbit の指摘 7 件は、forge（PR #5）とこのコピー（PR #61）の両方で直し、マージ済み（2026-11-23）。準備のセルの pip の `check=True` は、Colab ではまだ動かしていない
-- 確かめていないこと: Colab でこのリポジトリのコピーから動くこと。Colab はこのリポジトリの `develop` を取るので、`illust-asset-forge/` が `develop` に入るまで試せない。`P.pick` の画像サイズの修正（forge 側）の Colab での見え方
+- Colab で確かめた（2026-11-23、T4、develop の 71bbf25）: 準備のセルが最後まで動く（pip の `check=True` で止まらない）。このコピーの `knight` の顔をシード 3034254740 で作れた（見た目は見本を左右反転した絵と同じ）。`P.pick` の画面が出て、絵は出力欄の幅に引き伸ばされず約 320px で出る
+- 確かめていないこと: コピーから作った騎士の顔が見本と画素まで一致するか（Drive の `MyDrive/character-tactics/illust-asset-forge/runs/knight/face/` に残っている）。`edit_box`・`show_styles` の画像の見え方（`P.pick` と同じ作りで、直していない）
 
 前の作業から残っていること:
 - develop の確認用のプレビューで、戦闘の中のボルグの動きと顔を確かめる（依頼者）
