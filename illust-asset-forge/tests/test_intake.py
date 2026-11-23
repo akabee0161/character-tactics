@@ -418,3 +418,102 @@ def test_install_restores_source_when_interrupted_right_after_backup(repo, selec
     assert {p.name: p.read_bytes() for p in (repo / "characters/c1/source").iterdir()} == before
     assert not (repo / "characters/c1/.source.new").exists()
     assert not (repo / "characters/c1/.source.old").exists()
+
+
+def test_install_stops_when_previous_backup_is_left(repo, selected):
+    # 前回の入れ替えの途中で止まると、.source.old が唯一の写しになりうる。消さずに止まる
+    old = repo / "characters/c1/.source.old"
+    write_png(old / "face_hurt.png")
+    before = {p.name: p.read_bytes() for p in (repo / "characters/c1/source").iterdir()}
+    with pytest.raises(ConfigError, match=r"\.source\.old"):
+        install_selection(repo, selected)
+    assert (old / "face_hurt.png").is_file()
+    assert {p.name: p.read_bytes() for p in (repo / "characters/c1/source").iterdir()} == before
+    assert not (repo / "characters/c1/.source.new").exists()
+
+
+def test_install_rollback_ignores_backup_of_other_run_and_never_restores_it(repo, selected, monkeypatch):
+    # 今回の控えだけを戻す。別の控えがある文字は、何も触る前に止まる（上のテストと合わせて、控えの混同が起きない）
+    write_png(repo / "characters/c2/source/face.png", character="c2")
+    write_png(repo / "characters/c2/.source.old/face.png", character="c2")
+    write_png(selected / "c2/face.png", character="c2")
+    c1_before = {p.name: p.read_bytes() for p in (repo / "characters/c1/source").iterdir()}
+    with pytest.raises(ConfigError, match="c2"):
+        install_selection(repo, selected)
+    assert {p.name: p.read_bytes() for p in (repo / "characters/c1/source").iterdir()} == c1_before
+    assert (repo / "characters/c2/.source.old/face.png").is_file()
+
+
+def test_install_rollback_continues_after_one_restore_fails_and_reports_paths(repo, selected, monkeypatch):
+    from pathlib import Path
+
+    write_png(repo / "characters/c2/source/face.png", character="c2")
+    write_png(selected / "c2/face.png", character="c2")
+    c1_before = {p.name: p.read_bytes() for p in (repo / "characters/c1/source").iterdir()}
+    real = Path.rename
+
+    def rename(self, target):
+        if self.name == ".source.new" and self.parent.name == "c2":
+            raise OSError("rename failed")  # 2 人目の入れ替えが失敗して、巻き戻しが始まる
+        if self.name == ".source.old" and self.parent.name == "c2":
+            raise OSError("restore failed")  # c2 の戻しは失敗する（巻き戻しは逆順なので c2 が先）
+        return real(self, target)
+
+    monkeypatch.setattr(Path, "rename", rename)
+    with pytest.raises(ConfigError) as info:
+        install_selection(repo, selected)
+    # c2 の戻しが失敗しても、c1 は戻る
+    assert {p.name: p.read_bytes() for p in (repo / "characters/c1/source").iterdir()} == c1_before
+    message = str(info.value)
+    assert "characters/c2/.source.old" in message and "characters/c2/source" in message
+    assert (repo / "characters/c2/.source.old").is_dir()  # 手で戻せるように残す
+
+
+def test_stale_backup_message_says_to_move_broken_source_aside(repo, selected):
+    # source/ が壊れて残っていると、控えを source/ に改名できない。先に別名へ退避する手順を案内する
+    write_png(repo / "characters/c1/.source.old/face_hurt.png")
+    with pytest.raises(ConfigError) as info:
+        install_selection(repo, selected)
+    assert "別名" in str(info.value)
+
+
+def test_restore_failure_message_says_to_move_broken_source_aside(repo, selected, monkeypatch):
+    from pathlib import Path
+
+    write_png(repo / "characters/c2/source/face.png", character="c2")
+    write_png(selected / "c2/face.png", character="c2")
+    real = Path.rename
+
+    def rename(self, target):
+        if self.name == ".source.new" and self.parent.name == "c2":
+            raise OSError("rename failed")
+        if self.name == ".source.old" and self.parent.name == "c2":
+            raise OSError("restore failed")
+        return real(self, target)
+
+    monkeypatch.setattr(Path, "rename", rename)
+    with pytest.raises(ConfigError) as info:
+        install_selection(repo, selected)
+    assert "別名" in str(info.value)
+
+
+def test_rollback_reports_new_source_it_could_not_remove_on_first_install(repo, selected, monkeypatch):
+    # 元の source が無かったキャラクターの取り消しで、削除に失敗したら、握りつぶさず残った source を報告する
+    import shutil
+
+    shutil.rmtree(repo / "characters/c1/source")
+    write_png(selected / "c2/face.png", character="c2")
+    _fail_staging_rename(monkeypatch, "c2")
+    real_rmtree = shutil.rmtree
+
+    def rmtree(path, *a, **k):
+        if str(path).endswith("characters/c1/source"):
+            raise OSError("busy")
+        return real_rmtree(path, *a, **k)
+
+    monkeypatch.setattr("artgen.intake.shutil.rmtree", rmtree)
+    with pytest.raises(ConfigError) as info:
+        install_selection(repo, selected)
+    message = str(info.value)
+    assert "characters/c1/source" in message and "busy" in message
+    assert "控えは無い" in message  # 控えの改名ではなく、残った source の後処理を案内する

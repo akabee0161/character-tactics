@@ -7,6 +7,7 @@ import json
 import os
 import re
 import shutil
+import tempfile
 import zipfile
 from collections.abc import Callable
 from datetime import datetime
@@ -92,6 +93,8 @@ class SelectionStore:
         # 直近の adopt で replaced/ へ移したファイル名と、移した先のフォルダ名（画面に出す用）
         self.last_moved: list[str] = []
         self.last_replaced: str | None = None
+        # 直近の adopt が採用はできたが、後片付けで失敗したこと（採用の失敗ではない）
+        self.last_warnings: list[str] = []
         self._moves: list[tuple[Path, Path]] = []  # (元の場所, replaced/ の中)
         self._created_dirs: list[Path] = []
 
@@ -123,6 +126,7 @@ class SelectionStore:
     ) -> Path:
         candidate = Path(candidate)
         self.last_moved, self.last_replaced = [], None
+        self.last_warnings = []
         self._moves, self._created_dirs = [], []
         # 何も書く前に検査する
         params = read_params(candidate)
@@ -141,6 +145,7 @@ class SelectionStore:
         # 先に新しい絵を一時ファイルへ保存する。失敗しても前の採用は動かさない
         tmp = char_dir / f".{name}.new"
         dest = char_dir / name
+        had_dest = dest.is_file()
         backup: Path | None = None  # この試行が作った前の絵の控え。公開後に失敗しても戻せるように取っておく
         try:
             saved = {k: v for k, v in params.items() if k != "adopted_from_sha256"}
@@ -166,20 +171,32 @@ class SelectionStore:
         except BaseException as e:
             # 途中で失敗したら、前の絵・表情・範囲の組み合わせに戻す。
             # 戻す側の失敗で元の例外を隠さない（残った .old は手で戻せる）
+            # 絵の巻き戻しと退避物（表情・範囲）の復元は、片方が失敗してももう片方を続ける
             try:
                 if backup is not None and backup.exists():
                     if dest.is_file() and file_sha256(dest) == file_sha256(backup):
                         backup.unlink()  # まだ公開前（前の絵のまま）
                     else:
                         os.replace(backup, dest)
+                elif not had_dest:
+                    dest.unlink(missing_ok=True)  # 初回の採用。採用前の状態は「無い」
+            except Exception as restore_error:
+                e.add_note(f"前の採用へ戻せなかった: {dest.name}: {restore_error}")
+            try:
                 self._restore_aside()
             except Exception as restore_error:
-                e.add_note(f"前の採用へ戻せなかった: {restore_error}")
+                e.add_note(f"前の採用へ戻せなかった: 退避した表情・範囲: {restore_error}")
             raise
         finally:
             tmp.unlink(missing_ok=True)
         if backup is not None:
-            backup.unlink(missing_ok=True)
+            # 採用はもう済んでいる。控えを消せなくても、採用の失敗にしない
+            try:
+                backup.unlink(missing_ok=True)
+            except OSError as e:
+                warning = f"{char_id}/{backup.name} を消せなかった（{e}）。採用はできている。手で消してよい"
+                self.last_warnings.append(warning)
+                print(warning)
         return dest
 
     def _move_aside(self, char_dir: Path, when: datetime) -> None:
@@ -270,10 +287,22 @@ class SelectionStore:
         if not files:
             raise ConfigError("採用した絵が無い")
         self.packs_dir.mkdir(parents=True, exist_ok=True)
-        out = self.packs_dir / f"selected_{now().strftime(_STAMP)}.zip"
-        with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
-            for p, arc in files:
-                z.write(p, arc)
+        # 一時ファイルに書き終えてから公開する。書いている途中の zip を見せず、失敗しても前の zip を壊さない
+        fd, tmp_name = tempfile.mkstemp(dir=self.packs_dir, prefix=".pack_", suffix=".tmp")
+        tmp = Path(tmp_name)
+        try:
+            with os.fdopen(fd, "wb") as f, zipfile.ZipFile(f, "w", zipfile.ZIP_DEFLATED) as z:
+                for p, arc in files:
+                    z.write(p, arc)
+            stamp = now().strftime(_STAMP)
+            out = self.packs_dir / f"selected_{stamp}.zip"
+            n = 1
+            while out.exists():  # 同じ秒の 2 回目以降は、前の zip を上書きしない
+                n += 1
+                out = self.packs_dir / f"selected_{stamp}_{n}.zip"
+            os.replace(tmp, out)
+        finally:
+            tmp.unlink(missing_ok=True)
         return out
 
 

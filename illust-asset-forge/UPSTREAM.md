@@ -12,12 +12,12 @@ forge 本体も並行して開発が続く。forge の改善をこちらへ取�
 
 ここでエンジン・規約・道具を直したら、何を・なぜ直したかを1行足す。
 
-直した（forge 本体にも同じ問題があり、戻す候補。2026-11-23、character-tactics の PR #60 の CodeRabbit の指摘）:
+直した（forge 本体にも同じ問題があり、forge の `fix/review-findings-from-ct` ブランチで同じ修正を入れた。forge の PR がマージされたら、forge 側は対応済み。2026-11-23、character-tactics の PR #60 の CodeRabbit の指摘）:
 
 - `notebooks/run.ipynb` の準備のセル: `!pip install` は失敗しても例外にならず、古い依存のまま import に進む。`subprocess.run([sys.executable, "-m", "pip", "install", "-q", ...], check=True)` にして、失敗したらセルを止める（`tests/test_notebook.py` の `test_prepare_cell_stops_when_pip_install_fails`）
 - `src/artgen/forge.py` の `Forge.adopt`: 設定から消した表情の候補（Drive に残った古い候補）を採用すると、画面は成功を出すが、あとの `intake` が `face_<表情>.png` を拒否してほかのキャラクターも取り込めなくなる。採用の前に、今の `character.yaml` の `expressions` に無い表情を `ConfigError` で止める（`tests/test_forge.py` の `test_adopt_rejects_expression_missing_from_current_config`）
 
-直していない（forge 本体にも同じコードがある。まれな条件でだけ起きるため先送り）:
+直した（上の 2 件と同じく forge 本体の `fix/review-findings-from-ct` ブランチと同じ差分を、このコピーに入れた。まれな条件でだけ起きる 5 件。2026-11-23）。下の説明は直す前の問題:
 
 - `src/artgen/intake.py` の `_swap_all`: 入れ替えの途中で強制終了すると、前の `source` の控え（`.source.old`）が唯一の写しになり、次の取り込みがそれを消す（`source/` は git にも入っているので戻せる）。控えが残っていたら、復旧するか止まる。今回の控えだけを今回戻す
 - 同じ `_swap_all` の戻す処理: 1 件の戻しに失敗すると、残りのキャラクターを戻さずに止まる。キャラクターごとに失敗を記録して続け、最後に手で戻すパスを報告する

@@ -593,3 +593,97 @@ def test_find_candidate_walks_new_layout(runs_new):
     assert find_candidate(runs_new, 5).name == "c1_fullbody_5.png"
     with pytest.raises(ConfigError, match="見つからない"):
         find_candidate(runs_new, "nope.png")
+
+
+def test_first_adopt_interrupt_after_publish_removes_the_new_face(store, candidate, monkeypatch):
+    # 採用前の状態は「顔が無い」。公開の直後に中断しても、新しい顔を残さない
+    real_replace = os.replace
+
+    def replace_then_interrupt(src, dst, *a, **k):
+        real_replace(src, dst, *a, **k)
+        if os.path.basename(dst) == "face.png":
+            raise KeyboardInterrupt
+
+    monkeypatch.setattr("artgen.selection.os.replace", replace_then_interrupt)
+    with pytest.raises(KeyboardInterrupt):
+        store.adopt(candidate)
+    monkeypatch.undo()
+    assert not (store.selected_dir / "c1" / "face.png").exists()
+    assert [p.name for p in (store.selected_dir / "c1").iterdir()] == []
+
+
+def test_adopt_succeeds_with_warning_when_only_backup_removal_fails(
+    store, candidate, half_red_candidate, monkeypatch
+):
+    store.adopt(candidate)
+    real_unlink = type(candidate).unlink
+
+    def unlink(self, *a, **k):
+        if self.name.startswith(".face.png.old"):
+            raise OSError("busy")
+        return real_unlink(self, *a, **k)
+
+    monkeypatch.setattr(type(candidate), "unlink", unlink)
+    dest = store.adopt(half_red_candidate)  # 採用はできている。例外にしない
+    monkeypatch.undo()
+    assert dest == store.selected_dir / "c1" / "face.png"
+    assert read_params(dest)["seed"] == 9
+    assert any(".face.png.old" in w and "busy" in w for w in store.last_warnings)
+    # 次の採用では警告が残らない
+    store.adopt(candidate)
+    assert store.last_warnings == []
+
+
+def test_pack_called_twice_in_the_same_second_keeps_both(store, candidate):
+    store.adopt(candidate)
+    now = lambda: datetime(2026, 11, 22, 10, 0, 0)  # noqa: E731
+    first = store.pack(now=now)
+    first_bytes = first.read_bytes()
+    second = store.pack(now=now)
+    assert first == store.packs_dir / "selected_20261122_100000.zip"
+    assert second != first and second.is_file()
+    assert first.read_bytes() == first_bytes
+    assert sorted(p.name for p in store.packs_dir.iterdir()) == sorted([first.name, second.name])
+
+
+def test_pack_failure_leaves_no_partial_zip(store, candidate, monkeypatch):
+    store.adopt(candidate)
+    now = lambda: datetime(2026, 11, 22, 10, 0, 0)  # noqa: E731
+    first = store.pack(now=now)
+    first_bytes = first.read_bytes()
+
+    def boom(self, *a, **k):
+        raise OSError("disk full")
+
+    monkeypatch.setattr(zipfile.ZipFile, "write", boom)
+    with pytest.raises(OSError, match="disk full"):
+        store.pack(now=now)
+    monkeypatch.undo()
+    assert [p.name for p in store.packs_dir.iterdir()] == [first.name]
+    assert first.read_bytes() == first_bytes
+
+
+def test_first_adopt_interrupt_restores_box_even_when_removing_new_face_fails(store, candidate, monkeypatch):
+    # 顔が未採用でも範囲（selection.json）はある。顔の削除が失敗しても、範囲は元の場所へ戻す
+    store.save_box("c1", (1, 2, 300, 400))
+    d = store.selected_dir / "c1"
+    real_replace = os.replace
+    real_unlink = type(candidate).unlink
+
+    def replace_then_interrupt(src, dst, *a, **k):
+        real_replace(src, dst, *a, **k)
+        if os.path.basename(dst) == "face.png":
+            raise KeyboardInterrupt
+
+    def unlink(self, *a, **k):
+        if self.name == "face.png":
+            raise OSError("busy")
+        return real_unlink(self, *a, **k)
+
+    monkeypatch.setattr("artgen.selection.os.replace", replace_then_interrupt)
+    monkeypatch.setattr(type(candidate), "unlink", unlink)
+    with pytest.raises(KeyboardInterrupt) as info:
+        store.adopt(candidate)
+    monkeypatch.undo()
+    assert (d / "selection.json").is_file()
+    assert any("face.png" in n and "busy" in n for n in info.value.__notes__)
