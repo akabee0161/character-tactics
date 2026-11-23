@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import base64
 import io
+import json
 from pathlib import Path
 
 from PIL import Image, ImageDraw
@@ -43,6 +44,22 @@ def build_review(root: Path, char_id: str) -> Path:
         raise ExportError(f"characters/{char_id}/character.yaml: face_crop が無い（承認するものが無い）")
     char_dir = root / "characters" / char_id
     check_dir = root / "local" / "check" / char_id
+
+    # 範囲を直したのに export を忘れると、古い画像に新しい枠を描いたページになり、承認が意味を失う
+    params_path = char_dir / "params.json"
+    exported = None
+    if params_path.is_file():
+        exported = json.loads(params_path.read_text(encoding="utf-8")).get("face_crop")
+    wanted = {
+        "large": list(crop.large),
+        "small": list(crop.small) if crop.small is not None else None,
+        "clear_colors": [{"min": c.min, "max_rg": c.max_rg, "max_gb": c.max_gb} for c in crop.clear_colors],
+    }
+    if exported is not None and exported != wanted:
+        raise ExportError(
+            f"characters/{char_id}/params.json: 書き出した範囲が character.yaml の face_crop と違う。"
+            "先に python -m artgen.export を実行する"
+        )
 
     source = _load(char_dir / "source" / "face.png", "元画像").convert("RGB")
     large = _load(char_dir / "face.png", "書き出した大きい顔（書き出し）")

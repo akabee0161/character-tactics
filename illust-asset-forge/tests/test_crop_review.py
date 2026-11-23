@@ -39,3 +39,10 @@ def test_review_requires_face_crop(repo):
 def test_review_requires_export(cropped_repo):
     with pytest.raises(ExportError, match="書き出し"):
         build_review(cropped_repo, "c1")
+
+
+def test_review_rejects_stale_export(exported_repo):
+    # 範囲を直したのに export を忘れたとき、古い画像を承認用に出さない
+    write(exported_repo, "characters/c1/character.yaml", CROPPED_YAML.replace("[0, 0, 600, 600]", "[0, 0, 500, 500]"))
+    with pytest.raises(ExportError, match="export"):
+        build_review(exported_repo, "c1")
