@@ -8,9 +8,9 @@
 3. Modal で生成する ← 今ここ
 4. 表示の大きさと顔の構図を決める
 5. 残りの顔グラ 26 枚を作る
-段階: 設計の相談
+段階: 実装（6 タスク中 0）
 次にやること:
-- 工程 3（Modal で生成する）の設計書 `docs/superpowers/specs/2026-11-23-modal-gen-design.md` を依頼者が確かめ、承認されたら計画を書く。Colab のランタイムに接続できなかったため、Claude が Modal（T4 に固定）で生成する形に替える。Colab は手で試す道として残す
+- 工程 3（Modal で生成する）を、計画 `docs/superpowers/plans/2026-11-23-modal-gen.md` の Task 1 から実装する（設計書 `docs/superpowers/specs/2026-11-23-modal-gen-design.md`、どちらも依頼者が承認済み）。進め方は「まとめて」（依頼者）。Colab のランタイムに接続できなかったため、Claude が Modal（T4 に固定）で生成する形に替える。Colab は手で試す道として残す。Modal のアカウント・支払方法・Spend limit $3 は依頼者が設定済み、鍵（`modal token new`）は Task 6 で入れる
 - 工程 4 で決まっていること（大きい枠は頭の全体＋首元、小さい枠は顔のアップ、画像 2 枚など）は、同じ設計書の「工程 4 で決まっていること」
 - Drive の置き場を `MyDrive/illust-asset-forge/character-tactics/` にしたい（依頼者。今は `MyDrive/character-tactics/illust-asset-forge/`。ゲームが増えるたびにフォルダが増えて分からなくなるため）。作業が落ち着いてから。直す所は `DRIVE_DIR`（ノートブックの変数とそのテスト `illust-asset-forge/tests/test_notebook.py`）・`illust-asset-forge/README.md`・`illust-asset-forge/CLAUDE.md`・`UPSTREAM.md`。Drive でのフォルダの移動は依頼者
 - 素体に耳を足す（依頼者の判断。`pixel-asset-forge/ISSUES.md`）。今はボルグの芯だけに耳がある
