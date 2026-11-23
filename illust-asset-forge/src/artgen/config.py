@@ -38,6 +38,25 @@ class Template:
 
 
 @dataclass(frozen=True)
+class ClearColor:
+    """外につながる白のほかに透明にする色。全チャンネルの最小値が min 以上、
+    かつ r-g <= max_rg、かつ g-b <= max_gb。"""
+
+    min: int
+    max_rg: int
+    max_gb: int
+
+
+@dataclass(frozen=True)
+class FaceCrop:
+    """顔の元画像から大きい顔・小さい顔を切り出す範囲（元画像の画素の座標。正方形）。"""
+
+    large: tuple[int, int, int, int]
+    small: tuple[int, int, int, int] | None
+    clear_colors: tuple[ClearColor, ...]
+
+
+@dataclass(frozen=True)
 class Character:
     id: str
     name: str
@@ -50,6 +69,7 @@ class Character:
     default_expression: str
     expressions: dict[str, list[str]]
     inpaint_box: tuple[int, int, int, int] | None
+    face_crop: "FaceCrop | None" = None
 
 
 _MISSING = object()
@@ -246,6 +266,8 @@ def load_character(root: Path, char_id: str) -> Character:
     if box is not None:
         box = r.box("inpaint_box", box)
 
+    face_crop = _parse_face_crop(r, r._get("face_crop", None))
+
     return Character(
         id=char_id,
         name=r.string("name"),
@@ -258,4 +280,43 @@ def load_character(root: Path, char_id: str) -> Character:
         default_expression=default_expression,
         expressions=expressions,
         inpaint_box=box,
+        face_crop=face_crop,
     )
+
+
+def _square_box(r: _Reader, where: str, value: Any) -> tuple[int, int, int, int]:
+    box = r.box(where, value)
+    if box[2] - box[0] != box[3] - box[1]:
+        raise r.fail(where, f"正方形でない（x1-x0 と y1-y0 が違う）: {list(box)}")
+    return box
+
+
+def _parse_face_crop(r: _Reader, raw: Any) -> FaceCrop | None:
+    if raw is None:
+        return None
+    if not isinstance(raw, dict):
+        raise r.fail("face_crop", "キーと値の組でない")
+    unknown = set(raw) - {"large", "small", "clear_colors"}
+    if unknown:
+        raise r.fail("face_crop", f"知らないキー: {', '.join(sorted(map(str, unknown)))}")
+    if raw.get("large") is None:
+        raise r.fail("face_crop.large", "必須のキーが無い（small は large が無いと書けない）")
+    large = _square_box(r, "face_crop.large", raw["large"])
+    small = _square_box(r, "face_crop.small", raw["small"]) if raw.get("small") is not None else None
+
+    colors_raw = raw.get("clear_colors") or []
+    if not isinstance(colors_raw, list):
+        raise r.fail("face_crop.clear_colors", "一覧でない")
+    colors = []
+    for i, item in enumerate(colors_raw):
+        where = f"face_crop.clear_colors[{i}]"
+        if not isinstance(item, dict) or set(item) != {"min", "max_rg", "max_gb"}:
+            raise r.fail(where, "min・max_rg・max_gb の 3 つの組でない")
+        values = {}
+        for key in ("min", "max_rg", "max_gb"):
+            v = r.as_int(f"{where}.{key}", item[key], positive=False)
+            if not 0 <= v <= 255:
+                raise r.fail(f"{where}.{key}", f"0〜255 の整数でない: {v}")
+            values[key] = v
+        colors.append(ClearColor(**values))
+    return FaceCrop(large=large, small=small, clear_colors=tuple(colors))
