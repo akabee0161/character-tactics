@@ -15,3 +15,5 @@ Final: fixed M2 crop_review の古い export — test_review_rejects_stale_expor
 Final: minor (deferred): M1 はみ出す範囲のテストは書き出し済みの状態からも試す（今の実装は正しいと確認済み）
 Final: minor (deferred): M3 範囲のはみ出しは ExportError（設計書・CLAUDE.md は ConfigError と書く。メッセージの形は同じ）
 Final: minor (deferred): 表情を expressions から消した古い出力は残る（前からの制限）／確認図の横に印なしの切り出しが無い／clear_colors に偽の値を書くと空で通る
+CodeRabbit(883bfec): fixed 5 件（clear_colors の偽値・params.json 無しの承認・元画像の入れ替え・範囲のはみ出しを ConfigError・出力名の衝突）— 各テスト RED→GREEN, suite 461/461
+CodeRabbit: Ruling: export.py の元画像ハッシュと crop_review.py の照合を、描画と同じ 1 回の読み込みから取る（元画像の読み込みの間に source/ が入れ替わる競合）— 直さない。起きるのは `cloud install` と `export`・`crop_review` が同時に動いたときだけで、この流れでは Claude が 1 つずつ順に実行する。ほかのプロセスが source/ を差し替えない — 同時に動かすと、旧画像の書き出しに新画像のハッシュが記録され、承認用ページが古い書き出しを受け入れうる。直す場合は、元画像を一度だけ読んでそのバイト列からハッシュと描画を行い、`face_crop_record` の引数を変える（2 ファイル）。依頼者の判断（2026-11-23）
