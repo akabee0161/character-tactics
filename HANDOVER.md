@@ -9,7 +9,7 @@
 4. 残りの顔グラ 26 枚を作る
 段階: 実装計画
 次にやること:
-- 工程 2 の計画 `docs/superpowers/plans/2026-11-23-borg-restyle.md` を依頼者に確かめてもらい、実装する（設計書 `docs/superpowers/specs/2026-11-23-borg-restyle-design.md` は承認済み）
+- 工程 2 の計画 `docs/superpowers/plans/2026-11-23-borg-restyle.md` を、別のセッションで「まとめて」実装する（superpowers:executing-plans。依頼者が決めた。設計書 `docs/superpowers/specs/2026-11-23-borg-restyle-design.md` と計画は承認済み）。Task 1 から
 - ankardo の `new-game` スキルの設計書リンクを、この作業の設計書が main に入ったら `blob/main/…` に直す（依頼者の指示。今はコミット固定）
 - 前の作業の残り（下の「前の作業から残っていること」）
 
