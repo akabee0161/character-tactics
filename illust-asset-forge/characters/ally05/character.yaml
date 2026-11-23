@@ -1,8 +1,8 @@
 name: ボルグ
 subject: [1boy, solo, adult]
-appearance: [mature male, muscular, broad shoulders, square jaw, short hair, dark reddish brown hair, slicked back hair, stubble, brown eyes, thick eyebrows]
-outfit: [dark grey armor, gold trim, steel shoulder armor, breastplate, gauntlets]
-items: [large shield, holding shield]
+appearance: [mature male, muscular, broad shoulders, square jaw, short hair, (auburn hair:1.2), slicked back hair, stubble, brown eyes, thick eyebrows]
+outfit: [(dark grey armor:1.3), thin gold trim, navy blue clothes, steel shoulder armor, breastplate, gauntlets]
+items: [large shield, holding shield, holding sword, sword in right hand, shield in left hand]
 default_expression: normal
 expressions:
   normal: [serious, closed mouth]
