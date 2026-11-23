@@ -232,7 +232,7 @@ describe('windupOf', () => {
   });
 
   it('シートが無ければ 0（即時）', () => {
-    const def = { ...testRegistry().units.get('roran')!, sprites: { role: null, face: null, map: null } };
+    const def = { ...testRegistry().units.get('roran')!, sprites: { role: null, face: null, faceSmall: null, map: null } };
     expect(windupOf(def)).toBe(0);
   });
 });

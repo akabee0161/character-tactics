@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import shutil
 from pathlib import Path
@@ -10,11 +11,35 @@ from pathlib import Path
 from PIL import Image
 
 from artgen.config import ConfigError, load_character, load_template
+from artgen.face_crop import render_face
 from artgen.pnginfo import MissingParamsError, read_params
+
+SMALL_EXPORT_SIZE = 128
 
 
 class ExportError(Exception):
     """書き出せない入力（名前・形・条件の不足）。"""
+
+
+def small_name(name: str) -> str:
+    """`face.png` → `face-small.png`、`face_hurt.png` → `face_hurt-small.png`。"""
+    stem, dot, ext = name.rpartition(".")
+    return f"{stem}-small{dot}{ext}"
+
+
+def face_crop_record(crop, source_dir: Path, names: list[str]) -> dict:
+    """params.json の face_crop に書く記録。使った範囲と、切り出した元画像の SHA-256。
+    承認用ページ（crop_review）が、書き出しが今の設定・今の元画像のものかを照合するのに使う。"""
+    return {
+        "large": list(crop.large),
+        "small": list(crop.small) if crop.small is not None else None,
+        "clear_colors": [{"min": c.min, "max_rg": c.max_rg, "max_gb": c.max_gb} for c in crop.clear_colors],
+        "source_sha256": {n: hashlib.sha256((source_dir / n).read_bytes()).hexdigest() for n in sorted(names)},
+    }
+
+
+def _check_name(stem: str, kind: str) -> str:
+    return f"{stem}-{kind}.png"
 
 
 def _accepted_names(expressions: list[str]) -> list[str]:
@@ -69,6 +94,7 @@ def export_character(root: Path, char_id: str) -> list[Path]:
     if not sources:
         raise ExportError(f"{rel_source}: PNG が無い")
 
+    crop = character.face_crop
     accepted = _accepted_names(list(character.expressions))
     plans: list[tuple[Path, Path, int | None]] = []
     all_params: dict[str, dict] = {}
@@ -91,24 +117,68 @@ def export_character(root: Path, char_id: str) -> list[Path]:
                         f"{rel_source}/{src.name}: 正方形でない（{im.width}x{im.height}）。"
                         "顔は正方形で生成する"
                     )
+                if crop is not None:
+                    for label, box in (("large", crop.large), ("small", crop.small)):
+                        if box is not None and (box[2] > im.width or box[3] > im.height):
+                            raise ConfigError(
+                                f"characters/{char_id}/character.yaml: face_crop.{label}: "
+                                f"範囲 {list(box)} が元画像 {src.name}（{im.width}x{im.height}）の外にはみ出す"
+                            )
         plans.append((src, char_dir / src.name, template.export_size))
         all_params[src.name] = params
 
-    # 今回の source に無い古い出力は、params.json と食い違うので消す
-    current = {dest.name for _, dest, _ in plans}
+    check_dir = root / "local" / "check" / char_id
+    # 書き出すファイルと確認図。これに無い古い出力は、params.json と食い違うので消す
+    owners: dict[Path, str] = {}
+
+    def claim(path: Path, owner: str) -> None:
+        # 表情名が `normal` と `normal-small` のように、別の入力の出力が同じ名前になるときは、書く前に止める
+        if owners.setdefault(path, owner) != owner:
+            raise ExportError(f"{path.name}: {owners[path]} と {owner} の出力が同じ名前になる（表情名を変える）")
+
+    for src, dest, size in plans:
+        claim(dest, src.name)
+        if size is not None and crop is not None:
+            claim(check_dir / _check_name(src.stem, "large"), src.name)
+            if crop.small is not None:
+                claim(char_dir / small_name(src.name), src.name)
+                claim(check_dir / _check_name(src.stem, "small"), src.name)
+    wanted = set(owners)
     for name in accepted:
-        if name not in current:
-            (char_dir / name).unlink(missing_ok=True)
+        stem = name.removesuffix(".png")
+        for old in (
+            char_dir / name,
+            char_dir / small_name(name),
+            check_dir / _check_name(stem, "large"),
+            check_dir / _check_name(stem, "small"),
+        ):
+            if old not in wanted:
+                old.unlink(missing_ok=True)
 
     written: list[Path] = []
     for src, dest, size in plans:
         if size is None:
             shutil.copyfile(src, dest)
-        else:
+        elif crop is None:
             with Image.open(src) as im:
                 im.convert("RGB").resize((size, size), Image.Resampling.LANCZOS).save(dest, format="PNG")
+        else:
+            check_dir.mkdir(parents=True, exist_ok=True)
+            with Image.open(src) as im:
+                jobs = [("large", crop.large, size, dest)]
+                if crop.small is not None:
+                    jobs.append(("small", crop.small, SMALL_EXPORT_SIZE, char_dir / small_name(src.name)))
+                for kind, box, out_size, out_path in jobs:
+                    rendered, check = render_face(im, box, out_size, crop.clear_colors)
+                    rendered.save(out_path, format="PNG")
+                    check.save(check_dir / _check_name(src.stem, kind), format="PNG")
+                    written.append(out_path)
+            continue
         written.append(dest)
 
+    if crop is not None:
+        face_names = [src.name for src, _, size in plans if size is not None]
+        all_params["face_crop"] = face_crop_record(crop, source_dir, face_names)
     params_path = char_dir / "params.json"
     params_path.write_text(
         json.dumps(all_params, ensure_ascii=False, indent=2, sort_keys=True) + "\n",

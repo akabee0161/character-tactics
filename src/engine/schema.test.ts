@@ -142,16 +142,16 @@ describe('validateUnitDef', () => {
     const r = validateUnitDef('assets/units/roran.json', VALID_UNIT);
     expect(r.ok).toBe(true);
     if (!r.ok) return;
-    expect(r.value.sprites).toEqual({ role: null, face: null, map: null });
+    expect(r.value.sprites).toEqual({ role: null, face: null, faceSmall: null, map: null });
   });
 
   it('sprites に ファイルめいを かける', () => {
     const r = validateUnitDef('assets/units/roran.json', {
-      ...VALID_UNIT, sprites: { role: 'tate.png', face: 'roran-face.png', map: null },
+      ...VALID_UNIT, sprites: { role: 'tate.png', face: 'roran-face.png', faceSmall: null, map: null },
     });
     expect(r.ok).toBe(true);
     if (!r.ok) return;
-    expect(r.value.sprites).toEqual({ role: 'tate.png', face: 'roran-face.png', map: null });
+    expect(r.value.sprites).toEqual({ role: 'tate.png', face: 'roran-face.png', faceSmall: null, map: null });
   });
 
   it('sprites の あたいが もじれつでも null でも ないと エラー', () => {
@@ -1112,7 +1112,7 @@ describe('村人', () => {
 
   it('村人は id・name・color・sprites.face を持つ', () => {
     const r = validateNpcDef('npcs/npc01.json', NPC);
-    expect(r).toEqual({ ok: true, value: NPC });
+    expect(r).toEqual({ ok: true, value: { ...NPC, sprites: { face: 'npc01-face.png', faceSmall: null } } });
   });
 
   it('sprites.face は null も書ける', () => {
@@ -1196,5 +1196,35 @@ describe('validateStageDef: parTimes（目安の時間）', () => {
       expect(r.ok).toBe(false);
       if (!r.ok) expect(r.errors.some((e) => e.path.startsWith('parTimes'))).toBe(true);
     }
+  });
+});
+
+describe('faceSmall（小さい顔）', () => {
+  const unit = (sprites: unknown) => validateUnitDef('assets/units/roran.json', { ...VALID_UNIT, sprites });
+
+  it('faceSmall を読む', () => {
+    const r = unit({ face: 'a-face.png', faceSmall: 'a-face-small.png' });
+    expect(r.ok && r.value.sprites.faceSmall).toBe('a-face-small.png');
+  });
+
+  it('faceSmall が文字列でも null でもないとエラー', () => {
+    const r = unit({ face: 'a-face.png', faceSmall: 3 });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors[0]?.path).toBe('sprites.faceSmall');
+  });
+
+  it('face が無く faceSmall だけだとエラー', () => {
+    const r = unit({ faceSmall: 'a-face-small.png' });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors[0]?.path).toBe('sprites.faceSmall');
+  });
+
+  it('村人も faceSmall を読み、face が無いとエラー', () => {
+    const npc = { id: 'npc01', name: '村の 人', color: '#a08860' };
+    const ok = validateNpcDef('npcs/npc01.json', { ...npc, sprites: { face: 'a.png', faceSmall: 'a-small.png' } });
+    expect(ok.ok && ok.value.sprites).toEqual({ face: 'a.png', faceSmall: 'a-small.png' });
+    const ng = validateNpcDef('npcs/npc01.json', { ...npc, sprites: { faceSmall: 'a-small.png' } });
+    expect(ng.ok).toBe(false);
+    if (!ng.ok) expect(ng.errors[0]?.path).toBe('sprites.faceSmall');
   });
 });

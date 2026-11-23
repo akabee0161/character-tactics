@@ -4,7 +4,7 @@
 
 - キャラクターの設定を YAML で持ち、画風・絵の種類（型）と組み合わせてプロンプトを組み立てる
 - 生成の条件（プロンプト・シード・版）を PNG に埋め込み、採用した絵を作り直せるようにする
-- 採用した絵を、受け渡しの形（顔は 256×256、全身は元の大きさ、`params.json`）に書き出す
+- 採用した絵を、受け渡しの形（顔は 256×256 と、切り出し範囲があれば小さい顔 128×128、全身は元の大きさ、`params.json`）に書き出す
 
 GPU を使う処理は、量産は Claude が Modal で、手で試すときは依頼者が Colab で動かす（[10. Modal で作る](#10-modal-で作る量産)）。GPU を使わない処理（設定・プロンプト・書き出し）はサーバーで Claude が動かす。
 この README は**人間向けの手引き**である。Claude が守る作業規約は [`CLAUDE.md`](CLAUDE.md) にある。
@@ -98,8 +98,26 @@ YAML のタグにカンマを含む重み付きタグを書くときは、引用
 1. `python -m artgen.intake <zip>` で、zip の中身を `characters/<id>/source/` に取り込む。`source/` は丸ごと置き換わり、検査に通らなければ何も書かれない。出力に、取り込んだ・消したファイルと、書き戻すもの（PNG の条件の `overrides`・`selection.json` の範囲 `inpaint_box`）の一覧が出る
 2. 出力の一覧を `character.yaml` などの設定に戻す（`overrides` の `style` は `character.yaml` の `style` へ。ただし `defaults.yaml` の `style` と同じ画風なら、書かずに `character.yaml` の `style` を消してデフォルトに戻す。範囲は `inpaint_box` へ）
 3. 必要なら `python -m artgen.pnginfo characters/<id>/source/*.png` で PNG の条件を確かめる
-4. `python -m artgen.export <id>` で書き出す（顔は 256×256 に縮め、`params.json` を作る）
+4. `face_crop` を決める（下の「顔の切り出し」。Claude が範囲を決め、承認用のページで依頼者の承認を受ける）。`python -m artgen.export <id>` で書き出す（顔は 256×256、`face_crop` があれば小さい顔 128×128 も。`params.json` を作る）
 5. push は依頼者が頼んだときだけ行う
+
+### 顔の切り出し（`face_crop`）
+
+顔のテンプレートは「胸から上」（`upper body`）で写すので、元画像は頭の上に余白があり、顔は画面の一部になる。ゲームに渡す顔は、元画像から範囲を切り出して作る。範囲は `character.yaml` の `face_crop` に書く（元画像の画素の座標 `[x0, y0, x1, y1]`。正方形で、元画像の中）。
+
+```yaml
+face_crop:
+  large: [x0, y0, x1, y1]   # 大きい顔（頭の全体＋首元）。64px の枠（会話・セリフ欄・カード）
+  small: [x0, y0, x1, y1]   # 小さい顔（顔のアップ）。40px・32px の枠。省いてよい
+  clear_colors:             # 省いてよい。外につながる白のほかに透明にする色
+    - {min: 214, max_rg: 14, max_gb: 16}
+```
+
+- `python -m artgen.export <id>` が、範囲を切り出して背景を透明にし、`face.png`（256px）と `face-small.png`（128px。`small` があるとき）を RGBA で作る。表情（`face_<表情>.png`）も同じ範囲で作る。使った範囲は `params.json` の `face_crop` に残る。`face_crop` が無いキャラクターは、今までどおり元画像を丸ごと 256px に縮める（RGB。透明にしない）
+- 透明にするのは、切り出した範囲の四辺から続く画素のうち、白（全チャンネル 240 以上）と `clear_colors` に当たるもの。範囲の内側にあって外につながらない白（白目・服の白）は残る
+- **範囲の辺で服が切れていると、服の白が辺から塗りつぶされて透明になる**。`local/check/<id>/` の確認図（透明にした画素を赤で塗った絵）で、顔・服・鎧に赤が無いことを必ず見る
+- `python -m artgen.crop_review <id>` が、承認用のページ `local/check/<id>/review.html` を作る（元画像に範囲の枠を描いた絵と枠なしの絵・確認図・64/40/32px での見え方。1 ファイル）。Claude が範囲を決め、このページを Artifact で見せて依頼者の承認を受ける
+- 表情の範囲 `inpaint.box` の既定値（`templates/face.yaml`）は顔のアップのときの値で、胸から上の絵とは合わない。表情を作るときは、キャラクターごとに範囲を決める
 
 ## 5. 初めて Colab で動かすときの確認
 
@@ -179,8 +197,8 @@ uv venv .venv && uv pip install -e '.[dev]' && .venv/bin/pytest
 
    ```json
    [
-     {"char": "ally05", "template": "face", "seeds": [3034254740], "extra": "upper body", "remove": "portrait"},
-     {"char": "ally05", "template": "face", "n": 3, "extra": "upper body", "remove": "portrait"}
+     {"char": "ally05", "template": "face", "seeds": [3034254740]},
+     {"char": "ally05", "template": "face", "n": 3}
    ]
    ```
 
@@ -189,6 +207,7 @@ uv venv .venv && uv pip install -e '.[dev]' && .venv/bin/pytest
 3. 候補のページを Artifact で依頼者に見せる。番号で答えてもらう
 4. `.venv/bin/python -m artgen.cloud adopt local/rounds/<日時>.json <番号> [--flip]` で採用する（`--flip` は顔だけ左右反転する）。ページを作り直すときは `page <回りの記録>`
 5. `.venv/bin/python -m artgen.cloud install <id>` で `characters/<id>/source/` に取り込む。`source/` は丸ごと置き換わるが、`local/selected/<id>/` に選び直した全身絵が無いときは、今の `source/fullbody.png` を持ち越す（Colab の道で採った全身絵を消さないため）。表情（`face_*.png`）は持ち越さない（顔が変わると検査で落ちる）。以降（書き戻し・`python -m artgen.export <id>`）は 4 の流れと同じ
+6. 範囲を決めて承認を受ける: `character.yaml` に `face_crop` を書き（[顔の切り出し](#顔の切り出しface_crop)）、`.venv/bin/python -m artgen.export <id>` のあと `.venv/bin/python -m artgen.crop_review <id>` でページを作る。`local/check/<id>/review.html` を Artifact で依頼者に見せ、承認を受けてからゲームに入れる
 
 `--root` は `cloud` の直後に置く（`cloud --root DIR adopt …`）。
 

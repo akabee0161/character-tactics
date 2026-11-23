@@ -30,7 +30,7 @@ import type { Rect } from './hit';
 
 const INK = '#f2efe4';
 const PANEL = 'rgba(16, 24, 32, 0.88)';
-const FALLBACK_DEF = { name: '', color: '#888888', role: '', sprites: { role: null, face: null, map: null } };
+const FALLBACK_DEF = { name: '', color: '#888888', role: '', sprites: { role: null, face: null, faceSmall: null, map: null } };
 
 export function panel(ctx: CanvasRenderingContext2D, r: Rect, fill = PANEL): void {
   ctx.fillStyle = fill;

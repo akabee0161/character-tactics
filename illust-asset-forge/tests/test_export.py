@@ -192,3 +192,112 @@ def test_stale_outputs_are_removed(repo):
     export_character(repo, "c1")
     assert not stale.exists()
     assert list(json.loads((repo / "characters/c1/params.json").read_text(encoding="utf-8"))) == ["face.png"]
+
+
+# --- face_crop ---
+
+CROPPED_YAML = (
+    "name: C\nstyle: s\nsubject: [1boy]\nappearance: []\noutfit: []\n"
+    "default_expression: normal\nexpressions: {normal: [serious], hurt: [pain]}\n"
+    "face_crop:\n  large: [0, 0, 600, 600]\n  small: [100, 100, 400, 400]\n"
+)
+
+
+@pytest.fixture
+def cropped_repo(repo):
+    write(repo, "characters/c1/character.yaml", CROPPED_YAML)
+    put(repo, "face.png", (1024, 1024), "face")
+    return repo
+
+
+def test_cropped_face_and_small(cropped_repo):
+    export_character(cropped_repo, "c1")
+    large = Image.open(cropped_repo / "characters/c1/face.png")
+    small = Image.open(cropped_repo / "characters/c1/face-small.png")
+    assert large.size == (256, 256) and large.mode == "RGBA"
+    assert small.size == (128, 128) and small.mode == "RGBA"
+
+
+def test_cropped_expression_gets_small_too(cropped_repo):
+    put(cropped_repo, "face_hurt.png", (1024, 1024), "face")
+    export_character(cropped_repo, "c1")
+    assert (cropped_repo / "characters/c1/face_hurt.png").is_file()
+    assert (cropped_repo / "characters/c1/face_hurt-small.png").is_file()
+
+
+def test_check_images_written(cropped_repo):
+    export_character(cropped_repo, "c1")
+    assert Image.open(cropped_repo / "local/check/c1/face-large.png").size == (600, 600)
+    assert Image.open(cropped_repo / "local/check/c1/face-small.png").size == (300, 300)
+
+
+def test_params_json_records_face_crop(cropped_repo):
+    export_character(cropped_repo, "c1")
+    data = json.loads((cropped_repo / "characters/c1/params.json").read_text(encoding="utf-8"))
+    face_crop = data["face_crop"]
+    assert face_crop["large"] == [0, 0, 600, 600] and face_crop["small"] == [100, 100, 400, 400]
+    assert face_crop["clear_colors"] == []
+    assert list(face_crop["source_sha256"]) == ["face.png"] and len(face_crop["source_sha256"]["face.png"]) == 64
+    assert "face.png" in data
+
+
+def test_without_face_crop_output_is_unchanged(repo):
+    put(repo, "face.png", (1024, 1024), "face")
+    export_character(repo, "c1")
+    assert Image.open(repo / "characters/c1/face.png").mode == "RGB"
+    assert not (repo / "characters/c1/face-small.png").exists()
+    assert "face_crop" not in json.loads((repo / "characters/c1/params.json").read_text(encoding="utf-8"))
+
+
+def test_large_only_writes_no_small(cropped_repo):
+    write(cropped_repo, "characters/c1/character.yaml", CROPPED_YAML.replace("  small: [100, 100, 400, 400]\n", ""))
+    export_character(cropped_repo, "c1")
+    assert not (cropped_repo / "characters/c1/face-small.png").exists()
+
+
+def test_small_output_removed_when_small_crop_dropped(cropped_repo):
+    export_character(cropped_repo, "c1")
+    assert (cropped_repo / "characters/c1/face-small.png").is_file()
+    write(cropped_repo, "characters/c1/character.yaml", CROPPED_YAML.replace("  small: [100, 100, 400, 400]\n", ""))
+    export_character(cropped_repo, "c1")
+    assert not (cropped_repo / "characters/c1/face-small.png").exists()
+    assert not (cropped_repo / "local/check/c1/face-small.png").exists()
+    assert (cropped_repo / "local/check/c1/face-large.png").exists()
+
+
+def test_small_output_removed_when_face_crop_dropped(cropped_repo):
+    export_character(cropped_repo, "c1")
+    write(cropped_repo, "characters/c1/character.yaml", CROPPED_YAML.split("face_crop:")[0])
+    export_character(cropped_repo, "c1")
+    assert not (cropped_repo / "characters/c1/face-small.png").exists()
+    assert not (cropped_repo / "local/check/c1/face-large.png").exists()
+    assert Image.open(cropped_repo / "characters/c1/face.png").mode == "RGB"
+
+
+def test_crop_outside_image_is_rejected(cropped_repo):
+    write(cropped_repo, "characters/c1/character.yaml",
+          CROPPED_YAML.replace("[0, 0, 600, 600]", "[500, 500, 1100, 1100]"))
+    with pytest.raises(ConfigError, match="face_crop.large"):
+        export_character(cropped_repo, "c1")
+    assert not (cropped_repo / "characters/c1/face.png").exists()
+    assert not (cropped_repo / "characters/c1/params.json").exists()
+
+
+def test_fullbody_is_not_cropped(cropped_repo):
+    src = put(cropped_repo, "fullbody.png", (832, 1216), "fullbody")
+    export_character(cropped_repo, "c1")
+    assert (cropped_repo / "characters/c1/fullbody.png").read_bytes() == src.read_bytes()
+
+
+def test_colliding_output_names_stop_before_writing(repo):
+    # 表情 normal の小さい顔と、表情 normal-small の大きい顔が同じ face_normal-small.png になる
+    yaml_text = CROPPED_YAML.replace(
+        "expressions: {normal: [serious], hurt: [pain]}", "expressions: {normal: [serious], normal-small: [pain]}"
+    )
+    write(repo, "characters/c1/character.yaml", yaml_text)
+    put(repo, "face_normal.png", (1024, 1024), "face")
+    put(repo, "face_normal-small.png", (1024, 1024), "face", seed=2)
+    with pytest.raises(ExportError, match="face_normal-small.png"):
+        export_character(repo, "c1")
+    assert not (repo / "characters/c1/face.png").exists()
+    assert not (repo / "characters/c1/params.json").exists()

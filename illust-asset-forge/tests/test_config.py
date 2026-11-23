@@ -1,9 +1,12 @@
+import re
 from pathlib import Path
 
 import pytest
 
 from artgen.config import (
+    ClearColor,
     ConfigError,
+    FaceCrop,
     load_character,
     load_default_style,
     load_style,
@@ -262,3 +265,54 @@ def test_inline_style_rejects_bad_input(value, match):
 
     with pytest.raises(ConfigError, match=match):
         inline_style(value)
+
+
+# --- face_crop ---
+
+def test_face_crop_is_read(tmp_path):
+    write_character(
+        tmp_path,
+        CHARACTER_YAML + "face_crop:\n  large: [0, 0, 600, 600]\n  small: [100, 100, 400, 400]\n"
+        "  clear_colors:\n    - {min: 214, max_rg: 14, max_gb: 16}\n",
+    )
+    c = load_character(tmp_path, "c1")
+    assert c.face_crop == FaceCrop((0, 0, 600, 600), (100, 100, 400, 400), (ClearColor(214, 14, 16),))
+
+
+def test_face_crop_absent_is_none(tmp_path):
+    write_character(tmp_path)
+    assert load_character(tmp_path, "c1").face_crop is None
+
+
+def test_face_crop_small_and_colors_optional(tmp_path):
+    write_character(tmp_path, CHARACTER_YAML + "face_crop:\n  large: [0, 0, 600, 600]\n")
+    assert load_character(tmp_path, "c1").face_crop == FaceCrop((0, 0, 600, 600), None, ())
+
+
+@pytest.mark.parametrize(
+    "yaml_text, where",
+    [
+        ("face_crop:\n  large: [0, 0, 600, 500]\n", "face_crop.large"),
+        ("face_crop:\n  small: [0, 0, 100, 100]\n", "face_crop.large"),
+        ("face_crop:\n  large: [0, 0, 6, 6]\n  small: [0, 0, 5, 4]\n", "face_crop.small"),
+        ("face_crop:\n  large: [0, 0, 6, 6]\n  clear_colors: [{min: 300, max_rg: 1, max_gb: 1}]\n", "face_crop.clear_colors[0].min"),
+        ("face_crop:\n  large: [0, 0, 6, 6]\n  clear_colors: [{min: 200}]\n", "face_crop.clear_colors[0]"),
+        ("face_crop:\n  large: [0, 0, 6, 6]\n  sizes: 1\n", "face_crop"),
+    ],
+)
+def test_face_crop_errors(tmp_path, yaml_text, where):
+    write_character(tmp_path, CHARACTER_YAML + yaml_text)
+    with pytest.raises(ConfigError, match=f"characters/c1/character.yaml: {re.escape(where)}"):
+        load_character(tmp_path, "c1")
+
+
+@pytest.mark.parametrize("value", ["false", "0", '""', "{}", "3"])
+def test_face_crop_clear_colors_must_be_a_list(tmp_path, value):
+    write_character(tmp_path, CHARACTER_YAML + f"face_crop:\n  large: [0, 0, 6, 6]\n  clear_colors: {value}\n")
+    with pytest.raises(ConfigError, match=r"face_crop\.clear_colors"):
+        load_character(tmp_path, "c1")
+
+
+def test_face_crop_clear_colors_null_is_empty(tmp_path):
+    write_character(tmp_path, CHARACTER_YAML + "face_crop:\n  large: [0, 0, 6, 6]\n  clear_colors:\n")
+    assert load_character(tmp_path, "c1").face_crop.clear_colors == ()

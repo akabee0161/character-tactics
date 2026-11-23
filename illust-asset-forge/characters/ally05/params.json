@@ -1,37 +1,55 @@
 {
   "face.png": {
+    "adopted_from_sha256": "aadda02b0a29aa942a4ba043b1935bccc678f6ebda99cd2dbabeadcfb1dc5cf0",
     "character": "ally05",
-    "commit": "71bbf25",
+    "commit": "a2130a1+dirty",
     "diffusers": "0.42.1",
     "expression": "normal",
-    "flipped": true,
+    "flipped": false,
     "gpu": "Tesla T4",
     "guidance_scale": 5,
     "height": 1024,
     "model": "cagliostrolab/animagine-xl-4.0",
-    "negative_prompt": "monochrome, greyscale, sketch, lowres, bad anatomy, bad hands, text, error, missing finger, extra digits, fewer digits, cropped, worst quality, low quality, low score, bad score, average score, signature, watermark, username, blurry, 3d, realistic, messy hair, shiny hair, multicolored hair, streaked hair, detailed hair, colorful, vivid colors, saturated, full body, cowboy shot, upper body, from behind, profile, head out of frame, cropped head",
+    "negative_prompt": "monochrome, greyscale, sketch, lowres, bad anatomy, bad hands, text, error, missing finger, extra digits, fewer digits, cropped, worst quality, low quality, low score, bad score, average score, signature, watermark, username, blurry, 3d, realistic, messy hair, shiny hair, multicolored hair, streaked hair, detailed hair, colorful, vivid colors, saturated, full body, cowboy shot, from behind, profile, head out of frame, cropped head",
     "num_inference_steps": 28,
     "overrides": {
       "extra": [
-        "(dark grey armor:1.3)",
-        "thin gold trim",
-        "navy blue clothes",
-        "(auburn hair:1.2)"
+        "upper body"
       ],
       "remove": [
-        "gold trim",
-        "dark reddish brown hair"
+        "portrait"
+      ],
+      "remove_negative": [
+        "upper body"
       ]
     },
-    "prompt": "1boy, solo, adult, mature male, muscular, broad shoulders, square jaw, short hair, slicked back hair, stubble, brown eyes, thick eyebrows, steel shoulder armor, breastplate, gauntlets, portrait, looking to the side, simple background, white background, serious, closed mouth, (dark grey armor:1.3), thin gold trim, navy blue clothes, (auburn hair:1.2), thick outlines, flat color, limited palette, bold lineart, simple shading, masterpiece, high score, great score, absurdres",
-    "run_id": "20261123_050918",
+    "prompt": "1boy, solo, adult, mature male, muscular, broad shoulders, square jaw, short hair, (auburn hair:1.2), slicked back hair, stubble, brown eyes, thick eyebrows, (dark grey armor:1.3), thin gold trim, navy blue clothes, steel shoulder armor, breastplate, gauntlets, looking to the side, simple background, white background, serious, closed mouth, upper body, thick outlines, flat color, limited palette, bold lineart, simple shading, masterpiece, high score, great score, absurdres",
+    "run_id": "20261123_105626",
     "sampler": "Euler a",
-    "seed": 3034254740,
+    "seed": 2635050234,
     "style": "thick-line-flat",
     "template": "face",
     "torch": "2.14.1+cu130",
     "transformers": "5.22.2",
     "width": 1024
+  },
+  "face_crop": {
+    "clear_colors": [],
+    "large": [
+      20,
+      0,
+      650,
+      630
+    ],
+    "small": [
+      50,
+      100,
+      550,
+      600
+    ],
+    "source_sha256": {
+      "face.png": "a405f43027c3ef083e04f015c26219dc5b055823af6e76011036cc9e3864faa3"
+    }
   },
   "fullbody.png": {
     "character": "ally05",

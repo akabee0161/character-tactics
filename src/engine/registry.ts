@@ -167,7 +167,7 @@ export function buildRegistry(
 
   const images = new Set(imageNames);
   const checkSprites = (file: string, sprites: Sprites): void => {
-    for (const key of ['role', 'face'] as const) {
+    for (const key of ['role', 'face', 'faceSmall'] as const) {
       const name = sprites[key];
       if (name !== null && !images.has(name)) {
         errors.push({ file, path: `sprites.${key}`, reason: `assets/images/ に ない ファイル: ${name}` });
@@ -186,9 +186,11 @@ export function buildRegistry(
     if (reg.units.has(id) || reg.enemies.has(id)) {
       errors.push({ file: npcFile(id), path: 'id', reason: `仲間・敵の id と かさなっている: ${id}` });
     }
-    const face = def.sprites.face;
-    if (face !== null && !images.has(face)) {
-      errors.push({ file: npcFile(id), path: 'sprites.face', reason: `assets/images/ に ない ファイル: ${face}` });
+    for (const key of ['face', 'faceSmall'] as const) {
+      const name = def.sprites[key];
+      if (name !== null && !images.has(name)) {
+        errors.push({ file: npcFile(id), path: `sprites.${key}`, reason: `assets/images/ に ない ファイル: ${name}` });
+      }
     }
   }
   for (const [id, def] of reg.units) checkSprites(`assets/units/${id}.json`, def.sprites);
@@ -355,7 +357,8 @@ export function lookupSpeaker(reg: Registry, id: string): Speaker | null {
   if (def !== null) return def;
   const npc = reg.npcs.get(id);
   if (npc === undefined) return null;
-  return { name: npc.name, color: npc.color, role: '', sprites: { role: null, face: npc.sprites.face, map: null } };
+  const { face, faceSmall } = npc.sprites;
+  return { name: npc.name, color: npc.color, role: '', sprites: { role: null, face, faceSmall, map: null } };
 }
 
 export function skillParam(

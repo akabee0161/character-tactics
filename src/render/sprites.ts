@@ -4,6 +4,7 @@ import type { AnimFrame } from './anim';
 import type { Sprites } from '../engine/schema';
 import type { Vec2 } from '../core/types';
 import type { Rect } from '../ui/hit';
+import { FACE_PX } from '../ui/layout';
 
 /** 描画に要るぶんだけ。UnitDef / EnemyDef のどちらでも渡せる */
 export type SpriteDef = { color: string; role: string; sprites: Sprites };
@@ -48,11 +49,21 @@ function drawSquareOrCircle(
   ctx.imageSmoothingEnabled = prev;
 }
 
+/**
+ * 描く大きさ（px）に合う顔の画像名。FACE_PX.panel（40px）以下の枠には小さい顔（顔のアップ）、
+ * それより大きい枠には大きい顔（頭の全体）を使う。小さい顔が無ければ大きい顔を使う。
+ * 呼び出し側に分岐を置くと付け忘れが起きるので、drawFace の中だけで選ぶ
+ */
+export function faceImageFor(sprites: Pick<Sprites, 'face' | 'faceSmall'>, sizePx: number): string | null {
+  if (sizePx <= FACE_PX.panel && sprites.faceSmall !== null) return sprites.faceSmall;
+  return sprites.face;
+}
+
 export function drawFace(
   ctx: CanvasRenderingContext2D, center: Vec2, radius: number,
   def: SpriteDef, images: ImageCache,
 ): void {
-  drawSquareOrCircle(ctx, center, radius, def.color, imageFor(images, def.sprites.face));
+  drawSquareOrCircle(ctx, center, radius, def.color, imageFor(images, faceImageFor(def.sprites, radius * 2)));
 }
 
 /**
