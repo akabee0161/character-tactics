@@ -20,7 +20,10 @@ from artgen.config import (
 from artgen.mask import check_box, check_feather, feather_composite, make_mask
 from artgen.pnginfo import MissingParamsError, read_params, save_png
 from artgen.prompt import Overrides, build_prompt
-from artgen.selection import SelectionStore, file_sha256, find_candidate, run_dir, run_kind
+from artgen.export import _accepted_names
+from artgen.selection import (
+    SelectionStore, _check_char_id, file_sha256, find_candidate, run_dir, run_kind, selected_name,
+)
 
 MODEL_NAME = "cagliostrolab/animagine-xl-4.0"
 SAMPLER_NAME = "Euler a"
@@ -326,7 +329,24 @@ class Forge:
             path = candidate
         else:
             path = find_candidate(self.out_dir, candidate, run_id)
+        self._check_expression_is_configured(path)
         return self.selected.adopt(path, flip=flip)
+
+    def _check_expression_is_configured(self, path: Path) -> None:
+        """表情の候補は、今の設定に載っている表情だけ採用できる。載っていない絵を採用すると、あとの取り込みで拒否される。"""
+        try:
+            params = read_params(path)
+        except (MissingParamsError, OSError):
+            return  # 条件が読めない候補は、採用の側（selected.adopt）が理由を言って止める
+        name = selected_name(params)
+        if name in ("face.png", "fullbody.png"):
+            return
+        char_id = _check_char_id(params.get("character"), path.name)
+        if name not in _accepted_names(list(load_character(self.root, char_id).expressions)):
+            raise ConfigError(
+                f"{path.name}: 表情 {params.get('expression')!r} は今の設定"
+                f"（characters/{char_id}/character.yaml の expressions）に無い。設定に足してから採用する"
+            )
 
     def pack(self, char_ids: list[str] | None = None) -> Path:
         return self.selected.pack(char_ids)

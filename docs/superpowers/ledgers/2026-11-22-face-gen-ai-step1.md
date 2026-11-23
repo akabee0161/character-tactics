@@ -25,3 +25,6 @@ Final: minor (deferred): コピーの文書に forge 本体のままの記述が
 Final: minor (deferred): ankardo の SKILL.md の「ゲーム側の変更とは分けて 1 つのコミット」と、Task 6 の計画（コピーと変更を 1 コミット）が食い違う。`copy-forge.sh` が作る `UPSTREAM.md` のひな形に「このゲームだけの変更」の節が無い。手順 5 の `uv venv` に Python の版の指定が無い（`requires-python >=3.12`）。手順 3 の「ゲームのリポジトリ名が REPO_URL に入ると落ちる」は言い過ぎ（`forbidden` は character-tactics 用の語だけ）
 Final: minor (deferred): forge の `HANDOVER.md` の進捗が、マージ前の状態（実装 7 タスク中 4・PR を作る）のまま。ankardo の `HANDOVER.md` も前の作業（Search Console）のまま
 Final: 判断できなかったこと: `P.pick` の Colab での見え方、男子生徒の顔が生成時に左向きか（`flipped: false`。絵は左向きに見えた）、character-tactics の `develop` から Colab がコピーを取れること
+PR #60: CodeRabbit の指摘 7 件（すべて Major。forge 本体から変えていないコードで、コピーを足したので新しいファイルとして指摘された）を確かめ、7 件とも技術的に正しいと判断した（2026-11-23）
+PR #60: Ruling: 実際の作業で起き得る 2 件（準備のセルの `!pip` が失敗しても止まらない・設定から消した表情の候補を採用できる）だけを、このコピーで直した — 依頼者の了承（「はい、修正してください」）— 直し方は `subprocess.run(check=True)` と `Forge.adopt` の事前検査。テスト `test_prepare_cell_stops_when_pip_install_fails`・`test_adopt_rejects_expression_missing_from_current_config` が RED→GREEN、コピーの pytest 366/366
+PR #60: Ruling: 残り 5 件（intake の控えの削除・戻しの継続、selection の初回採用の中断・控えの削除失敗・pack の同秒の上書き）は直さず、`illust-asset-forge/UPSTREAM.md` の「forge に戻す候補」と HANDOVER の「次にやること」に、forge の修正事項として記録した — 強制終了・ディスクの失敗・同じ秒の操作の狭い条件でだけ起き、forge 本体のコードを大きく書き換えるため。依頼者の指示で、継続作業（別のセッション）で forge の PR として直す — 費用: その間、forge 本体とコピーに同じ弱点が残る

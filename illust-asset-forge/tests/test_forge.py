@@ -713,3 +713,20 @@ def test_style_argument_beats_inherited_definition(forge, pipe):
     p = forge.generate("c1", "fullbody", seeds=[2], style="t")[0]
     assert read_params(p)["style"] == "t"
     assert "style_definition" not in read_params(p)["overrides"]
+
+
+def test_adopt_rejects_expression_missing_from_current_config(forge):
+    # 設定から表情を消したあとに、Drive に残った古い候補を採用しても、後の取り込みで拒否される絵を作らない
+    forge.adopt(forge.generate("c1", "face", seeds=[2])[0])
+    candidate = forge.inpaint("c1", "hurt", seeds=[3])[0]
+    config = forge.root / "characters" / "c1" / "character.yaml"
+    config.write_text(config.read_text(encoding="utf-8").replace(", hurt: [pain]", ""), encoding="utf-8")
+    with pytest.raises(ConfigError, match="hurt"):
+        forge.adopt(candidate)
+    assert not (forge.selected.selected_dir / "c1" / "face_hurt.png").exists()
+
+
+def test_adopt_accepts_expression_in_current_config(forge):
+    forge.adopt(forge.generate("c1", "face", seeds=[2])[0])
+    candidate = forge.inpaint("c1", "hurt", seeds=[3])[0]
+    assert forge.adopt(candidate).name == "face_hurt.png"

@@ -135,13 +135,6 @@ def test_prepare_cell_uses_forge_root_everywhere():
     assert 'os.path.join(ROOT, "src")' in src
 
 
-def test_prepare_cell_quotes_root_in_shell_commands():
-    # SUBDIR に空白があっても、パスが 1 つの引数として pip に渡る
-    src = code_cells()[1][0]
-    assert '-r "{ROOT}/requirements-colab.txt"' in src
-    assert '-e "{ROOT}"' in src
-
-
 def test_prepare_cell_moves_current_src_to_front_of_sys_path():
     import os
     import types
@@ -165,3 +158,25 @@ def test_docs_name_this_games_drive_dir():
     claude = (root / "CLAUDE.md").read_text(encoding="utf-8")
     assert relative in readme and relative in claude
     assert "（既定は Drive の `illust-asset-forge/`）" not in readme
+
+
+def test_prepare_cell_stops_when_pip_install_fails():
+    # `!pip install` は失敗しても例外にならず、古い依存のまま import に進む。
+    # subprocess.run(check=True) で、失敗したらセルが止まるようにする
+    import types
+
+    src = code_cells()[1][0]
+    assert not any(ln.lstrip().startswith("!pip") for ln in src.splitlines())
+    text ="\n".join(ln for ln in src.splitlines() if not ln.lstrip().startswith(("!", "%")))
+    nodes = [n for n in ast.parse(text).body if "pip" in ast.get_source_segment(text, n)]
+    assert nodes
+    calls = []
+    fake_subprocess = types.SimpleNamespace(run=lambda cmd, **kw: calls.append((cmd, kw)))
+    fake_sys = types.SimpleNamespace(executable="/py")
+    ns = {"subprocess": fake_subprocess, "sys": fake_sys, "ROOT": "/a b"}  # 空白を含むパスも 1 つの引数
+    exec("\n".join(ast.get_source_segment(text, n) for n in nodes), ns)
+    assert [c for c, _ in calls] == [
+        ["/py", "-m", "pip", "install", "-q", "-r", "/a b/requirements-colab.txt"],
+        ["/py", "-m", "pip", "install", "-q", "-e", "/a b", "--no-deps"],
+    ]
+    assert all(kw.get("check") is True for _, kw in calls)

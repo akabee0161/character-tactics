@@ -12,6 +12,19 @@ forge 本体も並行して開発が続く。forge の改善をこちらへ取�
 
 ここでエンジン・規約・道具を直したら、何を・なぜ直したかを1行足す。
 
+直した（forge 本体にも同じ問題があり、戻す候補。2026-11-23、character-tactics の PR #60 の CodeRabbit の指摘）:
+
+- `notebooks/run.ipynb` の準備のセル: `!pip install` は失敗しても例外にならず、古い依存のまま import に進む。`subprocess.run([sys.executable, "-m", "pip", "install", "-q", ...], check=True)` にして、失敗したらセルを止める（`tests/test_notebook.py` の `test_prepare_cell_stops_when_pip_install_fails`）
+- `src/artgen/forge.py` の `Forge.adopt`: 設定から消した表情の候補（Drive に残った古い候補）を採用すると、画面は成功を出すが、あとの `intake` が `face_<表情>.png` を拒否してほかのキャラクターも取り込めなくなる。採用の前に、今の `character.yaml` の `expressions` に無い表情を `ConfigError` で止める（`tests/test_forge.py` の `test_adopt_rejects_expression_missing_from_current_config`）
+
+直していない（forge 本体にも同じコードがある。まれな条件でだけ起きるため先送り）:
+
+- `src/artgen/intake.py` の `_swap_all`: 入れ替えの途中で強制終了すると、前の `source` の控え（`.source.old`）が唯一の写しになり、次の取り込みがそれを消す（`source/` は git にも入っているので戻せる）。控えが残っていたら、復旧するか止まる。今回の控えだけを今回戻す
+- 同じ `_swap_all` の戻す処理: 1 件の戻しに失敗すると、残りのキャラクターを戻さずに止まる。キャラクターごとに失敗を記録して続け、最後に手で戻すパスを報告する
+- `src/artgen/selection.py` の `adopt`: 初回の採用で、新しい `face.png` を置いた直後に中断すると、採用前の状態（無い）に戻らず新しい顔が残る
+- 同じ `adopt`: 顔の置き換えと表情の退避が済んだあとに、控えの削除だけが `OSError` になると、採用できたのに「採用できない」と返す。採用の結果と削除の警告を分ける
+- `src/artgen/selection.py` の `pack`: 同じ秒に 2 回呼ぶと、同じ名前の zip を上書きする。別名を確保し、一時ファイルに書き終えてから公開する
+
 ## このゲームだけの変更
 
 コピーしたあとにこのゲームのために直したこと。forge 本体には戻さない。
@@ -21,6 +34,7 @@ forge 本体も並行して開発が続く。forge の改善をこちらへ取�
 - `characters/ally05/`・`characters/ally06/`: ゲームのボルグ・セラの設定を置いた（forge の `9627e8d` の同じファイル。ボルグの `inpaint_box` は古い顔に合わせた値なので外した。絵は置いていない）
 - `tests/test_repo_configs.py`: 見本 4 人だけを前提にしたテスト 2 件を、見本 4 人が含まれることと `tlf-` の画風が無いことだけを見る形にした。ゲームの名前を禁止語にする検査（`test_repo_does_not_mention_the_game`）は、`REPO_URL` などにゲームの名前が入るので削除した
 - `CLAUDE.md`: 「ゲーム側の事情を書かない」を、このコピーはこのゲーム専用で書いてよい、という内容に書き換えた。Drive から絵を取る手順に、このゲームの置き場（`MyDrive/character-tactics/illust-asset-forge/selected/<id>/`）だけから取ること（forge 本体の Drive の古い絵を取り込まないため）を書いた
+- `notebooks/run.ipynb`・`src/artgen/forge.py`・`tests/`: 上の「直した」2 件（`pip` の失敗で止める、設定に無い表情を採用しない）を、このコピーだけに入れた
 - `README.md`: 変数の「既定は」と Drive の置き場の説明を、このコピーの値に直した（`tests/test_notebook.py` の `test_docs_name_this_games_drive_dir` が見る）
 
 ## ゲームの開発が終わったら

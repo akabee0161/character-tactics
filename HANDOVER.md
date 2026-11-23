@@ -10,6 +10,7 @@
 段階: 設計の相談
 次にやること:
 - 工程 2（ボルグを新しい画風で作り直す）の設計を相談する。最初に、依頼者が Colab で `illust-asset-forge/`（このリポジトリのコピー）から準備のセルが動くことを確かめる（コピーから動くことは未確認）
+- forge 本体（illust-asset-forge）の修正 7 件を、forge の PR で直す。`illust-asset-forge/UPSTREAM.md` の「forge に戻す候補」にある（このコピーで直した 2 件を forge に戻す、まれな条件で起きる 5 件を forge とコピーの両方で直す）。出どころは PR #60 の CodeRabbit の指摘
 - ankardo の `new-game` スキルの設計書リンクを、この作業の設計書が main に入ったら `blob/main/…` に直す（依頼者の指示。今はコミット固定）
 - 前の作業の残り（下の「前の作業から残っていること」）
 
