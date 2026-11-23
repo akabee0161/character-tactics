@@ -7,13 +7,12 @@
 2. ボルグを新しい画風で作り直す（完了）
 3. Modal で生成する（完了）
 4. 表示の大きさと顔の構図を決める（完了）
-5. 残りの顔グラ 26 枚を作る ← 今ここ
+5. 残りの顔グラ 29 枚を作る ← 今ここ
 段階: 設計の相談
 次にやること:
-- 工程 4 の最終レビューは済み（指摘は台帳に記録）。依頼者の確認を待つ
-- 工程 5（残りの顔グラ 26 枚）の設計を相談する。工程 4 の結果（下の「工程 4 の結果」）を材料にする
+- 工程 5 の設計書 `docs/superpowers/specs/2026-11-23-face-remaining-design.md`（feat/face-remaining）を依頼者が読んで承認する。承認後に計画
+- forge 本体（akabee0161/illust-asset-forge）へ Modal の仕組みを戻す作業を、依頼者が別のセッションで進めている（2026-11-23）。終わると `illust-asset-forge/UPSTREAM.md` の Modal の項が「戻した（PR 番号）」に直る。顔の構図の変更は戻さない（依頼者）。ankardo の `new-game` スキルへの反映は、その後に相談する
 - 工程 4 の結果を見て、ボルグのマップの絵を直すかを依頼者が決める（直すなら別の作業として相談）
-- 工程 4 のブランチ feat/face-framing の push と PR（develop 向け）は、依頼者が頼んだとき
 - Drive の置き場を `MyDrive/illust-asset-forge/character-tactics/` にしたい（依頼者。今は `MyDrive/character-tactics/illust-asset-forge/`。ゲームが増えるたびにフォルダが増えて分からなくなるため）。作業が落ち着いてから。直す所は `DRIVE_DIR`（ノートブックの変数とそのテスト `illust-asset-forge/tests/test_notebook.py`）・`illust-asset-forge/README.md`・`illust-asset-forge/CLAUDE.md`・`UPSTREAM.md`。Drive でのフォルダの移動は依頼者
 - 素体に耳を足す（依頼者の判断。`pixel-asset-forge/ISSUES.md`）。今はボルグの芯だけに耳がある
 - ankardo の `new-game` スキルの設計書リンクを、この作業の設計書が main に入ったら `blob/main/…` に直す（依頼者の指示。今はコミット固定）
