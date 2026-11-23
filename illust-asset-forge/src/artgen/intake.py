@@ -54,6 +54,16 @@ def _visible_files(d: Path) -> list[Path]:
     return sorted(p for p in d.iterdir() if p.is_file() and not p.name.startswith("."))
 
 
+def _remove_tree(path: Path) -> None:
+    """フォルダを消す。もともと無いのは許し、それ以外の失敗は OSError で上げる（`ignore_errors` で隠さない）。"""
+
+    def onexc(_func, _path, exc):
+        if not isinstance(exc, FileNotFoundError):
+            raise exc
+
+    shutil.rmtree(path, onexc=onexc)
+
+
 def _swap_all(items: list[tuple[str, list[Path]]], root: Path) -> None:
     """全キャラクターの新しい source を作ってから、まとめて入れ替える。入れ替えに失敗したら元へ戻す。
 
@@ -69,8 +79,9 @@ def _swap_all(items: list[tuple[str, list[Path]]], root: Path) -> None:
         paths = "、".join(p.relative_to(root).as_posix() for p in leftovers)
         raise ConfigError(
             f"前回の取り込みが途中で止まった跡がある: {paths}。"
-            "同じ階層の source/ が正しければ控えを消し、source/ が無い・壊れているなら控えを source/ に改名してから、"
-            "取り込み直す"
+            "同じ階層の source/ が正しければ控えを消す。source/ が無ければ控えを source/ に改名する。"
+            "source/ が壊れて残っているなら、source/ を別名に退避してから控えを source/ に改名する。"
+            "そのあと取り込み直す"
         )
     staged: list[tuple[Path, Path, Path]] = []  # (staging, source_dir, backup)
     try:
@@ -100,23 +111,31 @@ def _swap_all(items: list[tuple[str, list[Path]]], root: Path) -> None:
     except BaseException as e:
         failures: list[str] = []
         for source_dir, backup, had_old in reversed(started):
+            rel_source = source_dir.relative_to(root).as_posix()
             try:
                 if had_old:
                     if backup.exists():  # 退避済み。新しい source を捨てて戻す
-                        shutil.rmtree(source_dir, ignore_errors=True)
+                        _remove_tree(source_dir)
                         backup.rename(source_dir)
                     # 退避前に止まったなら、元の source はそのまま残っている
                 else:
-                    shutil.rmtree(source_dir, ignore_errors=True)
+                    _remove_tree(source_dir)
             except OSError as restore_error:
-                failures.append(
-                    f"{backup.relative_to(root).as_posix()} を {source_dir.relative_to(root).as_posix()} に"
-                    f"戻せなかった（{restore_error}）"
-                )
+                rel_backup = backup.relative_to(root).as_posix()
+                if had_old:
+                    failures.append(
+                        f"{rel_backup} を {rel_source} に戻せなかった（{restore_error}）。"
+                        f"{rel_source} が残っていれば別名に退避してから、{rel_backup} を {rel_source} に改名する"
+                    )
+                else:
+                    failures.append(
+                        f"{rel_source} を消せなかった（{restore_error}）。控えは無い（元は無かった）ので、"
+                        f"{rel_source} の中身を確かめて手で消す"
+                    )
         for staging, _, _ in staged:
             shutil.rmtree(staging, ignore_errors=True)
         if failures:
-            message = "元へ戻せないものがある。手で戻す（控えを source に改名する）: " + "；".join(failures)
+            message = "元へ戻せないものがある。手で戻す: " + "；".join(failures)
             if isinstance(e, Exception):
                 raise ConfigError(message) from e
             e.add_note(message)  # 中断（KeyboardInterrupt など）は種類を変えない

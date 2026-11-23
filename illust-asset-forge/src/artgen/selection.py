@@ -171,6 +171,7 @@ class SelectionStore:
         except BaseException as e:
             # 途中で失敗したら、前の絵・表情・範囲の組み合わせに戻す。
             # 戻す側の失敗で元の例外を隠さない（残った .old は手で戻せる）
+            # 絵の巻き戻しと退避物（表情・範囲）の復元は、片方が失敗してももう片方を続ける
             try:
                 if backup is not None and backup.exists():
                     if dest.is_file() and file_sha256(dest) == file_sha256(backup):
@@ -179,9 +180,12 @@ class SelectionStore:
                         os.replace(backup, dest)
                 elif not had_dest:
                     dest.unlink(missing_ok=True)  # 初回の採用。採用前の状態は「無い」
+            except Exception as restore_error:
+                e.add_note(f"前の採用へ戻せなかった: {dest.name}: {restore_error}")
+            try:
                 self._restore_aside()
             except Exception as restore_error:
-                e.add_note(f"前の採用へ戻せなかった: {restore_error}")
+                e.add_note(f"前の採用へ戻せなかった: 退避した表情・範囲: {restore_error}")
             raise
         finally:
             tmp.unlink(missing_ok=True)

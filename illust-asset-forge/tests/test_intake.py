@@ -467,3 +467,53 @@ def test_install_rollback_continues_after_one_restore_fails_and_reports_paths(re
     message = str(info.value)
     assert "characters/c2/.source.old" in message and "characters/c2/source" in message
     assert (repo / "characters/c2/.source.old").is_dir()  # 手で戻せるように残す
+
+
+def test_stale_backup_message_says_to_move_broken_source_aside(repo, selected):
+    # source/ が壊れて残っていると、控えを source/ に改名できない。先に別名へ退避する手順を案内する
+    write_png(repo / "characters/c1/.source.old/face_hurt.png")
+    with pytest.raises(ConfigError) as info:
+        install_selection(repo, selected)
+    assert "別名" in str(info.value)
+
+
+def test_restore_failure_message_says_to_move_broken_source_aside(repo, selected, monkeypatch):
+    from pathlib import Path
+
+    write_png(repo / "characters/c2/source/face.png", character="c2")
+    write_png(selected / "c2/face.png", character="c2")
+    real = Path.rename
+
+    def rename(self, target):
+        if self.name == ".source.new" and self.parent.name == "c2":
+            raise OSError("rename failed")
+        if self.name == ".source.old" and self.parent.name == "c2":
+            raise OSError("restore failed")
+        return real(self, target)
+
+    monkeypatch.setattr(Path, "rename", rename)
+    with pytest.raises(ConfigError) as info:
+        install_selection(repo, selected)
+    assert "別名" in str(info.value)
+
+
+def test_rollback_reports_new_source_it_could_not_remove_on_first_install(repo, selected, monkeypatch):
+    # 元の source が無かったキャラクターの取り消しで、削除に失敗したら、握りつぶさず残った source を報告する
+    import shutil
+
+    shutil.rmtree(repo / "characters/c1/source")
+    write_png(selected / "c2/face.png", character="c2")
+    _fail_staging_rename(monkeypatch, "c2")
+    real_rmtree = shutil.rmtree
+
+    def rmtree(path, *a, **k):
+        if str(path).endswith("characters/c1/source"):
+            raise OSError("busy")
+        return real_rmtree(path, *a, **k)
+
+    monkeypatch.setattr("artgen.intake.shutil.rmtree", rmtree)
+    with pytest.raises(ConfigError) as info:
+        install_selection(repo, selected)
+    message = str(info.value)
+    assert "characters/c1/source" in message and "busy" in message
+    assert "控えは無い" in message  # 控えの改名ではなく、残った source の後処理を案内する

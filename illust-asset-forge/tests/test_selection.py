@@ -661,3 +661,29 @@ def test_pack_failure_leaves_no_partial_zip(store, candidate, monkeypatch):
     monkeypatch.undo()
     assert [p.name for p in store.packs_dir.iterdir()] == [first.name]
     assert first.read_bytes() == first_bytes
+
+
+def test_first_adopt_interrupt_restores_box_even_when_removing_new_face_fails(store, candidate, monkeypatch):
+    # 顔が未採用でも範囲（selection.json）はある。顔の削除が失敗しても、範囲は元の場所へ戻す
+    store.save_box("c1", (1, 2, 300, 400))
+    d = store.selected_dir / "c1"
+    real_replace = os.replace
+    real_unlink = type(candidate).unlink
+
+    def replace_then_interrupt(src, dst, *a, **k):
+        real_replace(src, dst, *a, **k)
+        if os.path.basename(dst) == "face.png":
+            raise KeyboardInterrupt
+
+    def unlink(self, *a, **k):
+        if self.name == "face.png":
+            raise OSError("busy")
+        return real_unlink(self, *a, **k)
+
+    monkeypatch.setattr("artgen.selection.os.replace", replace_then_interrupt)
+    monkeypatch.setattr(type(candidate), "unlink", unlink)
+    with pytest.raises(KeyboardInterrupt) as info:
+        store.adopt(candidate)
+    monkeypatch.undo()
+    assert (d / "selection.json").is_file()
+    assert any("face.png" in n and "busy" in n for n in info.value.__notes__)
