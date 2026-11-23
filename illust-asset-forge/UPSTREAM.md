@@ -28,7 +28,7 @@ forge 本体も並行して開発が続く。forge の改善をこちらへ取�
 追加した（2026-11-23。Colab のランタイムに接続できなかったため、forge 本体に戻す候補。GPU の処理だけを Modal に出した）:
 
 - Modal の道: `src/artgen/jobs.py`（ジョブのファイルの読み込み・Modal の上での実行。T4 以外なら生成しない）・`local.py`（`local/` の置き場と条件の `commit` に付ける `+dirty` の印）・`modal_app.py`（Modal の入口。T4 固定、版は requirements-colab.txt に合わせる）・`cloud.py`（Claude が叩く CLI: generate / page / adopt / install）。Colab の道（`notebooks/run.ipynb`・`attach()`）は変えていない
-- 決まりで外す道具と候補のページ: `src/artgen/screen.py`（頭が切れている・背景が白やクリーム色でない、を画素を数えて判定）・`rounds.py`（1 回りの記録）・`review_page.py`（外した候補を理由つきで下にたたむ HTML）。`intake.py` に `print_reports` を切り出した
+- 候補のページ: `src/artgen/rounds.py`（1 回りの記録）・`review_page.py`（候補を番号順に全部並べる HTML）。`intake.py` に `print_reports` を切り出した。画素を数えて頭が切れた候補を外す道具は試したが、髪と鎧を区別できず外しすぎたので入れていない
 
 ## このゲームだけの変更
 

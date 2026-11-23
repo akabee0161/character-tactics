@@ -65,8 +65,6 @@ def cmd_adopt(args: argparse.Namespace) -> None:
         numbers = [c.number for c in round_.candidates]
         raise ConfigError(f"番号 {args.number} の候補が無い（{min(numbers)}〜{max(numbers)}）")
     candidate = found[0]
-    if candidate.reasons:
-        print(f"警告: {candidate.number} は道具が外した候補（{'、'.join(candidate.reasons)}）")
     dest = SelectionStore(dirs.selected, dirs.packs).adopt(candidate.path, flip=args.flip)
     print(f"採用した: {dest}")
 

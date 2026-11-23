@@ -22,15 +22,11 @@ def round_json(cli_env):
     return new_round(cli_env / "local" / "rounds", "20261123_120000", make_candidates(cli_env))
 
 
-def test_adopt_excluded_warns_and_adopts(cli_env, round_json, capsys):
+def test_adopt_by_number(cli_env, round_json, capsys):
     assert cloud.main(["adopt", str(round_json), "2"]) == 0
-    assert "警告: 2 は道具が外した候補（頭が切れている）" in capsys.readouterr().out
+    out = capsys.readouterr().out
+    assert out.startswith("採用した:") and "警告" not in out
     assert (cli_env / "local/selected/c1/face.png").is_file()
-
-
-def test_adopt_kept_candidate_has_no_warning(cli_env, round_json, capsys):
-    assert cloud.main(["adopt", str(round_json), "1"]) == 0
-    assert "警告" not in capsys.readouterr().out
 
 
 def test_adopt_flip_mirrors_the_face(cli_env, round_json):
