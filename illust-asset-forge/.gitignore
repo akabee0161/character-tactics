@@ -5,3 +5,4 @@ __pycache__/
 .superpowers/
 characters/*/.source.new/
 characters/*/.source.old/
+local/

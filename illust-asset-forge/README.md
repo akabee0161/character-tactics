@@ -1,12 +1,12 @@
 # illust-asset-forge
 
-ゲーム用のキャラクターのイラスト（顔・表情の差分・全身絵）を、Google Colab の GPU で生成するリポジトリ。
+ゲーム用のキャラクターのイラスト（顔・表情の差分・全身絵）を、Google Colab（手で試すとき）か Modal（量産）の GPU で生成するリポジトリ。
 
 - キャラクターの設定を YAML で持ち、画風・絵の種類（型）と組み合わせてプロンプトを組み立てる
 - 生成の条件（プロンプト・シード・版）を PNG に埋め込み、採用した絵を作り直せるようにする
 - 採用した絵を、受け渡しの形（顔は 256×256、全身は元の大きさ、`params.json`）に書き出す
 
-GPU を使う処理は依頼者が Colab で動かし、GPU を使わない処理（設定・プロンプト・書き出し）はサーバーで Claude が動かす。
+GPU を使う処理は、量産は Claude が Modal で、手で試すときは依頼者が Colab で動かす（[10. Modal で作る](#10-modal-で作る量産)）。GPU を使わない処理（設定・プロンプト・書き出し）はサーバーで Claude が動かす。
 この README は**人間向けの手引き**である。Claude が守る作業規約は [`CLAUDE.md`](CLAUDE.md) にある。
 
 **目次**
@@ -20,6 +20,7 @@ GPU を使う処理は依頼者が Colab で動かし、GPU を使わない処�
 7. [テストの実行](#7-テストの実行)
 8. [コピーして使う](#8-コピーして使う)
 9. [見本の 4 人](#9-見本の-4-人)
+10. [Modal で作る（量産）](#10-modal-で作る量産)
 
 ---
 
@@ -45,7 +46,7 @@ GPU を使う処理は依頼者が Colab で動かし、GPU を使わない処�
 | `selected/<id>/` | 採用した絵（`face.png`・`face_<表情>.png`・`fullbody.png`）と、表情の範囲 `selection.json`。顔を採り直すと、古い表情と範囲は `replaced/<日時>/` へ退く |
 | `packs/` | まとめの zip（`selected_<日時>.zip`） |
 
-## 2. Colab での使い方
+## 2. Colab での使い方（手で試すとき。画風の調整など）
 
 1. `notebooks/run.ipynb` を Colab で開き、ランタイムを GPU（T4）にする
 2. 各セルは先頭の変数（キャラクターの ID・枚数・表情名・画風名）だけ書き換えて、上から順に実行する
@@ -159,3 +160,55 @@ uv venv .venv && uv pip install -e '.[dev]' && .venv/bin/pytest
    - 魔法使いの全身: `paths = forge.generate(["mage"], "fullbody", seeds=[4074111561])` のあと `P.pick(forge, paths)`
 3. 男子生徒・女子生徒: 顔の候補を作り（`n=4` など）、選んで採用する（右向きなら反転する）。続けて全身の候補を作り、選んで採用する
 4. 表情は作らない。採用した絵は Drive の `DRIVE_DIR/selected/<id>/` に入る
+
+---
+
+## 10. Modal で作る（量産）
+
+顔グラ 26 枚のような量産は、Claude がこのサーバーから Modal の GPU（T4）で作る。依頼者は、候補のページ（Artifact）を見て番号で答えるだけ。Colab は、自分の手でタグを変えながら 1 枚ずつ試すとき（画風の調整など）に使う。
+
+### 最初の一度
+
+1. Modal のアカウントを作り（Starter）、管理画面で使う金額の上限を決める（任意）
+2. `uv pip install -e '.[modal]'`（Modal のライブラリを venv に入れる）
+3. このサーバーで、Claude が `.venv/bin/modal token new` を実行する。出た URL を依頼者がブラウザで開いて承認する。鍵は `~/.modal.toml` に入り、リポジトリには入らない
+
+### 流れ（`illust-asset-forge/` で実行する）
+
+1. ジョブのファイル（JSON の配列）を `local/jobs/` に書く。例: 顔の 2 案 × 4 枚
+
+   ```json
+   [
+     {"char": "ally05", "template": "face", "seeds": [3034254740], "extra": "upper body", "remove": "portrait"},
+     {"char": "ally05", "template": "face", "n": 3, "extra": "upper body", "remove": "portrait"}
+   ]
+   ```
+
+   キーは `char`・`template` と、`n`（枚数）か `seeds`（シードの一覧）のどちらか一方、任意で `extra`・`remove`・`extra_negative`・`remove_negative`・`guidance`・`steps`（`Forge.generate` の引数と同じ）。画風（`style`）は書けない。誤りは Modal を起動する前に、`ファイル名: [番号].キー: 理由` で止まる
+2. `.venv/bin/python -m artgen.cloud generate --jobs local/jobs/<ファイル>.json` — Modal で作り、`local/runs/` に置き、回りの記録（`local/rounds/<日時>.json`）と候補のページ（同名の `.html`）を作る
+3. 候補のページを Artifact で依頼者に見せる。番号で答えてもらう
+4. `.venv/bin/python -m artgen.cloud adopt local/rounds/<日時>.json <番号> [--flip]` で採用する（`--flip` は顔だけ左右反転する）。ページを作り直すときは `page <回りの記録>`
+5. `.venv/bin/python -m artgen.cloud install <id>` で `characters/<id>/source/` に取り込む。`source/` は丸ごと置き換わるが、`local/selected/<id>/` に選び直した全身絵が無いときは、今の `source/fullbody.png` を持ち越す（Colab の道で採った全身絵を消さないため）。表情（`face_*.png`）は持ち越さない（顔が変わると検査で落ちる）。以降（書き戻し・`python -m artgen.export <id>`）は 4 の流れと同じ
+
+`--root` は `cloud` の直後に置く（`cloud --root DIR adopt …`）。
+
+### `local/` の中身（リポジトリに入れない）
+
+| 場所 | 内容 |
+|---|---|
+| `local/runs/<キャラクター>/<種類>/<日時>/` | Modal で作った候補（Colab の `runs/` と同じ名前と形） |
+| `local/selected/<id>/` | 採用した絵（`face.png`・`fullbody.png`） |
+| `local/rounds/` | 回りの記録（`.json`）と候補のページ（`.html`） |
+| `local/jobs/` | ジョブのファイル |
+
+### 候補は全部見て選ぶ
+
+候補のページには、作った候補を番号順に全部並べる。頭が切れているか・背景がどうかを、画素を数えて機械的に外す仕組みは入れていない（2026-11-23 に試して、髪と鎧を区別できず、収まっている絵まで外したため。依頼者が全部を目で見て選ぶ）。
+
+### GPU・版・料金
+
+- GPU は T4 だけ。T4 でなければ絵を返さずに止める。同じシードでも GPU が違うと絵が変わるため
+- 版は Colab と同じ（`torch` 2.14.1・`diffusers` 0.42.1・`transformers` 5.22.2。`src/artgen/modal_app.py`）。Colab 側の torch は固定していないので、Colab の版が変わったら Modal 側を合わせ直す
+- 条件の `commit` は、このサーバーで調べた値を記録する。未コミットの変更があるときは `+dirty` が付く
+- モデル（約 7GB）は Modal の Volume `character-tactics-illust-models` に置く。初回だけ取るので遅い
+- T4 は 1 枚 20 秒ほど。12 枚の 1 回りでモデルの読み込みを含めて数分、10 円前後が見込み

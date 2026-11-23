@@ -268,6 +268,19 @@ def extract_pack(zip_path: Path, dest: Path, *, root: Path) -> Path:
     return dest
 
 
+def print_reports(reports: list[CharacterReport]) -> None:
+    """取り込んだ・消したファイルと、書き戻しの一覧、次の手順を出す。"""
+    for r in reports:
+        print(f"{r.char_id}: 取り込んだ: {', '.join(r.installed)}")
+        if r.removed:
+            print(f"{r.char_id}: 消した: {', '.join(r.removed)}")
+        for line in r.write_back:
+            print(f"  書き戻し: {line}")
+    print("次: 上の一覧を character.yaml に書き戻す。そのあと、キャラクターごとに")
+    for r in reports:
+        print(f"  python -m artgen.export {r.char_id}")
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m artgen.intake", description="採用した絵の zip を取り込む")
     parser.add_argument("zip", type=Path)
@@ -283,15 +296,7 @@ def main(argv: list[str] | None = None) -> int:
     ) as e:
         print(f"取り込めない: {e}")
         return 1
-    for r in reports:
-        print(f"{r.char_id}: 取り込んだ: {', '.join(r.installed)}")
-        if r.removed:
-            print(f"{r.char_id}: 消した: {', '.join(r.removed)}")
-        for line in r.write_back:
-            print(f"  書き戻し: {line}")
-    print("次: 上の一覧を character.yaml に書き戻す。そのあと、キャラクターごとに")
-    for r in reports:
-        print(f"  python -m artgen.export {r.char_id}")
+    print_reports(reports)
     return 0
 
 

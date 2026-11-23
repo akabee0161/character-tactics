@@ -5,11 +5,12 @@
 工程:
 1. 取り込み方式にする（完了）
 2. ボルグを新しい画風で作り直す（完了）
-3. 表示の大きさと顔の構図を決める ← 今ここ
-4. 残りの顔グラ 26 枚を作る
+3. Modal で生成する（完了）
+4. 表示の大きさと顔の構図を決める ← 今ここ
+5. 残りの顔グラ 26 枚を作る
 段階: 設計の相談
 次にやること:
-- 工程 3（表示の大きさ `FACE_PX` と顔の構図）を、工程 2 の結果（下の「工程 2 の結果」）を見て相談する。ボルグの顔の絵は上が切れていて、髪の塊の高さが分からない。構図は工程 4 の顔グラ 26 枚にも効く
+- 工程 4（表示の大きさと顔の構図）の設計を相談する。決まっていること（大きい枠は頭の全体＋首元、小さい枠は顔のアップ、画像 2 枚など）は `docs/superpowers/specs/2026-11-23-modal-gen-design.md` の「工程 4 で決まっていること」。工程 3 の試しの結果（下の「工程 3 の結果」。`portrait` を外して `upper body` だけにするとボルグの頭が収まりやすい）を材料にする。ボルグの顔は、依頼者が 12 枚の回りの 4 番（シード 2635050234）を選んだ。`illust-asset-forge/local/selected/ally05/face.png` にあり、`characters/ally05/source/` にはまだ取り込んでいない（`cloud install` は `source/` を丸ごと置き換えるが、選び直していない全身絵（`source/fullbody.png`）は持ち越し、表情は持ち越さない。zip 経由の `intake` は `source/` 全体を置き換える。工程 4 の設計のあとに取り込む）
 - Drive の置き場を `MyDrive/illust-asset-forge/character-tactics/` にしたい（依頼者。今は `MyDrive/character-tactics/illust-asset-forge/`。ゲームが増えるたびにフォルダが増えて分からなくなるため）。作業が落ち着いてから。直す所は `DRIVE_DIR`（ノートブックの変数とそのテスト `illust-asset-forge/tests/test_notebook.py`）・`illust-asset-forge/README.md`・`illust-asset-forge/CLAUDE.md`・`UPSTREAM.md`。Drive でのフォルダの移動は依頼者
 - 素体に耳を足す（依頼者の判断。`pixel-asset-forge/ISSUES.md`）。今はボルグの芯だけに耳がある
 - ankardo の `new-game` スキルの設計書リンクを、この作業の設計書が main に入ったら `blob/main/…` に直す（依頼者の指示。今はコミット固定）
@@ -22,6 +23,15 @@
 - 新しいゲームで illust-asset-forge を使う手順は、ankardo の `new-game` スキルに足す。`scripts/copy-forge.sh` を `<pixel|illust>` で選べる形にする（依頼者が案 A を選んだ）。計画の Task 5。このリポジトリへのコピー（Task 6）もそのスクリプトで行う
 - 実装の進め方は「まとめて」（Claude が全 Task を実装し、最後にレビュー役がブランチ全体を確かめる。superpowers:executing-plans）。依頼者が決めた（2026-11-22）
 - 採用した絵は、Google Drive のコネクター（`download_file_content`）で PNG の条件を残したまま取れる（2026-11-22 確かめた）。取った絵は会話に入り、ファイルとしても保存される
+
+工程 3 の結果（2026-11-23。feat/modal-gen、未 push）:
+- Claude がこのサーバーから Modal の T4 で顔・全身の候補を作れるようになった。実行は `illust-asset-forge/` で `python -m artgen.cloud generate --jobs <ジョブの JSON>`（使い方は `illust-asset-forge/README.md` の「10. Modal で作る（量産）」）。候補・採用した絵は `illust-asset-forge/local/`（git に入れない）。採用は `cloud adopt <回りの記録> <番号> [--flip]`、取り込みは `cloud install <id>`。計画 `docs/superpowers/plans/2026-11-23-modal-gen.md` の 6 タスク。台帳は `docs/superpowers/ledgers/2026-11-23-modal-gen.md`
+- Colab との比較（騎士、シード 3034254740）: 条件（プロンプト・シード・版・T4）は同じで、画素は一致しない（82% の画素が 1 以上違い、平均差約 4）。依頼者が見て、見た目は同じとして許した。画素まで同じ絵を作り直す使い方（再現・差分）はできない
+- 料金: ここまでの Modal の利用額は $0.21（依頼者が管理画面で確認。騎士 1 枚・ボルグ 8＋8＋8＋12 枚）。1 回りは起動とモデルの読み込みで約 3〜4 分
+- 画素を数えて候補を外す道具は、いったん作り（上の辺・上の角の背景でない割合）、ボルグの 36 枚に当てたところ、髪と鎧を区別できず、頭が収まっている絵まで外れた。依頼者の判断で取り除き、候補のページには全部を番号順に並べる（依頼者が全部を目で見る）
+- ボルグの顔を「胸から上」にする試し（4 回、36 枚。デフォルトのプロンプトは変えていない）。頭が収まる割合の目安: デフォルト（`portrait` あり）に `upper body` を足す 3/8、`portrait` を外して `upper body` だけ（肩のタグは残す）12 枚中 7〜10 枚。効かなかった: `headroom`・`space above head`（兜や帽子が増える）、ネガティブの追加（もともと入っている）、肩のタグ（`muscular`・`broad shoulders`・`steel shoulder armor`・`gauntlets`）を外すこと（顔がさらに寄る）。`portrait` が顔を寄せ、肩の鎧のタグが顔を引きにする。見本の騎士・魔法使いも同じ傾向。同じシード 3034254740 はボルグでは毎回頭が切れた
+- 確かめていないこと: Modal で作った絵を `install` して `export` する流れ（ボルグの 4 番を採用しただけで、`source/` には入れていない）。別のキャラクターで、収まったシードが同じ構図になるか。全身絵（`fullbody`）を Modal で作ること
+- 定期のタスク: 「Claude Code 版の確認」を毎週水曜 4:05 の「Claude Code 版の確認と不要ファイル調査」にした（2026-11-23）。`local/runs/` の 14 日以上古い候補を削除候補として報告するので、ボルグの 4 番を `source/` に入れるまでは、`local/runs/ally05/face/20261123_110238/` と `local/selected/ally05/` を消さない
 
 工程 2 の結果（2026-11-23。feat/borg-restyle、未 push）:
 - ボルグの顔・全身絵を新しい画風（thick-line-flat）で作り、ゲームの顔 `assets/images/ally05-face.png` とマップの絵 `assets/images/ally05-map.png` を差し替えた。ブラウザ（配置の画面・下のバー・戦闘中）で新しい絵が出ることを確かめた。`npm test`（1268 件）・`npm run build` は通る
