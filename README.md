@@ -201,11 +201,11 @@ URL に `?debug` を付けると、戦闘中だけ次の操作ができる（攻
 - 物の絵は地面（草）を背景に含めて描く
 - 顔を縮小して描くときだけぼかす（`smoothFor`、`src/render/sprites.ts`）。ほかはドット絵のまま
 - 顔の枠の大きさは `FACE_PX`、役割アイコンの枠は `roleBadgeIn`（どちらも `src/ui/layout.ts`）
-- **顔グラの例外（試しの段階）:** ボルグ（`ally05-face.png`）の顔は、illust-asset-forge（このリポジトリの `illust-asset-forge/`）で生成したイラスト（画風は thick-line-flat）をそのまま使う（ドット絵にしない。256px）。元画像（`illust-asset-forge/characters/ally05/source/face.png`、1024px）の (110,0)〜(750,640) を顔を中心に切り出し、外につながる背景（白と、背後の飾りのクリーム色。肌は含まない）を透明にして 256px に縮めた。顔と服以外の背景は透明にする（依頼者の方針）。ほかの顔をイラストに替えるか、表示の大きさを変えるかは、試した結果を見て決める
+- **顔グラの例外（試しの段階）:** ボルグ（`ally05`）の顔は、illust-asset-forge（このリポジトリの `illust-asset-forge/`）で生成したイラスト（画風は thick-line-flat）をそのまま使う（ドット絵にしない）。顔は 2 枚あり、`ally05-face.png`（大きい顔。頭の全体と首元。256px）は 64px の枠（会話・セリフ欄・カード）に、`ally05-face-small.png`（小さい顔。顔のアップ。128px）は 40px 以下の枠（下のバー・仲間一覧・リザルト）に使う（ユニットの JSON の `sprites.faceSmall`。選ぶのは `faceImageFor`）。作り方: 元画像（`illust-asset-forge/characters/ally05/source/face.png`、1024px。テンプレートは「胸から上」＝ `upper body`）から、`character.yaml` の `face_crop`（`large`・`small` の範囲）で切り出し、外につながる背景（白。必要なら `clear_colors` の色）を透明にして、`python -m artgen.export ally05` が 2 枚を書き出す。範囲は Claude が決め、`python -m artgen.crop_review ally05` の承認用ページで依頼者の承認を受ける。顔と服以外の背景は透明にする（依頼者の方針）。**範囲の辺で服や鎧が切れていると、外から塗りつぶして服の白まで透明になる**ので、`illust-asset-forge/local/check/ally05/` の確認図（透明にした画素を赤で塗った絵）で顔・服・鎧に赤が無いことを必ず見る。ほかの顔をイラストに替えるかは、試した結果を見て決める（見本 4 人は古いテンプレートの絵のまま）
 - ユニットの当たり判定は足元の箱（足元の点から左右6px・下2px・上0px。`src/engine/footprint.ts`）。通れないマスに横と上からはめり込まない。下から近づいたときに頭が上のマスに重なるのは、マスの手前に立っている見え方として残す
 
 **まだ規約に追いついていないもの:** 複数マスを占める物をマップに置く仕組みはまだ無い。
-顔（128px）と役割アイコン（32px）の画像は規約より大きく、縮小して描いている。
+顔（大きい顔 256px・小さい顔 128px）と役割アイコン（32px）の画像は規約より大きく、縮小して描いている。
 
 ## ドット絵の作りかた
 

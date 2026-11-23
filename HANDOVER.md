@@ -6,12 +6,13 @@
 1. 取り込み方式にする（完了）
 2. ボルグを新しい画風で作り直す（完了）
 3. Modal で生成する（完了）
-4. 表示の大きさと顔の構図を決める ← 今ここ
-5. 残りの顔グラ 26 枚を作る
-段階: 実装（6 タスク中 0）
+4. 表示の大きさと顔の構図を決める（完了。最終レビューと依頼者の確認待ち）
+5. 残りの顔グラ 26 枚を作る ← 今ここ
+段階: 設計の相談
 次にやること:
-- 工程 4 を計画 `docs/superpowers/plans/2026-11-23-face-framing.md` に沿って「まとめて」実装する（ブランチ feat/face-framing、未 push。設計書は `docs/superpowers/specs/2026-11-23-face-framing-design.md`、依頼者が承認済み）。Task 6 の Step 4 で依頼者の承認を待つ
-- （以下は設計前の記録）工程 4（表示の大きさと顔の構図）の設計を相談する。決まっていること（大きい枠は頭の全体＋首元、小さい枠は顔のアップ、画像 2 枚など）は `docs/superpowers/specs/2026-11-23-modal-gen-design.md` の「工程 4 で決まっていること」。工程 3 の試しの結果（下の「工程 3 の結果」。`portrait` を外して `upper body` だけにするとボルグの頭が収まりやすい）を材料にする。ボルグの顔は、依頼者が 12 枚の回りの 4 番（シード 2635050234）を選んだ。`illust-asset-forge/local/selected/ally05/face.png` にあり、`characters/ally05/source/` にはまだ取り込んでいない（`cloud install` は `source/` を丸ごと置き換えるが、選び直していない全身絵（`source/fullbody.png`）は持ち越し、表情は持ち越さない。zip 経由の `intake` は `source/` 全体を置き換える。工程 4 の設計のあとに取り込む）
+- 工程 5（残りの顔グラ 26 枚）の設計を相談する。工程 4 の結果（下の「工程 4 の結果」）を材料にする
+- 工程 4 の結果を見て、ボルグのマップの絵を直すかを依頼者が決める（直すなら別の作業として相談）
+- 工程 4 のブランチ feat/face-framing の push と PR（develop 向け）は、依頼者が頼んだとき
 - Drive の置き場を `MyDrive/illust-asset-forge/character-tactics/` にしたい（依頼者。今は `MyDrive/character-tactics/illust-asset-forge/`。ゲームが増えるたびにフォルダが増えて分からなくなるため）。作業が落ち着いてから。直す所は `DRIVE_DIR`（ノートブックの変数とそのテスト `illust-asset-forge/tests/test_notebook.py`）・`illust-asset-forge/README.md`・`illust-asset-forge/CLAUDE.md`・`UPSTREAM.md`。Drive でのフォルダの移動は依頼者
 - 素体に耳を足す（依頼者の判断。`pixel-asset-forge/ISSUES.md`）。今はボルグの芯だけに耳がある
 - ankardo の `new-game` スキルの設計書リンクを、この作業の設計書が main に入ったら `blob/main/…` に直す（依頼者の指示。今はコミット固定）
@@ -25,6 +26,14 @@
 - 実装の進め方は「まとめて」（Claude が全 Task を実装し、最後にレビュー役がブランチ全体を確かめる。superpowers:executing-plans）。依頼者が決めた（2026-11-22）
 - 採用した絵は、Google Drive のコネクター（`download_file_content`）で PNG の条件を残したまま取れる（2026-11-22 確かめた）。取った絵は会話に入り、ファイルとしても保存される
 
+
+工程 4 の結果（2026-11-23。feat/face-framing、未 push）:
+- 顔のテンプレート（`illust-asset-forge/templates/face.yaml`）を `portrait` から `upper body` に替えた（ネガティブからも `upper body` を外した）。`character.yaml` の `face_crop`（`large`・`small` の範囲と `clear_colors`）から、`artgen.export` が大きい顔 256px（`face.png`）と小さい顔 128px（`face-small.png`）を RGBA で書き出し、確認図を `local/check/<id>/` に作る。承認用のページは `python -m artgen.crop_review <id>`。使い方は `illust-asset-forge/README.md`「顔の切り出し」。計画 `docs/superpowers/plans/2026-11-23-face-framing.md`、台帳 `docs/superpowers/ledgers/2026-11-23-face-framing.md`
+- ゲームは `sprites.faceSmall`（任意。仲間・敵・村人）を読み、`faceImageFor` で 40px 以下の枠は小さい顔、無ければ今の 1 枚を使う。`FACE_PX` は変えていない
+- ボルグ（ally05）は 4 番（シード 2635050234）で作り直した。`face_crop`: large `[20, 0, 650, 630]`、small `[50, 100, 550, 600]`（`clear_colors` なし）。依頼者が承認ページで承認（2026-11-23）。ゲームに入れ、ブラウザで 64px（カード）・32px（仲間一覧）・40px（下のバー）に出ることを確かめた。ほかのユニットの顔は今と変わらない
+- 確かめていないこと: 会話・セリフ欄（64px）での見え方（ボルグが話し手になる場面は勝った後の仲間入りだけで、ブラウザでは出していない。描画は同じ `drawFace`）、develop の確認用プレビュー
+- 消してよくなった候補: `illust-asset-forge/local/runs/ally05/face/20261123_105626/` と `local/selected/ally05/`（`source/` に入った。消すのは依頼者）
+- 工程 3 の「Modal で作った絵を `install` して `export` する流れ」は、ボルグで確かめた（`install` → `face_crop` → `export` → `crop_review`）
 工程 3 の結果（2026-11-23。feat/modal-gen、未 push）:
 - Claude がこのサーバーから Modal の T4 で顔・全身の候補を作れるようになった。実行は `illust-asset-forge/` で `python -m artgen.cloud generate --jobs <ジョブの JSON>`（使い方は `illust-asset-forge/README.md` の「10. Modal で作る（量産）」）。候補・採用した絵は `illust-asset-forge/local/`（git に入れない）。採用は `cloud adopt <回りの記録> <番号> [--flip]`、取り込みは `cloud install <id>`。計画 `docs/superpowers/plans/2026-11-23-modal-gen.md` の 6 タスク。台帳は `docs/superpowers/ledgers/2026-11-23-modal-gen.md`
 - Colab との比較（騎士、シード 3034254740）: 条件（プロンプト・シード・版・T4）は同じで、画素は一致しない（82% の画素が 1 以上違い、平均差約 4）。依頼者が見て、見た目は同じとして許した。画素まで同じ絵を作り直す使い方（再現・差分）はできない
