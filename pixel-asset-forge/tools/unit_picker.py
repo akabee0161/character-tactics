@@ -47,7 +47,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import palette as palette_mod  # noqa: E402
-from compose import ComposeError, Layer, compose_frame  # noqa: E402
+from compose import ComposeError, Layer, compose_frame, keep_colours  # noqa: E402
 from gridfile import BACKGROUND, REPO_ROOT, GridError, load_palette, parse  # noqa: E402
 
 DIRECTIONS = ["down", "up", "left", "right"]
@@ -305,11 +305,19 @@ def build_data(picker: Picker) -> dict:
                 charmap: dict[str, str] = {}
                 for layer in variant.layers_by_dir[d]:
                     part = grid(picker.path(layer.part, d))
+                    kept = keep_colours(layer.keep)
+                    below_charmap = dict(charmap)  # この層より前の層の文字の色（keep で下の色を見るため）
                     charmap.update(part.charmap)
                     for y, row in enumerate(part.rows):
                         for x, ch in enumerate(row):
-                            if ch != BACKGROUND:
-                                canvas[y][x] = ch
+                            if ch == BACKGROUND:
+                                continue
+                            below = canvas[y][x]
+                            # keep: 完成のコマと同じく、この層の輪郭は、すぐ下が keep の種類の色ならそちらを見せる
+                            if (kept and part.charmap[ch] == "contour" and below != BACKGROUND
+                                    and below_charmap.get(below) in kept):
+                                continue
+                            canvas[y][x] = ch
                 parts[f"{vid}|{d}"] = enc.encode(["".join(r) for r in canvas], charmap)
         for name, template in picker.refs.items():
             ref = grid(picker.path(template, d))

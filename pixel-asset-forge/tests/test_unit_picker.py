@@ -315,6 +315,17 @@ class KeepTest(unittest.TestCase):
         data = build_data(load_picker(self.config({}), root=self.ws.root))
         self.assertEqual(pixel(data, "H1-D1|down", 10, 10), "#1a1228")
 
+    def test_parts_alone_also_apply_keep(self):
+        data = build_data(load_picker(self.config({"keep": ["blade"]}), root=self.ws.root))
+        alone = {"frames": data["parts"], "colours": data["colours"]}
+        self.assertEqual(pixel(alone, "D1|down", 10, 10), "#9fa8b4")  # 完成のコマと同じく、刃が見える
+        self.assertEqual(pixel(alone, "D1|down", 11, 10), "#1a1228")  # 下が刃でない所は輪郭
+
+    def test_parts_alone_without_keep_show_the_outline(self):
+        data = build_data(load_picker(self.config({}), root=self.ws.root))
+        alone = {"frames": data["parts"], "colours": data["colours"]}
+        self.assertEqual(pixel(alone, "D1|down", 10, 10), "#1a1228")
+
     def test_keep_must_name_colour_kinds(self):
         with self.assertRaisesRegex(PickerError, r"keep.*ぼうぎょ"):
             load_picker(self.config({"keep": ["ぼうぎょ"]}), root=self.ws.root)
