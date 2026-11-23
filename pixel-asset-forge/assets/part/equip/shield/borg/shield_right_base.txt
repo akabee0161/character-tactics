@@ -1,4 +1,4 @@
-# ボルグの盾 right（暗い鋼に金の縁の丸い盾。CP1 の S2）
+# ボルグの盾 right（先のとがった盾。面は明るい灰、縁は金。2026-11-23）
 # type: unit
 # size: 32x32
 # light: upper-left

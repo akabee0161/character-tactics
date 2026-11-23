@@ -479,6 +479,21 @@
     "kind": "cloth",
     "note": "ボルグの灰色の鎧（暗）"
   },
+  "shield_plate_hi": {
+    "swatch": "plate_hi",
+    "kind": "shield",
+    "note": "ボルグの盾の面の灰（明）"
+  },
+  "shield_plate_base": {
+    "swatch": "plate_base",
+    "kind": "shield",
+    "note": "ボルグの盾の面の灰（中）"
+  },
+  "shield_plate_shadow": {
+    "swatch": "plate_shadow",
+    "kind": "shield",
+    "note": "ボルグの盾の面の灰（暗）"
+  },
   "armor_gold_hi": {
     "swatch": "metal_hi",
     "kind": "cloth",

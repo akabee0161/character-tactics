@@ -29,6 +29,7 @@ forge 本体も並行して開発が続く。forge の改善をこちらへ取�
 - 敵の絵（2026-11-11。台帳 character-tactics の `docs/superpowers/ledgers/2026-11-11-enemy-art.md`）: `tools/enemy_build.py` の `shield`・`bow`・`staff` の型。新しい 8 体（盾持ち 2・弓兵 3・まじない師 3）の `compose/{shield,bow,staff}-*.json` と `checks/`。描き足した部品（盾 `assets/part/equip/shield/enemy_male/`、拳 `assets/part/fist/enemy_female/{bow,arrow,staff}_hand_*`。どれもロラン・イネス・ミストの部品の色を換えた写し）。`tools/enemy_gallery.py` の `--first`
 - ボルグ（2026-11-22）: `types/unit/SPEC.md` に「入力がイラストのときの設定シート」（illust-asset-forge の顔と全身絵から段階 0 を作る標準）と「脚に着ける物は芯の脚に描く」の決まり、ボルグの節を足した。`CLAUDE.md` に案内。色見本 `auburn_*`・`plate_*` と用途の色 `hair_auburn_*`・`armor_grey_*`・`armor_gold_*`。ロランの攻撃のコマの盾の拳を base の位置に戻した（`assets/part/fist/roran/shield_hand_{down,up}_atk_{wind,hit}`。盾持ちの敵 2 体も同じ部品）
 - 各ステージのタイル（2026-11-12。台帳 character-tactics の `docs/superpowers/ledgers/2026-11-12-stage-tiles.md`）: tile の家族 6 つ（川原・石切り場・城壁・関所・野営地・塔と城内の物）。`types/tile/SPEC.md` の「セット構成」と「32px の物のセットの決めごと」、`layouts/{riverside,quarry,fortress,fortress_gate,checkpoint,camp,tower,hall}.txt`、`palette/uses/tile.json` の `magic_*`。色見本は足していない
+- `tools/unit_picker.py`・`tests/test_unit_picker.py`: 層に `keep`（compose.py と同じ。拳の輪郭を握る柄の上に描かない）を書けるようにし、`layers` を向きごとに書けるようにした（全部の向きを書く）。向きごとに盾と拳の重なり順が違う、拳を持つユニット（剣と盾など）の組み合わせを選ぶページに必要（ボルグの作り直しの CP1、2026-11-23）
 
 ## forge から持ってきたもの
 

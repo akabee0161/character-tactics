@@ -97,12 +97,12 @@ class LoadPickerTest(unittest.TestCase):
         self.assertEqual(list(picker.elements), ["head", "weapon"])
         self.assertEqual(picker.directions, list(DIRS))
         self.assertEqual(picker.default, {"head": "H1", "weapon": "D1"})
-        layer = picker.elements["head"].variants["H2"].layers[0]
+        layer = picker.elements["head"].variants["H2"].layers_by_dir["down"][0]
         self.assertEqual(layer.z_for("left"), "front")
 
     def test_z_can_differ_by_direction(self):
         picker = load_picker(self.ws.config(), root=self.ws.root)
-        layer = picker.elements["weapon"].variants["D1"].layers[0]
+        layer = picker.elements["weapon"].variants["D1"].layers_by_dir["down"][0]
         self.assertEqual((layer.z_for("left"), layer.z_for("down")), ("back", "front"))
 
     def test_unknown_z_is_an_error(self):
@@ -286,6 +286,91 @@ class PartsAloneTest(unittest.TestCase):
         # その前に組み合わせの組み立て（compose_frame）が止めることを固定しておく
         with self.assertRaisesRegex(PickerError, r"H1-D2 の down.*'h'"):
             build_data(load_picker(self.two_part_config("h=skin_fair_base"), root=self.ws.root))
+
+
+class KeepTest(unittest.TestCase):
+    """拳の部品の keep（compose.py と同じ。拳の輪郭を、握る柄の上には描かない）。"""
+
+    def setUp(self):
+        self.ws = Workspace()
+        for d in DIRS:
+            self.ws.write(f"sword_{d}.txt", grid_text({(10, 10): "j"}, "j=blade_base"))
+            self.ws.write(f"fist_{d}.txt", grid_text({(10, 10): "o", (11, 10): "o"}, "o=contour"))
+
+    def tearDown(self):
+        self.ws.close()
+
+    def config(self, fist_layer: dict) -> Path:
+        return self.ws.config(elements={
+            "head": {"label": "頭", "variants": {"H1": {"label": "なし", "layers": []}}},
+            "weapon": {"label": "剣", "variants": {"D1": {"label": "剣と拳", "layers": [
+                {"part": "sword_{dir}.txt"}, dict(part="fist_{dir}.txt", **fist_layer)]}}}})
+
+    def test_keep_shows_the_blade_under_the_fist_outline(self):
+        data = build_data(load_picker(self.config({"keep": ["blade"]}), root=self.ws.root))
+        self.assertEqual(pixel(data, "H1-D1|down", 10, 10), "#9fa8b4")  # blade_base（輪郭に隠れない）
+        self.assertEqual(pixel(data, "H1-D1|down", 11, 10), "#1a1228")  # 下に刃が無い所は輪郭
+
+    def test_without_keep_the_outline_covers_the_blade(self):
+        data = build_data(load_picker(self.config({}), root=self.ws.root))
+        self.assertEqual(pixel(data, "H1-D1|down", 10, 10), "#1a1228")
+
+    def test_parts_alone_also_apply_keep(self):
+        data = build_data(load_picker(self.config({"keep": ["blade"]}), root=self.ws.root))
+        alone = {"frames": data["parts"], "colours": data["colours"]}
+        self.assertEqual(pixel(alone, "D1|down", 10, 10), "#9fa8b4")  # 完成のコマと同じく、刃が見える
+        self.assertEqual(pixel(alone, "D1|down", 11, 10), "#1a1228")  # 下が刃でない所は輪郭
+
+    def test_parts_alone_without_keep_show_the_outline(self):
+        data = build_data(load_picker(self.config({}), root=self.ws.root))
+        alone = {"frames": data["parts"], "colours": data["colours"]}
+        self.assertEqual(pixel(alone, "D1|down", 10, 10), "#1a1228")
+
+    def test_keep_must_name_colour_kinds(self):
+        with self.assertRaisesRegex(PickerError, r"keep.*ぼうぎょ"):
+            load_picker(self.config({"keep": ["ぼうぎょ"]}), root=self.ws.root)
+
+
+class LayersByDirectionTest(unittest.TestCase):
+    """layers は向きごとに書ける（盾と拳の重なり順が向きで変わるユニット用）。"""
+
+    def setUp(self):
+        self.ws = Workspace()
+        for d in DIRS:
+            self.ws.write(f"cloth_{d}.txt", grid_text({(10, 10): "h"}, "h=clothes_blue_base"))
+            self.ws.write(f"line_{d}.txt", grid_text({(10, 10): "o"}, "o=contour"))
+
+    def tearDown(self):
+        self.ws.close()
+
+    def config(self, layers) -> Path:
+        return self.ws.config(elements={
+            "head": {"label": "頭", "variants": {"H1": {"label": "なし", "layers": []}}},
+            "weapon": {"label": "物", "variants": {"D1": {"label": "二つ", "layers": layers}}}})
+
+    def test_each_direction_uses_its_own_order(self):
+        cloth, line = {"part": "cloth_{dir}.txt"}, {"part": "line_{dir}.txt"}
+        data = build_data(load_picker(self.config({
+            "down": [cloth, line], "up": [line, cloth], "left": [cloth, line], "right": [cloth, line]}),
+            root=self.ws.root))
+        self.assertEqual(pixel(data, "H1-D1|down", 10, 10), "#1a1228")  # 輪郭が上
+        self.assertEqual(pixel(data, "H1-D1|up", 10, 10), "#4a5588")    # 服が上
+
+    def test_a_direction_may_have_no_layers(self):
+        cloth = {"part": "cloth_{dir}.txt"}
+        data = build_data(load_picker(self.config({
+            "down": [cloth], "up": [], "left": [], "right": []}), root=self.ws.root))
+        self.assertEqual(pixel(data, "H1-D1|down", 10, 10), "#4a5588")
+        self.assertEqual(pixel(data, "H1-D1|up", 10, 10), "#f0c49a")  # 素体のまま
+
+    def test_every_direction_must_be_named(self):
+        with self.assertRaisesRegex(PickerError, r"layers.*right"):
+            load_picker(self.config({"down": [], "up": [], "left": []}), root=self.ws.root)
+
+    def test_unknown_direction_is_an_error(self):
+        with self.assertRaisesRegex(PickerError, r"layers.*diagonal"):
+            load_picker(self.config({"down": [], "up": [], "left": [], "right": [], "diagonal": []}),
+                        root=self.ws.root)
 
 
 class RefsTest(unittest.TestCase):

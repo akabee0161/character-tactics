@@ -4,12 +4,14 @@
 作業: 顔グラを生成 AI で作る
 工程:
 1. 取り込み方式にする（完了）
-2. ボルグを新しい画風で作り直す ← 今ここ
-3. 表示の大きさと顔の構図を決める
+2. ボルグを新しい画風で作り直す（完了）
+3. 表示の大きさと顔の構図を決める ← 今ここ
 4. 残りの顔グラ 26 枚を作る
 段階: 設計の相談
 次にやること:
-- 工程 2（ボルグを新しい画風で作り直す）の設計を相談する。最初に、依頼者が Colab で `illust-asset-forge/`（このリポジトリのコピー）から準備のセルが動くことを確かめる（コピーから動くことは未確認）
+- 工程 3（表示の大きさ `FACE_PX` と顔の構図）を、工程 2 の結果（下の「工程 2 の結果」）を見て相談する。ボルグの顔の絵は上が切れていて、髪の塊の高さが分からない。構図は工程 4 の顔グラ 26 枚にも効く
+- Drive の置き場を `MyDrive/illust-asset-forge/character-tactics/` にしたい（依頼者。今は `MyDrive/character-tactics/illust-asset-forge/`。ゲームが増えるたびにフォルダが増えて分からなくなるため）。作業が落ち着いてから。直す所は `DRIVE_DIR`（ノートブックの変数とそのテスト `illust-asset-forge/tests/test_notebook.py`）・`illust-asset-forge/README.md`・`illust-asset-forge/CLAUDE.md`・`UPSTREAM.md`。Drive でのフォルダの移動は依頼者
+- 素体に耳を足す（依頼者の判断。`pixel-asset-forge/ISSUES.md`）。今はボルグの芯だけに耳がある
 - ankardo の `new-game` スキルの設計書リンクを、この作業の設計書が main に入ったら `blob/main/…` に直す（依頼者の指示。今はコミット固定）
 - 前の作業の残り（下の「前の作業から残っていること」）
 
@@ -21,12 +23,25 @@
 - 実装の進め方は「まとめて」（Claude が全 Task を実装し、最後にレビュー役がブランチ全体を確かめる。superpowers:executing-plans）。依頼者が決めた（2026-11-22）
 - 採用した絵は、Google Drive のコネクター（`download_file_content`）で PNG の条件を残したまま取れる（2026-11-22 確かめた）。取った絵は会話に入り、ファイルとしても保存される
 
+工程 2 の結果（2026-11-23。feat/borg-restyle、未 push）:
+- ボルグの顔・全身絵を新しい画風（thick-line-flat）で作り、ゲームの顔 `assets/images/ally05-face.png` とマップの絵 `assets/images/ally05-map.png` を差し替えた。ブラウザ（配置の画面・下のバー・戦闘中）で新しい絵が出ることを確かめた。`npm test`（1268 件）・`npm run build` は通る
+- 顔: 1 回り 12 枚（案 3 つ × 4 枚。各案に騎士のシード 3034254740 を 1 枚）で採用（案 3、シード 3034254740、左右反転）。タグは `extra` に `(dark grey armor:1.3)`・`thin gold trim`・`navy blue clothes`・`(auburn hair:1.2)`、`remove` に `gold trim`・`dark reddish brown hair`（`characters/ally05/character.yaml` に書き戻し済み）。全身: 8 枚から 1 枚（シード 1134822769。剣と盾のタグ `holding sword, sword in right hand, shield in left hand` を足した）。採用した絵は Drive の `MyDrive/character-tactics/illust-asset-forge/selected/ally05/`、リポジトリの `illust-asset-forge/characters/ally05/source/`
+- プロンプトの寄せ方（工程 4 で使う）: 効いた — `(auburn hair:1.2)` と `remove` で髪の色を変える（赤茶の明るい髪になった）、`navy blue clothes`（紺の襟）、騎士と同じシードで同じ構図。効かなかった — `(dark grey armor:1.3)`（鎧は暗くならず明るい青灰のまま。結果は顔の色に合わせて色見本を直した）、`thin gold trim`（金は太いまま）。顔は右向きで出ることが多く、「左右反転して採用」で左向きにした。顔の元画像は上が切れる。背後に飾り（クリーム色の兜の縁のような物）が写った
+- 顔と服以外の背景は透明にする（依頼者の方針）。切り出しは (110,0)〜(750,640) の 640px 角。透明にするのは、外につながる白（全チャンネル 240 以上）と飾りのクリーム色（最小値 214 以上で r−g ≤ 14 かつ g−b ≤ 16。肌は r−g が大きいので入らない）。透明にした画素を赤で塗った図で穴が無いことを確かめる（塗りつぶしは四辺から始まり、クリーム色の条件は青みの白にも当たる。白い服が下の辺で切れている顔では服が透明になるおそれがあるので、工程 4 では赤い図を必ず見る）。README「顔グラの例外」に書いた
+- マップの絵: 設定シート（CP0）・組み合わせを選ぶページ（CP1）・正面と 4 方向（CP2・CP3）・動き（CP4）を依頼者が承認した。顔と全身絵の食い違い（鎧の明るさ・金の量・髪の明るさ・盾・剣の刃）は、顔に写る所は顔を正、写らない所は全身絵から取った。選んだ組み合わせは K2-G2-N1-S2（すね当ての上の縁に金・肩当てと胸の上の縁に金・髪は顔の絵から白紙で描いた版・先のとがった盾）。詳しい色・形は `pixel-asset-forge/types/unit/SPEC.md` のボルグの節「2026-11-23 の作り直し」
+- 髪の作り直し: 今の髪を直した案は顔と別物にならなかったので、依頼者の指示で顔の絵の特徴（髪の塊の流れ・側頭と襟足は短く細かい線・前の端の尖り・前側の髪は短く耳の前で止まる）を残して白紙から描いた。背丈 26px の上限で、髪の塊の高さは頭頂（row 5）より上へ伸ばせない
+- 耳: 横向きの横顔に耳が無く違和感があり、耳を足した。髪の部品に肌の画素を置くと `part_outline` が落とすので、ボルグの芯に描いた。依頼者の判断は「耳は素体にあるべき」。素体（`types/unit/base/`）とほかのユニットの芯は未対応で、`pixel-asset-forge/ISSUES.md` に書いた。SPEC の「頭パーツ（髪・耳・かぶり物を合わせて1つ）」は単体スケッチの説明で、置き場の規則ではない（私が規則のように言ったのは誤りで訂正した）
+- 道具の変更: `pixel-asset-forge/tools/unit_picker.py` に、層の `keep` と向きごとの `layers` を足した（向きごとに盾と拳の重なり順が違うユニット用。テストあり。`UPSTREAM.md`）
+- 確かめていないこと: develop の確認用プレビューでの見え方（push していない）、本番、ゲームを通して遊ぶこと。歩きで足を上げたコマはすね当てが 1 行しか見えず全体が金になる（依頼者は CP4 で承認）
+- 台帳: `docs/superpowers/ledgers/2026-11-23-borg-restyle.md`
+
 工程 1 の結果（2026-11-23）:
 - illust-asset-forge は、汎用の見本 4 人（`knight`・`mage`・`schoolboy`・`schoolgirl`）だけを持つ形になり（PR #4、マージ済み）、ankardo の `copy-forge.sh <pixel|illust>` と `new-game` スキルも直った（PR #27、マージ済み）
 - このリポジトリの `illust-asset-forge/` は、その forge（`b9cbe53`）のコピー。ノートブックの 4 つの変数をこのゲームの値にし、ボルグ・セラの設定（`characters/ally05/`・`ally06/`。絵は無い）を置いた。変更の記録は `illust-asset-forge/UPSTREAM.md`。テストは `cd illust-asset-forge && .venv/bin/pytest`
 - 見本の絵（顔・全身 8 枚）は Colab（T4）で作り、騎士・魔法使いの 4 枚は、画風を洗練したときに選んだ絵と画素まで一致した
 - PR #60 の CodeRabbit の指摘 7 件は、forge（PR #5）とこのコピー（PR #61）の両方で直し、マージ済み（2026-11-23）。準備のセルの pip の `check=True` は、Colab ではまだ動かしていない
-- 確かめていないこと: Colab でこのリポジトリのコピーから動くこと。Colab はこのリポジトリの `develop` を取るので、`illust-asset-forge/` が `develop` に入るまで試せない。`P.pick` の画像サイズの修正（forge 側）の Colab での見え方
+- Colab で確かめた（2026-11-23、T4、develop の 71bbf25）: 準備のセルが最後まで動く（pip の `check=True` で止まらない）。このコピーの `knight` の顔をシード 3034254740 で作れた（見た目は見本を左右反転した絵と同じ）。`P.pick` の画面が出て、絵は出力欄の幅に引き伸ばされず約 320px で出る
+- 確かめていないこと: コピーから作った騎士の顔が見本と画素まで一致するか（Drive の `MyDrive/character-tactics/illust-asset-forge/runs/knight/face/` に残っている）。`edit_box`・`show_styles` の画像の見え方（`P.pick` と同じ作りで、直していない）
 
 前の作業から残っていること:
 - develop の確認用のプレビューで、戦闘の中のボルグの動きと顔を確かめる（依頼者）

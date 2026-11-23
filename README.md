@@ -201,7 +201,7 @@ URL に `?debug` を付けると、戦闘中だけ次の操作ができる（攻
 - 物の絵は地面（草）を背景に含めて描く
 - 顔を縮小して描くときだけぼかす（`smoothFor`、`src/render/sprites.ts`）。ほかはドット絵のまま
 - 顔の枠の大きさは `FACE_PX`、役割アイコンの枠は `roleBadgeIn`（どちらも `src/ui/layout.ts`）
-- **顔グラの例外（試しの段階）:** ボルグ（`ally05-face.png`）の顔は、[illust-asset-forge](https://github.com/akabee0161/illust-asset-forge) で生成したイラストをそのまま使う（ドット絵にしない。256px）。元画像（illust-asset-forge の commit `9627e8d` の [`characters/ally05/source/face.png`](https://github.com/akabee0161/illust-asset-forge/blob/9627e8d/characters/ally05/source/face.png)、1024px。forge からは消えたので、この commit を指す）の (300,0)〜(940,640) を顔を中心に切り出し、外につながる白い背景を透明にして 256px に縮めた。ほかの顔をイラストに替えるか、表示の大きさを変えるかは、試した結果を見て決める
+- **顔グラの例外（試しの段階）:** ボルグ（`ally05-face.png`）の顔は、illust-asset-forge（このリポジトリの `illust-asset-forge/`）で生成したイラスト（画風は thick-line-flat）をそのまま使う（ドット絵にしない。256px）。元画像（`illust-asset-forge/characters/ally05/source/face.png`、1024px）の (110,0)〜(750,640) を顔を中心に切り出し、外につながる背景（白と、背後の飾りのクリーム色。肌は含まない）を透明にして 256px に縮めた。顔と服以外の背景は透明にする（依頼者の方針）。ほかの顔をイラストに替えるか、表示の大きさを変えるかは、試した結果を見て決める
 - ユニットの当たり判定は足元の箱（足元の点から左右6px・下2px・上0px。`src/engine/footprint.ts`）。通れないマスに横と上からはめり込まない。下から近づいたときに頭が上のマスに重なるのは、マスの手前に立っている見え方として残す
 
 **まだ規約に追いついていないもの:** 複数マスを占める物をマップに置く仕組みはまだ無い。
