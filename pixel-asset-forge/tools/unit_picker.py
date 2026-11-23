@@ -27,6 +27,10 @@
       "refs": {"ロラン": "assets/unit/roran/{dir}_base.txt"}  # 並べて比べる見本（任意）
     }
 
+`layers` は、向きごとに重なり順が変わるユニットでは {"down": [...], "up": [...], "left": [...], "right": [...]}
+のように向きごとに書ける（全部の向きを書く）。
+`keep` は compose.py と同じ（["blade", "weapon"] のように色の種類を並べると、その部品の輪郭は、
+すぐ下がその種類の画素のとき、そちらを見せる。拳の輪郭を握る柄の上に描かないために使う）。
 `z` は compose.py と同じ（front は上に描く、back は透明な画素にだけ描く）。向きごとに変えるときは
 {"left": "back"} のように書き、書かなかった向きは front。案の記号は要素をまたいで重ならないようにする。
 """
@@ -42,6 +46,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import palette as palette_mod  # noqa: E402
 from compose import ComposeError, Layer, compose_frame  # noqa: E402
 from gridfile import BACKGROUND, REPO_ROOT, GridError, load_palette, parse  # noqa: E402
 
@@ -54,7 +59,7 @@ TEMPLATE = Path(__file__).resolve().parent / "unit_picker.html"
 CONFIG_KEYS = {"unit", "title", "body", "directions", "elements", "default", "matrix", "refs"}
 ELEMENT_KEYS = {"label", "variants"}
 VARIANT_KEYS = {"label", "layers"}
-LAYER_KEYS = {"part", "z"}
+LAYER_KEYS = {"part", "z", "keep"}
 
 
 class PickerError(Exception):
@@ -65,6 +70,7 @@ class PickerError(Exception):
 class PartLayer:
     part: str          # `{dir}` を含んでよいパス
     z: dict[str, str]  # 向き -> front / back（無い向きは front）
+    keep: frozenset[str] = frozenset()  # 色の種類（compose.py の keep と同じ。拳の輪郭を柄の上に描かない）
 
     def z_for(self, direction: str) -> str:
         return self.z.get(direction, "front")
@@ -73,7 +79,7 @@ class PartLayer:
 @dataclass
 class Variant:
     label: str
-    layers: list[PartLayer]
+    layers_by_dir: dict[str, list[PartLayer]]  # 向き -> 層（奥→手前の順）
 
 
 @dataclass
@@ -124,7 +130,18 @@ def _layer(data, where: str, directions: list[str]) -> PartLayer:
             raise PickerError(f"{where}: z に知らない向き {d!r}")
         if value not in Z_ORDERS:
             raise PickerError(f"{where}: z は front か back（{value!r} だった）")
-    return PartLayer(part, dict(by_direction))
+    keep = data.get("keep", [])
+    if not isinstance(keep, list) or not all(isinstance(c, str) for c in keep):
+        raise PickerError(f"{where}: keep は色の種類の配列でなければならない: {keep!r}")
+    unknown = [k for k in keep if k not in palette_mod.load().kinds]
+    if unknown:
+        raise PickerError(f"{where}: keep に色の種類でない名前 {', '.join(unknown)}"
+                          "（keep は種類の並び。例 [\"blade\", \"weapon\"]）")
+    return PartLayer(part, dict(by_direction), frozenset(keep))
+
+
+def _layer_list(layers: list, where: str, directions: list[str]) -> list[PartLayer]:
+    return [_layer(layer, f"{where}[{i}]", directions) for i, layer in enumerate(layers)]
 
 
 def load_picker(path: Path, root: Path = REPO_ROOT) -> Picker:
@@ -161,11 +178,24 @@ def load_picker(path: Path, root: Path = REPO_ROOT) -> Picker:
             owner[vid] = key
             _keys(v, VARIANT_KEYS, vwhere)
             layers = v.get("layers", [])
-            if not isinstance(layers, list):
-                raise PickerError(f"{vwhere}: layers が配列でない")
-            variants[vid] = Variant(str(v.get("label", "")),
-                                    [_layer(layer, f"{vwhere} の layers[{i}]", directions)
-                                     for i, layer in enumerate(layers)])
+            if isinstance(layers, list):
+                by_dir = {d: _layer_list(layers, f"{vwhere} の layers", directions) for d in directions}
+            elif isinstance(layers, dict):
+                unknown = [d for d in layers if d not in directions]
+                if unknown:
+                    raise PickerError(f"{vwhere}: layers に知らない向き {', '.join(unknown)}")
+                missing = [d for d in directions if d not in layers]
+                if missing:
+                    raise PickerError(f"{vwhere}: layers に向き {', '.join(missing)} が無い"
+                                      "（向きごとに書くときは全部の向きを書く）")
+                by_dir = {}
+                for d in directions:
+                    if not isinstance(layers[d], list):
+                        raise PickerError(f"{vwhere}: layers の {d} が配列でない")
+                    by_dir[d] = _layer_list(layers[d], f"{vwhere} の layers の {d}", directions)
+            else:
+                raise PickerError(f"{vwhere}: layers が配列でも向きごとの指定でもない")
+            variants[vid] = Variant(str(v.get("label", "")), by_dir)
         elements[key] = Element(str(el.get("label", key)), variants)
 
     default = {key: next(iter(el.variants)) for key, el in elements.items()}
@@ -261,9 +291,9 @@ def build_data(picker: Picker) -> dict:
     for d in picker.directions:
         body = grid(picker.path(picker.body, d))
         for pick in picks:
-            layers = [(grid(picker.path(layer.part, d)), Layer(picker.path(layer.part, d), layer.z_for(d)))
+            layers = [(grid(picker.path(layer.part, d)), Layer(picker.path(layer.part, d), layer.z_for(d), keep=layer.keep))
                       for key, vid in pick.items()
-                      for layer in picker.elements[key].variants[vid].layers]
+                      for layer in picker.elements[key].variants[vid].layers_by_dir[d]]
             try:
                 rows, groups = compose_frame(body, layers)
             except ComposeError as exc:
@@ -273,7 +303,7 @@ def build_data(picker: Picker) -> dict:
             for vid, variant in el.variants.items():
                 canvas = [[BACKGROUND] * body.width for _ in range(body.height)]
                 charmap: dict[str, str] = {}
-                for layer in variant.layers:
+                for layer in variant.layers_by_dir[d]:
                     part = grid(picker.path(layer.part, d))
                     charmap.update(part.charmap)
                     for y, row in enumerate(part.rows):
