@@ -1,0 +1,112 @@
+import json
+import sys
+import types
+
+import pytest
+
+from artgen import cloud
+from artgen.local import local_dirs
+from artgen.rounds import new_round
+from cloud_helpers import make_candidates, make_forge
+from test_forge import forge, pipe, repo, write  # noqa: F401  (fixtures)
+
+
+@pytest.fixture
+def cli_env(repo, monkeypatch):
+    monkeypatch.chdir(repo)
+    return repo
+
+
+@pytest.fixture
+def round_json(cli_env):
+    return new_round(cli_env / "local" / "rounds", "20261123_120000", make_candidates(cli_env))
+
+
+def test_adopt_excluded_warns_and_adopts(cli_env, round_json, capsys):
+    assert cloud.main(["adopt", str(round_json), "2"]) == 0
+    assert "警告: 2 は道具が外した候補（頭が切れている）" in capsys.readouterr().out
+    assert (cli_env / "local/selected/c1/face.png").is_file()
+
+
+def test_adopt_kept_candidate_has_no_warning(cli_env, round_json, capsys):
+    assert cloud.main(["adopt", str(round_json), "1"]) == 0
+    assert "警告" not in capsys.readouterr().out
+
+
+def test_adopt_flip_mirrors_the_face(cli_env, round_json):
+    from PIL import Image, ImageChops
+
+    assert cloud.main(["adopt", str(round_json), "2", "--flip"]) == 0
+    adopted = Image.open(cli_env / "local/selected/c1/face.png").convert("RGB")
+    original = next(local_dirs(cli_env).runs.glob("c1/face/*/c1_face_2.png"))
+    mirrored = Image.open(original).convert("RGB").transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+    assert ImageChops.difference(adopted, mirrored).getbbox() is None
+
+
+@pytest.mark.parametrize("args, msg", [(["9"], "9"), (["3", "--flip"], "左右反転")])
+def test_adopt_errors_are_one_line(cli_env, round_json, capsys, args, msg):
+    assert cloud.main(["adopt", str(round_json), *args]) == 1
+    out = capsys.readouterr().out
+    assert out.startswith("止まった:") and msg in out and "Traceback" not in out
+    assert not (cli_env / "local/selected").exists()
+
+
+def test_install_only_named_characters(cli_env):
+    forge_ = make_forge(cli_env)
+    store = forge_.selected
+    for char in ("c1", "c2"):
+        store.adopt(forge_.generate(char, "face", seeds=[5])[0])
+    assert cloud.main(["install", "c1"]) == 0
+    assert (cli_env / "characters/c1/source/face.png").is_file()
+    assert not (cli_env / "characters/c2/source").exists()
+
+
+def test_install_missing_selection_is_one_line(cli_env, capsys):
+    assert cloud.main(["install", "c1"]) == 1
+    assert capsys.readouterr().out.startswith("止まった:")
+
+
+def test_page_rebuilds_html(cli_env, round_json, capsys):
+    assert cloud.main(["page", str(round_json)]) == 0
+    assert (cli_env / "local/rounds/20261123_120000.html").is_file()
+
+
+def fake_modal(monkeypatch, outputs):
+    calls = []
+    module = types.ModuleType("artgen.modal_app")
+
+    def run(jobs, commit, faces):
+        calls.append((jobs, commit, faces))
+        return outputs
+
+    module.run = run
+    monkeypatch.setitem(sys.modules, "artgen.modal_app", module)
+    return calls
+
+
+def test_generate_bad_job_file_stops_before_modal(cli_env, monkeypatch, capsys):
+    calls = fake_modal(monkeypatch, [])
+    jobs = cli_env / "jobs.json"
+    jobs.write_text(json.dumps([{"char": "nope", "template": "face", "n": 1}]), encoding="utf-8")
+    assert cloud.main(["generate", "--jobs", str(jobs)]) == 1
+    out = capsys.readouterr().out
+    assert out.startswith("止まった:") and "[0].char" in out
+    assert calls == []
+
+
+def test_generate_saves_outputs_and_builds_round_and_page(cli_env, monkeypatch, capsys):
+    made = make_candidates(cli_env)
+    outputs = [(p.relative_to(cli_env / "local/runs").as_posix(), p.read_bytes()) for p in made]
+    for p in made:
+        p.unlink()
+    calls = fake_modal(monkeypatch, outputs)
+    jobs = cli_env / "jobs.json"
+    jobs.write_text(json.dumps([{"char": "c1", "template": "face", "n": 1}]), encoding="utf-8")
+    assert cloud.main(["generate", "--jobs", str(jobs)]) == 0
+    assert len(calls) == 1 and calls[0][0][0].char == "c1" and calls[0][1]
+    out = capsys.readouterr().out
+    rounds = sorted((cli_env / "local/rounds").glob("*.json"))
+    pages = sorted((cli_env / "local/rounds").glob("*.html"))
+    assert len(rounds) == len(pages) == 1
+    assert str(rounds[0]) in out or rounds[0].name in out
+    assert all(p.is_file() for p in made)
