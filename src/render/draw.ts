@@ -55,7 +55,7 @@ function atBody(v: Vec2): Vec2 {
   return mapToLogical({ x: v.x, y: v.y - BODY_LIFT });
 }
 
-const FALLBACK_DEF = { name: '', color: '#888888', role: '', sprites: { role: null, face: null, map: null } };
+const FALLBACK_DEF = { name: '', color: '#888888', role: '', sprites: { role: null, face: null, faceSmall: null, map: null } };
 
 function defOf(reg: Registry, defId: string): { name: string; color: string } & SpriteDef {
   return lookupDef(reg, defId) ?? { ...FALLBACK_DEF, name: defId };

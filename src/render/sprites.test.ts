@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { FOOT_BELOW } from '../engine/footprint';
-import { FOOT_INSET, TILE_SIDES, bodyCenter, smoothFor, tileSide } from './sprites';
+import { FOOT_INSET, TILE_SIDES, bodyCenter, faceImageFor, smoothFor, tileSide } from './sprites';
 import type { SpriteDef } from './sprites';
 
 const ANIM = { frames: 1, fps: 1 };
 function withSheet(frame: number): SpriteDef {
   return {
     color: '#ffffff', role: '',
-    sprites: { role: null, face: null, map: { sheet: 'x.png', frame, idle: ANIM, walk: ANIM, attack: ANIM } },
+    sprites: { role: null, face: null, faceSmall: null, map: { sheet: 'x.png', frame, idle: ANIM, walk: ANIM, attack: ANIM } },
   };
 }
-const NO_SHEET: SpriteDef = { color: '#ffffff', role: '', sprites: { role: null, face: null, map: null } };
+const NO_SHEET: SpriteDef = { color: '#ffffff', role: '', sprites: { role: null, face: null, faceSmall: null, map: null } };
 
 describe('bodyCenter', () => {
   it('32px のコマでは、足元の行（y=30）が足元に来るよう、中心は 14px 上', () => {
@@ -72,5 +72,19 @@ describe('tileSide', () => {
 
   it('描けるタイルの一辺は、どれも1マス（32px）を割り切る', () => {
     for (const side of TILE_SIDES) expect(32 % side).toBe(0);
+  });
+});
+
+describe('faceImageFor', () => {
+  it('40px 以下は小さい顔、64px は大きい顔', () => {
+    const s = { face: 'a-face.png', faceSmall: 'a-face-small.png' };
+    expect(faceImageFor(s, 64)).toBe('a-face.png');
+    expect(faceImageFor(s, 40)).toBe('a-face-small.png');
+    expect(faceImageFor(s, 32)).toBe('a-face-small.png');
+  });
+
+  it('小さい顔が無ければ どの大きさでも 大きい顔', () => {
+    expect(faceImageFor({ face: 'a-face.png', faceSmall: null }, 32)).toBe('a-face.png');
+    expect(faceImageFor({ face: null, faceSmall: null }, 32)).toBeNull();
   });
 });

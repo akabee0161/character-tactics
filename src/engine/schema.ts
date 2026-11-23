@@ -123,10 +123,10 @@ export type MapSheet = {
   attack: MapAnim;
 };
 
-/** ユニットの絵。role と face は静止画のまま。map だけがシート */
-export type Sprites = { role: string | null; face: string | null; map: MapSheet | null };
+/** ユニットの絵。role・face・faceSmall は静止画のまま。map だけがシート。faceSmall は小さい枠（40px 以下）用の顔で、無ければ face を使う */
+export type Sprites = { role: string | null; face: string | null; faceSmall: string | null; map: MapSheet | null };
 
-const NO_SPRITES: Sprites = { role: null, face: null, map: null };
+const NO_SPRITES: Sprites = { role: null, face: null, faceSmall: null, map: null };
 
 function readMapAnim(ctx: Ctx, path: string, v: unknown): MapAnim | null {
   const o = requireObject(ctx, path, v);
@@ -155,12 +155,16 @@ function readSprites(ctx: Ctx, v: unknown): Sprites {
   if (v === undefined) return { ...NO_SPRITES };
   const o = requireObject(ctx, 'sprites', v);
   if (!o) return { ...NO_SPRITES };
-  const name = (key: 'role' | 'face'): string | null => {
+  const name = (key: 'role' | 'face' | 'faceSmall'): string | null => {
     const raw = o[key];
     if (raw === undefined || raw === null) return null;
     return requireString(ctx, `sprites.${key}`, raw);
   };
-  return { role: name('role'), face: name('face'), map: readMapSheet(ctx, o.map) };
+  const face = name('face');
+  const faceSmall = name('faceSmall');
+  // 小さい枠だけに顔が出るのはおかしいので、face 無しの faceSmall は書けない
+  if (faceSmall !== null && face === null) fail(ctx, 'sprites.faceSmall', 'face が ないと かけない');
+  return { role: name('role'), face, faceSmall, map: readMapSheet(ctx, o.map) };
 }
 
 /**
@@ -270,22 +274,29 @@ export function validateEnemyDef(file: string, raw: unknown): Validated<EnemyDef
  * 村人。会話の話し手になるだけで、戦場には出ない。顔だけを持つ（本番の絵に替えるときは PNG と name を直すだけ）。
  * ID は名前と関係ない npcNN
  */
-export type NpcDef = { id: string; name: string; color: string; sprites: { face: string | null } };
+export type NpcDef = {
+  id: string; name: string; color: string; sprites: { face: string | null; faceSmall: string | null };
+};
 
 export function validateNpcDef(file: string, raw: unknown): Validated<NpcDef> {
   const ctx = makeCtx(file);
   const o = requireObject(ctx, '', raw);
   if (!o) return { ok: false, errors: ctx.errors };
   let face: string | null = null;
+  let faceSmall: string | null = null;
   if (o.sprites !== undefined) {
     const s = requireObject(ctx, 'sprites', o.sprites);
     if (s && s.face !== undefined && s.face !== null) face = requireString(ctx, 'sprites.face', s.face);
+    if (s && s.faceSmall !== undefined && s.faceSmall !== null) {
+      faceSmall = requireString(ctx, 'sprites.faceSmall', s.faceSmall);
+      if (face === null) fail(ctx, 'sprites.faceSmall', 'face が ないと かけない');
+    }
   }
   return finish(ctx, {
     id: requireString(ctx, 'id', o.id) ?? '',
     name: requireString(ctx, 'name', o.name) ?? '',
     color: requireString(ctx, 'color', o.color) ?? '#000000',
-    sprites: { face },
+    sprites: { face, faceSmall },
   });
 }
 

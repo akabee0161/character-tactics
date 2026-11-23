@@ -305,8 +305,22 @@ describe('sprites の ファイルの そんざい', () => {
     expect(r.errors[0]?.reason).toContain('nai.png');
   });
 
+  it('faceSmall の ファイルが ない と エラー（仲間・敵）', () => {
+    const r = buildRegistry(
+      withSprite({ face: 'a-face.png', faceSmall: 'a-face-small.png' }), KNOWN_SKILLS, ['a-face.png'],
+    );
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.errors[0]).toMatchObject({ file: 'assets/units/roran.json', path: 'sprites.faceSmall' });
+    const ok = buildRegistry(
+      withSprite({ face: 'a-face.png', faceSmall: 'a-face-small.png' }), KNOWN_SKILLS,
+      ['a-face.png', 'a-face-small.png'],
+    );
+    expect(ok.ok).toBe(true);
+  });
+
   it('null は せいじょう', () => {
-    const r = buildRegistry(withSprite({ role: null, face: null, map: null }), KNOWN_SKILLS, []);
+    const r = buildRegistry(withSprite({ role: null, face: null, faceSmall: null, map: null }), KNOWN_SKILLS, []);
     expect(r.ok).toBe(true);
   });
 
@@ -604,11 +618,23 @@ describe('村人', () => {
     const r = buildRegistry(withNpc(), KNOWN_SKILLS, ['npc01-face.png']);
     if (!r.ok) throw new Error('読み込み失敗');
     expect(lookupSpeaker(r.value, 'npc01')).toEqual({
-      name: '村の 人', color: '#a08860', role: '', sprites: { role: null, face: 'npc01-face.png', map: null },
+      name: '村の 人', color: '#a08860', role: '', sprites: { role: null, face: 'npc01-face.png', faceSmall: null, map: null },
     });
     expect(lookupSpeaker(r.value, 'roran')?.name).toBe('ロラン');
     expect(lookupSpeaker(r.value, 'narazumono')?.name).toBe('ならずもの');
     expect(lookupSpeaker(r.value, 'nobody')).toBeNull();
+  });
+
+  it('村人の faceSmall の画像が無いと起動時エラー。lookupSpeaker は faceSmall を返す', () => {
+    const npc = { ...NPC, sprites: { face: 'npc01-face.png', faceSmall: 'npc01-face-small.png' } };
+    const ng = buildRegistry(files({ 'assets/npcs/npc01.json': npc }), KNOWN_SKILLS, ['npc01-face.png']);
+    expect(ng.ok).toBe(false);
+    if (!ng.ok) expect(ng.errors[0]).toMatchObject({ file: 'assets/npcs/npc01.json', path: 'sprites.faceSmall' });
+    const ok = buildRegistry(
+      files({ 'assets/npcs/npc01.json': npc }), KNOWN_SKILLS, ['npc01-face.png', 'npc01-face-small.png'],
+    );
+    if (!ok.ok) throw new Error('読み込み失敗');
+    expect(lookupSpeaker(ok.value, 'npc01')?.sprites.faceSmall).toBe('npc01-face-small.png');
   });
 
   it('ステージの会話の話し手に村人を書ける', () => {
