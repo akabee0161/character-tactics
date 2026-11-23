@@ -55,7 +55,23 @@ def _visible_files(d: Path) -> list[Path]:
 
 
 def _swap_all(items: list[tuple[str, list[Path]]], root: Path) -> None:
-    """全キャラクターの新しい source を作ってから、まとめて入れ替える。入れ替えに失敗したら元へ戻す。"""
+    """全キャラクターの新しい source を作ってから、まとめて入れ替える。入れ替えに失敗したら元へ戻す。
+
+    前回の入れ替えが途中で止まった跡（`.source.old`）があるときは、それが唯一の写しかもしれないので、
+    何も触らずに止まる。戻すときは、今回作った控えだけを戻し、1 件の戻しに失敗しても残りを戻し続ける。
+    """
+    leftovers = [
+        root / "characters" / char_id / ".source.old"
+        for char_id, _ in items
+        if (root / "characters" / char_id / ".source.old").exists()
+    ]
+    if leftovers:
+        paths = "、".join(p.relative_to(root).as_posix() for p in leftovers)
+        raise ConfigError(
+            f"前回の取り込みが途中で止まった跡がある: {paths}。"
+            "同じ階層の source/ が正しければ控えを消し、source/ が無い・壊れているなら控えを source/ に改名してから、"
+            "取り込み直す"
+        )
     staged: list[tuple[Path, Path, Path]] = []  # (staging, source_dir, backup)
     try:
         for char_id, pngs in items:
@@ -71,27 +87,39 @@ def _swap_all(items: list[tuple[str, list[Path]]], root: Path) -> None:
             shutil.rmtree(staging, ignore_errors=True)
         raise
 
-    # 入れ替えに取りかかった順。途中で止まった 1 件も含め、失敗・中断時はここから元へ戻す
+    # 入れ替えに取りかかった順。途中で止まった 1 件も含め、失敗・中断時はここから元へ戻す。
+    # 控えは上で無いことを確かめたので、`backup.exists()` は今回作った控えを指す
     started: list[tuple[Path, Path, bool]] = []  # (source_dir, backup, had_old)
     try:
         for staging, source_dir, backup in staged:
-            shutil.rmtree(backup, ignore_errors=True)
             had_old = source_dir.exists()
             started.append((source_dir, backup, had_old))  # 退避の前に登録する
             if had_old:
                 source_dir.rename(backup)
             staging.rename(source_dir)
-    except BaseException:
+    except BaseException as e:
+        failures: list[str] = []
         for source_dir, backup, had_old in reversed(started):
-            if had_old:
-                if backup.exists():  # 退避済み。新しい source を捨てて戻す
+            try:
+                if had_old:
+                    if backup.exists():  # 退避済み。新しい source を捨てて戻す
+                        shutil.rmtree(source_dir, ignore_errors=True)
+                        backup.rename(source_dir)
+                    # 退避前に止まったなら、元の source はそのまま残っている
+                else:
                     shutil.rmtree(source_dir, ignore_errors=True)
-                    backup.rename(source_dir)
-                # 退避前に止まったなら、元の source はそのまま残っている
-            else:
-                shutil.rmtree(source_dir, ignore_errors=True)
+            except OSError as restore_error:
+                failures.append(
+                    f"{backup.relative_to(root).as_posix()} を {source_dir.relative_to(root).as_posix()} に"
+                    f"戻せなかった（{restore_error}）"
+                )
         for staging, _, _ in staged:
             shutil.rmtree(staging, ignore_errors=True)
+        if failures:
+            message = "元へ戻せないものがある。手で戻す（控えを source に改名する）: " + "；".join(failures)
+            if isinstance(e, Exception):
+                raise ConfigError(message) from e
+            e.add_note(message)  # 中断（KeyboardInterrupt など）は種類を変えない
         raise
     for _, _, backup in staged:
         shutil.rmtree(backup, ignore_errors=True)
