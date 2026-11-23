@@ -38,10 +38,10 @@ def test_face_template_matches_spec():
     assert fullbody.use_items is True
 
 
-def test_face_template_is_left_facing_bust_with_default_box():
+def test_face_template_is_upper_body_bust():
     face = load_template(ROOT, "face")
-    assert "upper body" not in face.prompt
-    assert "upper body" in face.negative
+    assert "upper body" in face.prompt and "portrait" not in face.prompt
+    assert "upper body" not in face.negative and "cropped head" in face.negative
     assert "looking to the side" in face.prompt
     assert face.inpaint_box is not None
     check_box(face.inpaint_box, (face.width, face.height))

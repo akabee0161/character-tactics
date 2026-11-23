@@ -18,8 +18,8 @@
 - `intake` の出力にある書き戻しの一覧を、`character.yaml` などの設定に戻してからコミットする（以後は上書きなしで同じプロンプトになるように）。条件の `overrides` の `style` は `character.yaml` の `style` に戻す（そのキャラクターだけの上書きになる）。ただし、その画風が `defaults.yaml` の `style` と同じなら、`style` を書かず、`character.yaml` に `style` があれば消す（デフォルトに戻す）
 - 画風はデフォルト（`defaults.yaml` の `style`）を全キャラクターで使う。新しいキャラクターの `character.yaml` には `style` を書かない
 - 書き戻しの一覧に `overrides.style_definition`（その場で書いた画風の定義）があるときは、その `prompt`・`negative` で `styles/<style>.yaml` を作る。依頼者がその画風を全員に使いたいときは `defaults.yaml` の `style` をそれにし、`style` を書いているキャラクターがいればその行を消す。1 人だけに使いたいときはその `character.yaml` の `style` をそれにする
-- 表情の範囲（`inpaint_box`）は、依頼者がノートブックで決め、`selection.json` で届く。Claude は `intake` の一覧を見て `character.yaml` に書き戻す。顔の自動検出は入れず、Claude が顔を見て範囲を決めることもしない
-- 書き出しは `python -m artgen.export <id>`
+- 表情の範囲（`inpaint_box`）は、依頼者がノートブックで決め、`selection.json` で届く。Claude は `intake` の一覧を見て `character.yaml` に書き戻す。顔の自動検出は入れず、Claude が顔を見て範囲を決めることもしない（これは表情の範囲の話。切り出しの範囲 `face_crop` は Claude が決め、承認用のページで依頼者の承認を受ける）
+- 書き出しは `python -m artgen.export <id>`。顔は `face_crop`（切り出しの範囲）を書いてから書き出し、`python -m artgen.crop_review <id>` の承認用のページを Artifact で見せて依頼者の承認を受ける。範囲の辺で服が切れると服の白が透明になるので、`local/check/<id>/` の確認図（透明にした画素が赤）を必ず自分でも見る
 
 ## 守ること
 

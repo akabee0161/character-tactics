@@ -30,6 +30,11 @@ forge 本体も並行して開発が続く。forge の改善をこちらへ取�
 - Modal の道: `src/artgen/jobs.py`（ジョブのファイルの読み込み・Modal の上での実行。T4 以外なら生成しない）・`local.py`（`local/` の置き場と条件の `commit` に付ける `+dirty` の印）・`modal_app.py`（Modal の入口。T4 固定、版は requirements-colab.txt に合わせる）・`cloud.py`（Claude が叩く CLI: generate / page / adopt / install）。Colab の道（`notebooks/run.ipynb`・`attach()`）は変えていない
 - 候補のページ: `src/artgen/rounds.py`（1 回りの記録）・`review_page.py`（候補を番号順に全部並べる HTML）。`intake.py` に `print_reports` を切り出した。画素を数えて頭が切れた候補を外す道具は試したが、髪と鎧を区別できず外しすぎたので入れていない
 
+追加・直した（2026-11-23。工程 4「表示の大きさと顔の構図」。forge 本体に戻す候補）:
+
+- `templates/face.yaml`: 顔の写し方を `portrait` から `upper body` に替え、ネガティブから `upper body` を外した（`portrait` が顔を寄せて頭が上の辺で切れるため。依頼者が承認）。見本 4 人の絵は古いテンプレートで作ったまま
+- `src/artgen/config.py`・`face_crop.py`・`export.py`・`crop_review.py`: `character.yaml` の `face_crop`（大きい顔・小さい顔の切り出し範囲と `clear_colors`）、外につながる背景の透明化、書き出しの 2 枚（`face.png` 256px・`face-small.png` 128px）と確認図（`local/check/<id>/`）、承認用のページ（`python -m artgen.crop_review <id>`）を足した
+
 ## このゲームだけの変更
 
 コピーしたあとにこのゲームのために直したこと。forge 本体には戻さない。
