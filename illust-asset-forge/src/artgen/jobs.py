@@ -70,6 +70,8 @@ def load_jobs(path: Path, root: Path) -> list[GenerateJob]:
             load_template(root, entry["template"])
         except ConfigError as e:
             raise fail("template", str(e)) from e
+        if entry.get("seeds") is not None and not isinstance(entry["seeds"], list):
+            raise fail("seeds", f"整数の一覧でない: {entry['seeds']!r}")
         try:
             Forge._seeds(entry.get("n"), entry.get("seeds"))
         except ConfigError as e:

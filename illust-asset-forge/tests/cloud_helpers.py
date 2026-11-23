@@ -19,3 +19,17 @@ def make_candidates(root: Path) -> list[Path]:
     second = forge.generate("c1", "face", seeds=[2])[0]
     full = forge.generate("c1", "fullbody", seeds=[3])[0]
     return [first, second, full]
+
+
+def paint_left_half_red(path: Path) -> None:
+    """左右が非対称の絵にする（反転したかどうかを見分けるため）。条件はそのまま。"""
+    from PIL import Image, ImageDraw
+
+    from artgen.pnginfo import read_params, save_png
+
+    params = read_params(path)
+    with Image.open(path) as im:
+        image = im.convert("RGB")
+    w, h = image.size
+    ImageDraw.Draw(image).rectangle((0, 0, w // 2, h), fill=(200, 0, 0))
+    save_png(image, path, params)

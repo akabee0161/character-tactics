@@ -106,3 +106,10 @@ def test_load_jobs_rejects_duplicate_seeds_before_modal(repo, tmp_path):
     entry = {"char": "c1", "template": "face", "seeds": [1, 2, 1]}
     with pytest.raises(ConfigError, match=re.escape("[0].seeds")):
         load_jobs(write_jobs(tmp_path, [entry]), repo)
+
+
+@pytest.mark.parametrize("seeds", [5, "1,2", {"a": 1}])
+def test_load_jobs_seeds_must_be_a_list(repo, tmp_path, seeds):
+    entry = {"char": "c1", "template": "face", "seeds": seeds}
+    with pytest.raises(ConfigError, match=re.escape("[0].seeds")):
+        load_jobs(write_jobs(tmp_path, [entry]), repo)

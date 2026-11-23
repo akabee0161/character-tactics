@@ -7,7 +7,7 @@ import pytest
 from artgen import cloud
 from artgen.local import local_dirs
 from artgen.rounds import new_round
-from cloud_helpers import make_candidates, make_forge
+from cloud_helpers import make_candidates, make_forge, paint_left_half_red
 from test_forge import forge, pipe, repo, write  # noqa: F401  (fixtures)
 
 
@@ -32,11 +32,24 @@ def test_adopt_by_number(cli_env, round_json, capsys):
 def test_adopt_flip_mirrors_the_face(cli_env, round_json):
     from PIL import Image, ImageChops
 
+    original = next(local_dirs(cli_env).runs.glob("c1/face/*/c1_face_2.png"))
+    paint_left_half_red(original)  # 左右が非対称の絵にする（単色だと、反転しなくても一致してしまう）
     assert cloud.main(["adopt", str(round_json), "2", "--flip"]) == 0
     adopted = Image.open(cli_env / "local/selected/c1/face.png").convert("RGB")
-    original = next(local_dirs(cli_env).runs.glob("c1/face/*/c1_face_2.png"))
-    mirrored = Image.open(original).convert("RGB").transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+    source = Image.open(original).convert("RGB")
+    mirrored = source.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
     assert ImageChops.difference(adopted, mirrored).getbbox() is None
+    assert ImageChops.difference(adopted, source).getbbox() is not None  # 反転していない実装なら、ここで落ちる
+
+
+def test_adopt_without_flip_keeps_the_original_orientation(cli_env, round_json):
+    from PIL import Image, ImageChops
+
+    original = next(local_dirs(cli_env).runs.glob("c1/face/*/c1_face_2.png"))
+    paint_left_half_red(original)
+    assert cloud.main(["adopt", str(round_json), "2"]) == 0
+    adopted = Image.open(cli_env / "local/selected/c1/face.png").convert("RGB")
+    assert ImageChops.difference(adopted, Image.open(original).convert("RGB")).getbbox() is None
 
 
 @pytest.mark.parametrize("args, msg", [(["9"], "9"), (["3", "--flip"], "左右反転")])

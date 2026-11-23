@@ -24,7 +24,7 @@ from artgen.jobs import collect_faces, load_jobs
 from artgen.local import local_commit, local_dirs, save_outputs
 from artgen.pnginfo import MissingParamsError
 from artgen.review_page import build_page
-from artgen.rounds import new_round, read_round
+from artgen.rounds import new_round, read_round, unused_run_id
 from artgen.selection import SelectionStore
 
 _STOPS = (ConfigError, MissingParamsError, OSError, RuntimeError)
@@ -43,7 +43,7 @@ def cmd_generate(args: argparse.Namespace) -> None:
 
     outputs = modal_app.run(jobs, local_commit(root), faces)
     paths = save_outputs(dirs.runs, outputs)
-    run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+    run_id = unused_run_id(dirs.rounds, datetime.now().strftime("%Y%m%d_%H%M%S"))
     round_json = new_round(dirs.rounds, run_id, paths)
     page = build_page(read_round(round_json), _page_path(round_json))
     print(f"{len(paths)} 枚できた")

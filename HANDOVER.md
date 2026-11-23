@@ -10,7 +10,7 @@
 5. 残りの顔グラ 26 枚を作る
 段階: 設計の相談
 次にやること:
-- 工程 4（表示の大きさと顔の構図）の設計を相談する。決まっていること（大きい枠は頭の全体＋首元、小さい枠は顔のアップ、画像 2 枚など）は `docs/superpowers/specs/2026-11-23-modal-gen-design.md` の「工程 4 で決まっていること」。工程 3 の試しの結果（下の「工程 3 の結果」。`portrait` を外して `upper body` だけにするとボルグの頭が収まりやすい）を材料にする。ボルグの顔は、依頼者が 12 枚の回りの 4 番（シード 2635050234）を選んだ。`illust-asset-forge/local/selected/ally05/face.png` にあり、`characters/ally05/source/` にはまだ取り込んでいない（取り込むと `source/` を丸ごと置き換え、全身絵も消えるので、工程 4 の設計のあとに行う）
+- 工程 4（表示の大きさと顔の構図）の設計を相談する。決まっていること（大きい枠は頭の全体＋首元、小さい枠は顔のアップ、画像 2 枚など）は `docs/superpowers/specs/2026-11-23-modal-gen-design.md` の「工程 4 で決まっていること」。工程 3 の試しの結果（下の「工程 3 の結果」。`portrait` を外して `upper body` だけにするとボルグの頭が収まりやすい）を材料にする。ボルグの顔は、依頼者が 12 枚の回りの 4 番（シード 2635050234）を選んだ。`illust-asset-forge/local/selected/ally05/face.png` にあり、`characters/ally05/source/` にはまだ取り込んでいない（`cloud install` は `source/` を丸ごと置き換えるが、選び直していない全身絵（`source/fullbody.png`）は持ち越し、表情は持ち越さない。zip 経由の `intake` は `source/` 全体を置き換える。工程 4 の設計のあとに取り込む）
 - Drive の置き場を `MyDrive/illust-asset-forge/character-tactics/` にしたい（依頼者。今は `MyDrive/character-tactics/illust-asset-forge/`。ゲームが増えるたびにフォルダが増えて分からなくなるため）。作業が落ち着いてから。直す所は `DRIVE_DIR`（ノートブックの変数とそのテスト `illust-asset-forge/tests/test_notebook.py`）・`illust-asset-forge/README.md`・`illust-asset-forge/CLAUDE.md`・`UPSTREAM.md`。Drive でのフォルダの移動は依頼者
 - 素体に耳を足す（依頼者の判断。`pixel-asset-forge/ISSUES.md`）。今はボルグの芯だけに耳がある
 - ankardo の `new-game` スキルの設計書リンクを、この作業の設計書が main に入ったら `blob/main/…` に直す（依頼者の指示。今はコミット固定）

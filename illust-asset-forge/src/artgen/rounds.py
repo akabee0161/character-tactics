@@ -25,6 +25,15 @@ class Round:
     candidates: list[Candidate]
 
 
+def unused_run_id(rounds_dir: Path, run_id: str) -> str:
+    """回りの記録の名前が空いていれば run_id を、取られていれば `<run_id>_2`、`_3` … を返す。"""
+    candidate, n = run_id, 1
+    while (Path(rounds_dir) / f"{candidate}.json").exists():
+        n += 1
+        candidate = f"{run_id}_{n}"
+    return candidate
+
+
 def new_round(rounds_dir: Path, run_id: str, paths: list[Path]) -> Path:
     """paths（`rounds_dir` の隣の `local/` の下の絵）に番号を振り、`rounds_dir/<run_id>.json` に書く。"""
     rounds_dir = Path(rounds_dir)
@@ -37,8 +46,11 @@ def new_round(rounds_dir: Path, run_id: str, paths: list[Path]) -> Path:
         except ValueError as e:
             raise ConfigError(f"{path}: {local} の外にある絵は回りに入れられない") from e
         entries.append({"number": number, "path": rel})
-    rounds_dir.mkdir(parents=True, exist_ok=True)
     out = rounds_dir / f"{run_id}.json"
+    if out.exists():
+        # 上書きすると、先の回りの番号と絵の対応が失われ、その番号で別の絵を採用してしまう
+        raise ConfigError(f"{out.name}: 同じ名前の回りの記録が既にある（{run_id}）。上書きしない")
+    rounds_dir.mkdir(parents=True, exist_ok=True)
     out.write_text(
         json.dumps({"run_id": run_id, "candidates": entries}, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",

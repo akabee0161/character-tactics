@@ -170,8 +170,8 @@ uv venv .venv && uv pip install -e '.[dev]' && .venv/bin/pytest
 ### 最初の一度
 
 1. Modal のアカウントを作り（Starter）、管理画面で使う金額の上限を決める（任意）
-2. このサーバーで、Claude が `.venv/bin/modal token new` を実行する。出た URL を依頼者がブラウザで開いて承認する。鍵は `~/.modal.toml` に入り、リポジトリには入らない
-3. `uv pip install -e '.[modal]'`（Modal のライブラリを venv に入れる）
+2. `uv pip install -e '.[modal]'`（Modal のライブラリを venv に入れる）
+3. このサーバーで、Claude が `.venv/bin/modal token new` を実行する。出た URL を依頼者がブラウザで開いて承認する。鍵は `~/.modal.toml` に入り、リポジトリには入らない
 
 ### 流れ（`illust-asset-forge/` で実行する）
 
