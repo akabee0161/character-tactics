@@ -11,6 +11,7 @@ dependencies = ["PyYAML", "Pillow"]
 
 [project.optional-dependencies]
 dev = ["pytest"]
+modal = ["modal==1.6.4"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
