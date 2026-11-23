@@ -1,0 +1,2 @@
+# 全キャラクター共通の設定。character.yaml に style が無いときは、この画風を使う
+style: thick-line-flat

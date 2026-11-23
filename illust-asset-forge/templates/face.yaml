@@ -1,0 +1,7 @@
+width: 1024
+height: 1024
+prompt: [portrait, looking to the side, simple background, white background]
+negative: [full body, cowboy shot, upper body, from behind, profile, head out of frame, cropped head]
+export_size: 256
+use_items: false
+inpaint: {strength: 0.6, feather: 24, box: [320, 260, 720, 660]}
