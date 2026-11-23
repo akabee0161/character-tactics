@@ -10,7 +10,6 @@
 段階: 設計の相談
 次にやること:
 - 工程 2（ボルグを新しい画風で作り直す）の設計を相談する。最初に、依頼者が Colab で `illust-asset-forge/`（このリポジトリのコピー）から準備のセルが動くことを確かめる（コピーから動くことは未確認）
-- forge 本体（illust-asset-forge）の修正 7 件は、forge とこのコピーの両方で直した（`UPSTREAM.md` 参照）。forge 側の PR は依頼者の指示を待つ
 - ankardo の `new-game` スキルの設計書リンクを、この作業の設計書が main に入ったら `blob/main/…` に直す（依頼者の指示。今はコミット固定）
 - 前の作業の残り（下の「前の作業から残っていること」）
 
@@ -26,6 +25,7 @@
 - illust-asset-forge は、汎用の見本 4 人（`knight`・`mage`・`schoolboy`・`schoolgirl`）だけを持つ形になり（PR #4、マージ済み）、ankardo の `copy-forge.sh <pixel|illust>` と `new-game` スキルも直った（PR #27、マージ済み）
 - このリポジトリの `illust-asset-forge/` は、その forge（`b9cbe53`）のコピー。ノートブックの 4 つの変数をこのゲームの値にし、ボルグ・セラの設定（`characters/ally05/`・`ally06/`。絵は無い）を置いた。変更の記録は `illust-asset-forge/UPSTREAM.md`。テストは `cd illust-asset-forge && .venv/bin/pytest`
 - 見本の絵（顔・全身 8 枚）は Colab（T4）で作り、騎士・魔法使いの 4 枚は、画風を洗練したときに選んだ絵と画素まで一致した
+- PR #60 の CodeRabbit の指摘 7 件は、forge（PR #5）とこのコピー（PR #61）の両方で直し、マージ済み（2026-11-23）。準備のセルの pip の `check=True` は、Colab ではまだ動かしていない
 - 確かめていないこと: Colab でこのリポジトリのコピーから動くこと。Colab はこのリポジトリの `develop` を取るので、`illust-asset-forge/` が `develop` に入るまで試せない。`P.pick` の画像サイズの修正（forge 側）の Colab での見え方
 
 前の作業から残っていること:
