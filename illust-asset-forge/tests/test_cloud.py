@@ -106,3 +106,33 @@ def test_generate_saves_outputs_and_builds_round_and_page(cli_env, monkeypatch, 
     assert len(rounds) == len(pages) == 1
     assert str(rounds[0]) in out or rounds[0].name in out
     assert all(p.is_file() for p in made)
+
+
+def _write_source_fullbody(cli_env):
+    forge_ = make_forge(cli_env)
+    full = forge_.generate("c1", "fullbody", seeds=[9])[0]
+    dest = cli_env / "characters/c1/source/fullbody.png"
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_bytes(full.read_bytes())
+    return dest
+
+
+def test_install_keeps_existing_fullbody_that_was_not_reselected(cli_env, capsys):
+    forge_ = make_forge(cli_env)
+    forge_.selected.adopt(forge_.generate("c1", "face", seeds=[5])[0])
+    kept = _write_source_fullbody(cli_env)
+    before = kept.read_bytes()
+    assert cloud.main(["install", "c1"]) == 0
+    assert (cli_env / "characters/c1/source/face.png").is_file()
+    assert kept.read_bytes() == before
+    assert "消した" not in capsys.readouterr().out
+
+
+def test_install_replaces_fullbody_when_reselected(cli_env):
+    forge_ = make_forge(cli_env)
+    forge_.selected.adopt(forge_.generate("c1", "face", seeds=[5])[0])
+    forge_.selected.adopt(forge_.generate("c1", "fullbody", seeds=[10])[0])
+    old = _write_source_fullbody(cli_env)
+    old_bytes = old.read_bytes()
+    assert cloud.main(["install", "c1"]) == 0
+    assert old.read_bytes() != old_bytes

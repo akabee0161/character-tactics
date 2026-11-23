@@ -82,6 +82,11 @@ def cmd_install(args: argparse.Namespace) -> None:
             for f in src.iterdir():  # 退避したフォルダ（replaced/）や一時ファイルは持ち込まない
                 if f.is_file() and not f.name.startswith("."):
                     shutil.copy2(f, staged / char / f.name)
+            # 取り込みは source/ を丸ごと置き換える。選び直していない全身絵（Colab の道で採った絵など）を
+            # 消さないよう持ち越す。表情（face_*.png）は、顔が変わると検査で落ちるので持ち越さない
+            kept = root / "characters" / char / "source" / "fullbody.png"
+            if kept.is_file() and not (staged / char / "fullbody.png").exists():
+                shutil.copy2(kept, staged / char / "fullbody.png")
         reports = install_selection(root, staged)
     print_reports(reports)
 

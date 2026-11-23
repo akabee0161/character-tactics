@@ -74,6 +74,10 @@ def load_jobs(path: Path, root: Path) -> list[GenerateJob]:
             Forge._seeds(entry.get("n"), entry.get("seeds"))
         except ConfigError as e:
             raise fail("seeds" if entry.get("seeds") is not None else "n", str(e)) from e
+        seeds = entry.get("seeds")
+        if seeds is not None and len(set(seeds)) != len(seeds):
+            # 同じシードは同じ名前の絵を 2 回書き、Modal の上で止まって 1 回り分が失われる
+            raise fail("seeds", f"同じシードが重複している: {seeds}")
         try:
             Overrides.from_args(*(entry.get(k, "") for k in _TEXT_KEYS))
         except ConfigError as e:

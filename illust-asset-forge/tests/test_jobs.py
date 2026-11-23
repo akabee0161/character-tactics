@@ -100,3 +100,9 @@ def test_run_jobs_places_faces_for_style_inheritance(repo, tmp_path):
     forge = Forge(FakePipe(), repo, tmp_path / "runs", make_generator=lambda s: s, env=dict(T4_ENV))
     out = run_jobs(forge, [GenerateJob("c1", "fullbody", seeds=[3])], "abc", {"c1": face.read_bytes()})
     assert read_params_bytes(out[0][1], tmp_path)["style"] == "t"
+
+
+def test_load_jobs_rejects_duplicate_seeds_before_modal(repo, tmp_path):
+    entry = {"char": "c1", "template": "face", "seeds": [1, 2, 1]}
+    with pytest.raises(ConfigError, match=re.escape("[0].seeds")):
+        load_jobs(write_jobs(tmp_path, [entry]), repo)

@@ -188,7 +188,7 @@ uv venv .venv && uv pip install -e '.[dev]' && .venv/bin/pytest
 2. `.venv/bin/python -m artgen.cloud generate --jobs local/jobs/<ファイル>.json` — Modal で作り、`local/runs/` に置き、回りの記録（`local/rounds/<日時>.json`）と候補のページ（同名の `.html`）を作る
 3. 候補のページを Artifact で依頼者に見せる。番号で答えてもらう
 4. `.venv/bin/python -m artgen.cloud adopt local/rounds/<日時>.json <番号> [--flip]` で採用する（`--flip` は顔だけ左右反転する）。ページを作り直すときは `page <回りの記録>`
-5. `.venv/bin/python -m artgen.cloud install <id>` で `characters/<id>/source/` に取り込む。以降（書き戻し・`python -m artgen.export <id>`）は 4 の流れと同じ
+5. `.venv/bin/python -m artgen.cloud install <id>` で `characters/<id>/source/` に取り込む。`source/` は丸ごと置き換わるが、`local/selected/<id>/` に選び直した全身絵が無いときは、今の `source/fullbody.png` を持ち越す（Colab の道で採った全身絵を消さないため）。表情（`face_*.png`）は持ち越さない（顔が変わると検査で落ちる）。以降（書き戻し・`python -m artgen.export <id>`）は 4 の流れと同じ
 
 `--root` は `cloud` の直後に置く（`cloud --root DIR adopt …`）。
 
