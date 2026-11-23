@@ -49,3 +49,13 @@ Task 6 Step 5 完了(CP2・CP3 依頼者「OK」)。Step 6 (CP4): 前(assets/ima
 
 Task 6: complete (commits d0aaf2f..f42fb7a, tests: npm test → 1268 passed; npm run build 成功; pixel-asset-forge unittest → 802 OK; unit_rules.py checks/borg.json 全 ok; compose --check 一致)。CP4 は依頼者「OK」。書き出し: 3 段のコマンドで assets/images/ally05-map.png だけが変わった。ブラウザ(playwright で game を配信して続きから→川原の渡し→配置→戦闘)で顔・マップの絵を確認。SPEC のボルグの節・UPSTREAM・ISSUES を更新。
 Task 7: HANDOVER.md に工程 2 の結果と進捗（工程 3 ← 今ここ、段階: 設計の相談）を書いた。台帳を docs/superpowers/ledgers/ に写した。
+
+Final review: 新しい目のレビュー役（opus）が 71bbf25..8ff3d9e を確認。Critical なし、Important 1、Minor 4。再現して確かめた範囲（プロンプト集合の一致・顔の切り出し・白いふちなし・鎧に穴なし・色の ΔE・マップの絵の一致・unit_rules 全 ok・各テスト）は問題なし。
+Final: fixed UPSTREAM.md の unit_picker の記録が「ゲーム側だけ」欄に入っていた（forge に戻す候補から漏れる）— 「forge に戻す候補」の欄の末尾へ移し、layers の向き別指定も書き足した（文書の直しで、テストの対象外。git diff で確認）。
+Final: minor (deferred): illust-asset-forge/UPSTREAM.md:34 が ally05 を「絵は置いていない」と書いたまま
+Final: minor (deferred): unit_picker.py の keep の検査が compose.py と重複し、layers が配列のとき向きの数だけ同じ検査とパレット読み込みが走る
+Final: minor (deferred): keep が配列でないとき・向きごとの layers の値が配列でないときのテストが無い
+Final: minor (deferred): SPEC.md の 2026-11-22 の例の文が「外につながる白を透明にした」のまま（当時の経緯としては正しい）
+Final: Ruling: 透明にする条件のクリーム色が g−b に下限が無く、青みの白にも当たる。四辺から塗りつぶすので白い服が下の辺で切れた顔では服が透明になるおそれ（工程 4 の話）— 今回のボルグは輪郭に囲まれていて無事で、赤く塗った図で確かめてある。条件は変えず、HANDOVER に注意を足した — 工程 4 で服が白い人の顔を切り出すとき、赤い図を見落とすと服に穴が開く。
+Final: Ruling: character.yaml に効かなかった (dark grey armor:1.3) が残る — 採用した絵の条件を再現する書き戻しで、設計書どおり — 工程 4 でこのタグを写すと鎧が暗くならない（HANDOVER に書いた）。
+Final: Ruling: 絵の見た目（耳が影の色とつながって見える、上げた足のすね当てが全部金）— 依頼者が CP2〜CP4 で承認済みなので直さない — 依頼者が後で違和感を言えば直す。
