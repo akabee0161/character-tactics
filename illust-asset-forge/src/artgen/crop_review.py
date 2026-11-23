@@ -79,24 +79,35 @@ def build_review(root: Path, char_id: str) -> Path:
         f'<figure><img src="{_data_uri(im)}" width="{px}" height="{px}"><figcaption>{label}</figcaption></figure>'
         for px, im, label in sizes
     )
-    html = f"""<!doctype html>
-<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{character.name} 顔の切り出し</title>
+    # Artifact として公開できるよう、<html>・<head>・<body> を書かない形にする（公開時に枠が付く）
+    html = f"""<title>{character.name} 顔の切り出し</title>
+<meta name="claude:viewport-fit-sides" content="cover">
 <style>
-body {{ font-family: sans-serif; margin: 16px; background: #fff; color: #222; }}
-section {{ margin-bottom: 24px; }}
+:root {{ --bg: #f6f7f9; --fg: #1d232b; --muted: #5b6673; --line: #d5dae1; --game-bg: {GAME_BACKGROUND}; --game-fg: #e7ecf2;
+  --check-a: #dfe3e8; --check-b: #ffffff; }}
+@media (prefers-color-scheme: dark) {{ :root:not([data-theme="light"]) {{ --bg: #12171d; --fg: #e7ecf2; --muted: #9aa6b4; --line: #2c3541;
+  --check-a: #2a323c; --check-b: #1b2128; color-scheme: dark; }} }}
+:root[data-theme="dark"] {{ --bg: #12171d; --fg: #e7ecf2; --muted: #9aa6b4; --line: #2c3541;
+  --check-a: #2a323c; --check-b: #1b2128; color-scheme: dark; }}
+body {{ background: var(--bg); color: var(--fg); font-family: Inter, "Hiragino Sans", "Noto Sans JP", sans-serif;
+  padding-block: 20px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }}
+h1 {{ font-size: 20px; margin: 0 0 4px; text-wrap: balance; }}
+h2 {{ font-size: 15px; margin: 0 0 8px; }}
+p {{ color: var(--muted); margin: 0 0 12px; }}
+section {{ margin-bottom: 28px; }}
 .row {{ display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; }}
-figure {{ margin: 0; max-width: 100%; }}
-figure img {{ display: block; background: repeating-conic-gradient(#ddd 0 25%, #fff 0 50%) 0 0 / 16px 16px; }}
-figcaption {{ font-size: 13px; margin-top: 4px; }}
-.game {{ background: {GAME_BACKGROUND}; color: #eee; padding: 16px; display: flex; gap: 24px; align-items: flex-end; flex-wrap: wrap; }}
-.game figure img {{ background: none; }}
-</style></head><body>
+figure {{ margin: 0; max-width: 100%; min-width: 0; }}
+figure img {{ display: block; max-width: 100%; height: auto; border: 1px solid var(--line);
+  background: repeating-conic-gradient(var(--check-a) 0 25%, var(--check-b) 0 50%) 0 0 / 16px 16px; }}
+figcaption {{ font-size: 13px; color: var(--muted); margin-top: 4px; }}
+.game {{ background: var(--game-bg); color: var(--game-fg); padding: 16px; display: flex; gap: 24px; align-items: flex-end; flex-wrap: wrap; }}
+.game figure img {{ background: none; border: 0; }}
+.game figcaption {{ color: var(--game-fg); }}
+</style>
 <h1>{character.name}（{char_id}）顔の切り出し</h1>
-<section><h2>範囲</h2><p>大きい顔 {list(crop.large)}／小さい顔 {list(crop.small) if crop.small else 'なし'}</p>
-<div class="row">{figure_html}</div></section>
+<p>大きい顔 {list(crop.large)}／小さい顔 {list(crop.small) if crop.small else 'なし'}（元画像の画素の座標）</p>
+<section><h2>範囲と確認図</h2><div class="row">{figure_html}</div></section>
 <section><h2>ゲームでの見え方</h2><div class="game">{game_html}</div></section>
-</body></html>
 """
     out = check_dir / "review.html"
     out.write_text(html, encoding="utf-8")
