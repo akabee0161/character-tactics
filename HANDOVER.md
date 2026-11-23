@@ -5,11 +5,13 @@
 工程:
 1. 取り込み方式にする（完了）
 2. ボルグを新しい画風で作り直す（完了）
-3. 表示の大きさと顔の構図を決める ← 今ここ
-4. 残りの顔グラ 26 枚を作る
+3. Modal で生成する ← 今ここ
+4. 表示の大きさと顔の構図を決める
+5. 残りの顔グラ 26 枚を作る
 段階: 設計の相談
 次にやること:
-- 工程 3（表示の大きさ `FACE_PX` と顔の構図）を、工程 2 の結果（下の「工程 2 の結果」）を見て相談する。ボルグの顔の絵は上が切れていて、髪の塊の高さが分からない。構図は工程 4 の顔グラ 26 枚にも効く
+- 工程 3（Modal で生成する）の設計書 `docs/superpowers/specs/2026-11-23-modal-gen-design.md` を依頼者が確かめ、承認されたら計画を書く。Colab のランタイムに接続できなかったため、Claude が Modal（T4 に固定）で生成する形に替える。Colab は手で試す道として残す
+- 工程 4 で決まっていること（大きい枠は頭の全体＋首元、小さい枠は顔のアップ、画像 2 枚など）は、同じ設計書の「工程 4 で決まっていること」
 - Drive の置き場を `MyDrive/illust-asset-forge/character-tactics/` にしたい（依頼者。今は `MyDrive/character-tactics/illust-asset-forge/`。ゲームが増えるたびにフォルダが増えて分からなくなるため）。作業が落ち着いてから。直す所は `DRIVE_DIR`（ノートブックの変数とそのテスト `illust-asset-forge/tests/test_notebook.py`）・`illust-asset-forge/README.md`・`illust-asset-forge/CLAUDE.md`・`UPSTREAM.md`。Drive でのフォルダの移動は依頼者
 - 素体に耳を足す（依頼者の判断。`pixel-asset-forge/ISSUES.md`）。今はボルグの芯だけに耳がある
 - ankardo の `new-game` スキルの設計書リンクを、この作業の設計書が main に入ったら `blob/main/…` に直す（依頼者の指示。今はコミット固定）
