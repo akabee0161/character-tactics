@@ -33,6 +33,11 @@ npm run balance # ステージの難易度を測る（ボットで全ステー�
 - `pixel-asset-forge/ISSUES.md` に記録済みの原因で落ちたときは、絵を変えず、ISSUES.md に記録して、その記録を添えて完成品を見せる
 - 依頼者には、道具に従って直し終えた完成品を見せる。詳しくは `pixel-asset-forge/CLAUDE.md` の「確認の道具で落ちたら、道具に従って絵を直す」
 
+## イラストの道具
+
+- `illust-asset-forge/` の作業は `illust-asset-forge/CLAUDE.md` に従う（顔グラなどのイラストを Colab で生成する道具。forge のコピー）
+- エンジン・道具・画風・テンプレートを直したら、`illust-asset-forge/UPSTREAM.md` に 1 行足す
+
 ## ドキュメントの扱い
 
 - `docs/superpowers/`(specs / plans)は作成時点のログ。後から実装や運用が変わっても遡って更新しない

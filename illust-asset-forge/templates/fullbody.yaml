@@ -1,0 +1,6 @@
+width: 832
+height: 1216
+prompt: [full body, standing, front view, looking at viewer, simple background, white background]
+negative: [close-up, portrait, cropped legs, out of frame]
+export_size: null
+use_items: true

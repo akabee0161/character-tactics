@@ -1,14 +1,34 @@
 # Session Handover
 
 ## 進捗
-作業: ボルグ（ally05）の本番の絵
+作業: 顔グラを生成 AI で作る
 工程:
-1. 生成した顔の取り込み（完了）
-2. 設定シート（CP0）（完了）
-3. ユニットの絵（CP1〜CP4）（完了）
-4. 書き出しと、イラストからユニットを描く手順の文書化（完了）
-段階: 完了
+1. 取り込み方式にする（完了）
+2. ボルグを新しい画風で作り直す ← 今ここ
+3. 表示の大きさと顔の構図を決める
+4. 残りの顔グラ 26 枚を作る
+段階: 設計の相談
 次にやること:
+- 工程 2（ボルグを新しい画風で作り直す）の設計を相談する。最初に、依頼者が Colab で `illust-asset-forge/`（このリポジトリのコピー）から準備のセルが動くことを確かめる（コピーから動くことは未確認）
+- forge 本体（illust-asset-forge）の修正 7 件を、forge の PR で直す。`illust-asset-forge/UPSTREAM.md` の「forge に戻す候補」にある（このコピーで直した 2 件を forge に戻す、まれな条件で起きる 5 件を forge とコピーの両方で直す）。出どころは PR #60 の CodeRabbit の指摘
+- ankardo の `new-game` スキルの設計書リンクを、この作業の設計書が main に入ったら `blob/main/…` に直す（依頼者の指示。今はコミット固定）
+- 前の作業の残り（下の「前の作業から残っていること」）
+
+顔グラを生成 AI で作る（2026-11-22 相談）:
+- character-tactics の顔グラを、ドット絵でなく illust-asset-forge の生成イラストで作る。illust-asset-forge は pixel-asset-forge と同じく、汎用の部品だけを置き、このリポジトリへ丸ごとコピーして使う（取り込み方式）。画風は thick-line-flat
+- 設計は `docs/superpowers/specs/2026-11-22-face-gen-ai-design.md`。計画は工程 1 だけ。工程 2〜4 は前の工程の結果を見てその都度相談する
+- ノベルの立ち絵の種類を足すことは、作品の計画が無いのでこの作業に入れない（依頼者）
+- 新しいゲームで illust-asset-forge を使う手順は、ankardo の `new-game` スキルに足す。`scripts/copy-forge.sh` を `<pixel|illust>` で選べる形にする（依頼者が案 A を選んだ）。計画の Task 5。このリポジトリへのコピー（Task 6）もそのスクリプトで行う
+- 実装の進め方は「まとめて」（Claude が全 Task を実装し、最後にレビュー役がブランチ全体を確かめる。superpowers:executing-plans）。依頼者が決めた（2026-11-22）
+- 採用した絵は、Google Drive のコネクター（`download_file_content`）で PNG の条件を残したまま取れる（2026-11-22 確かめた）。取った絵は会話に入り、ファイルとしても保存される
+
+工程 1 の結果（2026-11-23）:
+- illust-asset-forge は、汎用の見本 4 人（`knight`・`mage`・`schoolboy`・`schoolgirl`）だけを持つ形になり（PR #4、マージ済み）、ankardo の `copy-forge.sh <pixel|illust>` と `new-game` スキルも直った（PR #27、マージ済み）
+- このリポジトリの `illust-asset-forge/` は、その forge（`b9cbe53`）のコピー。ノートブックの 4 つの変数をこのゲームの値にし、ボルグ・セラの設定（`characters/ally05/`・`ally06/`。絵は無い）を置いた。変更の記録は `illust-asset-forge/UPSTREAM.md`。テストは `cd illust-asset-forge && .venv/bin/pytest`
+- 見本の絵（顔・全身 8 枚）は Colab（T4）で作り、騎士・魔法使いの 4 枚は、画風を洗練したときに選んだ絵と画素まで一致した
+- 確かめていないこと: Colab でこのリポジトリのコピーから動くこと。Colab はこのリポジトリの `develop` を取るので、`illust-asset-forge/` が `develop` に入るまで試せない。`P.pick` の画像サイズの修正（forge 側）の Colab での見え方
+
+前の作業から残っていること:
 - develop の確認用のプレビューで、戦闘の中のボルグの動きと顔を確かめる（依頼者）
 - 前の作業「テストプレイで出た直し」の工程 7（テストプレイ）は依頼者が行う。工程 5 の村の会話の文も依頼者があとで直す
 - 杖の敵 2 体の背面で髪とローブの色が区別できない件（`pixel-asset-forge/ISSUES.md`）の時期を決める

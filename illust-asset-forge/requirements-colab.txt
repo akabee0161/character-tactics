@@ -1,0 +1,6 @@
+# Colab で入れるライブラリ。torch は Colab のものを使うので書かない。
+# PyYAML・Pillow も Colab に入っているので書かない。
+diffusers==0.42.1
+transformers==5.22.2
+accelerate==1.15.0
+safetensors==0.8.0

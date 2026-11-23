@@ -1,0 +1,9 @@
+name: 男子生徒
+subject: [1boy, solo, teenage boy]
+appearance: [short hair, black hair, brown eyes]
+outfit: [school uniform, blazer, white shirt, necktie, trousers]
+default_expression: normal
+expressions:
+  normal: [calm, closed mouth]
+  hurt: [pain, clenched teeth, one eye closed, sweat]
+  shout: [shouting, open mouth]

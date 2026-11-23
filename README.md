@@ -179,6 +179,7 @@ URL に `?debug` を付けると、戦闘中だけ次の操作ができる（攻
 | `src/save/` | localStorage の読み書き |
 | `tools/` | 仮アセットの生成器（本番の絵が揃ったら消す）と、`balance.ts`・`anim-page.py` などの開発用の道具 |
 | `pixel-asset-forge/` | ドット絵の生成エンジンと絵のテキスト（forge のコピー。「ドット絵の作りかた」） |
+| `illust-asset-forge/` | 顔グラなどのイラストを Colab で生成する道具（forge のコピー。「イラストの作りかた」） |
 | `sprites.json` | forge の生成物と `assets/images/` のファイル名の対応表 |
 
 `src/core/**` と `src/engine/**` は `window` / `document` / `localStorage` を参照しない。
@@ -200,7 +201,7 @@ URL に `?debug` を付けると、戦闘中だけ次の操作ができる（攻
 - 物の絵は地面（草）を背景に含めて描く
 - 顔を縮小して描くときだけぼかす（`smoothFor`、`src/render/sprites.ts`）。ほかはドット絵のまま
 - 顔の枠の大きさは `FACE_PX`、役割アイコンの枠は `roleBadgeIn`（どちらも `src/ui/layout.ts`）
-- **顔グラの例外（試しの段階）:** ボルグ（`ally05-face.png`）の顔は、[illust-asset-forge](https://github.com/akabee0161/illust-asset-forge) で生成したイラストをそのまま使う（ドット絵にしない。256px）。元画像（`characters/ally05/source/face.png`、1024px）の (300,0)〜(940,640) を顔を中心に切り出し、外につながる白い背景を透明にして 256px に縮めた。ほかの顔をイラストに替えるか、表示の大きさを変えるかは、試した結果を見て決める
+- **顔グラの例外（試しの段階）:** ボルグ（`ally05-face.png`）の顔は、[illust-asset-forge](https://github.com/akabee0161/illust-asset-forge) で生成したイラストをそのまま使う（ドット絵にしない。256px）。元画像（illust-asset-forge の commit `9627e8d` の [`characters/ally05/source/face.png`](https://github.com/akabee0161/illust-asset-forge/blob/9627e8d/characters/ally05/source/face.png)、1024px。forge からは消えたので、この commit を指す）の (300,0)〜(940,640) を顔を中心に切り出し、外につながる白い背景を透明にして 256px に縮めた。ほかの顔をイラストに替えるか、表示の大きさを変えるかは、試した結果を見て決める
 - ユニットの当たり判定は足元の箱（足元の点から左右6px・下2px・上0px。`src/engine/footprint.ts`）。通れないマスに横と上からはめり込まない。下から近づいたときに頭が上のマスに重なるのは、マスの手前に立っている見え方として残す
 
 **まだ規約に追いついていないもの:** 複数マスを占める物をマップに置く仕組みはまだ無い。
@@ -245,6 +246,13 @@ python3 tools/anim-page.py assets/units/roran.json out/anim/roran.html
 ```
 
 シートは `assets/images/` に書き出した PNG を読むので、`export.py` の後に作る。ページは画像を埋め込んだ HTML 1枚で、ブラウザでそのまま開ける。依頼者に見せるときは、この HTML を Artifact として公開する。ひな形は `tools/anim-page.html`。
+
+## イラストの作りかた
+
+顔グラなどのイラストは `illust-asset-forge/` で作る。illust-asset-forge（forge）をこのリポジトリへ丸ごとコピーしたもので、このゲームに合わせて自由に直してよい。コピー元の commit と、forge に戻す候補・このゲームだけの変更は `illust-asset-forge/UPSTREAM.md` にある。使い方は `illust-asset-forge/README.md`、作業規約は `illust-asset-forge/CLAUDE.md`。
+
+- 生成は依頼者が Colab（GPU）で動かす。Colab はこのリポジトリの `develop` を取るので、設定を直しても、`develop` にマージするまでは Colab に届かない
+- テストは `cd illust-asset-forge && .venv/bin/pytest`（初回は `uv venv .venv && uv pip install -e '.[dev]'`）
 
 ## コンテンツの足しかた
 

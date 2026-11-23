@@ -1,0 +1,9 @@
+name: 女子生徒
+subject: [1girl, solo, teenage girl]
+appearance: [medium hair, brown hair, brown eyes]
+outfit: [school uniform, blazer, white shirt, ribbon, pleated skirt]
+default_expression: normal
+expressions:
+  normal: [calm, closed mouth]
+  hurt: [pain, clenched teeth, one eye closed, sweat]
+  shout: [shouting, open mouth]
