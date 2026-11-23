@@ -154,3 +154,14 @@ def test_prepare_cell_moves_current_src_to_front_of_sys_path():
     fake_sys = types.SimpleNamespace(path=["/b/src", "/a/src", "/other"])
     exec("\n".join(ast.get_source_segment(text, n) for n in nodes), {"os": os, "sys": fake_sys, "ROOT": "/a"})
     assert fake_sys.path == ["/a/src", "/b/src", "/other"]
+
+
+def test_docs_name_this_games_drive_dir():
+    # Drive から絵を取るとき、forge 本体の置き場（MyDrive/illust-asset-forge）の絵と取り違えないように、
+    # 文書がこのゲームの置き場を書いている
+    relative = prepare_assigns()["DRIVE_DIR"].removeprefix("/content/drive/")
+    root = NOTEBOOK.parent.parent
+    readme = (root / "README.md").read_text(encoding="utf-8")
+    claude = (root / "CLAUDE.md").read_text(encoding="utf-8")
+    assert relative in readme and relative in claude
+    assert "（既定は Drive の `illust-asset-forge/`）" not in readme

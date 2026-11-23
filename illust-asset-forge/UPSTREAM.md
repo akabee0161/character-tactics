@@ -20,7 +20,8 @@ forge 本体も並行して開発が続く。forge の改善をこちらへ取�
 - `tests/test_notebook.py`: 既定値のテストを、このゲームの値に合わせた
 - `characters/ally05/`・`characters/ally06/`: ゲームのボルグ・セラの設定を置いた（forge の `9627e8d` の同じファイル。ボルグの `inpaint_box` は古い顔に合わせた値なので外した。絵は置いていない）
 - `tests/test_repo_configs.py`: 見本 4 人だけを前提にしたテスト 2 件を、見本 4 人が含まれることと `tlf-` の画風が無いことだけを見る形にした。ゲームの名前を禁止語にする検査（`test_repo_does_not_mention_the_game`）は、`REPO_URL` などにゲームの名前が入るので削除した
-- `CLAUDE.md`: 「ゲーム側の事情を書かない」を、このコピーはこのゲーム専用で書いてよい、という内容に書き換えた
+- `CLAUDE.md`: 「ゲーム側の事情を書かない」を、このコピーはこのゲーム専用で書いてよい、という内容に書き換えた。Drive から絵を取る手順に、このゲームの置き場（`MyDrive/character-tactics/illust-asset-forge/selected/<id>/`）だけから取ること（forge 本体の Drive の古い絵を取り込まないため）を書いた
+- `README.md`: 変数の「既定は」と Drive の置き場の説明を、このコピーの値に直した（`tests/test_notebook.py` の `test_docs_name_this_games_drive_dir` が見る）
 
 ## ゲームの開発が終わったら
 

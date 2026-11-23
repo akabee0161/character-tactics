@@ -11,7 +11,7 @@
 
 - 候補（生成された画像）はリポジトリに入れない。入れるのは `characters/<id>/source/` の採用した画像と、書き出した画像・`params.json` だけ
 - 採用した絵は、依頼者がノートブックのまとめのセルで作った zip で届く。**`python -m artgen.intake <zip>` で `source/` に取り込む**（`face.png`・`face_<表情>.png`・`fullbody.png` の名前、PNG に条件があること、キャラクターの一致を検査し、通らなければ何も書かずに止まる）。条件が無いときは添付で消えた可能性があるので、依頼者に知らせて止める
-- 採用した絵は、zip の代わりに Google Drive のコネクター（`download_file_content`）で `DRIVE_DIR` の `selected/<id>/` から取ってもよい。取った絵を `selected/<id>/` の形（`<id>/face.png` など）に置き、`install_selection` で取り込む。1 枚ごとに絵が会話に入るので、取るのは採用した絵だけにする。表情の範囲の `selection.json`（`selected/<id>/` にある）は画像ではないので、あれば一緒に取る（無いと範囲を書き戻せない）
+- 採用した絵は、zip の代わりに Google Drive のコネクター（`download_file_content`）で `DRIVE_DIR` の `selected/<id>/` から取ってもよい。このコピーの `DRIVE_DIR` は `MyDrive/character-tactics/illust-asset-forge` なので、取る場所は `MyDrive/character-tactics/illust-asset-forge/selected/<id>/` だけ。`face.png` などの名前で探すと、forge 本体の Drive（`MyDrive/illust-asset-forge/selected/<id>/`）の古い絵も見つかる。親フォルダをたどって、この場所の下にあるものだけを取る（`character` が同じ ID の古い絵は、取り込みの検査を通ってしまう）。取った絵を `selected/<id>/` の形（`<id>/face.png` など）に置き、`install_selection` で取り込む。1 枚ごとに絵が会話に入るので、取るのは採用した絵だけにする。表情の範囲の `selection.json`（`selected/<id>/` にある）は画像ではないので、あれば一緒に取る（無いと範囲を書き戻せない）
 - `intake` は `source/` を丸ごと置き換える。出力の「消した」に意図しないもの（特に `face.png`）があるときはコミットせず、依頼者に確かめる
 - `intake` の出力にある書き戻しの一覧を、`character.yaml` などの設定に戻してからコミットする（以後は上書きなしで同じプロンプトになるように）。条件の `overrides` の `style` は `character.yaml` の `style` に戻す（そのキャラクターだけの上書きになる）。ただし、その画風が `defaults.yaml` の `style` と同じなら、`style` を書かず、`character.yaml` に `style` があれば消す（デフォルトに戻す）
 - 画風はデフォルト（`defaults.yaml` の `style`）を全キャラクターで使う。新しいキャラクターの `character.yaml` には `style` を書かない
