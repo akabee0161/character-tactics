@@ -34,6 +34,7 @@ forge 本体も並行して開発が続く。forge の改善をこちらへ取�
 
 - `templates/face.yaml`: 顔の写し方を `portrait` から `upper body` に替え、ネガティブから `upper body` を外した（`portrait` が顔を寄せて頭が上の辺で切れるため。依頼者が承認）。見本 4 人の絵は古いテンプレートで作ったまま
 - `src/artgen/config.py`・`face_crop.py`・`export.py`・`crop_review.py`: `character.yaml` の `face_crop`（大きい顔・小さい顔の切り出し範囲と `clear_colors`）、外につながる背景の透明化、書き出しの 2 枚（`face.png` 256px・`face-small.png` 128px）と確認図（`local/check/<id>/`）、承認用のページ（`python -m artgen.crop_review <id>`）を足した
+- 上の `face_crop` の追補（CodeRabbit の指摘。2026-11-23）: `params.json` の `face_crop` に元画像の SHA-256（`source_sha256`）を記録し、`crop_review` は記録が無い・今の設定や元画像と違うときはページを作らない。範囲のはみ出しは `ConfigError`。`clear_colors` は省略と null だけを空とし、偽値は型の誤りで止める。別の入力の出力が同じ名前になる表情名（`normal` と `normal-small`）は、書く前に止める
 
 ## このゲームだけの変更
 

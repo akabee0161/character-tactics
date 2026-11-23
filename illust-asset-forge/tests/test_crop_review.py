@@ -46,3 +46,17 @@ def test_review_rejects_stale_export(exported_repo):
     write(exported_repo, "characters/c1/character.yaml", CROPPED_YAML.replace("[0, 0, 600, 600]", "[0, 0, 500, 500]"))
     with pytest.raises(ExportError, match="export"):
         build_review(exported_repo, "c1")
+
+
+def test_review_rejects_replaced_source(exported_repo):
+    # 元画像を入れ替えたのに export を忘れたとき、古い書き出しを承認用に出さない
+    put(exported_repo, "face.png", (1024, 1024), "face", seed=99)
+    Image.new("RGB", (1024, 1024), (200, 10, 10)).save(exported_repo / "characters/c1/source/face.png")
+    with pytest.raises(ExportError, match="export"):
+        build_review(exported_repo, "c1")
+
+
+def test_review_requires_export_record(exported_repo):
+    (exported_repo / "characters/c1/params.json").unlink()
+    with pytest.raises(ExportError, match="export"):
+        build_review(exported_repo, "c1")

@@ -304,3 +304,15 @@ def test_face_crop_errors(tmp_path, yaml_text, where):
     write_character(tmp_path, CHARACTER_YAML + yaml_text)
     with pytest.raises(ConfigError, match=f"characters/c1/character.yaml: {re.escape(where)}"):
         load_character(tmp_path, "c1")
+
+
+@pytest.mark.parametrize("value", ["false", "0", '""', "{}", "3"])
+def test_face_crop_clear_colors_must_be_a_list(tmp_path, value):
+    write_character(tmp_path, CHARACTER_YAML + f"face_crop:\n  large: [0, 0, 6, 6]\n  clear_colors: {value}\n")
+    with pytest.raises(ConfigError, match=r"face_crop\.clear_colors"):
+        load_character(tmp_path, "c1")
+
+
+def test_face_crop_clear_colors_null_is_empty(tmp_path):
+    write_character(tmp_path, CHARACTER_YAML + "face_crop:\n  large: [0, 0, 6, 6]\n  clear_colors:\n")
+    assert load_character(tmp_path, "c1").face_crop.clear_colors == ()

@@ -46,7 +46,10 @@
       100,
       550,
       600
-    ]
+    ],
+    "source_sha256": {
+      "face.png": "a405f43027c3ef083e04f015c26219dc5b055823af6e76011036cc9e3864faa3"
+    }
   },
   "fullbody.png": {
     "character": "ally05",

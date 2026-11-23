@@ -304,7 +304,9 @@ def _parse_face_crop(r: _Reader, raw: Any) -> FaceCrop | None:
     large = _square_box(r, "face_crop.large", raw["large"])
     small = _square_box(r, "face_crop.small", raw["small"]) if raw.get("small") is not None else None
 
-    colors_raw = raw.get("clear_colors") or []
+    colors_raw = raw.get("clear_colors")
+    if colors_raw is None:  # 省略と null だけを空とする（false・0・"" などは型の誤りとして下で止める）
+        colors_raw = []
     if not isinstance(colors_raw, list):
         raise r.fail("face_crop.clear_colors", "一覧でない")
     colors = []

@@ -16,7 +16,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 from artgen.config import ConfigError, load_character
-from artgen.export import ExportError, small_name
+from artgen.export import ExportError, face_crop_record, small_name
 
 GAME_BACKGROUND = "#18222c"
 PREVIEW_SOURCE_PX = 512
@@ -45,19 +45,22 @@ def build_review(root: Path, char_id: str) -> Path:
     char_dir = root / "characters" / char_id
     check_dir = root / "local" / "check" / char_id
 
-    # 範囲を直したのに export を忘れると、古い画像に新しい枠を描いたページになり、承認が意味を失う
+    # 範囲を直した・元画像を入れ替えたのに export を忘れると、古い画像に新しい枠を描いたページになり、承認が意味を失う。
+    # 書き出しの記録（params.json の face_crop）が無い・今の設定や元画像と合わないときは作らない
     params_path = char_dir / "params.json"
     exported = None
     if params_path.is_file():
         exported = json.loads(params_path.read_text(encoding="utf-8")).get("face_crop")
-    wanted = {
-        "large": list(crop.large),
-        "small": list(crop.small) if crop.small is not None else None,
-        "clear_colors": [{"min": c.min, "max_rg": c.max_rg, "max_gb": c.max_gb} for c in crop.clear_colors],
-    }
-    if exported is not None and exported != wanted:
+    stale = exported is None or not isinstance(exported.get("source_sha256"), dict)
+    if not stale:
+        source_dir = char_dir / "source"
+        if any(not (source_dir / n).is_file() for n in exported["source_sha256"]):
+            stale = True
+        else:
+            stale = exported != face_crop_record(crop, source_dir, list(exported["source_sha256"]))
+    if stale:
         raise ExportError(
-            f"characters/{char_id}/params.json: 書き出した範囲が character.yaml の face_crop と違う。"
+            f"characters/{char_id}/params.json: 書き出しの記録が無いか、character.yaml の face_crop・元画像と違う。"
             "先に python -m artgen.export を実行する"
         )
 

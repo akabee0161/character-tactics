@@ -234,7 +234,10 @@ def test_check_images_written(cropped_repo):
 def test_params_json_records_face_crop(cropped_repo):
     export_character(cropped_repo, "c1")
     data = json.loads((cropped_repo / "characters/c1/params.json").read_text(encoding="utf-8"))
-    assert data["face_crop"] == {"large": [0, 0, 600, 600], "small": [100, 100, 400, 400], "clear_colors": []}
+    face_crop = data["face_crop"]
+    assert face_crop["large"] == [0, 0, 600, 600] and face_crop["small"] == [100, 100, 400, 400]
+    assert face_crop["clear_colors"] == []
+    assert list(face_crop["source_sha256"]) == ["face.png"] and len(face_crop["source_sha256"]["face.png"]) == 64
     assert "face.png" in data
 
 
@@ -274,7 +277,7 @@ def test_small_output_removed_when_face_crop_dropped(cropped_repo):
 def test_crop_outside_image_is_rejected(cropped_repo):
     write(cropped_repo, "characters/c1/character.yaml",
           CROPPED_YAML.replace("[0, 0, 600, 600]", "[500, 500, 1100, 1100]"))
-    with pytest.raises(ExportError, match="face_crop.large"):
+    with pytest.raises(ConfigError, match="face_crop.large"):
         export_character(cropped_repo, "c1")
     assert not (cropped_repo / "characters/c1/face.png").exists()
     assert not (cropped_repo / "characters/c1/params.json").exists()
@@ -284,3 +287,17 @@ def test_fullbody_is_not_cropped(cropped_repo):
     src = put(cropped_repo, "fullbody.png", (832, 1216), "fullbody")
     export_character(cropped_repo, "c1")
     assert (cropped_repo / "characters/c1/fullbody.png").read_bytes() == src.read_bytes()
+
+
+def test_colliding_output_names_stop_before_writing(repo):
+    # 表情 normal の小さい顔と、表情 normal-small の大きい顔が同じ face_normal-small.png になる
+    yaml_text = CROPPED_YAML.replace(
+        "expressions: {normal: [serious], hurt: [pain]}", "expressions: {normal: [serious], normal-small: [pain]}"
+    )
+    write(repo, "characters/c1/character.yaml", yaml_text)
+    put(repo, "face_normal.png", (1024, 1024), "face")
+    put(repo, "face_normal-small.png", (1024, 1024), "face", seed=2)
+    with pytest.raises(ExportError, match="face_normal-small.png"):
+        export_character(repo, "c1")
+    assert not (repo / "characters/c1/face.png").exists()
+    assert not (repo / "characters/c1/params.json").exists()
