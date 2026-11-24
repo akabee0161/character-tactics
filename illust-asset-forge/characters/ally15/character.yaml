@@ -1,0 +1,14 @@
+name: ミラ
+subject: [1girl, solo, adult woman, female warrior]
+appearance: [(braided hair:1.2), single braid, (orange hair:1.2), green eyes]
+outfit: [(orange and brown light armor:1.2), leather armor, shoulder armor]
+items: [holding spear]
+default_expression: normal
+expressions:
+  normal: [confident, closed mouth]
+  hurt: [pain, clenched teeth, one eye closed, sweat]
+  shout: [shouting, open mouth, v-shaped eyebrows]
+face_crop:
+  large: [238, 78, 742, 582]
+  small: [322, 189, 658, 525]
+  matte: true

@@ -24,7 +24,10 @@ def _clearable(pixel: tuple[int, int, int], colors: Sequence[ClearColor]) -> boo
     lo = min(pixel)
     if lo >= WHITE_MIN:
         return True
-    return any(lo >= c.min and r - g <= c.max_rg and g - b <= c.max_gb for c in colors)
+    return any(
+        lo >= c.min and r - g <= c.max_rg and g - b <= c.max_gb and (c.min_rg is None or r - g >= c.min_rg)
+        for c in colors
+    )
 
 
 def clear_background(
@@ -68,6 +71,24 @@ def clear_background(
                 dst[x, y] = (*src[x, y], 0)
                 chk[x, y] = _RED
     return out, check
+
+
+def render_face_matte(
+    source: Image.Image,
+    mask: Image.Image,
+    box: tuple[int, int, int, int],
+    size: int,
+) -> tuple[Image.Image, Image.Image]:
+    """box を切り出し、マスク（L。255＝キャラクター）をそのままアルファにして size 角に縮める。
+    （縮めた RGBA、縮める前の確認図）。確認図はアルファが半分未満の画素を赤で塗る。"""
+    cropped = source.convert("RGB").crop(box)
+    alpha = mask.convert("L").crop(box)
+    out = cropped.convert("RGBA")
+    out.putalpha(alpha)
+    check = cropped.copy()
+    check.paste(Image.new("RGB", check.size, _RED), mask=alpha.point(lambda v: 255 if v < 128 else 0))
+    small = out.convert("RGBa").resize((size, size), Image.LANCZOS).convert("RGBA")
+    return small, check
 
 
 def render_face(

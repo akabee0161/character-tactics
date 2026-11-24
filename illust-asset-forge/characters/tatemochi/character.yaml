@@ -1,0 +1,14 @@
+name: 盾持ち
+subject: [1boy, solo, adult]
+appearance: [(full helmet:1.4), (helmet covering face:1.3), red plume on helmet, visor, no visible face]
+outfit: [(silver helmet:1.2), brown leather armor, dark brown clothes, soldier]
+items: [large shield, holding shield]
+default_expression: normal
+expressions:
+  normal: [dark visor]
+  hurt: [scratched armor, dented helmet]
+  shout: [dark visor, menacing]
+face_crop:
+  large: [126, 0, 914, 788]
+  small: [257, 160, 783, 686]
+  matte: true

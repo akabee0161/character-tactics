@@ -7,13 +7,12 @@
 2. ボルグを新しい画風で作り直す（完了）
 3. Modal で生成する（完了）
 4. 表示の大きさと顔の構図を決める（完了）
-5. 残りの顔グラ 26 枚を作る ← 今ここ
-段階: 設計の相談
+5. 残りの顔グラ 29 枚を作る（完了）
+段階: 完了
 次にやること:
-- 工程 4 の最終レビューは済み（指摘は台帳に記録）。依頼者の確認を待つ
-- 工程 5（残りの顔グラ 26 枚）の設計を相談する。工程 4 の結果（下の「工程 4 の結果」）を材料にする
+- 依頼者が頼んだら、feat/face-remaining から develop への PR（最終レビューの指摘 4 件は直した）
+- 背景除去（マスク・半透明の扱い・消す多角形・候補のページに並べる）を forge 本体（akabee0161/illust-asset-forge）に戻す。工程 5 の PR が develop に入ったあと、別のセッションで（依頼者と決めた。2026-11-24）。引き継ぎのプロンプトは Claude が用意する。Modal の道は forge の PR #6 で戻した（マージ済み）。ankardo の `new-game` スキルへの反映は、その後に相談する
 - 工程 4 の結果を見て、ボルグのマップの絵を直すかを依頼者が決める（直すなら別の作業として相談）
-- 工程 4 のブランチ feat/face-framing の push と PR（develop 向け）は、依頼者が頼んだとき
 - Drive の置き場を `MyDrive/illust-asset-forge/character-tactics/` にしたい（依頼者。今は `MyDrive/character-tactics/illust-asset-forge/`。ゲームが増えるたびにフォルダが増えて分からなくなるため）。作業が落ち着いてから。直す所は `DRIVE_DIR`（ノートブックの変数とそのテスト `illust-asset-forge/tests/test_notebook.py`）・`illust-asset-forge/README.md`・`illust-asset-forge/CLAUDE.md`・`UPSTREAM.md`。Drive でのフォルダの移動は依頼者
 - 素体に耳を足す（依頼者の判断。`pixel-asset-forge/ISSUES.md`）。今はボルグの芯だけに耳がある
 - ankardo の `new-game` スキルの設計書リンクを、この作業の設計書が main に入ったら `blob/main/…` に直す（依頼者の指示。今はコミット固定）
@@ -27,6 +26,17 @@
 - 実装の進め方は「まとめて」（Claude が全 Task を実装し、最後にレビュー役がブランチ全体を確かめる。superpowers:executing-plans）。依頼者が決めた（2026-11-22）
 - 採用した絵は、Google Drive のコネクター（`download_file_content`）で PNG の条件を残したまま取れる（2026-11-22 確かめた）。取った絵は会話に入り、ファイルとしても保存される
 
+
+工程 5 の結果（2026-11-24。feat/face-remaining、未 push）:
+- 仲間・主人公・ガルム・敵（括り 8 枚）・村人の顔 29 枚を生成イラストにしてゲームに入れた。ボルグも同じ方法で書き出し直した（30 人）。設計 `docs/superpowers/specs/2026-11-23-face-remaining-design.md`、計画 `docs/superpowers/plans/2026-11-23-face-remaining.md`、台帳 `docs/superpowers/ledgers/2026-11-23-face-remaining.md`
+- 敵の顔は性別と頭の形の括り（`enemy-{m,f}-{thug,bandit,horn}`・盾持ち・まじない師）。`narazumono-face.png`・`yumihei-face.png` は消した
+- 背景は、色とつながりで消す方法では飾り（墨・金の筋・飛び散り）と髪に囲まれた白が残ったので、アニメ絵用の背景除去モデル（anime-seg）のマスクで消す方法に替えた（`face_crop.matte`）。モデルは Modal の CPU で動かす。**このサーバー（メモリ 1.9GB）でモデルを動かすとスワップで応答しなくなった**（2026-11-24、依頼者がプロセスを止めた）。迷った値は透明・不透明に寄せ（`harden`）、残った飾りは `face_crop.erase` の多角形で消す（今はイネスだけ）。リュカ・ノエル・ピコ・セラ・まじない師は、背景が消えやすい候補に選び直した
+- 候補のページは、全候補の背景を先に消して並べる（`cloud generate`・`merge`・`page` の既定）。200 枚で 8 分ほど・数セント
+- 顔の大きさは、目から顎までの長さが枠に占める割合で全員そろえた（測った値と割合は `illust-asset-forge/local/tools/normalize.py`。git に入れていない）。依頼者の指摘で、ミスト・バルド・ガンツ・シオン・オルト・ならず者（女・とがった髪）は割合を変えた
+- 効いたタグ: 敵の人相（`glaring`・`scowl`・`sneer`）、兜で顔を覆う（`full helmet`・`helmet covering face`）。合わなかったこと: 背景の飾りはタグでは止めていない（候補の選び直しとマスクで対応）
+- 料金: 生成 348 枚＋背景除去で約 $2〜3（Modal の管理画面では未確認）
+- 確かめていないこと: ブラウザで見たのはステージ 1 で出る画面（仲間一覧・敵のカード・会話・下のバー）だけ。ガルム・女のならず者・組 2 の仲間・村人の会話は、先のステージを解かないと出ないので画面では見ていない（描く処理は全員同じ `drawFace`）。develop の確認用プレビュー
+- 消してよい: `illust-asset-forge/local/runs/`・`local/selected/`・`local/rounds/`・`local/check/`・`local/tmp/` の候補と確認用のページ（消すのは依頼者）
 
 工程 4 の結果（2026-11-23。feat/face-framing、未 push）:
 - 顔のテンプレート（`illust-asset-forge/templates/face.yaml`）を `portrait` から `upper body` に替えた（ネガティブからも `upper body` を外した）。`character.yaml` の `face_crop`（`large`・`small` の範囲と `clear_colors`）から、`artgen.export` が大きい顔 256px（`face.png`）と小さい顔 128px（`face-small.png`）を RGBA で書き出し、確認図を `local/check/<id>/` に作る。承認用のページは `python -m artgen.crop_review <id>`。使い方は `illust-asset-forge/README.md`「顔の切り出し」。計画 `docs/superpowers/plans/2026-11-23-face-framing.md`、台帳 `docs/superpowers/ledgers/2026-11-23-face-framing.md`

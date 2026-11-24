@@ -36,15 +36,19 @@
   "face_crop": {
     "clear_colors": [],
     "large": [
-      20,
       0,
-      650,
-      630
+      13,
+      662,
+      675
     ],
+    "matte": true,
+    "matte_sha256": {
+      "face.png": "2fa163a907a5d0a5fb722b62fb73d05e9150822f9b7ace6a627b0bf96f0e9067"
+    },
     "small": [
-      50,
-      100,
-      550,
+      55,
+      158,
+      497,
       600
     ],
     "source_sha256": {

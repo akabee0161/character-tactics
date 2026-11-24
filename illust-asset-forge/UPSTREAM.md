@@ -37,6 +37,15 @@ forge 本体も並行して開発が続く。forge の改善をこちらへ取�
 - `src/artgen/config.py`・`face_crop.py`・`export.py`・`crop_review.py`: `character.yaml` の `face_crop`（大きい顔・小さい顔の切り出し範囲と `clear_colors`）、外につながる背景の透明化、書き出しの 2 枚（`face.png` 256px・`face-small.png` 128px）と確認図（`local/check/<id>/`）、承認用のページ（`python -m artgen.crop_review <id>`）を足した
 - 上の `face_crop` の追補（CodeRabbit の指摘。2026-11-23）: `params.json` の `face_crop` に元画像の SHA-256（`source_sha256`）を記録し、`crop_review` は記録が無い・今の設定や元画像と違うときはページを作らない。範囲のはみ出しは `ConfigError`。`clear_colors` は省略と null だけを空とし、偽値は型の誤りで止める。別の入力の出力が同じ名前になる表情名（`normal` と `normal-small`）は、書く前に止める
 
+追加・直した（2026-11-24。工程 5「残りの顔グラ」）:
+
+- `src/artgen/review_page.py`（forge 本体に戻す候補）: 候補をキャラクターごとの見出し（`名前（ID）`）の下に並べ、サムネイルを PNG から JPEG（quality 80）にした。17 人 200 枚を 1 枚のページにすると PNG では Artifact の上限 16MB を超えるため。`build_page` は `root` を受け取り、`cloud generate`・`page` が渡す
+- `src/artgen/cloud.py`（forge 本体に戻す候補）: `cloud merge ROUND_JSON ROUND_JSON [...]` を足した。Modal の 1 回は 1 時間で打ち切られて絵が全部失われるので、人数が多いときは分けて動かし、記録を通し番号の 1 つ（`merged_<日時>.json`）と 1 枚のページにまとめる。元の記録は変えない
+- `src/artgen/crop_review.py`（このゲームだけの変更。顔の構図・切り出しは forge 本体に戻さない）: `crop_review <id> <id> ...` で何人分かの承認用のページを 1 枚にまとめる `build_reviews` を足した。全員を先に検査し、1 人でも古ければ作らない。元画像・確認図は JPEG に縮める
+- `src/artgen/config.py`・`face_crop.py`・`export.py`（このゲームだけの変更。切り出しは forge 本体に戻さない）: `clear_colors` に任意の `min_rg`（r-g の下限）を足した。ally09 の背景（薄い茶）とシャツ（クリーム）が上限だけでは見分けられず、辺で切れたシャツが透明になったため。`params.json` には書いたときだけ記録する
+- `src/artgen/matte.py`・`modal_app.py`（`matte_remote`）・`cloud.py`（`cloud matte`）・`config.py`・`face_crop.py`・`export.py`（このゲームだけの変更。forge 本体に戻すかは、ゲームの開発が終わったら決める）: 顔の背景をアニメ絵用の背景除去モデル（anime-seg の isnetis.onnx）のマスクで透明にする `face_crop.matte` と、マスクから飾りを消す `face_crop.erase` を足した。色とつながりの方法では背景の飾りと髪に囲まれた白を消せなかったため。モデルは Modal の CPU で動かす（このサーバーはメモリ 1.9GB で推論できない）
+- `src/artgen/cloud.py`・`review_page.py`・`matte.py`（上と同じく、このゲームだけの変更）: `generate`・`merge`・`page` が、候補のページを作る前に全候補の背景を Modal で消し、候補の隣に背景を消した絵を並べる（`--no-matte` で止める）。選んだ後に背景が消えないと分かると選び直しになるため。`tests/conftest.py` で、テストから本物の Modal を呼べないようにした（この変更の途中で、テストが本物の Modal を 1 回起動したため）
+
 ## このゲームだけの変更
 
 コピーしたあとにこのゲームのために直したこと。forge 本体には戻さない。

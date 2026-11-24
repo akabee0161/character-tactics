@@ -2,5 +2,5 @@
   "id": "npc04",
   "name": "鍛冶屋",
   "color": "#a08860",
-  "sprites": { "face": "npc04-face.png" }
+  "sprites": { "face": "npc04-face.png", "faceSmall": "npc04-face-small.png" }
 }

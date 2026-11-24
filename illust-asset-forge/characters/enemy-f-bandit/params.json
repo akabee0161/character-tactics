@@ -1,0 +1,48 @@
+{
+  "face.png": {
+    "adopted_from_sha256": "f1ed7badf49d44cd723e4628d156b427e1c9bf4a081aa54589421207e70b2ebe",
+    "character": "enemy-f-bandit",
+    "commit": "d74b94a",
+    "diffusers": "0.42.1",
+    "expression": "normal",
+    "flipped": false,
+    "gpu": "Tesla T4",
+    "guidance_scale": 5,
+    "height": 1024,
+    "model": "cagliostrolab/animagine-xl-4.0",
+    "negative_prompt": "monochrome, greyscale, sketch, lowres, bad anatomy, bad hands, text, error, missing finger, extra digits, fewer digits, cropped, worst quality, low quality, low score, bad score, average score, signature, watermark, username, blurry, 3d, realistic, messy hair, shiny hair, multicolored hair, streaked hair, detailed hair, colorful, vivid colors, saturated, full body, cowboy shot, from behind, profile, head out of frame, cropped head",
+    "num_inference_steps": 28,
+    "overrides": {},
+    "prompt": "1girl, solo, adult woman, long hair, dark hair, (red hood:1.3), red bandana cap, sharp eyes, glaring, sneer, bandit, (brown leather clothes:1.2), tan tunic, ragged clothes, upper body, looking to the side, simple background, white background, thick outlines, flat color, limited palette, bold lineart, simple shading, masterpiece, high score, great score, absurdres",
+    "run_id": "20261124_004611",
+    "sampler": "Euler a",
+    "seed": 3915717621,
+    "style": "thick-line-flat",
+    "template": "face",
+    "torch": "2.14.1+cu130",
+    "transformers": "5.22.2",
+    "width": 1024
+  },
+  "face_crop": {
+    "clear_colors": [],
+    "large": [
+      0,
+      0,
+      936,
+      936
+    ],
+    "matte": true,
+    "matte_sha256": {
+      "face.png": "a8caa3fbba9ccea42f3e0b42dadd97737e3bf03a5fe002d538cf3bed6e4178e3"
+    },
+    "small": [
+      118,
+      162,
+      742,
+      786
+    ],
+    "source_sha256": {
+      "face.png": "82f52d62bc65cdbbb4ef01db0e629738804c0b08dbacbd0d0c835c5e133e764a"
+    }
+  }
+}

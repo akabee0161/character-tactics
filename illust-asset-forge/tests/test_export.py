@@ -301,3 +301,137 @@ def test_colliding_output_names_stop_before_writing(repo):
         export_character(repo, "c1")
     assert not (repo / "characters/c1/face.png").exists()
     assert not (repo / "characters/c1/params.json").exists()
+
+
+def test_params_json_records_min_rg_only_when_set(cropped_repo):
+    write(cropped_repo, "characters/c1/character.yaml", CROPPED_YAML + "  clear_colors:\n"
+          "    - {min: 214, max_rg: 14, max_gb: 16}\n    - {min: 160, max_rg: 28, max_gb: 18, min_rg: 16}\n")
+    export_character(cropped_repo, "c1")
+    data = json.loads((cropped_repo / "characters/c1/params.json").read_text(encoding="utf-8"))
+    assert data["face_crop"]["clear_colors"] == [
+        {"min": 214, "max_rg": 14, "max_gb": 16},
+        {"min": 160, "max_rg": 28, "max_gb": 18, "min_rg": 16},
+    ]
+
+
+MATTE_YAML = CROPPED_YAML + "  matte: true\n"
+
+
+def _save_square_mask(repo):
+    import io
+
+    from PIL import ImageDraw
+
+    from artgen.matte import MODEL_SHA256, save_mattes
+
+    mask = Image.new("L", (1024, 1024), 0)
+    ImageDraw.Draw(mask).rectangle([100, 100, 500, 500], fill=255)
+    buf = io.BytesIO()
+    mask.save(buf, format="PNG")
+    save_mattes(repo, "c1", {"face.png": buf.getvalue()}, MODEL_SHA256)
+
+
+def test_matte_export_uses_mask(cropped_repo):
+    write(cropped_repo, "characters/c1/character.yaml", MATTE_YAML)
+    _save_square_mask(cropped_repo)
+    export_character(cropped_repo, "c1")
+    large = Image.open(cropped_repo / "characters/c1/face.png")
+    # large は [0, 0, 600, 600] → 256px。マスクの外（左上）は透明、内側は不透明
+    assert large.getpixel((5, 5))[3] == 0 and large.getpixel((128, 128))[3] == 255
+    data = json.loads((cropped_repo / "characters/c1/params.json").read_text(encoding="utf-8"))
+    assert data["face_crop"]["matte"] is True
+    assert len(data["face_crop"]["matte_sha256"]["face.png"]) == 64
+
+
+def test_matte_export_without_mask_stops(cropped_repo):
+    write(cropped_repo, "characters/c1/character.yaml", MATTE_YAML)
+    with pytest.raises(ExportError, match="cloud matte"):
+        export_character(cropped_repo, "c1")
+
+
+def test_record_without_matte_is_unchanged(cropped_repo):
+    export_character(cropped_repo, "c1")
+    data = json.loads((cropped_repo / "characters/c1/params.json").read_text(encoding="utf-8"))
+    assert "matte" not in data["face_crop"] and "matte_sha256" not in data["face_crop"]
+
+
+def test_matte_erase_clears_polygon_and_is_recorded(cropped_repo):
+    write(cropped_repo, "characters/c1/character.yaml",
+          MATTE_YAML + "  erase:\n    - [[100, 100], [300, 100], [300, 300], [100, 300]]\n")
+    _save_square_mask(cropped_repo)  # 100〜500 が不透明
+    export_character(cropped_repo, "c1")
+    large = Image.open(cropped_repo / "characters/c1/face.png")  # [0, 0, 600, 600] → 256px
+    assert large.getpixel((85, 85))[3] == 0  # 消した多角形の中（元画像の 200, 200）
+    assert large.getpixel((170, 170))[3] == 255  # 消していない所（元画像の 400, 400）
+    data = json.loads((cropped_repo / "characters/c1/params.json").read_text(encoding="utf-8"))
+    assert data["face_crop"]["erase"] == [[[100, 100], [300, 100], [300, 300], [100, 300]]]
+
+
+def test_matte_export_hardens_unsure_mask(cropped_repo):
+    import io
+
+    from artgen.matte import MODEL_SHA256, save_mattes
+
+    write(cropped_repo, "characters/c1/character.yaml", MATTE_YAML)
+    buf = io.BytesIO()
+    Image.new("L", (1024, 1024), 100).save(buf, format="PNG")  # モデルが迷った値（半透明のもやになる）
+    save_mattes(cropped_repo, "c1", {"face.png": buf.getvalue()}, MODEL_SHA256)
+    export_character(cropped_repo, "c1")
+    assert Image.open(cropped_repo / "characters/c1/face.png").getpixel((128, 128))[3] == 0
+
+
+def test_matte_export_checks_every_mask_before_touching_outputs(cropped_repo):
+    # 顔のマスクは最新、表情のマスクが無いとき、今の書き出しを消したり書き換えたりせずに止まる
+    write(cropped_repo, "characters/c1/character.yaml", MATTE_YAML)
+    _save_square_mask(cropped_repo)
+    export_character(cropped_repo, "c1")
+    face = cropped_repo / "characters/c1/face.png"
+    check = cropped_repo / "local/check/c1/face-large.png"
+    before = (face.read_bytes(), check.read_bytes())
+    import io
+
+    from artgen.matte import MODEL_SHA256, save_mattes
+
+    buf = io.BytesIO()
+    Image.new("L", (1024, 1024), 255).save(buf, format="PNG")  # 顔のマスクを作り直した（書き直せば絵が変わる）
+    save_mattes(cropped_repo, "c1", {"face.png": buf.getvalue()}, MODEL_SHA256)
+    put(cropped_repo, "face_hurt.png", (1024, 1024), "face", seed=1)
+    import json as _json
+
+    p = cropped_repo / "characters/c1/source/face_hurt.png"
+    from artgen.pnginfo import read_params, save_png
+
+    params = read_params(p)
+    params["expression"] = "hurt"
+    save_png(Image.open(p).convert("RGB"), p, params)
+    with pytest.raises(ExportError, match="face_hurt.png"):
+        export_character(cropped_repo, "c1")
+    assert (face.read_bytes(), check.read_bytes()) == before
+    assert _json.loads((cropped_repo / "characters/c1/params.json").read_text(encoding="utf-8"))["face_crop"]["matte"]
+
+
+def test_matte_record_uses_the_mask_that_was_drawn(cropped_repo, monkeypatch):
+    # 描画のあとで別の cloud matte がマスクを更新しても、記録は描画に使ったマスクの SHA-256 になる
+    import hashlib
+    import io
+
+    import artgen.export as E
+    from artgen.matte import MODEL_SHA256, save_mattes
+
+    write(cropped_repo, "characters/c1/character.yaml", MATTE_YAML)
+    _save_square_mask(cropped_repo)
+    mask_path = cropped_repo / "characters/c1/matte/face.png"
+    drawn_sha = hashlib.sha256(mask_path.read_bytes()).hexdigest()
+    real = E.render_face_matte
+
+    def render_then_replace(*args, **kwargs):
+        out = real(*args, **kwargs)
+        buf = io.BytesIO()
+        Image.new("L", (1024, 1024), 77).save(buf, format="PNG")
+        save_mattes(cropped_repo, "c1", {"face.png": buf.getvalue()}, MODEL_SHA256)
+        return out
+
+    monkeypatch.setattr(E, "render_face_matte", render_then_replace)
+    export_character(cropped_repo, "c1")
+    data = json.loads((cropped_repo / "characters/c1/params.json").read_text(encoding="utf-8"))
+    assert data["face_crop"]["matte_sha256"]["face.png"] == drawn_sha

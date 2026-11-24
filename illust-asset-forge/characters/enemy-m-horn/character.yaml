@@ -1,0 +1,14 @@
+name: ならず者（男・角の兜）
+subject: [1boy, solo, adult, mature male]
+appearance: [short hair, (horned helmet:1.3), viking helmet, steel helmet, sharp eyes, glaring, scowl, barbarian]
+outfit: [(green tunic:1.2), fur trim, leather belt, ragged clothes]
+items: [holding axe]
+default_expression: normal
+expressions:
+  normal: [scowl, glaring, closed mouth]
+  hurt: [pain, clenched teeth, one eye closed, sweat]
+  shout: [shouting, open mouth, v-shaped eyebrows, angry]
+face_crop:
+  large: [138, 176, 786, 824]
+  small: [246, 319, 678, 751]
+  matte: true

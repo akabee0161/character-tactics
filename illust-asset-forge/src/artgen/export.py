@@ -8,10 +8,11 @@ import json
 import shutil
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageDraw
 
 from artgen.config import ConfigError, load_character, load_template
-from artgen.face_crop import render_face
+from artgen.face_crop import render_face, render_face_matte
+from artgen.matte import harden, load_matte_with_sha
 from artgen.pnginfo import MissingParamsError, read_params
 
 SMALL_EXPORT_SIZE = 128
@@ -27,15 +28,35 @@ def small_name(name: str) -> str:
     return f"{stem}-small{dot}{ext}"
 
 
-def face_crop_record(crop, source_dir: Path, names: list[str]) -> dict:
+def face_crop_record(crop, source_dir: Path, names: list[str], matte_shas: dict[str, str] | None = None) -> dict:
     """params.json の face_crop に書く記録。使った範囲と、切り出した元画像の SHA-256。
-    承認用ページ（crop_review）が、書き出しが今の設定・今の元画像のものかを照合するのに使う。"""
-    return {
+    承認用ページ（crop_review）が、書き出しが今の設定・今の元画像のものかを照合するのに使う。
+    マスクで透明にしたときは、使ったマスクの SHA-256 も記録する（マスクを作り直したら古いと分かるように）。
+    matte_shas は書き出しが描画に使ったマスクの SHA-256（読み込んだ bytes から求めたもの）。
+    無ければ今のファイルから求める（crop_review が今のマスクと照合するとき）。"""
+    record = {
         "large": list(crop.large),
         "small": list(crop.small) if crop.small is not None else None,
-        "clear_colors": [{"min": c.min, "max_rg": c.max_rg, "max_gb": c.max_gb} for c in crop.clear_colors],
+        # min_rg は書いたときだけ記録する（書いていない人の今までの記録を古くしないため）
+        "clear_colors": [
+            {"min": c.min, "max_rg": c.max_rg, "max_gb": c.max_gb, **({"min_rg": c.min_rg} if c.min_rg is not None else {})}
+            for c in crop.clear_colors
+        ],
         "source_sha256": {n: hashlib.sha256((source_dir / n).read_bytes()).hexdigest() for n in sorted(names)},
     }
+    if crop.matte:
+        matte_dir = source_dir.parent / "matte"
+        record["matte"] = True
+        if crop.erase:
+            record["erase"] = [[list(p) for p in poly] for poly in crop.erase]
+        if matte_shas is not None:
+            record["matte_sha256"] = {n: matte_shas.get(n) for n in sorted(names)}
+        else:
+            record["matte_sha256"] = {
+                n: hashlib.sha256((matte_dir / n).read_bytes()).hexdigest() if (matte_dir / n).is_file() else None
+                for n in sorted(names)
+            }
+    return record
 
 
 def _check_name(stem: str, kind: str) -> str:
@@ -143,6 +164,21 @@ def export_character(root: Path, char_id: str) -> list[Path]:
             if crop.small is not None:
                 claim(char_dir / small_name(src.name), src.name)
                 claim(check_dir / _check_name(src.stem, "small"), src.name)
+    # マスクも、今の出力を消したり書き換えたりする前に全部読んで検査する
+    # （表情のマスクだけが古いときに、顔だけを書き換えてから止まると、出力と params.json が食い違う）
+    masks: dict[str, Image.Image] = {}
+    mask_shas: dict[str, str] = {}  # 記録には、描画に使うこのマスクの SHA-256 を書く（後で更新されても食い違わない）
+    if crop is not None and crop.matte:
+        for src, _, size in plans:
+            if size is None:
+                continue
+            loaded, mask_shas[src.name] = load_matte_with_sha(root, char_id, src.name)
+            mask = harden(loaded)
+            draw = ImageDraw.Draw(mask)
+            for polygon in crop.erase:
+                draw.polygon(polygon, fill=0)
+            masks[src.name] = mask
+
     wanted = set(owners)
     for name in accepted:
         stem = name.removesuffix(".png")
@@ -168,8 +204,12 @@ def export_character(root: Path, char_id: str) -> list[Path]:
                 jobs = [("large", crop.large, size, dest)]
                 if crop.small is not None:
                     jobs.append(("small", crop.small, SMALL_EXPORT_SIZE, char_dir / small_name(src.name)))
+                mask = masks.get(src.name)
                 for kind, box, out_size, out_path in jobs:
-                    rendered, check = render_face(im, box, out_size, crop.clear_colors)
+                    if mask is not None:
+                        rendered, check = render_face_matte(im, mask, box, out_size)
+                    else:
+                        rendered, check = render_face(im, box, out_size, crop.clear_colors)
                     rendered.save(out_path, format="PNG")
                     check.save(check_dir / _check_name(src.stem, kind), format="PNG")
                     written.append(out_path)
@@ -178,7 +218,7 @@ def export_character(root: Path, char_id: str) -> list[Path]:
 
     if crop is not None:
         face_names = [src.name for src, _, size in plans if size is not None]
-        all_params["face_crop"] = face_crop_record(crop, source_dir, face_names)
+        all_params["face_crop"] = face_crop_record(crop, source_dir, face_names, mask_shas if crop.matte else None)
     params_path = char_dir / "params.json"
     params_path.write_text(
         json.dumps(all_params, ensure_ascii=False, indent=2, sort_keys=True) + "\n",

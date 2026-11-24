@@ -1,0 +1,47 @@
+{
+  "face.png": {
+    "character": "gau",
+    "commit": "d74b94a",
+    "diffusers": "0.42.1",
+    "expression": "normal",
+    "flipped": true,
+    "gpu": "Tesla T4",
+    "guidance_scale": 5,
+    "height": 1024,
+    "model": "cagliostrolab/animagine-xl-4.0",
+    "negative_prompt": "monochrome, greyscale, sketch, lowres, bad anatomy, bad hands, text, error, missing finger, extra digits, fewer digits, cropped, worst quality, low quality, low score, bad score, average score, signature, watermark, username, blurry, 3d, realistic, messy hair, shiny hair, multicolored hair, streaked hair, detailed hair, colorful, vivid colors, saturated, full body, cowboy shot, from behind, profile, head out of frame, cropped head",
+    "num_inference_steps": 28,
+    "overrides": {},
+    "prompt": "1boy, solo, teenage boy, pointy ears, elf, short hair, light teal hair, grey eyes, pale skin, gentle face, (teal hood:1.3), hood up, grey blue cloak, scout clothes, upper body, looking to the side, simple background, white background, light smile, closed mouth, thick outlines, flat color, limited palette, bold lineart, simple shading, masterpiece, high score, great score, absurdres",
+    "run_id": "20261124_003637",
+    "sampler": "Euler a",
+    "seed": 2752964914,
+    "style": "thick-line-flat",
+    "template": "face",
+    "torch": "2.14.1+cu130",
+    "transformers": "5.22.2",
+    "width": 1024
+  },
+  "face_crop": {
+    "clear_colors": [],
+    "large": [
+      82,
+      130,
+      802,
+      850
+    ],
+    "matte": true,
+    "matte_sha256": {
+      "face.png": "70d8947644268f3e142bae8ba4645032840b1c1fe57c55ac25c991b44c04bd81"
+    },
+    "small": [
+      202,
+      288,
+      682,
+      768
+    ],
+    "source_sha256": {
+      "face.png": "daea4bf248193f95aa714e2bd1537031acf64e68152636d8a0bd18cbe5cfe72e"
+    }
+  }
+}

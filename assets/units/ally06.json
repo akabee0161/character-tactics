@@ -17,6 +17,7 @@
   "sprites": {
     "role": "role-mahou.png",
     "face": "ally06-face.png",
+    "faceSmall": "ally06-face-small.png",
     "map": {
       "sheet": "ally06-map.png",
       "frame": 32,

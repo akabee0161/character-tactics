@@ -1,0 +1,48 @@
+{
+  "face.png": {
+    "adopted_from_sha256": "650b9103dac726c8b15ee16d7d4223533e95c3234a119ccfcd51726d5d6def8c",
+    "character": "garum",
+    "commit": "d74b94a",
+    "diffusers": "0.42.1",
+    "expression": "normal",
+    "flipped": false,
+    "gpu": "Tesla T4",
+    "guidance_scale": 5,
+    "height": 1024,
+    "model": "cagliostrolab/animagine-xl-4.0",
+    "negative_prompt": "monochrome, greyscale, sketch, lowres, bad anatomy, bad hands, text, error, missing finger, extra digits, fewer digits, cropped, worst quality, low quality, low score, bad score, average score, signature, watermark, username, blurry, 3d, realistic, messy hair, shiny hair, multicolored hair, streaked hair, detailed hair, colorful, vivid colors, saturated, full body, cowboy shot, from behind, profile, head out of frame, cropped head",
+    "num_inference_steps": 28,
+    "overrides": {},
+    "prompt": "1boy, solo, adult, large male, (full helmet:1.4), (helmet covering face:1.3), spiked helmet, crown-like spikes, dark visor, no visible face, (dark steel armor:1.2), crimson accents, heavy plate armor, pauldrons, black knight, upper body, looking to the side, simple background, white background, glowing eyes through visor, thick outlines, flat color, limited palette, bold lineart, simple shading, masterpiece, high score, great score, absurdres",
+    "run_id": "20261124_004525",
+    "sampler": "Euler a",
+    "seed": 3687716067,
+    "style": "thick-line-flat",
+    "template": "face",
+    "torch": "2.14.1+cu130",
+    "transformers": "5.22.2",
+    "width": 1024
+  },
+  "face_crop": {
+    "clear_colors": [],
+    "large": [
+      40,
+      209,
+      800,
+      969
+    ],
+    "matte": true,
+    "matte_sha256": {
+      "face.png": "f951bf6ad5ad663d2822f505eb454d1e96313cf5f670b955e2eb577252551ca2"
+    },
+    "small": [
+      167,
+      376,
+      673,
+      882
+    ],
+    "source_sha256": {
+      "face.png": "32576cfed8514cdd7704845039ae1296e6088f861d038c25981a187c65f00db0"
+    }
+  }
+}

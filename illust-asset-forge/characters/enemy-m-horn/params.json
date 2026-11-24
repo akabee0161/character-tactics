@@ -1,0 +1,47 @@
+{
+  "face.png": {
+    "character": "enemy-m-horn",
+    "commit": "d74b94a",
+    "diffusers": "0.42.1",
+    "expression": "normal",
+    "flipped": true,
+    "gpu": "Tesla T4",
+    "guidance_scale": 5,
+    "height": 1024,
+    "model": "cagliostrolab/animagine-xl-4.0",
+    "negative_prompt": "monochrome, greyscale, sketch, lowres, bad anatomy, bad hands, text, error, missing finger, extra digits, fewer digits, cropped, worst quality, low quality, low score, bad score, average score, signature, watermark, username, blurry, 3d, realistic, messy hair, shiny hair, multicolored hair, streaked hair, detailed hair, colorful, vivid colors, saturated, full body, cowboy shot, from behind, profile, head out of frame, cropped head",
+    "num_inference_steps": 28,
+    "overrides": {},
+    "prompt": "1boy, solo, adult, mature male, short hair, (horned helmet:1.3), viking helmet, steel helmet, sharp eyes, glaring, scowl, barbarian, (green tunic:1.2), fur trim, leather belt, ragged clothes, upper body, looking to the side, simple background, white background, closed mouth, thick outlines, flat color, limited palette, bold lineart, simple shading, masterpiece, high score, great score, absurdres",
+    "run_id": "20261124_003706",
+    "sampler": "Euler a",
+    "seed": 279101699,
+    "style": "thick-line-flat",
+    "template": "face",
+    "torch": "2.14.1+cu130",
+    "transformers": "5.22.2",
+    "width": 1024
+  },
+  "face_crop": {
+    "clear_colors": [],
+    "large": [
+      138,
+      176,
+      786,
+      824
+    ],
+    "matte": true,
+    "matte_sha256": {
+      "face.png": "b9a79a8b83674f327b1c436fd128201f59b86ac5af6e8c4b8a4852702a5870e8"
+    },
+    "small": [
+      246,
+      319,
+      678,
+      751
+    ],
+    "source_sha256": {
+      "face.png": "b8283738d7a407812f7378c0f7f21e91a052455d5becb2ba3b4c325e242db50e"
+    }
+  }
+}

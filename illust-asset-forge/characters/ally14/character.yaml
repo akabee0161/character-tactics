@@ -1,0 +1,14 @@
+name: ガンツ
+subject: [1boy, solo, adult, mature male, large male]
+appearance: [short hair, (black hair:1.2), (black beard:1.2), dark eyes, muscular, thick neck]
+outfit: [(navy blue heavy armor:1.3), plate armor, pauldrons, gorget]
+items: [large shield, holding shield]
+default_expression: normal
+expressions:
+  normal: [serious, closed mouth]
+  hurt: [pain, clenched teeth, one eye closed, sweat]
+  shout: [shouting, open mouth, v-shaped eyebrows]
+face_crop:
+  large: [0, 0, 826, 826]
+  small: [120, 99, 671, 650]
+  matte: true

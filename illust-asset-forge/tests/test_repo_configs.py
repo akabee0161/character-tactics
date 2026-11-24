@@ -84,3 +84,10 @@ def test_samples_have_no_style_or_inpaint_box(char_id):
     data = yaml.safe_load((ROOT / "characters" / char_id / "character.yaml").read_text(encoding="utf-8"))
     assert "style" not in data and "inpaint_box" not in data
     assert set(data["expressions"]) == {"normal", "hurt", "shout"}
+
+
+def test_matte_image_installs_pinned_dependencies():
+    text = (ROOT / "src/artgen/modal_app.py").read_text(encoding="utf-8")
+    block = text[text.index("matte_image"):text.index("@app.function(image=matte_image")]
+    for pin in ("PyYAML==", "Pillow==", "huggingface_hub==", "onnxruntime==", "numpy=="):
+        assert pin in block, pin

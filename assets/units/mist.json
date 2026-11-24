@@ -11,6 +11,7 @@
   "sprites": {
     "role": "role-mahou.png",
     "face": "mist-face.png",
+    "faceSmall": "mist-face-small.png",
     "map": {
       "sheet": "mist-map.png", "frame": 32,
       "idle": { "frames": 2, "fps": 4 },

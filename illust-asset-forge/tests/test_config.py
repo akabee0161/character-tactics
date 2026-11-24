@@ -316,3 +316,65 @@ def test_face_crop_clear_colors_must_be_a_list(tmp_path, value):
 def test_face_crop_clear_colors_null_is_empty(tmp_path):
     write_character(tmp_path, CHARACTER_YAML + "face_crop:\n  large: [0, 0, 6, 6]\n  clear_colors:\n")
     assert load_character(tmp_path, "c1").face_crop.clear_colors == ()
+
+
+def test_face_crop_clear_color_min_rg_is_read(tmp_path):
+    write_character(
+        tmp_path,
+        CHARACTER_YAML + "face_crop:\n  large: [0, 0, 6, 6]\n  clear_colors:\n    - {min: 160, max_rg: 28, max_gb: 18, min_rg: 16}\n",
+    )
+    assert load_character(tmp_path, "c1").face_crop.clear_colors == (ClearColor(160, 28, 18, min_rg=16),)
+
+
+@pytest.mark.parametrize("value", ["-1", "256", "30"])
+def test_face_crop_clear_color_min_rg_must_be_in_range_and_not_above_max(tmp_path, value):
+    write_character(
+        tmp_path,
+        CHARACTER_YAML + f"face_crop:\n  large: [0, 0, 6, 6]\n  clear_colors:\n    - {{min: 160, max_rg: 28, max_gb: 18, min_rg: {value}}}\n",
+    )
+    with pytest.raises(ConfigError, match=r"face_crop\.clear_colors\[0\]\.min_rg"):
+        load_character(tmp_path, "c1")
+
+
+def test_face_crop_matte_is_read(tmp_path):
+    write_character(tmp_path, CHARACTER_YAML + "face_crop:\n  large: [0, 0, 6, 6]\n  matte: true\n")
+    assert load_character(tmp_path, "c1").face_crop.matte is True
+
+
+def test_face_crop_matte_defaults_to_false(tmp_path):
+    write_character(tmp_path, CHARACTER_YAML + "face_crop:\n  large: [0, 0, 6, 6]\n")
+    assert load_character(tmp_path, "c1").face_crop.matte is False
+
+
+@pytest.mark.parametrize(
+    "extra, msg",
+    [
+        ("  matte: 1\n", "真偽値でない"),
+        ("  matte: true\n  clear_colors: [{min: 200, max_rg: 1, max_gb: 1}]\n", "clear_colors"),
+    ],
+)
+def test_face_crop_matte_errors(tmp_path, extra, msg):
+    write_character(tmp_path, CHARACTER_YAML + "face_crop:\n  large: [0, 0, 6, 6]\n" + extra)
+    with pytest.raises(ConfigError, match=r"face_crop\.matte.*" + msg):
+        load_character(tmp_path, "c1")
+
+
+def test_face_crop_erase_is_read(tmp_path):
+    write_character(tmp_path, CHARACTER_YAML + "face_crop:\n  large: [0, 0, 6, 6]\n  matte: true\n"
+                    "  erase:\n    - [[0, 0], [3, 0], [0, 3]]\n")
+    assert load_character(tmp_path, "c1").face_crop.erase == (((0, 0), (3, 0), (0, 3)),)
+
+
+@pytest.mark.parametrize(
+    "extra, where",
+    [
+        ("  erase:\n    - [[0, 0], [3, 0], [0, 3]]\n", "face_crop.erase"),  # matte が無い
+        ("  matte: true\n  erase:\n    - [[0, 0], [3, 0]]\n", "face_crop.erase[0]"),  # 3 点未満
+        ("  matte: true\n  erase:\n    - [[0, 0], [3, -1], [0, 3]]\n", "face_crop.erase[0][1]"),
+        ("  matte: true\n  erase: [1, 2]\n", "face_crop.erase[0]"),
+    ],
+)
+def test_face_crop_erase_errors(tmp_path, extra, where):
+    write_character(tmp_path, CHARACTER_YAML + "face_crop:\n  large: [0, 0, 6, 6]\n" + extra)
+    with pytest.raises(ConfigError, match=re.escape(where)):
+        load_character(tmp_path, "c1")

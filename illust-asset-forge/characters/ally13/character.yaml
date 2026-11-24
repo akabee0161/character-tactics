@@ -1,0 +1,14 @@
+name: オルト
+subject: [1boy, solo, young man, large male]
+appearance: [short hair, (red hair:1.2), scar on cheek, no beard, brown eyes, muscular]
+outfit: [(rust colored soldier uniform:1.2), leather belt, shoulder pad]
+items: [holding axe]
+default_expression: normal
+expressions:
+  normal: [determined, closed mouth]
+  hurt: [pain, clenched teeth, one eye closed, sweat]
+  shout: [shouting, open mouth, v-shaped eyebrows]
+face_crop:
+  large: [262, 86, 651, 475]
+  small: [326, 171, 585, 430]
+  matte: true

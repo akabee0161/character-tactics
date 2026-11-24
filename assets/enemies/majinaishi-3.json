@@ -11,6 +11,7 @@
   "sprites": {
     "role": "role-teki-mahou.png",
     "face": "majinaishi-face.png",
+    "faceSmall": "majinaishi-face-small.png",
     "map": {
       "sheet": "majinaishi-3-map.png", "frame": 32,
       "idle": { "frames": 2, "fps": 4 },

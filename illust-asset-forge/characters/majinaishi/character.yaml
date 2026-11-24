@@ -1,0 +1,14 @@
+name: まじない師
+subject: [1girl, solo, adult woman]
+appearance: [long hair, straight hair, (black hair:1.2), red eyes, pale skin, sharp eyes, sinister smile]
+outfit: [(dark red robe:1.3), long sleeves, red cloak]
+items: [holding staff]
+default_expression: normal
+expressions:
+  normal: [sinister smile, narrowed eyes]
+  hurt: [pain, clenched teeth, one eye closed, sweat]
+  shout: [shouting, open mouth, v-shaped eyebrows, angry]
+face_crop:
+  large: [98, 0, 782, 684]
+  small: [212, 98, 668, 554]
+  matte: true

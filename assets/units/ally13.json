@@ -18,6 +18,7 @@
   "sprites": {
     "role": "role-ono.png",
     "face": "ally13-face.png",
+    "faceSmall": "ally13-face-small.png",
     "map": {
       "sheet": "ally13-map.png",
       "frame": 32,

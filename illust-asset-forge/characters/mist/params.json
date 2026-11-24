@@ -1,0 +1,47 @@
+{
+  "face.png": {
+    "character": "mist",
+    "commit": "d74b94a",
+    "diffusers": "0.42.1",
+    "expression": "normal",
+    "flipped": true,
+    "gpu": "Tesla T4",
+    "guidance_scale": 5,
+    "height": 1024,
+    "model": "cagliostrolab/animagine-xl-4.0",
+    "negative_prompt": "monochrome, greyscale, sketch, lowres, bad anatomy, bad hands, text, error, missing finger, extra digits, fewer digits, cropped, worst quality, low quality, low score, bad score, average score, signature, watermark, username, blurry, 3d, realistic, messy hair, shiny hair, multicolored hair, streaked hair, detailed hair, colorful, vivid colors, saturated, full body, cowboy shot, from behind, profile, head out of frame, cropped head",
+    "num_inference_steps": 28,
+    "overrides": {},
+    "prompt": "1girl, solo, young woman, long hair, wavy hair, (orange brown hair:1.2), brown eyes, (purple witch hat:1.3), gold buckle on hat, purple robe, dark purple dress, upper body, looking to the side, simple background, white background, calm, closed mouth, thick outlines, flat color, limited palette, bold lineart, simple shading, masterpiece, high score, great score, absurdres",
+    "run_id": "20261124_004101",
+    "sampler": "Euler a",
+    "seed": 4115912980,
+    "style": "thick-line-flat",
+    "template": "face",
+    "torch": "2.14.1+cu130",
+    "transformers": "5.22.2",
+    "width": 1024
+  },
+  "face_crop": {
+    "clear_colors": [],
+    "large": [
+      181,
+      27,
+      879,
+      725
+    ],
+    "matte": true,
+    "matte_sha256": {
+      "face.png": "59d1c73382dad722c81d7446ea8d48f764b563ae26e8bfa27a5d5f5c8d7ee387"
+    },
+    "small": [
+      298,
+      181,
+      763,
+      646
+    ],
+    "source_sha256": {
+      "face.png": "181438defbf23d5fe614d369f2311810713ba5c7b57f1f329275325ba9d0c90c"
+    }
+  }
+}

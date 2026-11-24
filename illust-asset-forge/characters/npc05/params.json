@@ -1,0 +1,47 @@
+{
+  "face.png": {
+    "character": "npc05",
+    "commit": "f6e1158",
+    "diffusers": "0.42.1",
+    "expression": "normal",
+    "flipped": true,
+    "gpu": "Tesla T4",
+    "guidance_scale": 5,
+    "height": 1024,
+    "model": "cagliostrolab/animagine-xl-4.0",
+    "negative_prompt": "monochrome, greyscale, sketch, lowres, bad anatomy, bad hands, text, error, missing finger, extra digits, fewer digits, cropped, worst quality, low quality, low score, bad score, average score, signature, watermark, username, blurry, 3d, realistic, messy hair, shiny hair, multicolored hair, streaked hair, detailed hair, colorful, vivid colors, saturated, full body, cowboy shot, from behind, profile, head out of frame, cropped head",
+    "num_inference_steps": 28,
+    "overrides": {},
+    "prompt": "1boy, solo, old man, bald, (white beard:1.3), long beard, white eyebrows, wrinkles, kind eyes, brown robe, village elder, upper body, looking to the side, simple background, white background, gentle smile, closed mouth, thick outlines, flat color, limited palette, bold lineart, simple shading, masterpiece, high score, great score, absurdres",
+    "run_id": "20261124_013848",
+    "sampler": "Euler a",
+    "seed": 3104069874,
+    "style": "thick-line-flat",
+    "template": "face",
+    "torch": "2.14.1+cu130",
+    "transformers": "5.22.2",
+    "width": 1024
+  },
+  "face_crop": {
+    "clear_colors": [],
+    "large": [
+      183,
+      31,
+      889,
+      737
+    ],
+    "matte": true,
+    "matte_sha256": {
+      "face.png": "4c01c8ef2a0f865fd6a524c832c8998e47b4f14831a5cb2f23c45ef54cac8e85"
+    },
+    "small": [
+      301,
+      187,
+      771,
+      657
+    ],
+    "source_sha256": {
+      "face.png": "1f29d1e0b94d00799b8d1be6840116bb248a7f0c112a73a57f6ae608f4710eaa"
+    }
+  }
+}

@@ -32,7 +32,7 @@ image = (
         FORGE_DIR, "/root/forge",
         ignore=[
             "local", ".venv", "src", "**/__pycache__", "**/*.egg-info", ".pytest_cache", "tests", "notebooks",
-            "characters/*/source", "characters/*/*.png", "characters/*/params.json",
+            "characters/*/source", "characters/*/*.png", "characters/*/params.json", "characters/*/matte",
         ],
     )
 )
@@ -54,3 +54,46 @@ def generate_remote(jobs: list[dict], commit: str, faces: dict[str, bytes]) -> l
 def run(jobs: list[GenerateJob], commit: str, faces: dict[str, bytes]) -> list[tuple[str, bytes]]:
     with modal.enable_output(), app.run():
         return generate_remote.remote([asdict(j) for j in jobs], commit, faces)
+
+
+# 背景のマスク（`cloud matte`）。GPU は要らないので CPU で動かす。推論の途中結果に 2〜3GB 使うので、
+# メモリの少ないサーバーでは動かさず、ここで動かす
+matte_image = (
+    modal.Image.debian_slim(python_version="3.12")
+    # 版を固定する（マスクを作り直したときに同じになるように）。PyYAML は artgen.config が使う
+    .pip_install("onnxruntime==1.32.0", "numpy==2.5.5", "Pillow==13.0.0", "huggingface_hub==2.4.0", "PyYAML==6.0.4")
+    .env({"HF_HOME": "/cache/hf"})
+    .add_local_python_source("artgen")
+)
+
+
+@app.function(image=matte_image, cpu=2, memory=4096, volumes={"/cache": volume}, timeout=1800)
+def matte_remote(images: dict[str, bytes]) -> tuple[str, dict[str, bytes]]:
+    import hashlib
+    import io
+
+    import onnxruntime as ort
+    from huggingface_hub import hf_hub_download
+    from PIL import Image
+
+    from artgen.matte import MODEL_FILE, MODEL_REPO, MODEL_SHA256, isnet_mask
+
+    path = hf_hub_download(MODEL_REPO, MODEL_FILE)
+    volume.commit()
+    model_sha = hashlib.sha256(Path(path).read_bytes()).hexdigest()
+    if model_sha != MODEL_SHA256:  # 取得元のモデルが差し替わっていたら、マスクを作らない
+        return model_sha, {}
+    session = ort.InferenceSession(path, providers=["CPUExecutionProvider"])
+    out = {}
+    for key, data in images.items():
+        with Image.open(io.BytesIO(data)) as im:
+            mask = isnet_mask(session, im)
+        buf = io.BytesIO()
+        mask.save(buf, format="PNG")
+        out[key] = buf.getvalue()
+    return model_sha, out
+
+
+def run_matte(images: dict[str, bytes]) -> tuple[str, dict[str, bytes]]:
+    with modal.enable_output(), app.run():
+        return matte_remote.remote(images)

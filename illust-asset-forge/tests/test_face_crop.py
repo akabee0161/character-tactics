@@ -81,3 +81,41 @@ def test_resize_does_not_darken_edges():
     out, _ = render_face(im, (0, 0, 64, 64), 16, ())
     edge = [out.getpixel((x, y)) for x in range(16) for y in range(16) if 0 < out.getpixel((x, y))[3] < 255]
     assert edge and all(p[0] >= 200 for p in edge)
+
+
+def test_clear_color_min_rg_keeps_cream_next_to_beige_background():
+    # 背景（赤みの強い薄い茶）とシャツ（赤みの弱いクリーム）が上限では見分けられないとき、
+    # r-g の下限で背景だけを透明にする
+    beige, cream = (205, 182, 168), (251, 243, 228)
+    im = canvas(color=beige)
+    ImageDraw.Draw(im).rectangle([0, 10, 19, 19], fill=cream)  # 辺で切れたシャツ
+    out, _ = clear_background(im, (ClearColor(160, 28, 18, min_rg=16),))
+    assert out.getpixel((10, 2))[3] == 0
+    assert out.getpixel((10, 15))[3] == 255
+
+
+def test_clear_color_min_rg_defaults_to_no_lower_bound():
+    assert ClearColor(160, 28, 18).min_rg is None
+
+
+def test_render_face_matte_uses_mask_as_alpha_and_marks_red():
+    from artgen.face_crop import render_face_matte
+
+    im = canvas(64, color=(255, 255, 255))  # 囲まれた白も、飾りも、マスクの外なら透明
+    mask = Image.new("L", (64, 64), 0)
+    ImageDraw.Draw(mask).rectangle([16, 16, 47, 47], fill=255)
+    out, check = render_face_matte(im, mask, (0, 0, 64, 64), 64)
+    assert out.mode == "RGBA" and out.size == (64, 64)
+    assert out.getpixel((2, 2))[3] == 0 and out.getpixel((32, 32))[3] == 255
+    assert check.getpixel((2, 2)) == RED and check.getpixel((32, 32)) == WHITE
+
+
+def test_render_face_matte_crops_mask_with_box():
+    from artgen.face_crop import render_face_matte
+
+    im = canvas(64, color=GRAY)
+    mask = Image.new("L", (64, 64), 0)
+    ImageDraw.Draw(mask).rectangle([32, 32, 63, 63], fill=255)
+    out, check = render_face_matte(im, mask, (32, 32, 64, 64), 16)
+    assert out.size == (16, 16) and check.size == (32, 32)
+    assert all(out.getpixel((x, y))[3] == 255 for x in range(16) for y in range(16))

@@ -1,0 +1,48 @@
+{
+  "face.png": {
+    "adopted_from_sha256": "bc511a710708aead009613b5bfc09e24b106d592732fc40df5ef5076b58c9bbf",
+    "character": "ally13",
+    "commit": "f6e1158",
+    "diffusers": "0.42.1",
+    "expression": "normal",
+    "flipped": false,
+    "gpu": "Tesla T4",
+    "guidance_scale": 5,
+    "height": 1024,
+    "model": "cagliostrolab/animagine-xl-4.0",
+    "negative_prompt": "monochrome, greyscale, sketch, lowres, bad anatomy, bad hands, text, error, missing finger, extra digits, fewer digits, cropped, worst quality, low quality, low score, bad score, average score, signature, watermark, username, blurry, 3d, realistic, messy hair, shiny hair, multicolored hair, streaked hair, detailed hair, colorful, vivid colors, saturated, full body, cowboy shot, from behind, profile, head out of frame, cropped head",
+    "num_inference_steps": 28,
+    "overrides": {},
+    "prompt": "1boy, solo, young man, large male, short hair, (red hair:1.2), scar on cheek, no beard, brown eyes, muscular, (rust colored soldier uniform:1.2), leather belt, shoulder pad, upper body, looking to the side, simple background, white background, determined, closed mouth, thick outlines, flat color, limited palette, bold lineart, simple shading, masterpiece, high score, great score, absurdres",
+    "run_id": "20261124_013357",
+    "sampler": "Euler a",
+    "seed": 2710406444,
+    "style": "thick-line-flat",
+    "template": "face",
+    "torch": "2.14.1+cu130",
+    "transformers": "5.22.2",
+    "width": 1024
+  },
+  "face_crop": {
+    "clear_colors": [],
+    "large": [
+      262,
+      86,
+      651,
+      475
+    ],
+    "matte": true,
+    "matte_sha256": {
+      "face.png": "0e9158c72682cd6b7b7b11e21c866a13fb9cd8e9bfcdd8062429d38393a9261d"
+    },
+    "small": [
+      326,
+      171,
+      585,
+      430
+    ],
+    "source_sha256": {
+      "face.png": "230ace9dff37aecb042a34d9aad75a8ed0a6e1f1f2076b123158e204f7f55d55"
+    }
+  }
+}

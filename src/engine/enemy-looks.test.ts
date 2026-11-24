@@ -27,21 +27,23 @@ function kindOf(d: EnemyDef): string {
   return d.kind ?? d.id;
 }
 
-/** id・sprites.map.sheet・color を除いた中身 */
+/** id・sprites.map.sheet・color・顔を除いた中身（顔は見た目の括りごとに違う） */
 function stripLook(d: EnemyDef): unknown {
   const copy = JSON.parse(JSON.stringify(d)) as {
     id?: string;
     color?: string;
-    sprites: { map: { sheet?: string } | null };
+    sprites: { map: { sheet?: string } | null; face?: string; faceSmall?: string };
   };
   delete copy.id;
   delete copy.color;
+  delete copy.sprites.face;
+  delete copy.sprites.faceSmall;
   if (copy.sprites.map) delete copy.sprites.map.sheet;
   return copy;
 }
 
 describe('敵の見た目ごとの定義', () => {
-  it.each(Object.keys(KINDS))('同じ kind の定義は、id・sprites.map.sheet・color 以外が一致する: %s', (kind) => {
+  it.each(Object.keys(KINDS))('同じ kind の定義は、id・sprites.map.sheet・color・顔 以外が一致する: %s', (kind) => {
     const group = DEFS.filter((d) => kindOf(d) === kind);
     expect(group.length).toBeGreaterThan(0);
     const first = stripLook(group[0]!);

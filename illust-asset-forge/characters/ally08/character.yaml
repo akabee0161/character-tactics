@@ -1,0 +1,14 @@
+name: ノエル
+subject: [1girl, solo, petite girl]
+appearance: [twintails, (teal hair:1.2), teal eyes, cheerful]
+outfit: [(teal dress:1.2), hunting horn hanging from neck, horn on neck strap]
+items: [holding flag]
+default_expression: normal
+expressions:
+  normal: [smile, closed mouth]
+  hurt: [pain, clenched teeth, one eye closed, sweat]
+  shout: [shouting, open mouth]
+face_crop:
+  large: [180, 20, 900, 740]
+  small: [300, 178, 780, 658]
+  matte: true

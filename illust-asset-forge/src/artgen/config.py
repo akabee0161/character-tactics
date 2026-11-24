@@ -40,11 +40,13 @@ class Template:
 @dataclass(frozen=True)
 class ClearColor:
     """外につながる白のほかに透明にする色。全チャンネルの最小値が min 以上、
-    かつ r-g <= max_rg、かつ g-b <= max_gb。"""
+    かつ r-g <= max_rg、かつ g-b <= max_gb。min_rg があれば r-g >= min_rg も
+    （赤みの強い背景と、赤みの弱い服のクリーム色を見分けるため）。"""
 
     min: int
     max_rg: int
     max_gb: int
+    min_rg: int | None = None
 
 
 @dataclass(frozen=True)
@@ -54,6 +56,10 @@ class FaceCrop:
     large: tuple[int, int, int, int]
     small: tuple[int, int, int, int] | None
     clear_colors: tuple[ClearColor, ...]
+    # true なら、背景の透明化を `characters/<id>/matte/` のマスク（cloud matte が作る）で行う
+    matte: bool = False
+    # マスクがキャラクターの一部と見た背景の飾りを消す多角形（元画像の画素の座標）。matte のときだけ
+    erase: tuple[tuple[tuple[int, int], ...], ...] = ()
 
 
 @dataclass(frozen=True)
@@ -296,7 +302,7 @@ def _parse_face_crop(r: _Reader, raw: Any) -> FaceCrop | None:
         return None
     if not isinstance(raw, dict):
         raise r.fail("face_crop", "キーと値の組でない")
-    unknown = set(raw) - {"large", "small", "clear_colors"}
+    unknown = set(raw) - {"large", "small", "clear_colors", "matte", "erase"}
     if unknown:
         raise r.fail("face_crop", f"知らないキー: {', '.join(sorted(map(str, unknown)))}")
     if raw.get("large") is None:
@@ -312,13 +318,49 @@ def _parse_face_crop(r: _Reader, raw: Any) -> FaceCrop | None:
     colors = []
     for i, item in enumerate(colors_raw):
         where = f"face_crop.clear_colors[{i}]"
-        if not isinstance(item, dict) or set(item) != {"min", "max_rg", "max_gb"}:
-            raise r.fail(where, "min・max_rg・max_gb の 3 つの組でない")
+        if not isinstance(item, dict) or not {"min", "max_rg", "max_gb"} <= set(item) <= {"min", "max_rg", "max_gb", "min_rg"}:
+            raise r.fail(where, "min・max_rg・max_gb（と任意の min_rg）の組でない")
         values = {}
-        for key in ("min", "max_rg", "max_gb"):
+        for key in ("min", "max_rg", "max_gb", "min_rg"):
+            if key not in item:
+                continue
             v = r.as_int(f"{where}.{key}", item[key], positive=False)
             if not 0 <= v <= 255:
                 raise r.fail(f"{where}.{key}", f"0〜255 の整数でない: {v}")
             values[key] = v
+        if values.get("min_rg") is not None and values["min_rg"] > values["max_rg"]:
+            raise r.fail(f"{where}.min_rg", f"max_rg（{values['max_rg']}）より大きい: {values['min_rg']}")
         colors.append(ClearColor(**values))
-    return FaceCrop(large=large, small=small, clear_colors=tuple(colors))
+    matte = raw.get("matte", False)
+    if not isinstance(matte, bool):
+        raise r.fail("face_crop.matte", f"真偽値でない: {matte!r}")
+    if matte and colors:
+        # マスクで透明にするときは色を見ないので、書いても効かない
+        raise r.fail("face_crop.matte", "true のときは clear_colors を書かない（マスクで透明にするので効かない）")
+    erase = _parse_erase(r, raw.get("erase"))
+    if erase and not matte:
+        raise r.fail("face_crop.erase", "matte: true のときだけ書ける（マスクから消す多角形）")
+    return FaceCrop(large=large, small=small, clear_colors=tuple(colors), matte=matte, erase=erase)
+
+
+def _parse_erase(r: _Reader, raw: Any) -> tuple[tuple[tuple[int, int], ...], ...]:
+    if raw is None:
+        return ()
+    if not isinstance(raw, list):
+        raise r.fail("face_crop.erase", "多角形の一覧でない")
+    polygons = []
+    for i, poly in enumerate(raw):
+        where = f"face_crop.erase[{i}]"
+        if not isinstance(poly, list) or len(poly) < 3:
+            raise r.fail(where, "3 点以上の [x, y] の一覧でない")
+        points = []
+        for j, pt in enumerate(poly):
+            if not isinstance(pt, list) or len(pt) != 2:
+                raise r.fail(f"{where}[{j}]", f"[x, y] でない: {pt!r}")
+            x = r.as_int(f"{where}[{j}]", pt[0], positive=False)
+            y = r.as_int(f"{where}[{j}]", pt[1], positive=False)
+            if x < 0 or y < 0:
+                raise r.fail(f"{where}[{j}]", f"負の座標: {pt!r}")
+            points.append((x, y))
+        polygons.append(tuple(points))
+    return tuple(polygons)

@@ -1,0 +1,14 @@
+name: ならず者（男・とがった髪）
+subject: [1boy, solo, adult, mature male]
+appearance: [short hair, (spiky hair:1.2), (grey hair:1.2), sharp eyes, glaring, scowl, scar on face, thug]
+outfit: [(purple tunic:1.2), ragged clothes, leather belt]
+items: [holding dagger]
+default_expression: normal
+expressions:
+  normal: [scowl, glaring, closed mouth]
+  hurt: [pain, clenched teeth, one eye closed, sweat]
+  shout: [shouting, open mouth, v-shaped eyebrows, angry]
+face_crop:
+  large: [54, 18, 918, 882]
+  small: [198, 208, 774, 784]
+  matte: true
