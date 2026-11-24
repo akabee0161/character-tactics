@@ -56,7 +56,7 @@
 
 村に着くと、種類によらず戦闘が止まり、村人と訪れた仲間の会話（`drawTalk`）が出る。最後の行は何が起きたかの説明。会話が終わると戦闘に戻る（`recruit` の村は村人との会話のあとに加入の会話が続く）。効果（回復など）は着いた瞬間に出ている。同じ瞬間にレベルアップが重なったときは、会話が先でカードがあと。村と加入（説得）が重なったときは村の会話 → 加入の会話 → カードの順（`src/ui/interrupts.ts` の `nextInterrupt`）。同じ瞬間に 2 つの村へ着いたときは最初の村の会話だけ出る（今は 1 ステージ 1 村）。負けが決まった瞬間は、止めずにそのまま負けの画面。会話に入るとき、構えていた必殺技・ドラッグ・セリフ欄は片付く。
 
-一度きりのごほうび（`xp`・`stat`）を受け取ったあとの村、すでに仲間にいる人の `recruit` の村は、会話を出さず、「村の 人が 手を ふっている」とセリフ欄に出るだけで、戦闘は止まらない（遊び直しのたびに同じ会話を読まされないため。出来事の `fresh` が `false`）。村人は `assets/npcs/` に置く（顔は今は 6 人とも同じ仮の絵）。
+一度きりのごほうび（`xp`・`stat`）を受け取ったあとの村、すでに仲間にいる人の `recruit` の村は、会話を出さず、「村の 人が 手を ふっている」とセリフ欄に出るだけで、戦闘は止まらない（遊び直しのたびに同じ会話を読まされないため。出来事の `fresh` が `false`）。村人は `assets/npcs/` に置く（顔は 6 人それぞれのイラスト）。
 
 説得の相手は敵として出てくる。普通の敵と同じに扱うので、仲間は攻撃し、相手も攻撃する。決められた仲間（`persuader`）が相手から 2マス（64px）以内に入ると、加入の会話が始まり戦闘が止まる。会話が終わると相手は消え、同じ場所に新しい仲間が加わる。説得の相手の頭上には黄色い吹き出しの目印が出る。倒してしまった相手は説得できない。
 
@@ -195,17 +195,23 @@ URL に `?debug` を付けると、戦闘中だけ次の操作ができる（攻
 | 地面タイル | 16px | 等倍。1マスに2×2で敷く | 1マス |
 | 物（村・岩・木・城など） | 16pxの部品を組んだセット。1マスぶんは2×2（32px） | 等倍 | 1マス以上の整数マス（城は2×2マス＝64pxなど） |
 | ユニット | コマ32px（大型は48px） | 等倍 | 足元 y=30・左右中央・背丈24〜26px |
-| 顔グラ | 64px | 会話・セリフ欄は64px（等倍）、仲間一覧・リザルト・下のバーは32px（半分） | ― |
+| 顔グラ | イラスト。大きい顔 256px・小さい顔 128px | 大きい顔を 64px の枠（会話・セリフ欄・カード）に、小さい顔を 40px 以下の枠（下のバー・仲間一覧・リザルト）に縮めて描く | ― |
 | 役割アイコン | 16px | 32px（2倍） | ― |
 
 - 物の絵は地面（草）を背景に含めて描く
 - 顔を縮小して描くときだけぼかす（`smoothFor`、`src/render/sprites.ts`）。ほかはドット絵のまま
 - 顔の枠の大きさは `FACE_PX`、役割アイコンの枠は `roleBadgeIn`（どちらも `src/ui/layout.ts`）
-- **顔グラの例外（試しの段階）:** ボルグ（`ally05`）の顔は、illust-asset-forge（このリポジトリの `illust-asset-forge/`）で生成したイラスト（画風は thick-line-flat）をそのまま使う（ドット絵にしない）。顔は 2 枚あり、`ally05-face.png`（大きい顔。頭の全体と首元。256px）は 64px の枠（会話・セリフ欄・カード）に、`ally05-face-small.png`（小さい顔。顔のアップ。128px）は 40px 以下の枠（下のバー・仲間一覧・リザルト）に使う（ユニットの JSON の `sprites.faceSmall`。選ぶのは `faceImageFor`）。作り方: 元画像（`illust-asset-forge/characters/ally05/source/face.png`、1024px。テンプレートは「胸から上」＝ `upper body`）から、`character.yaml` の `face_crop`（`large`・`small` の範囲）で切り出し、外につながる背景（白。必要なら `clear_colors` の色）を透明にして、`python -m artgen.export ally05` が 2 枚を書き出す。範囲は Claude が決め、`python -m artgen.crop_review ally05` の承認用ページで依頼者の承認を受ける。顔と服以外の背景は透明にする（依頼者の方針）。**範囲の辺で服や鎧が切れていると、外から塗りつぶして服の白まで透明になる**ので、`illust-asset-forge/local/check/ally05/` の確認図（透明にした画素を赤で塗った絵）で顔・服・鎧に赤が無いことを必ず見る。ほかの顔をイラストに替えるかは、試した結果を見て決める（見本 4 人は古いテンプレートの絵のまま）
+- **顔グラはイラスト（ドット絵にしない）:** 仲間・主人公・敵・村人の顔（30 人分）は、illust-asset-forge（このリポジトリの `illust-asset-forge/`）で生成したイラスト（画風は thick-line-flat）を使う。顔は 2 枚あり、`<id>-face.png`（大きい顔。頭の全体と首元。256px）は 64px の枠（会話・セリフ欄・カード）に、`<id>-face-small.png`（小さい顔。顔のアップ。128px）は 40px 以下の枠（下のバー・仲間一覧・リザルト）に使う（JSON の `sprites.faceSmall`。選ぶのは `faceImageFor`）
+  - 作り方: 元画像（`illust-asset-forge/characters/<id>/source/face.png`、1024px。テンプレートは「胸から上」＝ `upper body`）から、`character.yaml` の `face_crop`（`large`・`small` の範囲）で切り出し、背景をマスク（`matte: true`。アニメ絵用の背景除去モデルを Modal で動かして作る）で透明にして、`python -m artgen.export <id>` が 2 枚を書き出す。書き出した 2 枚を `assets/images/` に写す。手順の詳細は `illust-asset-forge/README.md` の「顔の切り出し」
+  - 範囲は、顔の大きさがそろうように Claude が決める（目から顎までの長さが枠に占める割合を全員で同じにする。大きい顔は目から顎の 3.6 倍・目の高さが上から 50%、小さい顔は 2.4 倍・42%）。依頼者が見比べて大きい・小さいと言った人は、その人だけ割合を変える。範囲と背景は `python -m artgen.crop_review <id> ...` の承認用ページで依頼者の承認を受ける
+  - 顔と服以外の背景は透明にする（依頼者の方針）。モデルが背景の飾りや囲まれた白を体と見たときは `face_crop.erase` の多角形で消す。消しきれない絵は、背景を消した候補のページから選び直す
+  - 顔は左向きにそろえる（右向きの候補は左右反転して採用する）
+  - **敵の顔は、見た目 22 通りごとではなく、性別と頭の形の括り（8 枚）で共有する**。ならず者・弓兵は `enemy-{m,f}-{thug,bandit,horn}-face.png`（男女 × とがった髪・赤い頭巾・角の兜）、盾持ちは `tatemochi-face.png`（2 通りで共有。兜で顔を覆う）、まじない師は `majinaishi-face.png`（3 通りで共有）。どの JSON がどの括りかは `docs/superpowers/specs/2026-11-23-face-remaining-design.md` の「敵の顔の括り」の表。説得の相手（`ally06-foe`・`ally08-foe`）は仲間と同じ顔
+  - 同じ kind の敵の定義がそろっていることを見るテスト（`src/engine/enemy-looks.test.ts`）は、顔（`sprites.face`・`faceSmall`）を比べない
 - ユニットの当たり判定は足元の箱（足元の点から左右6px・下2px・上0px。`src/engine/footprint.ts`）。通れないマスに横と上からはめり込まない。下から近づいたときに頭が上のマスに重なるのは、マスの手前に立っている見え方として残す
 
 **まだ規約に追いついていないもの:** 複数マスを占める物をマップに置く仕組みはまだ無い。
-顔（ドット絵は 128px。イラストの顔は大きい顔 256px・小さい顔 128px）と役割アイコン（32px）の画像は規約より大きく、縮小して描いている。
+役割アイコン（32px）の画像は規約より大きく、縮小して描いている。
 
 ## ドット絵の作りかた
 
@@ -279,7 +285,7 @@ python3 tools/anim-page.py assets/units/roran.json out/anim/roran.html
   - 本文で仲間の名前を書くときは `{<ユニットID>}`（例 `{ally05}`）と書く。読み込み時に名前へ置き換わり、知らない ID は起動時エラーになる。
   - **新しい仲間の ID は名前と関係ない `allyNN`（説得の相手の敵は `allyNN-foe`）にする。** JSON のファイル名・`assets/images/` の名前・セリフのキー・セーブのキーに名前を入れない。名前が出てよいのは、ユニットの JSON の `name` と本文（`{id}` で書く）だけ。今の4人（`roran` `ines` `mist` `gau`）の ID は変えない。
   - 仲間は最大 15 人（`roster` と加入しうる仲間の合計。超えると読み込みで止まる。`MAX_MEMBERS`）。場に出るのは 8 人まで（`MAX_PARTY`）。
-- **村人** — `assets/npcs/<id>.json`（`id`・`name`・`color`・`sprites.face`・任意の `sprites.faceSmall`。意味はユニットと同じ）。ID は名前と関係ない `npcNN`。顔は `assets/images/npcNN-face.png`（今は仮の絵で 6 人とも同じ）。本番の絵に替えるときは PNG を上書きし、JSON の `name` を直すだけで、コードは直さない。村の `talk` の `speaker` に書くと会話の話し手になる（仲間・敵・村人の順に ID を引く）
+- **村人** — `assets/npcs/<id>.json`（`id`・`name`・`color`・`sprites.face`・任意の `sprites.faceSmall`。意味はユニットと同じ）。ID は名前と関係ない `npcNN`。顔は `assets/images/npcNN-face.png` と `npcNN-face-small.png`（illust-asset-forge のイラスト。作り方は「アセットの大きさの規約」の顔グラの項）。絵を替えるときは PNG を上書きするだけで、コードは直さない。村の `talk` の `speaker` に書くと会話の話し手になる（仲間・敵・村人の順に ID を引く）
 - **セリフ** — `assets/lines/*.json`
 - **絆** — `assets/bonds.json`
 - **成長の調整** — `assets/growth.json`。`xpPerLevel`（レベルアップの必要量。レベル n から n+1 に n × `xpPerLevel`）、`enemyLevelXp`（敵のレベルが 1 上がるごとの撃破の経験値の加算。0 以上の整数）、`hitXp` / `healXp` / `assistRatio` / `clearXp`（経験値の入り口）、`maxLevel`（30）。1 レベルの強化量は、仲間・敵それぞれの `growth`。経験値が小数にならないよう `hitXp` / `healXp` / `clearXp` は整数で検証する
