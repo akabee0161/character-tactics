@@ -11,7 +11,7 @@
 段階: 完了
 次にやること:
 - 依頼者が頼んだら、feat/face-remaining から develop への PR（最終レビューの指摘 4 件は直した）
-- 背景除去（マスク・半透明の扱い・消す多角形・候補のページに並べる）を forge 本体（akabee0161/illust-asset-forge）に戻す。工程 5 の PR が develop に入ったあと、別のセッションで（依頼者と決めた。2026-11-24）。引き継ぎのプロンプトは Claude が用意する。Modal の道は forge の PR #6（マージ待ち）。ankardo の `new-game` スキルへの反映は、その後に相談する
+- 背景除去（マスク・半透明の扱い・消す多角形・候補のページに並べる）を forge 本体（akabee0161/illust-asset-forge）に戻す。工程 5 の PR が develop に入ったあと、別のセッションで（依頼者と決めた。2026-11-24）。引き継ぎのプロンプトは Claude が用意する。Modal の道は forge の PR #6 で戻した（マージ済み）。ankardo の `new-game` スキルへの反映は、その後に相談する
 - 工程 4 の結果を見て、ボルグのマップの絵を直すかを依頼者が決める（直すなら別の作業として相談）
 - Drive の置き場を `MyDrive/illust-asset-forge/character-tactics/` にしたい（依頼者。今は `MyDrive/character-tactics/illust-asset-forge/`。ゲームが増えるたびにフォルダが増えて分からなくなるため）。作業が落ち着いてから。直す所は `DRIVE_DIR`（ノートブックの変数とそのテスト `illust-asset-forge/tests/test_notebook.py`）・`illust-asset-forge/README.md`・`illust-asset-forge/CLAUDE.md`・`UPSTREAM.md`。Drive でのフォルダの移動は依頼者
 - 素体に耳を足す（依頼者の判断。`pixel-asset-forge/ISSUES.md`）。今はボルグの芯だけに耳がある
