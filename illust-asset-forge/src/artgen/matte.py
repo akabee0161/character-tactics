@@ -24,6 +24,19 @@ MODEL_SHA256 = "f15622d853e8260172812b657053460e20806f04b9e05147d49af7bed31a6e99
 MODEL_INPUT = 1024
 
 
+# モデルが迷った所（中間の値）をそのまま透明度にすると、背景の白が半透明のもやで残る（2026-11-24）。
+# HARD_LOW 以下は透明、HARD_HIGH 以上は不透明にし、その間だけをなだらかにして輪郭のぎざぎざを防ぐ
+HARD_LOW = 128
+HARD_HIGH = 200
+
+
+def harden(mask: Image.Image) -> Image.Image:
+    span = HARD_HIGH - HARD_LOW
+    return mask.convert("L").point(
+        lambda v: 0 if v <= HARD_LOW else 255 if v >= HARD_HIGH else round((v - HARD_LOW) * 255 / span)
+    )
+
+
 def _error(message: str) -> Exception:
     from artgen.export import ExportError  # export がこのモジュールを読むので、ここで読む
 

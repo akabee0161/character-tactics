@@ -46,3 +46,13 @@ def test_save_rejects_mask_of_wrong_size(cropped_repo):
     with pytest.raises(ExportError, match="大きさ"):
         save_mattes(cropped_repo, "c1", {"face.png": png_bytes(Image.new("L", (512, 512)))}, MODEL_SHA256)
     assert not (cropped_repo / "characters/c1/matte").exists()
+
+
+def test_harden_makes_unsure_background_transparent_and_keeps_a_soft_edge():
+    from artgen.matte import harden
+
+    mask = Image.new("L", (5, 1))
+    for x, v in enumerate([60, 128, 164, 200, 250]):
+        mask.putpixel((x, 0), v)
+    out = harden(mask)
+    assert [out.getpixel((x, 0)) for x in range(5)] == [0, 0, 128, 255, 255]

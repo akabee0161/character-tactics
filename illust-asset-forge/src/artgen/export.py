@@ -12,7 +12,7 @@ from PIL import Image, ImageDraw
 
 from artgen.config import ConfigError, load_character, load_template
 from artgen.face_crop import render_face, render_face_matte
-from artgen.matte import load_matte
+from artgen.matte import harden, load_matte
 from artgen.pnginfo import MissingParamsError, read_params
 
 SMALL_EXPORT_SIZE = 128
@@ -184,7 +184,7 @@ def export_character(root: Path, char_id: str) -> list[Path]:
                 jobs = [("large", crop.large, size, dest)]
                 if crop.small is not None:
                     jobs.append(("small", crop.small, SMALL_EXPORT_SIZE, char_dir / small_name(src.name)))
-                mask = load_matte(root, char_id, src.name) if crop.matte else None
+                mask = harden(load_matte(root, char_id, src.name)) if crop.matte else None
                 if mask is not None and crop.erase:
                     draw = ImageDraw.Draw(mask)
                     for polygon in crop.erase:

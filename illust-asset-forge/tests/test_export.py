@@ -365,3 +365,16 @@ def test_matte_erase_clears_polygon_and_is_recorded(cropped_repo):
     assert large.getpixel((170, 170))[3] == 255  # 消していない所（元画像の 400, 400）
     data = json.loads((cropped_repo / "characters/c1/params.json").read_text(encoding="utf-8"))
     assert data["face_crop"]["erase"] == [[[100, 100], [300, 100], [300, 300], [100, 300]]]
+
+
+def test_matte_export_hardens_unsure_mask(cropped_repo):
+    import io
+
+    from artgen.matte import MODEL_SHA256, save_mattes
+
+    write(cropped_repo, "characters/c1/character.yaml", MATTE_YAML)
+    buf = io.BytesIO()
+    Image.new("L", (1024, 1024), 100).save(buf, format="PNG")  # モデルが迷った値（半透明のもやになる）
+    save_mattes(cropped_repo, "c1", {"face.png": buf.getvalue()}, MODEL_SHA256)
+    export_character(cropped_repo, "c1")
+    assert Image.open(cropped_repo / "characters/c1/face.png").getpixel((128, 128))[3] == 0
