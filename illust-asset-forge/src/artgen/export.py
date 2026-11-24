@@ -33,7 +33,11 @@ def face_crop_record(crop, source_dir: Path, names: list[str]) -> dict:
     return {
         "large": list(crop.large),
         "small": list(crop.small) if crop.small is not None else None,
-        "clear_colors": [{"min": c.min, "max_rg": c.max_rg, "max_gb": c.max_gb} for c in crop.clear_colors],
+        # min_rg は書いたときだけ記録する（書いていない人の今までの記録を古くしないため）
+        "clear_colors": [
+            {"min": c.min, "max_rg": c.max_rg, "max_gb": c.max_gb, **({"min_rg": c.min_rg} if c.min_rg is not None else {})}
+            for c in crop.clear_colors
+        ],
         "source_sha256": {n: hashlib.sha256((source_dir / n).read_bytes()).hexdigest() for n in sorted(names)},
     }
 

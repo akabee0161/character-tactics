@@ -81,3 +81,18 @@ def test_resize_does_not_darken_edges():
     out, _ = render_face(im, (0, 0, 64, 64), 16, ())
     edge = [out.getpixel((x, y)) for x in range(16) for y in range(16) if 0 < out.getpixel((x, y))[3] < 255]
     assert edge and all(p[0] >= 200 for p in edge)
+
+
+def test_clear_color_min_rg_keeps_cream_next_to_beige_background():
+    # 背景（赤みの強い薄い茶）とシャツ（赤みの弱いクリーム）が上限では見分けられないとき、
+    # r-g の下限で背景だけを透明にする
+    beige, cream = (205, 182, 168), (251, 243, 228)
+    im = canvas(color=beige)
+    ImageDraw.Draw(im).rectangle([0, 10, 19, 19], fill=cream)  # 辺で切れたシャツ
+    out, _ = clear_background(im, (ClearColor(160, 28, 18, min_rg=16),))
+    assert out.getpixel((10, 2))[3] == 0
+    assert out.getpixel((10, 15))[3] == 255
+
+
+def test_clear_color_min_rg_defaults_to_no_lower_bound():
+    assert ClearColor(160, 28, 18).min_rg is None

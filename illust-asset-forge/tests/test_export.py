@@ -301,3 +301,14 @@ def test_colliding_output_names_stop_before_writing(repo):
         export_character(repo, "c1")
     assert not (repo / "characters/c1/face.png").exists()
     assert not (repo / "characters/c1/params.json").exists()
+
+
+def test_params_json_records_min_rg_only_when_set(cropped_repo):
+    write(cropped_repo, "characters/c1/character.yaml", CROPPED_YAML + "  clear_colors:\n"
+          "    - {min: 214, max_rg: 14, max_gb: 16}\n    - {min: 160, max_rg: 28, max_gb: 18, min_rg: 16}\n")
+    export_character(cropped_repo, "c1")
+    data = json.loads((cropped_repo / "characters/c1/params.json").read_text(encoding="utf-8"))
+    assert data["face_crop"]["clear_colors"] == [
+        {"min": 214, "max_rg": 14, "max_gb": 16},
+        {"min": 160, "max_rg": 28, "max_gb": 18, "min_rg": 16},
+    ]

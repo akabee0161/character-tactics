@@ -316,3 +316,21 @@ def test_face_crop_clear_colors_must_be_a_list(tmp_path, value):
 def test_face_crop_clear_colors_null_is_empty(tmp_path):
     write_character(tmp_path, CHARACTER_YAML + "face_crop:\n  large: [0, 0, 6, 6]\n  clear_colors:\n")
     assert load_character(tmp_path, "c1").face_crop.clear_colors == ()
+
+
+def test_face_crop_clear_color_min_rg_is_read(tmp_path):
+    write_character(
+        tmp_path,
+        CHARACTER_YAML + "face_crop:\n  large: [0, 0, 6, 6]\n  clear_colors:\n    - {min: 160, max_rg: 28, max_gb: 18, min_rg: 16}\n",
+    )
+    assert load_character(tmp_path, "c1").face_crop.clear_colors == (ClearColor(160, 28, 18, min_rg=16),)
+
+
+@pytest.mark.parametrize("value", ["-1", "256", "30"])
+def test_face_crop_clear_color_min_rg_must_be_in_range_and_not_above_max(tmp_path, value):
+    write_character(
+        tmp_path,
+        CHARACTER_YAML + f"face_crop:\n  large: [0, 0, 6, 6]\n  clear_colors:\n    - {{min: 160, max_rg: 28, max_gb: 18, min_rg: {value}}}\n",
+    )
+    with pytest.raises(ConfigError, match=r"face_crop\.clear_colors\[0\]\.min_rg"):
+        load_character(tmp_path, "c1")

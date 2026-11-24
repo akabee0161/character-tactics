@@ -40,11 +40,13 @@ class Template:
 @dataclass(frozen=True)
 class ClearColor:
     """外につながる白のほかに透明にする色。全チャンネルの最小値が min 以上、
-    かつ r-g <= max_rg、かつ g-b <= max_gb。"""
+    かつ r-g <= max_rg、かつ g-b <= max_gb。min_rg があれば r-g >= min_rg も
+    （赤みの強い背景と、赤みの弱い服のクリーム色を見分けるため）。"""
 
     min: int
     max_rg: int
     max_gb: int
+    min_rg: int | None = None
 
 
 @dataclass(frozen=True)
@@ -312,13 +314,17 @@ def _parse_face_crop(r: _Reader, raw: Any) -> FaceCrop | None:
     colors = []
     for i, item in enumerate(colors_raw):
         where = f"face_crop.clear_colors[{i}]"
-        if not isinstance(item, dict) or set(item) != {"min", "max_rg", "max_gb"}:
-            raise r.fail(where, "min・max_rg・max_gb の 3 つの組でない")
+        if not isinstance(item, dict) or not {"min", "max_rg", "max_gb"} <= set(item) <= {"min", "max_rg", "max_gb", "min_rg"}:
+            raise r.fail(where, "min・max_rg・max_gb（と任意の min_rg）の組でない")
         values = {}
-        for key in ("min", "max_rg", "max_gb"):
+        for key in ("min", "max_rg", "max_gb", "min_rg"):
+            if key not in item:
+                continue
             v = r.as_int(f"{where}.{key}", item[key], positive=False)
             if not 0 <= v <= 255:
                 raise r.fail(f"{where}.{key}", f"0〜255 の整数でない: {v}")
             values[key] = v
+        if values.get("min_rg") is not None and values["min_rg"] > values["max_rg"]:
+            raise r.fail(f"{where}.min_rg", f"max_rg（{values['max_rg']}）より大きい: {values['min_rg']}")
         colors.append(ClearColor(**values))
     return FaceCrop(large=large, small=small, clear_colors=tuple(colors))

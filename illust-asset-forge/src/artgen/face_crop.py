@@ -24,7 +24,10 @@ def _clearable(pixel: tuple[int, int, int], colors: Sequence[ClearColor]) -> boo
     lo = min(pixel)
     if lo >= WHITE_MIN:
         return True
-    return any(lo >= c.min and r - g <= c.max_rg and g - b <= c.max_gb for c in colors)
+    return any(
+        lo >= c.min and r - g <= c.max_rg and g - b <= c.max_gb and (c.min_rg is None or r - g >= c.min_rg)
+        for c in colors
+    )
 
 
 def clear_background(
