@@ -10,7 +10,8 @@
   "color": "#7a6a3a",
   "sprites": {
     "role": "role-teki-yumi.png",
-    "face": "yumihei-face.png",
+    "face": "enemy-m-thug-face.png",
+    "faceSmall": "enemy-m-thug-face-small.png",
     "map": {
       "sheet": "yumihei-map.png", "frame": 32,
       "idle": { "frames": 2, "fps": 4 },

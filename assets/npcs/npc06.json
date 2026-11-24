@@ -2,5 +2,5 @@
   "id": "npc06",
   "name": "仕立て屋",
   "color": "#a08860",
-  "sprites": { "face": "npc06-face.png" }
+  "sprites": { "face": "npc06-face.png", "faceSmall": "npc06-face-small.png" }
 }

@@ -17,6 +17,7 @@
   "sprites": {
     "role": "role-shugo.png",
     "face": "ally10-face.png",
+    "faceSmall": "ally10-face-small.png",
     "map": {
       "sheet": "ally10-map.png",
       "frame": 32,

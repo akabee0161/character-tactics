@@ -11,6 +11,7 @@
   "sprites": {
     "role": "role-monomi.png",
     "face": "gau-face.png",
+    "faceSmall": "gau-face-small.png",
     "map": {
       "sheet": "gau-map.png", "frame": 32,
       "idle": { "frames": 2, "fps": 4 },

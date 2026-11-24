@@ -10,7 +10,8 @@
   "color": "#8a5a4a",
   "sprites": {
     "role": "role-teki.png",
-    "face": "narazumono-face.png",
+    "face": "enemy-m-bandit-face.png",
+    "faceSmall": "enemy-m-bandit-face-small.png",
     "map": {
       "sheet": "narazumono-2-map.png", "frame": 32,
       "idle": { "frames": 2, "fps": 4 },

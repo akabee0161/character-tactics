@@ -2,5 +2,5 @@
   "id": "npc03",
   "name": "薬師",
   "color": "#a08860",
-  "sprites": { "face": "npc03-face.png" }
+  "sprites": { "face": "npc03-face.png", "faceSmall": "npc03-face-small.png" }
 }

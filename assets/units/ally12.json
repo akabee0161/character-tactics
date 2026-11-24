@@ -17,6 +17,7 @@
   "sprites": {
     "role": "role-yumi.png",
     "face": "ally12-face.png",
+    "faceSmall": "ally12-face-small.png",
     "map": {
       "sheet": "ally12-map.png",
       "frame": 32,

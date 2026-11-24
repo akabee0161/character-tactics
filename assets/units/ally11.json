@@ -18,6 +18,7 @@
   "sprites": {
     "role": "role-hikou.png",
     "face": "ally11-face.png",
+    "faceSmall": "ally11-face-small.png",
     "map": {
       "sheet": "ally11-map.png",
       "frame": 32,

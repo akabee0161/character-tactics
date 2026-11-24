@@ -2,5 +2,5 @@
   "id": "npc01",
   "name": "村の 人",
   "color": "#a08860",
-  "sprites": { "face": "npc01-face.png" }
+  "sprites": { "face": "npc01-face.png", "faceSmall": "npc01-face-small.png" }
 }
