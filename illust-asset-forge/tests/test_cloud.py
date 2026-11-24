@@ -202,3 +202,58 @@ def test_merge_needs_two_rounds(cli_env, capsys):
     assert cloud.main(["merge", str(r1)]) == 1
     out = capsys.readouterr().out
     assert out.startswith("止まった:") and "2 つ以上" in out
+
+
+def _source_face(cli_env, char):
+    from PIL import Image
+
+    from artgen.pnginfo import save_png
+
+    save_png(Image.new("RGB", (64, 64), (10, 20, 30)), cli_env / f"characters/{char}/source/face.png",
+             {"seed": 1, "template": "face", "character": char})
+
+
+def fake_matte(monkeypatch, model_sha=None, size=(64, 64)):
+    import io
+
+    from PIL import Image
+
+    from artgen.matte import MODEL_SHA256
+
+    calls = []
+    module = types.ModuleType("artgen.modal_app")
+
+    def run_matte(images):
+        calls.append(sorted(images))
+        buf = io.BytesIO()
+        Image.new("L", size, 255).save(buf, format="PNG")
+        return model_sha or MODEL_SHA256, {k: buf.getvalue() for k in images}
+
+    module.run_matte = run_matte
+    monkeypatch.setitem(sys.modules, "artgen.modal_app", module)
+    return calls
+
+
+def test_matte_sends_only_named_characters_and_saves_masks(cli_env, monkeypatch, capsys):
+    _source_face(cli_env, "c1")
+    _source_face(cli_env, "c2")
+    calls = fake_matte(monkeypatch)
+    assert cloud.main(["matte", "c1"]) == 0
+    assert calls == [["c1/face.png"]]
+    assert (cli_env / "characters/c1/matte/face.png").is_file()
+    assert not (cli_env / "characters/c2/matte").exists()
+    assert "c1" in capsys.readouterr().out
+
+
+def test_matte_without_source_stops_before_modal(cli_env, monkeypatch, capsys):
+    calls = fake_matte(monkeypatch)
+    assert cloud.main(["matte", "c1"]) == 1
+    assert capsys.readouterr().out.startswith("止まった:") and calls == []
+
+
+def test_matte_from_other_model_writes_nothing(cli_env, monkeypatch, capsys):
+    _source_face(cli_env, "c1")
+    fake_matte(monkeypatch, model_sha="0" * 64)
+    assert cloud.main(["matte", "c1"]) == 1
+    assert capsys.readouterr().out.startswith("止まった:")
+    assert not (cli_env / "characters/c1/matte").exists()

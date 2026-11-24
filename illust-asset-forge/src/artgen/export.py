@@ -8,10 +8,11 @@ import json
 import shutil
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageDraw
 
 from artgen.config import ConfigError, load_character, load_template
-from artgen.face_crop import render_face
+from artgen.face_crop import render_face, render_face_matte
+from artgen.matte import load_matte
 from artgen.pnginfo import MissingParamsError, read_params
 
 SMALL_EXPORT_SIZE = 128
@@ -29,8 +30,9 @@ def small_name(name: str) -> str:
 
 def face_crop_record(crop, source_dir: Path, names: list[str]) -> dict:
     """params.json の face_crop に書く記録。使った範囲と、切り出した元画像の SHA-256。
-    承認用ページ（crop_review）が、書き出しが今の設定・今の元画像のものかを照合するのに使う。"""
-    return {
+    承認用ページ（crop_review）が、書き出しが今の設定・今の元画像のものかを照合するのに使う。
+    マスクで透明にしたときは、使ったマスクの SHA-256 も記録する（マスクを作り直したら古いと分かるように）。"""
+    record = {
         "large": list(crop.large),
         "small": list(crop.small) if crop.small is not None else None,
         # min_rg は書いたときだけ記録する（書いていない人の今までの記録を古くしないため）
@@ -40,6 +42,16 @@ def face_crop_record(crop, source_dir: Path, names: list[str]) -> dict:
         ],
         "source_sha256": {n: hashlib.sha256((source_dir / n).read_bytes()).hexdigest() for n in sorted(names)},
     }
+    if crop.matte:
+        matte_dir = source_dir.parent / "matte"
+        record["matte"] = True
+        if crop.erase:
+            record["erase"] = [[list(p) for p in poly] for poly in crop.erase]
+        record["matte_sha256"] = {
+            n: hashlib.sha256((matte_dir / n).read_bytes()).hexdigest() if (matte_dir / n).is_file() else None
+            for n in sorted(names)
+        }
+    return record
 
 
 def _check_name(stem: str, kind: str) -> str:
@@ -172,8 +184,16 @@ def export_character(root: Path, char_id: str) -> list[Path]:
                 jobs = [("large", crop.large, size, dest)]
                 if crop.small is not None:
                     jobs.append(("small", crop.small, SMALL_EXPORT_SIZE, char_dir / small_name(src.name)))
+                mask = load_matte(root, char_id, src.name) if crop.matte else None
+                if mask is not None and crop.erase:
+                    draw = ImageDraw.Draw(mask)
+                    for polygon in crop.erase:
+                        draw.polygon(polygon, fill=0)
                 for kind, box, out_size, out_path in jobs:
-                    rendered, check = render_face(im, box, out_size, crop.clear_colors)
+                    if mask is not None:
+                        rendered, check = render_face_matte(im, mask, box, out_size)
+                    else:
+                        rendered, check = render_face(im, box, out_size, crop.clear_colors)
                     rendered.save(out_path, format="PNG")
                     check.save(check_dir / _check_name(src.stem, kind), format="PNG")
                     written.append(out_path)

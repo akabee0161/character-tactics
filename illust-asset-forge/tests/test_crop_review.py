@@ -128,3 +128,23 @@ def test_cli_many_ids_writes_one_page(two_exported, capsys):
     out = two_exported / "local/check/reviews/x.html"
     assert main(["c1", "c2", "--root", str(two_exported), "--out", str(out)]) == 0
     assert out.is_file() and str(out) in capsys.readouterr().out
+
+
+def test_review_rejects_export_older_than_matte(cropped_repo):
+    import io
+
+    from artgen.matte import MODEL_SHA256, save_mattes
+
+    write(cropped_repo, "characters/c1/character.yaml", CROPPED_YAML + "  matte: true\n")
+
+    def save(value):
+        buf = io.BytesIO()
+        Image.new("L", (1024, 1024), value).save(buf, format="PNG")
+        save_mattes(cropped_repo, "c1", {"face.png": buf.getvalue()}, MODEL_SHA256)
+
+    save(255)
+    export_character(cropped_repo, "c1")
+    build_review(cropped_repo, "c1")
+    save(128)  # マスクを作り直したのに書き出していない
+    with pytest.raises(ExportError, match="export"):
+        build_review(cropped_repo, "c1")

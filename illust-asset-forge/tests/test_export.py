@@ -312,3 +312,56 @@ def test_params_json_records_min_rg_only_when_set(cropped_repo):
         {"min": 214, "max_rg": 14, "max_gb": 16},
         {"min": 160, "max_rg": 28, "max_gb": 18, "min_rg": 16},
     ]
+
+
+MATTE_YAML = CROPPED_YAML + "  matte: true\n"
+
+
+def _save_square_mask(repo):
+    import io
+
+    from PIL import ImageDraw
+
+    from artgen.matte import MODEL_SHA256, save_mattes
+
+    mask = Image.new("L", (1024, 1024), 0)
+    ImageDraw.Draw(mask).rectangle([100, 100, 500, 500], fill=255)
+    buf = io.BytesIO()
+    mask.save(buf, format="PNG")
+    save_mattes(repo, "c1", {"face.png": buf.getvalue()}, MODEL_SHA256)
+
+
+def test_matte_export_uses_mask(cropped_repo):
+    write(cropped_repo, "characters/c1/character.yaml", MATTE_YAML)
+    _save_square_mask(cropped_repo)
+    export_character(cropped_repo, "c1")
+    large = Image.open(cropped_repo / "characters/c1/face.png")
+    # large は [0, 0, 600, 600] → 256px。マスクの外（左上）は透明、内側は不透明
+    assert large.getpixel((5, 5))[3] == 0 and large.getpixel((128, 128))[3] == 255
+    data = json.loads((cropped_repo / "characters/c1/params.json").read_text(encoding="utf-8"))
+    assert data["face_crop"]["matte"] is True
+    assert len(data["face_crop"]["matte_sha256"]["face.png"]) == 64
+
+
+def test_matte_export_without_mask_stops(cropped_repo):
+    write(cropped_repo, "characters/c1/character.yaml", MATTE_YAML)
+    with pytest.raises(ExportError, match="cloud matte"):
+        export_character(cropped_repo, "c1")
+
+
+def test_record_without_matte_is_unchanged(cropped_repo):
+    export_character(cropped_repo, "c1")
+    data = json.loads((cropped_repo / "characters/c1/params.json").read_text(encoding="utf-8"))
+    assert "matte" not in data["face_crop"] and "matte_sha256" not in data["face_crop"]
+
+
+def test_matte_erase_clears_polygon_and_is_recorded(cropped_repo):
+    write(cropped_repo, "characters/c1/character.yaml",
+          MATTE_YAML + "  erase:\n    - [[100, 100], [300, 100], [300, 300], [100, 300]]\n")
+    _save_square_mask(cropped_repo)  # 100〜500 が不透明
+    export_character(cropped_repo, "c1")
+    large = Image.open(cropped_repo / "characters/c1/face.png")  # [0, 0, 600, 600] → 256px
+    assert large.getpixel((85, 85))[3] == 0  # 消した多角形の中（元画像の 200, 200）
+    assert large.getpixel((170, 170))[3] == 255  # 消していない所（元画像の 400, 400）
+    data = json.loads((cropped_repo / "characters/c1/params.json").read_text(encoding="utf-8"))
+    assert data["face_crop"]["erase"] == [[[100, 100], [300, 100], [300, 300], [100, 300]]]

@@ -3,6 +3,7 @@
     python -m artgen.cloud generate --jobs FILE
     python -m artgen.cloud page ROUND_JSON
     python -m artgen.cloud merge ROUND_JSON ROUND_JSON [...]
+    python -m artgen.cloud matte CHAR [CHAR ...]
     python -m artgen.cloud adopt ROUND_JSON NUMBER [--flip]
     python -m artgen.cloud install CHAR [CHAR ...]
 
@@ -20,15 +21,17 @@ from datetime import datetime
 from pathlib import Path
 
 from artgen.config import ConfigError
+from artgen.export import ExportError
 from artgen.intake import install_selection, print_reports
 from artgen.jobs import collect_faces, load_jobs
 from artgen.local import local_commit, local_dirs, save_outputs
+from artgen.matte import save_mattes
 from artgen.pnginfo import MissingParamsError
 from artgen.review_page import build_page
 from artgen.rounds import new_round, read_round, unused_run_id
 from artgen.selection import SelectionStore
 
-_STOPS = (ConfigError, MissingParamsError, OSError, RuntimeError)
+_STOPS = (ConfigError, ExportError, MissingParamsError, OSError, RuntimeError)
 
 
 def _page_path(round_json: Path) -> Path:
@@ -71,6 +74,25 @@ def cmd_merge(args: argparse.Namespace) -> None:
     print(f"{len(paths)} 枚をまとめた")
     print(f"回りの記録: {round_json}")
     print(f"候補のページ: {page}")
+
+
+def cmd_matte(args: argparse.Namespace) -> None:
+    """顔の元画像（source/face*.png）を Modal に送り、背景のマスクを characters/<id>/matte/ に置く。"""
+    root = args.root.resolve()
+    images: dict[str, bytes] = {}
+    for char in args.chars:
+        faces = sorted((root / "characters" / char / "source").glob("face*.png"))
+        if not faces:
+            raise ConfigError(f"characters/{char}/source: 顔の元画像（face*.png）が無い")
+        for f in faces:
+            images[f"{char}/{f.name}"] = f.read_bytes()
+    from artgen import modal_app  # Modal はここでだけ import する
+
+    model_sha, masks = modal_app.run_matte(images)
+    for char in args.chars:
+        mine = {k.split("/", 1)[1]: v for k, v in masks.items() if k.split("/", 1)[0] == char}
+        save_mattes(root, char, mine, model_sha)
+        print(f"マスクを作った: {char}（{len(mine)} 枚）")
 
 
 def cmd_adopt(args: argparse.Namespace) -> None:
@@ -121,6 +143,9 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("merge", help="回りの記録をまとめ、通し番号の記録とページを作る")
     p.add_argument("rounds", nargs="+", type=Path)
     p.set_defaults(func=cmd_merge)
+    p = sub.add_parser("matte", help="顔の元画像の背景のマスクを Modal で作る")
+    p.add_argument("chars", nargs="+")
+    p.set_defaults(func=cmd_matte)
     p = sub.add_parser("adopt", help="番号の候補を採用する")
     p.add_argument("round_json", type=Path)
     p.add_argument("number", type=int)
