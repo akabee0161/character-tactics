@@ -88,3 +88,23 @@ def test_candidate_mattes_from_other_model_are_not_saved(tmp_path):
     with pytest.raises(ExportError, match="モデル"):
         ensure_candidate_mattes([a], lambda images: ("0" * 64, {k: b"" for k in images}))
     assert not candidate_matte_path(a).exists()
+
+
+def test_candidate_mattes_are_sent_in_batches_and_saved_per_batch(tmp_path, monkeypatch):
+    import artgen.matte as M
+    from artgen.matte import candidate_matte_path, ensure_candidate_mattes
+
+    monkeypatch.setattr(M, "CANDIDATE_BATCH", 2)
+    paths = [_candidate(tmp_path, f"c1_face_{i}.png") for i in range(5)]
+    sizes = []
+
+    def run(images):
+        sizes.append(len(images))
+        if len(sizes) == 3:
+            raise RuntimeError("Modal が落ちた")
+        return MODEL_SHA256, {k: png_bytes(Image.new("L", (64, 64), 255)) for k in images}
+
+    with pytest.raises(RuntimeError):
+        ensure_candidate_mattes(paths, run)
+    assert sizes == [2, 2, 1]
+    assert [candidate_matte_path(p).is_file() for p in paths] == [True, True, True, True, False]

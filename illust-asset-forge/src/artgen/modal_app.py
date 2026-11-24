@@ -60,7 +60,8 @@ def run(jobs: list[GenerateJob], commit: str, faces: dict[str, bytes]) -> list[t
 # メモリの少ないサーバーでは動かさず、ここで動かす
 matte_image = (
     modal.Image.debian_slim(python_version="3.12")
-    .pip_install("onnxruntime==1.32.0", "numpy==2.5.5", "Pillow", "huggingface_hub")
+    # 版を固定する（マスクを作り直したときに同じになるように）。PyYAML は artgen.config が使う
+    .pip_install("onnxruntime==1.32.0", "numpy==2.5.5", "Pillow==13.0.0", "huggingface_hub==2.4.0", "PyYAML==6.0.4")
     .env({"HF_HOME": "/cache/hf"})
     .add_local_python_source("artgen")
 )

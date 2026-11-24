@@ -40,3 +40,9 @@ Task 9: complete (commits d74b94a..0a2dd6d, tests: bash -c 'cd illust-asset-forg
 Task 9: Ruling: 組 2 は組 1 と同時に進めた（設定 66f…・範囲と承認は Task 7 のコミット・ゲームは Task 8 のコミット）— 依頼者の頼み — 履歴の分け方だけ
 Ruling: 合意した追加（候補のページに背景を消した絵を並べる）を Task 10 の前に入れた。generate・merge・page の既定にし、--no-matte で止める — 依頼者「今後は全候補の背景を除去してから選ぶ」— 1 回あたり数セントと数分が足される
 事故: 実装の途中、既存のテストが既定で本物の Modal を呼び、背景除去のアプリが 1 つ起動した（12:18 UTC、CPU、すぐ modal app stop）。tests/conftest.py で本物の Modal を呼べないようにした。依頼者に報告する。forge 569+1 件通過
+Task 10: complete (commits efe9c06..55060d3, tests: npm test →    Duration  308.16s (transform 4.30s, setup 0ms, collect 16.15s, tests 268.49s, environment 19ms, prepare 7.16s))
+Final review: opus の code-reviewer。Critical・Important なし、Minor 4 件。依頼者の方針（Minor も PR 前に直す）で 4 件とも直した
+Final: fixed Minor-2（再格付け Important: 1.9GB のサーバーで候補を一度に全部送るとメモリを圧迫）候補のマスクを 40 枚ずつ送り、区切りごとに保存。generate は outputs を手放してから送る — test_candidate_mattes_are_sent_in_batches_and_saved_per_batch RED→GREEN、suite 575/575
+Final: fixed Minor-1 背景消しが落ちても回りの記録のパスと page でのやり直しを出す — test_generate_shows_round_record_even_if_matte_fails RED→GREEN、suite 575/575
+Final: fixed Minor-3 matte_image の版を固定し PyYAML を明示（uv pip compile で解決した版）— test_matte_image_installs_pinned_dependencies RED→GREEN、suite 575/575。Ruling: 新しいイメージは Modal でまだ建てていない（次の cloud matte で建つ）— 版の組は uv で解決済み — 誤りなら次の実行でイメージの build が落ちる
+Final: fixed Minor-4 erase だけ変えた・matte に切り替えた場合に build_reviews が止まるテストを足した（今のコードで通る。テストの穴だった）

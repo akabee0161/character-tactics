@@ -22,6 +22,7 @@ MODEL_REPO = "skytnt/anime-seg"
 MODEL_FILE = "isnetis.onnx"
 MODEL_SHA256 = "f15622d853e8260172812b657053460e20806f04b9e05147d49af7bed31a6e99"
 MODEL_INPUT = 1024
+CANDIDATE_BATCH = 40  # 候補のマスクを Modal に 1 回で送る枚数（約 40MB。1 回 2 分ほど）
 
 
 # モデルが迷った所（中間の値）をそのまま透明度にすると、背景の白が半透明のもやで残る（2026-11-24）。
@@ -100,15 +101,17 @@ def candidate_matte_path(candidate: Path) -> Path:
 def ensure_candidate_mattes(candidates: list[Path], run_matte) -> int:
     """マスクがまだ無い候補だけを run_matte（Modal）に送り、候補の隣に置く。送った枚数を返す。
     候補を選ぶ前に背景を消した絵を見られるようにするため（選んだ後に消えないと分かると手間）。"""
-    todo = {str(i): Path(p) for i, p in enumerate(candidates) if not candidate_matte_path(p).is_file()}
-    if not todo:
-        return 0
-    model_sha, masks = run_matte({k: p.read_bytes() for k, p in todo.items()})
-    if model_sha != MODEL_SHA256:
-        raise _error(f"候補のマスクを作ったモデルが違う（{model_sha[:12]}…。{MODEL_SHA256[:12]}… のはず）")
-    for k, p in todo.items():
-        with Image.open(io.BytesIO(masks[k])) as m:
-            m.convert("L").save(candidate_matte_path(p), format="PNG")
+    todo = [Path(p) for p in candidates if not candidate_matte_path(p).is_file()]
+    # 区切って送る。一度に送ると、このサーバー（メモリ 1.9GB）に絵の bytes が何百 MB も載り、
+    # Modal の時間切れでその回のマスクが全部失われる。区切りごとに保存するので、落ちても済んだ分は残る
+    for start in range(0, len(todo), CANDIDATE_BATCH):
+        batch = {str(i): p for i, p in enumerate(todo[start:start + CANDIDATE_BATCH])}
+        model_sha, masks = run_matte({k: p.read_bytes() for k, p in batch.items()})
+        if model_sha != MODEL_SHA256:
+            raise _error(f"候補のマスクを作ったモデルが違う（{model_sha[:12]}…。{MODEL_SHA256[:12]}… のはず）")
+        for k, p in batch.items():
+            with Image.open(io.BytesIO(masks[k])) as m:
+                m.convert("L").save(candidate_matte_path(p), format="PNG")
     return len(todo)
 
 

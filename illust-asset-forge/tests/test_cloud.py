@@ -302,3 +302,22 @@ def test_generate_makes_candidate_mattes_by_default(cli_env, monkeypatch, capsys
     jobs.write_text(json.dumps([{"char": "c1", "template": "face", "n": 1}]), encoding="utf-8")
     assert cloud.main(["generate", "--jobs", str(jobs)]) == 0
     assert sent == [3] and all(candidate_matte_path(p).is_file() for p in made)
+
+
+def test_generate_shows_round_record_even_if_matte_fails(cli_env, monkeypatch, capsys):
+    made = make_candidates(cli_env)
+    outputs = [(p.relative_to(cli_env / "local/runs").as_posix(), p.read_bytes()) for p in made]
+    for p in made:
+        p.unlink()
+    fake_modal(monkeypatch, outputs)
+
+    def broken(images):
+        raise RuntimeError("Modal の時間切れ")
+
+    sys.modules["artgen.modal_app"].run_matte = broken
+    jobs = cli_env / "jobs.json"
+    jobs.write_text(json.dumps([{"char": "c1", "template": "face", "n": 1}]), encoding="utf-8")
+    assert cloud.main(["generate", "--jobs", str(jobs)]) == 1
+    out = capsys.readouterr().out
+    record = sorted((cli_env / "local/rounds").glob("*.json"))[0]
+    assert f"回りの記録: {record}" in out and "page" in out

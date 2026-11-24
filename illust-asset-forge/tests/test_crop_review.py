@@ -148,3 +148,44 @@ def test_review_rejects_export_older_than_matte(cropped_repo):
     save(128)  # マスクを作り直したのに書き出していない
     with pytest.raises(ExportError, match="export"):
         build_review(cropped_repo, "c1")
+
+
+def _matte_two(two_exported):
+    import io
+
+    from artgen.matte import MODEL_SHA256, save_mattes
+
+    for c in ("c1", "c2"):
+        write(two_exported, f"characters/{c}/character.yaml", CROPPED_YAML + "  matte: true\n")
+        buf = io.BytesIO()
+        Image.new("L", (1024, 1024), 255).save(buf, format="PNG")
+        save_mattes(two_exported, c, {"face.png": buf.getvalue()}, MODEL_SHA256)
+        export_character(two_exported, c)
+
+
+def test_reviews_stop_if_only_erase_changed(two_exported):
+    from artgen.crop_review import build_reviews
+
+    _matte_two(two_exported)
+    write(two_exported, "characters/c2/character.yaml",
+          CROPPED_YAML + "  matte: true\n  erase:\n    - [[0, 0], [50, 0], [0, 50]]\n")
+    out = two_exported / "local/check/reviews/t.html"
+    with pytest.raises(ExportError, match="c2"):
+        build_reviews(two_exported, ["c1", "c2"], out)
+    assert not out.exists()
+
+
+def test_reviews_stop_if_switched_to_matte_without_export(two_exported):
+    import io
+
+    from artgen.crop_review import build_reviews
+    from artgen.matte import MODEL_SHA256, save_mattes
+
+    buf = io.BytesIO()
+    Image.new("L", (1024, 1024), 255).save(buf, format="PNG")
+    save_mattes(two_exported, "c2", {"face.png": buf.getvalue()}, MODEL_SHA256)
+    write(two_exported, "characters/c2/character.yaml", CROPPED_YAML + "  matte: true\n")
+    out = two_exported / "local/check/reviews/t.html"
+    with pytest.raises(ExportError, match="c2"):
+        build_reviews(two_exported, ["c1", "c2"], out)
+    assert not out.exists()

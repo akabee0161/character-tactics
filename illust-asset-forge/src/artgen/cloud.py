@@ -50,6 +50,16 @@ def _build(round_json: Path, root: Path, matte: bool) -> Path:
     return build_page(round_, _page_path(round_json), root=root)
 
 
+def _build_or_explain(round_json: Path, root: Path, matte: bool) -> Path:
+    """_build と同じ。背景消しが落ちたら、作った絵と記録は残っていて page でやり直せると言って止まる。"""
+    try:
+        return _build(round_json, root, matte)
+    except _STOPS as e:
+        raise RuntimeError(
+            f"{e}（絵と回りの記録は残っている。python -m artgen.cloud page {round_json} でやり直せる）"
+        ) from e
+
+
 def cmd_generate(args: argparse.Namespace) -> None:
     root = args.root.resolve()
     dirs = local_dirs(root)
@@ -61,9 +71,10 @@ def cmd_generate(args: argparse.Namespace) -> None:
     paths = save_outputs(dirs.runs, outputs)
     run_id = unused_run_id(dirs.rounds, datetime.now().strftime("%Y%m%d_%H%M%S"))
     round_json = new_round(dirs.rounds, run_id, paths)
+    del outputs  # 絵の bytes（100MB を超える）を、背景消しで送る前に手放す
     print(f"{len(paths)} 枚できた")
-    page = _build(round_json, root, not args.no_matte)
-    print(f"回りの記録: {round_json}")
+    print(f"回りの記録: {round_json}")  # 背景消しが落ちても、記録の場所が分かるように先に出す
+    page = _build_or_explain(round_json, root, not args.no_matte)
     print(f"候補のページ: {page}")
 
 
@@ -82,8 +93,8 @@ def cmd_merge(args: argparse.Namespace) -> None:
     run_id = unused_run_id(dirs.rounds, "merged_" + datetime.now().strftime("%Y%m%d_%H%M%S"))
     round_json = new_round(dirs.rounds, run_id, paths)
     print(f"{len(paths)} 枚をまとめた")
-    page = _build(round_json, root, not args.no_matte)
     print(f"回りの記録: {round_json}")
+    page = _build_or_explain(round_json, root, not args.no_matte)
     print(f"候補のページ: {page}")
 
 
