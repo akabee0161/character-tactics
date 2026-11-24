@@ -3,6 +3,7 @@
 // 使い方: node tools/gen-placeholder-sprites.mjs <ID>...  （例: ally05 role-yari）
 // 引数に並べた ID の絵だけを書く。引数が無ければ何も書かずに 1 で終わる
 // （全部を書き直すと、今の本番の絵を仮の絵で上書きしてしまうため）
+// 顔は書かない（顔グラは illust-asset-forge の生成イラスト。仮の顔で上書きしないため）
 import { deflateSync } from 'node:zlib';
 import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -169,25 +170,6 @@ function sheetFor(def) {
   return c;
 }
 
-/** 顔。128×128 のバスト */
-function faceFor(def) {
-  const s = 128, c = canvas(s, s);
-  const body = hex(def.color), hair = shade(body, 0.55);
-  rect(c, 0, 0, s, s, shade(body, 1.35));
-  rect(c, 0.22 * s, 0.74 * s, 0.56 * s, 0.26 * s, body);
-  disc(c, 0.50 * s, 0.46 * s, 0.26 * s, SKIN);
-  for (let y = 0; y < 0.30 * s; y++) {
-    for (let x = 0; x < 0.54 * s; x++) {
-      const px = 0.23 * s + x, py = 0.20 * s + y;
-      if ((px - 0.50 * s) ** 2 + (py - 0.46 * s) ** 2 <= (0.26 * s) ** 2) put(c, px, py, hair);
-    }
-  }
-  rect(c, 0.38 * s, 0.48 * s, 0.06 * s, 0.08 * s, DARK);
-  rect(c, 0.56 * s, 0.48 * s, 0.06 * s, 0.08 * s, DARK);
-  rect(c, 0.45 * s, 0.62 * s, 0.10 * s, 0.03 * s, shade(SKIN, 0.75));
-  return c;
-}
-
 /** クラスの印。64×64。武器の形だけ */
 function roleFor(weapon, color) {
   const s = 64, c = canvas(s, s);
@@ -223,9 +205,6 @@ const CHARS = [
   { id: 'ally15', color: '#d89a5a', weapon: 'spear', frame: 32 },
 ];
 
-// 村人。顔だけを書く（戦場には出ないので、シートは無い）
-const NPCS = ['npc01', 'npc02', 'npc03', 'npc04', 'npc05', 'npc06'].map((id) => ({ id, color: '#a08860' }));
-
 const ROLES = [
   ['role-tate', 'shield', '#4a80c8'],
   ['role-yumi', 'bow', '#3faa6a'],
@@ -247,7 +226,7 @@ if (ids.length === 0) {
   console.error('引数が無いときは何も書きません（今の絵を上書きしないため）');
   process.exit(1);
 }
-const known = new Set([...CHARS.map((d) => d.id), ...NPCS.map((d) => d.id), ...ROLES.map(([n]) => n)]);
+const known = new Set([...CHARS.map((d) => d.id), ...ROLES.map(([n]) => n)]);
 const unknown = ids.filter((id) => !known.has(id));
 if (unknown.length > 0) {
   console.error(`知らない ID です: ${unknown.join(' ')}`);
@@ -258,13 +237,7 @@ for (const def of CHARS) {
   if (!ids.includes(def.id)) continue;
   const sheet = sheetFor(def);
   writeFileSync(join(OUT, `${def.id}-map.png`), encodePng(sheet));
-  writeFileSync(join(OUT, `${def.id}-face.png`), encodePng(faceFor(def)));
   console.log(`${def.id}-map.png ${sheet.w}x${sheet.h}`);
-}
-for (const def of NPCS) {
-  if (!ids.includes(def.id)) continue;
-  writeFileSync(join(OUT, `${def.id}-face.png`), encodePng(faceFor(def)));
-  console.log(`${def.id}-face.png 128x128`);
 }
 for (const [name, weapon, color] of ROLES) {
   if (!ids.includes(name)) continue;
