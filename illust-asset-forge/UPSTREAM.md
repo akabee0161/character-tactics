@@ -25,7 +25,7 @@ forge 本体も並行して開発が続く。forge の改善をこちらへ取�
 - 同じ `adopt`: 顔の置き換えと表情の退避が済んだあとに、控えの削除だけが `OSError` になると、採用できたのに「採用できない」と返す。採用の結果と削除の警告を分ける
 - `src/artgen/selection.py` の `pack`: 同じ秒に 2 回呼ぶと、同じ名前の zip を上書きする。別名を確保し、一時ファイルに書き終えてから公開する
 
-追加した（2026-11-23。Colab のランタイムに接続できなかったため、forge 本体に戻す候補。GPU の処理だけを Modal に出した）:
+追加した（2026-11-23。Colab のランタイムに接続できなかったため。GPU の処理だけを Modal に出した）。forge 本体に戻した（forge の PR #6）。forge 本体では `modal_app.py` の `APP_NAME`・`VOLUME_NAME` を汎用の名前（`illust-asset-forge`・`illust-asset-forge-models`）にしたので、このコピーの名前（`character-tactics-illust`・`character-tactics-illust-models`）はこのゲームだけの値になる:
 
 - Modal の道: `src/artgen/jobs.py`（ジョブのファイルの読み込み・Modal の上での実行。T4 以外なら生成しない）・`local.py`（`local/` の置き場と条件の `commit` に付ける `+dirty` の印）・`modal_app.py`（Modal の入口。T4 固定、版は requirements-colab.txt に合わせる）・`cloud.py`（Claude が叩く CLI: generate / page / adopt / install）。Colab の道（`notebooks/run.ipynb`・`attach()`）は変えていない
 - 候補のページ: `src/artgen/rounds.py`（1 回りの記録）・`review_page.py`（候補を番号順に全部並べる HTML）。`intake.py` に `print_reports` を切り出した。画素を数えて頭が切れた候補を外す道具は試したが、髪と鎧を区別できず外しすぎたので入れていない
