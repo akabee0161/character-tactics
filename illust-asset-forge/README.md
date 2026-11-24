@@ -229,6 +229,7 @@ uv venv .venv && uv pip install -e '.[dev]' && .venv/bin/pytest
    キーは `char`・`template` と、`n`（枚数）か `seeds`（シードの一覧）のどちらか一方、任意で `extra`・`remove`・`extra_negative`・`remove_negative`・`guidance`・`steps`（`Forge.generate` の引数と同じ）。画風（`style`）は書けない。誤りは Modal を起動する前に、`ファイル名: [番号].キー: 理由` で止まる
 2. `.venv/bin/python -m artgen.cloud generate --jobs local/jobs/<ファイル>.json` — Modal で作り、`local/runs/` に置き、回りの記録（`local/rounds/<日時>.json`）と候補のページ（同名の `.html`）を作る
    - Modal の 1 回は 1 時間で打ち切られ、その回の絵は全部失われる。1 回は 120 枚（10 人 × 12 枚）までにし、それより多いときはジョブのファイルを分けて同時に動かす。分けたら `.venv/bin/python -m artgen.cloud merge local/rounds/<a>.json local/rounds/<b>.json` で 1 つの記録（`local/rounds/merged_<日時>.json`）と 1 枚のページにまとめる。番号は通しで振り直し、元の記録は変えない。採用はまとめた記録の番号で行う
+   - `generate`・`merge`・`page` は、候補のページを作る前に、全部の候補の背景を Modal（CPU）で消し、候補の隣に `<名前>.matte.png` を置く。ページには候補と、背景を消してゲームの背景色に置いた絵が 2 枚並ぶ（選んだ後に背景が消えないと分かると選び直しになるため。2026-11-24 依頼者）。マスクが既にある候補は送らない（`merge` は前の回りのマスクを使い回す）。200 枚で 8 分ほど・数セント。消さないときは `--no-matte`
 3. 候補のページを Artifact で依頼者に見せる。番号で答えてもらう
 4. `.venv/bin/python -m artgen.cloud adopt local/rounds/<日時>.json <番号> [--flip]` で採用する（`--flip` は顔だけ左右反転する）。ページを作り直すときは `page <回りの記録>`
 5. `.venv/bin/python -m artgen.cloud install <id>` で `characters/<id>/source/` に取り込む。`source/` は丸ごと置き換わるが、`local/selected/<id>/` に選び直した全身絵が無いときは、今の `source/fullbody.png` を持ち越す（Colab の道で採った全身絵を消さないため）。表情（`face_*.png`）は持ち越さない（顔が変わると検査で落ちる）。以降（書き戻し・`python -m artgen.export <id>`）は 4 の流れと同じ

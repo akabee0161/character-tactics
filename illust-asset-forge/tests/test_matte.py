@@ -56,3 +56,35 @@ def test_harden_makes_unsure_background_transparent_and_keeps_a_soft_edge():
         mask.putpixel((x, 0), v)
     out = harden(mask)
     assert [out.getpixel((x, 0)) for x in range(5)] == [0, 0, 128, 255, 255]
+
+
+def _candidate(tmp_path, name="c1_face_1.png"):
+    p = tmp_path / "local/runs/c1/face/r/" / name
+    p.parent.mkdir(parents=True, exist_ok=True)
+    Image.new("RGB", (64, 64), (200, 200, 200)).save(p)
+    return p
+
+
+def test_candidate_mattes_are_cached_next_to_the_candidate(tmp_path):
+    from artgen.matte import candidate_matte_path, ensure_candidate_mattes
+
+    a, b = _candidate(tmp_path), _candidate(tmp_path, "c1_face_2.png")
+    calls = []
+
+    def run(images):
+        calls.append(sorted(images))
+        return MODEL_SHA256, {k: png_bytes(Image.new("L", (64, 64), 255)) for k in images}
+
+    ensure_candidate_mattes([a, b], run)
+    assert candidate_matte_path(a).is_file() and candidate_matte_path(b).is_file()
+    ensure_candidate_mattes([a, b], run)  # 2 回目は Modal を呼ばない
+    assert len(calls) == 1 and len(calls[0]) == 2
+
+
+def test_candidate_mattes_from_other_model_are_not_saved(tmp_path):
+    from artgen.matte import candidate_matte_path, ensure_candidate_mattes
+
+    a = _candidate(tmp_path)
+    with pytest.raises(ExportError, match="モデル"):
+        ensure_candidate_mattes([a], lambda images: ("0" * 64, {k: b"" for k in images}))
+    assert not candidate_matte_path(a).exists()

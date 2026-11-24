@@ -44,6 +44,7 @@ forge 本体も並行して開発が続く。forge の改善をこちらへ取�
 - `src/artgen/crop_review.py`（このゲームだけの変更。顔の構図・切り出しは forge 本体に戻さない）: `crop_review <id> <id> ...` で何人分かの承認用のページを 1 枚にまとめる `build_reviews` を足した。全員を先に検査し、1 人でも古ければ作らない。元画像・確認図は JPEG に縮める
 - `src/artgen/config.py`・`face_crop.py`・`export.py`（このゲームだけの変更。切り出しは forge 本体に戻さない）: `clear_colors` に任意の `min_rg`（r-g の下限）を足した。ally09 の背景（薄い茶）とシャツ（クリーム）が上限だけでは見分けられず、辺で切れたシャツが透明になったため。`params.json` には書いたときだけ記録する
 - `src/artgen/matte.py`・`modal_app.py`（`matte_remote`）・`cloud.py`（`cloud matte`）・`config.py`・`face_crop.py`・`export.py`（このゲームだけの変更。forge 本体に戻すかは、ゲームの開発が終わったら決める）: 顔の背景をアニメ絵用の背景除去モデル（anime-seg の isnetis.onnx）のマスクで透明にする `face_crop.matte` と、マスクから飾りを消す `face_crop.erase` を足した。色とつながりの方法では背景の飾りと髪に囲まれた白を消せなかったため。モデルは Modal の CPU で動かす（このサーバーはメモリ 1.9GB で推論できない）
+- `src/artgen/cloud.py`・`review_page.py`・`matte.py`（上と同じく、このゲームだけの変更）: `generate`・`merge`・`page` が、候補のページを作る前に全候補の背景を Modal で消し、候補の隣に背景を消した絵を並べる（`--no-matte` で止める）。選んだ後に背景が消えないと分かると選び直しになるため。`tests/conftest.py` で、テストから本物の Modal を呼べないようにした（この変更の途中で、テストが本物の Modal を 1 回起動したため）
 
 ## このゲームだけの変更
 

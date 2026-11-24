@@ -56,3 +56,25 @@ def test_page_thumbnails_are_jpeg_and_small(repo, tmp_path):
 def test_page_heading_falls_back_to_id_without_root(repo, tmp_path):
     html = build_page(make_round(repo), tmp_path / "p.html").read_text(encoding="utf-8")
     assert "<h2>c1</h2>" in html
+
+
+def test_page_shows_matted_thumbnail_next_to_each_candidate(repo, tmp_path):
+    from PIL import Image
+
+    from artgen.matte import candidate_matte_path
+
+    r = make_round(repo)
+    for c in r.candidates:
+        Image.new("L", Image.open(c.path).size, 0).save(candidate_matte_path(c.path))  # 全部背景
+    html = build_page(r, tmp_path / "p.html").read_text(encoding="utf-8")
+    uris = re.findall(r'src="(data:image/jpeg;base64,[^"]+)"', html)
+    assert len(uris) == 6  # 候補そのものと、背景を消した絵
+    assert html.count('class="cut"') == 3
+    assert "背景を消した" in html
+    for uri in uris:
+        assert len(uri) < 50_000  # 2 枚ずつでも 200 枚で 16MB に収まる大きさ
+
+
+def test_page_without_mattes_is_unchanged(repo, tmp_path):
+    html = build_page(make_round(repo), tmp_path / "p.html").read_text(encoding="utf-8")
+    assert 'class="cut"' not in html

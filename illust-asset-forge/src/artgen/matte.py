@@ -91,6 +91,27 @@ def load_matte(root: Path, char_id: str, name: str) -> Image.Image:
         return m.convert("L")
 
 
+def candidate_matte_path(candidate: Path) -> Path:
+    """候補（local/runs/ の PNG）のマスクの置き場。候補の隣に `<名前>.matte.png` で置く。"""
+    candidate = Path(candidate)
+    return candidate.with_name(candidate.stem + ".matte.png")
+
+
+def ensure_candidate_mattes(candidates: list[Path], run_matte) -> int:
+    """マスクがまだ無い候補だけを run_matte（Modal）に送り、候補の隣に置く。送った枚数を返す。
+    候補を選ぶ前に背景を消した絵を見られるようにするため（選んだ後に消えないと分かると手間）。"""
+    todo = {str(i): Path(p) for i, p in enumerate(candidates) if not candidate_matte_path(p).is_file()}
+    if not todo:
+        return 0
+    model_sha, masks = run_matte({k: p.read_bytes() for k, p in todo.items()})
+    if model_sha != MODEL_SHA256:
+        raise _error(f"候補のマスクを作ったモデルが違う（{model_sha[:12]}…。{MODEL_SHA256[:12]}… のはず）")
+    for k, p in todo.items():
+        with Image.open(io.BytesIO(masks[k])) as m:
+            m.convert("L").save(candidate_matte_path(p), format="PNG")
+    return len(todo)
+
+
 def isnet_mask(session, image: Image.Image) -> Image.Image:
     """onnxruntime のセッションで、image と同じ大きさのマスク（L）を作る。Modal の中で呼ぶ。"""
     import numpy as np

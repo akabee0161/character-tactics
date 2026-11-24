@@ -25,7 +25,7 @@ from artgen.export import ExportError
 from artgen.intake import install_selection, print_reports
 from artgen.jobs import collect_faces, load_jobs
 from artgen.local import local_commit, local_dirs, save_outputs
-from artgen.matte import save_mattes
+from artgen.matte import ensure_candidate_mattes, save_mattes
 from artgen.pnginfo import MissingParamsError
 from artgen.review_page import build_page
 from artgen.rounds import new_round, read_round, unused_run_id
@@ -36,6 +36,18 @@ _STOPS = (ConfigError, ExportError, MissingParamsError, OSError, RuntimeError)
 
 def _page_path(round_json: Path) -> Path:
     return round_json.with_suffix(".html")
+
+
+def _build(round_json: Path, root: Path, matte: bool) -> Path:
+    """候補のページを作る。matte なら、まだマスクの無い候補の背景を先に Modal で消す
+    （選んだ後に背景が消えないと分かると選び直しになるため、選ぶ前に見せる）。"""
+    round_ = read_round(round_json)
+    if matte:
+        from artgen import modal_app  # Modal はここでだけ import する
+
+        sent = ensure_candidate_mattes([c.path for c in round_.candidates], modal_app.run_matte)
+        print(f"背景を消した: {sent} 枚（済んでいた {len(round_.candidates) - sent} 枚は送っていない）")
+    return build_page(round_, _page_path(round_json), root=root)
 
 
 def cmd_generate(args: argparse.Namespace) -> None:
@@ -49,15 +61,14 @@ def cmd_generate(args: argparse.Namespace) -> None:
     paths = save_outputs(dirs.runs, outputs)
     run_id = unused_run_id(dirs.rounds, datetime.now().strftime("%Y%m%d_%H%M%S"))
     round_json = new_round(dirs.rounds, run_id, paths)
-    page = build_page(read_round(round_json), _page_path(round_json), root=root)
     print(f"{len(paths)} 枚できた")
+    page = _build(round_json, root, not args.no_matte)
     print(f"回りの記録: {round_json}")
     print(f"候補のページ: {page}")
 
 
 def cmd_page(args: argparse.Namespace) -> None:
-    round_json = args.round_json
-    page = build_page(read_round(round_json), _page_path(round_json), root=args.root.resolve())
+    page = _build(args.round_json, args.root.resolve(), not args.no_matte)
     print(f"候補のページ: {page}")
 
 
@@ -70,8 +81,8 @@ def cmd_merge(args: argparse.Namespace) -> None:
     paths = [c.path for r in args.rounds for c in sorted(read_round(r).candidates, key=lambda c: c.number)]
     run_id = unused_run_id(dirs.rounds, "merged_" + datetime.now().strftime("%Y%m%d_%H%M%S"))
     round_json = new_round(dirs.rounds, run_id, paths)
-    page = build_page(read_round(round_json), _page_path(round_json), root=root)
     print(f"{len(paths)} 枚をまとめた")
+    page = _build(round_json, root, not args.no_matte)
     print(f"回りの記録: {round_json}")
     print(f"候補のページ: {page}")
 
@@ -130,18 +141,24 @@ def cmd_install(args: argparse.Namespace) -> None:
     print_reports(reports)
 
 
+_NO_MATTE = "候補の背景を消さずにページを作る（既定では Modal で消して、隣に並べる）"
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="python -m artgen.cloud", description="Modal で作った候補を扱う")
     parser.add_argument("--root", type=Path, default=Path("."))
     sub = parser.add_subparsers(dest="command", required=True)
     p = sub.add_parser("generate", help="ジョブのファイルから Modal で生成する")
     p.add_argument("--jobs", type=Path, required=True)
+    p.add_argument("--no-matte", action="store_true", help=_NO_MATTE)
     p.set_defaults(func=cmd_generate)
     p = sub.add_parser("page", help="候補のページを作り直す")
     p.add_argument("round_json", type=Path)
+    p.add_argument("--no-matte", action="store_true", help=_NO_MATTE)
     p.set_defaults(func=cmd_page)
     p = sub.add_parser("merge", help="回りの記録をまとめ、通し番号の記録とページを作る")
     p.add_argument("rounds", nargs="+", type=Path)
+    p.add_argument("--no-matte", action="store_true", help=_NO_MATTE)
     p.set_defaults(func=cmd_merge)
     p = sub.add_parser("matte", help="顔の元画像の背景のマスクを Modal で作る")
     p.add_argument("chars", nargs="+")
