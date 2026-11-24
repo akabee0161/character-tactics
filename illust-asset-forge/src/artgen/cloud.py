@@ -45,7 +45,7 @@ def cmd_generate(args: argparse.Namespace) -> None:
     paths = save_outputs(dirs.runs, outputs)
     run_id = unused_run_id(dirs.rounds, datetime.now().strftime("%Y%m%d_%H%M%S"))
     round_json = new_round(dirs.rounds, run_id, paths)
-    page = build_page(read_round(round_json), _page_path(round_json))
+    page = build_page(read_round(round_json), _page_path(round_json), root=root)
     print(f"{len(paths)} 枚できた")
     print(f"回りの記録: {round_json}")
     print(f"候補のページ: {page}")
@@ -53,7 +53,8 @@ def cmd_generate(args: argparse.Namespace) -> None:
 
 def cmd_page(args: argparse.Namespace) -> None:
     round_json = args.round_json
-    print(f"候補のページ: {build_page(read_round(round_json), _page_path(round_json))}")
+    page = build_page(read_round(round_json), _page_path(round_json), root=args.root.resolve())
+    print(f"候補のページ: {page}")
 
 
 def cmd_adopt(args: argparse.Namespace) -> None:
