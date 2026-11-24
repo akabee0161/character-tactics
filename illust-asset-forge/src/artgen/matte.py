@@ -89,6 +89,11 @@ def save_mattes(
 
 def load_matte(root: Path, char_id: str, name: str) -> Image.Image:
     """元画像 name のマスクを読む。無い・元画像より古いときは止める。"""
+    return load_matte_with_sha(root, char_id, name)[0]
+
+
+def load_matte_with_sha(root: Path, char_id: str, name: str) -> tuple[Image.Image, str]:
+    """load_matte と同じで、読んだ bytes の SHA-256 も返す（書き出しの記録を、描画に使ったマスクに合わせるため）。"""
     d = matte_dir(root, char_id)
     record_path = d / "matte.json"
     redo = f"python -m artgen.cloud matte {char_id} で作る"
@@ -98,8 +103,9 @@ def load_matte(root: Path, char_id: str, name: str) -> Image.Image:
     src = Path(root) / "characters" / char_id / "source" / name
     if record.get("sources", {}).get(name) != _sha256(src):
         raise _error(f"characters/{char_id}/matte/{name}: 背景のマスクが元画像より古い。{redo}")
-    with Image.open(d / name) as m:
-        return m.convert("L")
+    data = (d / name).read_bytes()
+    with Image.open(io.BytesIO(data)) as m:
+        return m.convert("L"), hashlib.sha256(data).hexdigest()
 
 
 def candidate_matte_path(candidate: Path) -> Path:

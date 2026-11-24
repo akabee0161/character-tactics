@@ -408,3 +408,30 @@ def test_matte_export_checks_every_mask_before_touching_outputs(cropped_repo):
         export_character(cropped_repo, "c1")
     assert (face.read_bytes(), check.read_bytes()) == before
     assert _json.loads((cropped_repo / "characters/c1/params.json").read_text(encoding="utf-8"))["face_crop"]["matte"]
+
+
+def test_matte_record_uses_the_mask_that_was_drawn(cropped_repo, monkeypatch):
+    # 描画のあとで別の cloud matte がマスクを更新しても、記録は描画に使ったマスクの SHA-256 になる
+    import hashlib
+    import io
+
+    import artgen.export as E
+    from artgen.matte import MODEL_SHA256, save_mattes
+
+    write(cropped_repo, "characters/c1/character.yaml", MATTE_YAML)
+    _save_square_mask(cropped_repo)
+    mask_path = cropped_repo / "characters/c1/matte/face.png"
+    drawn_sha = hashlib.sha256(mask_path.read_bytes()).hexdigest()
+    real = E.render_face_matte
+
+    def render_then_replace(*args, **kwargs):
+        out = real(*args, **kwargs)
+        buf = io.BytesIO()
+        Image.new("L", (1024, 1024), 77).save(buf, format="PNG")
+        save_mattes(cropped_repo, "c1", {"face.png": buf.getvalue()}, MODEL_SHA256)
+        return out
+
+    monkeypatch.setattr(E, "render_face_matte", render_then_replace)
+    export_character(cropped_repo, "c1")
+    data = json.loads((cropped_repo / "characters/c1/params.json").read_text(encoding="utf-8"))
+    assert data["face_crop"]["matte_sha256"]["face.png"] == drawn_sha

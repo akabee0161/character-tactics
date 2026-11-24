@@ -12,7 +12,7 @@ from PIL import Image, ImageDraw
 
 from artgen.config import ConfigError, load_character, load_template
 from artgen.face_crop import render_face, render_face_matte
-from artgen.matte import harden, load_matte
+from artgen.matte import harden, load_matte_with_sha
 from artgen.pnginfo import MissingParamsError, read_params
 
 SMALL_EXPORT_SIZE = 128
@@ -28,10 +28,12 @@ def small_name(name: str) -> str:
     return f"{stem}-small{dot}{ext}"
 
 
-def face_crop_record(crop, source_dir: Path, names: list[str]) -> dict:
+def face_crop_record(crop, source_dir: Path, names: list[str], matte_shas: dict[str, str] | None = None) -> dict:
     """params.json の face_crop に書く記録。使った範囲と、切り出した元画像の SHA-256。
     承認用ページ（crop_review）が、書き出しが今の設定・今の元画像のものかを照合するのに使う。
-    マスクで透明にしたときは、使ったマスクの SHA-256 も記録する（マスクを作り直したら古いと分かるように）。"""
+    マスクで透明にしたときは、使ったマスクの SHA-256 も記録する（マスクを作り直したら古いと分かるように）。
+    matte_shas は書き出しが描画に使ったマスクの SHA-256（読み込んだ bytes から求めたもの）。
+    無ければ今のファイルから求める（crop_review が今のマスクと照合するとき）。"""
     record = {
         "large": list(crop.large),
         "small": list(crop.small) if crop.small is not None else None,
@@ -47,10 +49,13 @@ def face_crop_record(crop, source_dir: Path, names: list[str]) -> dict:
         record["matte"] = True
         if crop.erase:
             record["erase"] = [[list(p) for p in poly] for poly in crop.erase]
-        record["matte_sha256"] = {
-            n: hashlib.sha256((matte_dir / n).read_bytes()).hexdigest() if (matte_dir / n).is_file() else None
-            for n in sorted(names)
-        }
+        if matte_shas is not None:
+            record["matte_sha256"] = {n: matte_shas.get(n) for n in sorted(names)}
+        else:
+            record["matte_sha256"] = {
+                n: hashlib.sha256((matte_dir / n).read_bytes()).hexdigest() if (matte_dir / n).is_file() else None
+                for n in sorted(names)
+            }
     return record
 
 
@@ -162,11 +167,13 @@ def export_character(root: Path, char_id: str) -> list[Path]:
     # マスクも、今の出力を消したり書き換えたりする前に全部読んで検査する
     # （表情のマスクだけが古いときに、顔だけを書き換えてから止まると、出力と params.json が食い違う）
     masks: dict[str, Image.Image] = {}
+    mask_shas: dict[str, str] = {}  # 記録には、描画に使うこのマスクの SHA-256 を書く（後で更新されても食い違わない）
     if crop is not None and crop.matte:
         for src, _, size in plans:
             if size is None:
                 continue
-            mask = harden(load_matte(root, char_id, src.name))
+            loaded, mask_shas[src.name] = load_matte_with_sha(root, char_id, src.name)
+            mask = harden(loaded)
             draw = ImageDraw.Draw(mask)
             for polygon in crop.erase:
                 draw.polygon(polygon, fill=0)
@@ -211,7 +218,7 @@ def export_character(root: Path, char_id: str) -> list[Path]:
 
     if crop is not None:
         face_names = [src.name for src, _, size in plans if size is not None]
-        all_params["face_crop"] = face_crop_record(crop, source_dir, face_names)
+        all_params["face_crop"] = face_crop_record(crop, source_dir, face_names, mask_shas if crop.matte else None)
     params_path = char_dir / "params.json"
     params_path.write_text(
         json.dumps(all_params, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
