@@ -378,3 +378,33 @@ def test_matte_export_hardens_unsure_mask(cropped_repo):
     save_mattes(cropped_repo, "c1", {"face.png": buf.getvalue()}, MODEL_SHA256)
     export_character(cropped_repo, "c1")
     assert Image.open(cropped_repo / "characters/c1/face.png").getpixel((128, 128))[3] == 0
+
+
+def test_matte_export_checks_every_mask_before_touching_outputs(cropped_repo):
+    # 顔のマスクは最新、表情のマスクが無いとき、今の書き出しを消したり書き換えたりせずに止まる
+    write(cropped_repo, "characters/c1/character.yaml", MATTE_YAML)
+    _save_square_mask(cropped_repo)
+    export_character(cropped_repo, "c1")
+    face = cropped_repo / "characters/c1/face.png"
+    check = cropped_repo / "local/check/c1/face-large.png"
+    before = (face.read_bytes(), check.read_bytes())
+    import io
+
+    from artgen.matte import MODEL_SHA256, save_mattes
+
+    buf = io.BytesIO()
+    Image.new("L", (1024, 1024), 255).save(buf, format="PNG")  # 顔のマスクを作り直した（書き直せば絵が変わる）
+    save_mattes(cropped_repo, "c1", {"face.png": buf.getvalue()}, MODEL_SHA256)
+    put(cropped_repo, "face_hurt.png", (1024, 1024), "face", seed=1)
+    import json as _json
+
+    p = cropped_repo / "characters/c1/source/face_hurt.png"
+    from artgen.pnginfo import read_params, save_png
+
+    params = read_params(p)
+    params["expression"] = "hurt"
+    save_png(Image.open(p).convert("RGB"), p, params)
+    with pytest.raises(ExportError, match="face_hurt.png"):
+        export_character(cropped_repo, "c1")
+    assert (face.read_bytes(), check.read_bytes()) == before
+    assert _json.loads((cropped_repo / "characters/c1/params.json").read_text(encoding="utf-8"))["face_crop"]["matte"]

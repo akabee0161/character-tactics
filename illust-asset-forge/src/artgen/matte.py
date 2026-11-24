@@ -52,16 +52,26 @@ def matte_dir(root: Path, char_id: str) -> Path:
     return Path(root) / "characters" / char_id / "matte"
 
 
-def save_mattes(root: Path, char_id: str, masks: dict[str, bytes], model_sha256: str) -> list[Path]:
-    """masks（元画像の名前 → マスクの PNG）を検査してから置き、matte.json を書き直す。"""
+def save_mattes(
+    root: Path, char_id: str, masks: dict[str, bytes], model_sha256: str, sent: dict[str, bytes] | None = None
+) -> list[Path]:
+    """masks（元画像の名前 → マスクの PNG）を検査してから置き、matte.json を書き直す。
+    sent（Modal に送った元画像の bytes）があれば、記録する SHA-256 はそこから求め、今の元画像と違えば止める
+    （Modal の応答を待つあいだに元画像を差し替えると、古い絵のマスクを新しい絵のものとして登録してしまう）。"""
     if model_sha256 != MODEL_SHA256:
         raise _error(f"{char_id}: マスクを作ったモデルが違う（{model_sha256[:12]}…。{MODEL_SHA256[:12]}… のはず）")
     source_dir = Path(root) / "characters" / char_id / "source"
     images = {}
+    shas = {}
     for name, data in masks.items():
         src = source_dir / name
         if not src.is_file():
             raise _error(f"characters/{char_id}/source/{name}: 元画像が無い")
+        shas[name] = _sha256(src)
+        if sent is not None:
+            sent_sha = hashlib.sha256(sent[name]).hexdigest()
+            if sent_sha != shas[name]:
+                raise _error(f"characters/{char_id}/source/{name}: マスクを作っているあいだに元画像が差し替わった。作り直す")
         with Image.open(io.BytesIO(data)) as m, Image.open(src) as s:
             if m.size != s.size:
                 raise _error(f"{char_id}/{name}: マスクの大きさ {m.size} が元画像 {s.size} と違う")
@@ -72,7 +82,7 @@ def save_mattes(root: Path, char_id: str, masks: dict[str, bytes], model_sha256:
     for name, image in images.items():
         image.save(out_dir / name, format="PNG")
         written.append(out_dir / name)
-    record = {"model_sha256": model_sha256, "sources": {n: _sha256(source_dir / n) for n in sorted(images)}}
+    record = {"model_sha256": model_sha256, "sources": {n: shas[n] for n in sorted(images)}}
     (out_dir / "matte.json").write_text(json.dumps(record, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return written
 

@@ -108,3 +108,12 @@ def test_candidate_mattes_are_sent_in_batches_and_saved_per_batch(tmp_path, monk
         ensure_candidate_mattes(paths, run)
     assert sizes == [2, 2, 1]
     assert [candidate_matte_path(p).is_file() for p in paths] == [True, True, True, True, False]
+
+
+def test_save_rejects_mask_when_source_changed_after_sending(cropped_repo):
+    sent = (cropped_repo / "characters/c1/source/face.png").read_bytes()
+    put(cropped_repo, "face.png", (1024, 1024), "face", seed=99)  # 送ったあとで差し替えた
+    with pytest.raises(ExportError, match="差し替"):
+        save_mattes(cropped_repo, "c1", {"face.png": png_bytes(Image.new("L", (1024, 1024)))}, MODEL_SHA256,
+                    sent={"face.png": sent})
+    assert not (cropped_repo / "characters/c1/matte").exists()

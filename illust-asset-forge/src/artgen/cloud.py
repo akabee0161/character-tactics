@@ -113,7 +113,8 @@ def cmd_matte(args: argparse.Namespace) -> None:
     model_sha, masks = modal_app.run_matte(images)
     for char in args.chars:
         mine = {k.split("/", 1)[1]: v for k, v in masks.items() if k.split("/", 1)[0] == char}
-        save_mattes(root, char, mine, model_sha)
+        sent = {name: images[f"{char}/{name}"] for name in mine}
+        save_mattes(root, char, mine, model_sha, sent=sent)
         print(f"マスクを作った: {char}（{len(mine)} 枚）")
 
 

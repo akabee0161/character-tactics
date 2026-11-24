@@ -159,6 +159,19 @@ def export_character(root: Path, char_id: str) -> list[Path]:
             if crop.small is not None:
                 claim(char_dir / small_name(src.name), src.name)
                 claim(check_dir / _check_name(src.stem, "small"), src.name)
+    # マスクも、今の出力を消したり書き換えたりする前に全部読んで検査する
+    # （表情のマスクだけが古いときに、顔だけを書き換えてから止まると、出力と params.json が食い違う）
+    masks: dict[str, Image.Image] = {}
+    if crop is not None and crop.matte:
+        for src, _, size in plans:
+            if size is None:
+                continue
+            mask = harden(load_matte(root, char_id, src.name))
+            draw = ImageDraw.Draw(mask)
+            for polygon in crop.erase:
+                draw.polygon(polygon, fill=0)
+            masks[src.name] = mask
+
     wanted = set(owners)
     for name in accepted:
         stem = name.removesuffix(".png")
@@ -184,11 +197,7 @@ def export_character(root: Path, char_id: str) -> list[Path]:
                 jobs = [("large", crop.large, size, dest)]
                 if crop.small is not None:
                     jobs.append(("small", crop.small, SMALL_EXPORT_SIZE, char_dir / small_name(src.name)))
-                mask = harden(load_matte(root, char_id, src.name)) if crop.matte else None
-                if mask is not None and crop.erase:
-                    draw = ImageDraw.Draw(mask)
-                    for polygon in crop.erase:
-                        draw.polygon(polygon, fill=0)
+                mask = masks.get(src.name)
                 for kind, box, out_size, out_path in jobs:
                     if mask is not None:
                         rendered, check = render_face_matte(im, mask, box, out_size)
