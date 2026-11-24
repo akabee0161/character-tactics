@@ -1,0 +1,10 @@
+name: 村の人（男）
+subject: [1boy, solo, young man]
+appearance: [short hair, brown hair, tan skin, brown eyes, (straw hat:1.3)]
+outfit: [(fisherman clothes:1.2), rolled up sleeves, simple shirt]
+items: []
+default_expression: normal
+expressions:
+  normal: [smile, closed mouth]
+  hurt: [pain, clenched teeth, one eye closed, sweat]
+  shout: [shouting, open mouth]

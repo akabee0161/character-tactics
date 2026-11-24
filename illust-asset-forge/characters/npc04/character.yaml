@@ -1,0 +1,10 @@
+name: 鍛冶屋
+subject: [1boy, solo, adult, mature male, muscular]
+appearance: [short hair, dark brown hair, stubble, brown eyes, (headband:1.3)]
+outfit: [(leather apron:1.3), blacksmith, sleeveless shirt, soot]
+items: []
+default_expression: normal
+expressions:
+  normal: [confident grin]
+  hurt: [pain, clenched teeth, one eye closed, sweat]
+  shout: [shouting, open mouth, v-shaped eyebrows]

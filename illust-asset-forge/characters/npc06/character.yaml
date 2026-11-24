@@ -1,0 +1,10 @@
+name: 仕立て屋
+subject: [1boy, solo, middle-aged man, mature male]
+appearance: [short hair, neat hair, brown hair, mustache, brown eyes]
+outfit: [(measuring tape around neck:1.3), (vest:1.2), white shirt, tailor]
+items: []
+default_expression: normal
+expressions:
+  normal: [smile, closed mouth]
+  hurt: [pain, clenched teeth, one eye closed, sweat]
+  shout: [shouting, open mouth]

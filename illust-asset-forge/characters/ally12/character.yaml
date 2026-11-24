@@ -1,0 +1,10 @@
+name: ユナ
+subject: [1girl, solo, young woman]
+appearance: [ponytail, (dark brown hair:1.2), brown eyes]
+outfit: [(green hood:1.3), hood down, green cloak, hunter clothes, leather quiver strap]
+items: [holding bow]
+default_expression: normal
+expressions:
+  normal: [calm, closed mouth]
+  hurt: [pain, clenched teeth, one eye closed, sweat]
+  shout: [shouting, open mouth, v-shaped eyebrows]

@@ -1,0 +1,10 @@
+name: ピコ
+subject: [1boy, solo, small boy, child]
+appearance: [short hair, (light blue hair:1.2), blue eyes, cheerful, (bird wings:1.3), feathered wings]
+outfit: [(sky blue clothes:1.2), light blue tunic]
+items: []
+default_expression: normal
+expressions:
+  normal: [smile, open mouth]
+  hurt: [pain, clenched teeth, one eye closed, sweat]
+  shout: [shouting, open mouth]
