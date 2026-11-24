@@ -39,6 +39,7 @@ forge 本体も並行して開発が続く。forge の改善をこちらへ取�
 追加・直した（2026-11-24。工程 5「残りの顔グラ」）:
 
 - `src/artgen/review_page.py`（forge 本体に戻す候補）: 候補をキャラクターごとの見出し（`名前（ID）`）の下に並べ、サムネイルを PNG から JPEG（quality 80）にした。17 人 200 枚を 1 枚のページにすると PNG では Artifact の上限 16MB を超えるため。`build_page` は `root` を受け取り、`cloud generate`・`page` が渡す
+- `src/artgen/cloud.py`（forge 本体に戻す候補）: `cloud merge ROUND_JSON ROUND_JSON [...]` を足した。Modal の 1 回は 1 時間で打ち切られて絵が全部失われるので、人数が多いときは分けて動かし、記録を通し番号の 1 つ（`merged_<日時>.json`）と 1 枚のページにまとめる。元の記録は変えない
 
 ## このゲームだけの変更
 

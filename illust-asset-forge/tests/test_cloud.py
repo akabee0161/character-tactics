@@ -149,3 +149,56 @@ def test_install_replaces_fullbody_when_reselected(cli_env):
     old_bytes = old.read_bytes()
     assert cloud.main(["install", "c1"]) == 0
     assert old.read_bytes() != old_bytes
+
+
+def _two_rounds(cli_env):
+    forge_ = make_forge(cli_env)
+    rounds = cli_env / "local" / "rounds"
+    a = [*forge_.generate("c1", "face", seeds=[1, 2, 3])]
+    b = [*forge_.generate("c2", "face", seeds=[4, 5])]
+    return new_round(rounds, "ra", a), new_round(rounds, "rb", b), a, b
+
+
+def _merged(cli_env):
+    found = sorted((cli_env / "local" / "rounds").glob("merged_*.json"))
+    assert len(found) == 1
+    return found[0]
+
+
+def test_merge_renumbers_in_order_and_keeps_originals(cli_env, capsys):
+    from artgen.rounds import read_round
+
+    r1, r2, a, b = _two_rounds(cli_env)
+    before = (r1.read_text(), r2.read_text())
+    assert cloud.main(["merge", str(r1), str(r2)]) == 0
+    merged = _merged(cli_env)
+    data = read_round(merged)
+    assert [c.number for c in data.candidates] == [1, 2, 3, 4, 5]
+    assert [c.path.resolve() for c in data.candidates] == [p.resolve() for p in [*a, *b]]
+    assert merged.with_suffix(".html").is_file()
+    assert (r1.read_text(), r2.read_text()) == before
+    out = capsys.readouterr().out
+    assert str(merged) in out and "候補のページ" in out
+
+
+def test_merge_then_adopt_uses_merged_number(cli_env):
+    r1, r2, _, b = _two_rounds(cli_env)
+    assert cloud.main(["merge", str(r1), str(r2)]) == 0
+    assert cloud.main(["adopt", str(_merged(cli_env)), "4"]) == 0
+    from artgen.pnginfo import read_params
+
+    adopted = read_params(cli_env / "local/selected/c2/face.png")
+    assert (adopted["character"], adopted["seed"]) == ("c2", 4)  # 2 つ目の記録の 1 番（b[0]）
+
+
+def test_merge_missing_round_is_one_line(cli_env, capsys):
+    assert cloud.main(["merge", "nope.json", "nope2.json"]) == 1
+    out = capsys.readouterr().out
+    assert out.startswith("止まった:") and out.count("\n") == 1
+
+
+def test_merge_needs_two_rounds(cli_env, capsys):
+    r1, _, _, _ = _two_rounds(cli_env)
+    assert cloud.main(["merge", str(r1)]) == 1
+    out = capsys.readouterr().out
+    assert out.startswith("止まった:") and "2 つ以上" in out

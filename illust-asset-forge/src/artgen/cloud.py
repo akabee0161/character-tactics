@@ -2,6 +2,7 @@
 
     python -m artgen.cloud generate --jobs FILE
     python -m artgen.cloud page ROUND_JSON
+    python -m artgen.cloud merge ROUND_JSON ROUND_JSON [...]
     python -m artgen.cloud adopt ROUND_JSON NUMBER [--flip]
     python -m artgen.cloud install CHAR [CHAR ...]
 
@@ -57,6 +58,21 @@ def cmd_page(args: argparse.Namespace) -> None:
     print(f"候補のページ: {page}")
 
 
+def cmd_merge(args: argparse.Namespace) -> None:
+    """何回かに分けて作った回りを 1 つの記録とページにまとめる。番号は通しで振り直し、元の記録は変えない。"""
+    if len(args.rounds) < 2:
+        raise ConfigError("merge: 回りの記録を 2 つ以上渡す")
+    root = args.root.resolve()
+    dirs = local_dirs(root)
+    paths = [c.path for r in args.rounds for c in sorted(read_round(r).candidates, key=lambda c: c.number)]
+    run_id = unused_run_id(dirs.rounds, "merged_" + datetime.now().strftime("%Y%m%d_%H%M%S"))
+    round_json = new_round(dirs.rounds, run_id, paths)
+    page = build_page(read_round(round_json), _page_path(round_json), root=root)
+    print(f"{len(paths)} 枚をまとめた")
+    print(f"回りの記録: {round_json}")
+    print(f"候補のページ: {page}")
+
+
 def cmd_adopt(args: argparse.Namespace) -> None:
     root = args.root.resolve()
     dirs = local_dirs(root)
@@ -102,6 +118,9 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("page", help="候補のページを作り直す")
     p.add_argument("round_json", type=Path)
     p.set_defaults(func=cmd_page)
+    p = sub.add_parser("merge", help="回りの記録をまとめ、通し番号の記録とページを作る")
+    p.add_argument("rounds", nargs="+", type=Path)
+    p.set_defaults(func=cmd_merge)
     p = sub.add_parser("adopt", help="番号の候補を採用する")
     p.add_argument("round_json", type=Path)
     p.add_argument("number", type=int)
