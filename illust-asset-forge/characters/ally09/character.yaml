@@ -1,0 +1,10 @@
+name: バルド
+subject: [1boy, solo, adult, mature male]
+appearance: [short hair, (brown hair:1.2), (brown beard:1.2), brown eyes, sturdy]
+outfit: [(brown leather vest:1.2), rolled up sleeves, white shirt]
+items: [holding axe]
+default_expression: normal
+expressions:
+  normal: [serious, closed mouth]
+  hurt: [pain, clenched teeth, one eye closed, sweat]
+  shout: [shouting, open mouth, v-shaped eyebrows]

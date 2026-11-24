@@ -1,0 +1,10 @@
+name: ならず者（女・とがった髪）
+subject: [1girl, solo, adult woman]
+appearance: [long hair, (spiky hair:1.2), (grey hair:1.2), sharp eyes, glaring, scowl, scar on face, thug]
+outfit: [(purple tunic:1.2), ragged clothes, leather belt]
+items: [holding dagger]
+default_expression: normal
+expressions:
+  normal: [scowl, glaring, closed mouth]
+  hurt: [pain, clenched teeth, one eye closed, sweat]
+  shout: [shouting, open mouth, v-shaped eyebrows, angry]

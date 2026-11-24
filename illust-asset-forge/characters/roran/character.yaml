@@ -1,0 +1,10 @@
+name: ロラン
+subject: [1boy, solo, young man]
+appearance: [short hair, messy hair, (dark navy hair:1.2), grey eyes, serious face]
+outfit: [(grey blue tunic:1.2), dark grey cloak, high collar, leather belt, light armor]
+items: [holding sword, round shield, sword in right hand, shield in left hand]
+default_expression: normal
+expressions:
+  normal: [serious, closed mouth]
+  hurt: [pain, clenched teeth, one eye closed, sweat]
+  shout: [shouting, open mouth, v-shaped eyebrows]

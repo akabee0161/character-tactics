@@ -1,0 +1,10 @@
+name: リュカ
+subject: [1boy, solo, teenage boy]
+appearance: [short hair, (reddish brown hair:1.2), brown eyes, energetic]
+outfit: [(red jacket:1.2), leather breastplate]
+items: [holding spear]
+default_expression: normal
+expressions:
+  normal: [determined, closed mouth]
+  hurt: [pain, clenched teeth, one eye closed, sweat]
+  shout: [shouting, open mouth, v-shaped eyebrows]

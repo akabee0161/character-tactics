@@ -1,0 +1,10 @@
+name: イネス
+subject: [1girl, solo, young woman]
+appearance: [(magenta bandana:1.3), headscarf, long hair, pink hair, tan skin, brown eyes, thick eyebrows]
+outfit: [(yellow tunic:1.2), orange clothes, leather quiver strap]
+items: [holding bow, bow (weapon), arrow]
+default_expression: normal
+expressions:
+  normal: [confident, closed mouth]
+  hurt: [pain, clenched teeth, one eye closed, sweat]
+  shout: [shouting, open mouth, v-shaped eyebrows]

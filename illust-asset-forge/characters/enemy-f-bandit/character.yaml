@@ -1,0 +1,10 @@
+name: ならず者（女・赤い頭巾）
+subject: [1girl, solo, adult woman]
+appearance: [long hair, dark hair, (red hood:1.3), red bandana cap, sharp eyes, glaring, sneer, bandit]
+outfit: [(brown leather clothes:1.2), tan tunic, ragged clothes]
+items: [holding axe]
+default_expression: normal
+expressions:
+  normal: [sneer, glaring]
+  hurt: [pain, clenched teeth, one eye closed, sweat]
+  shout: [shouting, open mouth, v-shaped eyebrows, angry]

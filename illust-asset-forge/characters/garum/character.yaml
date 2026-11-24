@@ -1,0 +1,10 @@
+name: ガルム
+subject: [1boy, solo, adult, large male]
+appearance: [(full helmet:1.4), (helmet covering face:1.3), spiked helmet, crown-like spikes, dark visor, no visible face]
+outfit: [(dark steel armor:1.2), crimson accents, heavy plate armor, pauldrons, black knight]
+items: [holding sword, kite shield]
+default_expression: normal
+expressions:
+  normal: [glowing eyes through visor]
+  hurt: [scratched armor, dented helmet]
+  shout: [glowing eyes through visor, menacing]
