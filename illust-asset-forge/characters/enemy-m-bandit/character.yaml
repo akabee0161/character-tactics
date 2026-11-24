@@ -8,3 +8,7 @@ expressions:
   normal: [sneer, glaring]
   hurt: [pain, clenched teeth, one eye closed, sweat]
   shout: [shouting, open mouth, v-shaped eyebrows, angry]
+face_crop:
+  large: [10, 124, 622, 736]
+  small: [112, 259, 520, 667]
+  matte: true

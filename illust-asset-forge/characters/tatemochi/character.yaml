@@ -8,3 +8,7 @@ expressions:
   normal: [dark visor]
   hurt: [scratched armor, dented helmet]
   shout: [dark visor, menacing]
+face_crop:
+  large: [126, 0, 914, 788]
+  small: [257, 160, 783, 686]
+  matte: true

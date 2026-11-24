@@ -8,3 +8,7 @@ expressions:
   normal: [glowing eyes through visor]
   hurt: [scratched armor, dented helmet]
   shout: [glowing eyes through visor, menacing]
+face_crop:
+  large: [40, 209, 800, 969]
+  small: [167, 376, 673, 882]
+  matte: true

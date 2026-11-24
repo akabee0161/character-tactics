@@ -1,0 +1,48 @@
+{
+  "face.png": {
+    "adopted_from_sha256": "959efa14cd3520898589c4a129aa6ebe5b1523360b41b7f729a0bb743ebd96eb",
+    "character": "ally10",
+    "commit": "f6e1158",
+    "diffusers": "0.42.1",
+    "expression": "normal",
+    "flipped": false,
+    "gpu": "Tesla T4",
+    "guidance_scale": 5,
+    "height": 1024,
+    "model": "cagliostrolab/animagine-xl-4.0",
+    "negative_prompt": "monochrome, greyscale, sketch, lowres, bad anatomy, bad hands, text, error, missing finger, extra digits, fewer digits, cropped, worst quality, low quality, low score, bad score, average score, signature, watermark, username, blurry, 3d, realistic, messy hair, shiny hair, multicolored hair, streaked hair, detailed hair, colorful, vivid colors, saturated, full body, cowboy shot, from behind, profile, head out of frame, cropped head",
+    "num_inference_steps": 28,
+    "overrides": {},
+    "prompt": "1boy, solo, young man, short hair, (pale blonde hair:1.2), blue eyes, gentle face, (white and yellow priest robe:1.2), white robe, yellow trim, high collar, upper body, looking to the side, simple background, white background, gentle smile, closed mouth, thick outlines, flat color, limited palette, bold lineart, simple shading, masterpiece, high score, great score, absurdres",
+    "run_id": "20261124_012035",
+    "sampler": "Euler a",
+    "seed": 3397004561,
+    "style": "thick-line-flat",
+    "template": "face",
+    "torch": "2.14.1+cu130",
+    "transformers": "5.22.2",
+    "width": 1024
+  },
+  "face_crop": {
+    "clear_colors": [],
+    "large": [
+      110,
+      30,
+      938,
+      858
+    ],
+    "matte": true,
+    "matte_sha256": {
+      "face.png": "f934701539f5fea1079aa8d5d8f5357514f2ab374eefce613d5c1ee7042d935f"
+    },
+    "small": [
+      248,
+      212,
+      800,
+      764
+    ],
+    "source_sha256": {
+      "face.png": "5496b30794b930b880171f0f8d3446fd0d194a4e03b02db6dc6eefecb2413acb"
+    }
+  }
+}

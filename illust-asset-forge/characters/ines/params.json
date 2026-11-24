@@ -1,0 +1,75 @@
+{
+  "face.png": {
+    "character": "ines",
+    "commit": "d74b94a",
+    "diffusers": "0.42.1",
+    "expression": "normal",
+    "flipped": true,
+    "gpu": "Tesla T4",
+    "guidance_scale": 5,
+    "height": 1024,
+    "model": "cagliostrolab/animagine-xl-4.0",
+    "negative_prompt": "monochrome, greyscale, sketch, lowres, bad anatomy, bad hands, text, error, missing finger, extra digits, fewer digits, cropped, worst quality, low quality, low score, bad score, average score, signature, watermark, username, blurry, 3d, realistic, messy hair, shiny hair, multicolored hair, streaked hair, detailed hair, colorful, vivid colors, saturated, full body, cowboy shot, from behind, profile, head out of frame, cropped head",
+    "num_inference_steps": 28,
+    "overrides": {},
+    "prompt": "1girl, solo, young woman, (magenta bandana:1.3), headscarf, long hair, pink hair, tan skin, brown eyes, thick eyebrows, (yellow tunic:1.2), orange clothes, leather quiver strap, upper body, looking to the side, simple background, white background, confident, closed mouth, thick outlines, flat color, limited palette, bold lineart, simple shading, masterpiece, high score, great score, absurdres",
+    "run_id": "20261124_003212",
+    "sampler": "Euler a",
+    "seed": 760497974,
+    "style": "thick-line-flat",
+    "template": "face",
+    "torch": "2.14.1+cu130",
+    "transformers": "5.22.2",
+    "width": 1024
+  },
+  "face_crop": {
+    "clear_colors": [],
+    "erase": [
+      [
+        [
+          220,
+          305
+        ],
+        [
+          255,
+          305
+        ],
+        [
+          255,
+          400
+        ],
+        [
+          268,
+          425
+        ],
+        [
+          250,
+          435
+        ],
+        [
+          222,
+          415
+        ]
+      ]
+    ],
+    "large": [
+      100,
+      0,
+      820,
+      720
+    ],
+    "matte": true,
+    "matte_sha256": {
+      "face.png": "fae43471d1fc866bab3c9b367961d8f934bd0d4328a05069054951f191d6ea0d"
+    },
+    "small": [
+      220,
+      78,
+      700,
+      558
+    ],
+    "source_sha256": {
+      "face.png": "b38ff029f3d66b53c47893b628e8c224433f02e04cb31df92c7f784e98879b2d"
+    }
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "face.png": {
+    "adopted_from_sha256": "75b586a5d4064fd488af5b1d4b7d3a885ca5f02b8adb7a8c9f219fe2ece91ecd",
+    "character": "ally08",
+    "commit": "d74b94a",
+    "diffusers": "0.42.1",
+    "expression": "normal",
+    "flipped": false,
+    "gpu": "Tesla T4",
+    "guidance_scale": 5,
+    "height": 1024,
+    "model": "cagliostrolab/animagine-xl-4.0",
+    "negative_prompt": "monochrome, greyscale, sketch, lowres, bad anatomy, bad hands, text, error, missing finger, extra digits, fewer digits, cropped, worst quality, low quality, low score, bad score, average score, signature, watermark, username, blurry, 3d, realistic, messy hair, shiny hair, multicolored hair, streaked hair, detailed hair, colorful, vivid colors, saturated, full body, cowboy shot, from behind, profile, head out of frame, cropped head",
+    "num_inference_steps": 28,
+    "overrides": {},
+    "prompt": "1girl, solo, petite girl, twintails, (teal hair:1.2), teal eyes, cheerful, (teal dress:1.2), hunting horn hanging from neck, horn on neck strap, upper body, looking to the side, simple background, white background, smile, closed mouth, thick outlines, flat color, limited palette, bold lineart, simple shading, masterpiece, high score, great score, absurdres",
+    "run_id": "20261124_005517",
+    "sampler": "Euler a",
+    "seed": 3512167393,
+    "style": "thick-line-flat",
+    "template": "face",
+    "torch": "2.14.1+cu130",
+    "transformers": "5.22.2",
+    "width": 1024
+  },
+  "face_crop": {
+    "clear_colors": [],
+    "large": [
+      180,
+      20,
+      900,
+      740
+    ],
+    "matte": true,
+    "matte_sha256": {
+      "face.png": "46f090934ded1043babf7d09955fb647e08eb37846ef965d2a68d2957d60cc4f"
+    },
+    "small": [
+      300,
+      178,
+      780,
+      658
+    ],
+    "source_sha256": {
+      "face.png": "35dd8b238cd8f6cd7395740bf30f3a00356e064fe26d3ef13adaadea60f029b5"
+    }
+  }
+}

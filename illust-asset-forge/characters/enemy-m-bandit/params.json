@@ -1,0 +1,48 @@
+{
+  "face.png": {
+    "adopted_from_sha256": "937edc35fe4e62a5077361d674a62202d47dbf40b7605208a1cda7e6ce9df6a4",
+    "character": "enemy-m-bandit",
+    "commit": "d74b94a",
+    "diffusers": "0.42.1",
+    "expression": "normal",
+    "flipped": false,
+    "gpu": "Tesla T4",
+    "guidance_scale": 5,
+    "height": 1024,
+    "model": "cagliostrolab/animagine-xl-4.0",
+    "negative_prompt": "monochrome, greyscale, sketch, lowres, bad anatomy, bad hands, text, error, missing finger, extra digits, fewer digits, cropped, worst quality, low quality, low score, bad score, average score, signature, watermark, username, blurry, 3d, realistic, messy hair, shiny hair, multicolored hair, streaked hair, detailed hair, colorful, vivid colors, saturated, full body, cowboy shot, from behind, profile, head out of frame, cropped head",
+    "num_inference_steps": 28,
+    "overrides": {},
+    "prompt": "1boy, solo, adult, mature male, short hair, dark hair, (red hood:1.3), red bandana cap, sharp eyes, glaring, sneer, bandit, (brown leather clothes:1.2), tan tunic, ragged clothes, upper body, looking to the side, simple background, white background, thick outlines, flat color, limited palette, bold lineart, simple shading, masterpiece, high score, great score, absurdres",
+    "run_id": "20261124_003235",
+    "sampler": "Euler a",
+    "seed": 414705629,
+    "style": "thick-line-flat",
+    "template": "face",
+    "torch": "2.14.1+cu130",
+    "transformers": "5.22.2",
+    "width": 1024
+  },
+  "face_crop": {
+    "clear_colors": [],
+    "large": [
+      10,
+      124,
+      622,
+      736
+    ],
+    "matte": true,
+    "matte_sha256": {
+      "face.png": "6c9e690aa408ff5d352a91824b362f894d1ab7dc021e941289d53e6d5438a5dc"
+    },
+    "small": [
+      112,
+      259,
+      520,
+      667
+    ],
+    "source_sha256": {
+      "face.png": "3bbbbcbacfb6528942b33dfc837e2758bbb5588aa736ce5251aac89d884ad277"
+    }
+  }
+}

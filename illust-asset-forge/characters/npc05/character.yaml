@@ -8,3 +8,7 @@ expressions:
   normal: [gentle smile, closed mouth]
   hurt: [pain, clenched teeth, one eye closed, sweat]
   shout: [shouting, open mouth]
+face_crop:
+  large: [183, 31, 889, 737]
+  small: [301, 187, 771, 657]
+  matte: true

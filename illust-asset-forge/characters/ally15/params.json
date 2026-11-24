@@ -1,0 +1,47 @@
+{
+  "face.png": {
+    "character": "ally15",
+    "commit": "f6e1158",
+    "diffusers": "0.42.1",
+    "expression": "normal",
+    "flipped": true,
+    "gpu": "Tesla T4",
+    "guidance_scale": 5,
+    "height": 1024,
+    "model": "cagliostrolab/animagine-xl-4.0",
+    "negative_prompt": "monochrome, greyscale, sketch, lowres, bad anatomy, bad hands, text, error, missing finger, extra digits, fewer digits, cropped, worst quality, low quality, low score, bad score, average score, signature, watermark, username, blurry, 3d, realistic, messy hair, shiny hair, multicolored hair, streaked hair, detailed hair, colorful, vivid colors, saturated, full body, cowboy shot, from behind, profile, head out of frame, cropped head",
+    "num_inference_steps": 28,
+    "overrides": {},
+    "prompt": "1girl, solo, adult woman, female warrior, (braided hair:1.2), single braid, (orange hair:1.2), green eyes, (orange and brown light armor:1.2), leather armor, shoulder armor, upper body, looking to the side, simple background, white background, confident, closed mouth, thick outlines, flat color, limited palette, bold lineart, simple shading, masterpiece, high score, great score, absurdres",
+    "run_id": "20261124_014252",
+    "sampler": "Euler a",
+    "seed": 2518186578,
+    "style": "thick-line-flat",
+    "template": "face",
+    "torch": "2.14.1+cu130",
+    "transformers": "5.22.2",
+    "width": 1024
+  },
+  "face_crop": {
+    "clear_colors": [],
+    "large": [
+      238,
+      78,
+      742,
+      582
+    ],
+    "matte": true,
+    "matte_sha256": {
+      "face.png": "83dc8e3dabb801a062253850e5eb276ebf57e3447104a9396a429cf58f042f1f"
+    },
+    "small": [
+      322,
+      189,
+      658,
+      525
+    ],
+    "source_sha256": {
+      "face.png": "10eb6af3fad82a27f8fa34b1de7688193fbfc80bdd68eba52ae7bb4cf61227ee"
+    }
+  }
+}

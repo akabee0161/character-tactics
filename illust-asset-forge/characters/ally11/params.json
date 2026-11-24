@@ -1,0 +1,48 @@
+{
+  "face.png": {
+    "adopted_from_sha256": "e04c9c9117e6434e1c780e52ed2e9e6ed3315282f64da10f9e912acb92ab4551",
+    "character": "ally11",
+    "commit": "f6e1158",
+    "diffusers": "0.42.1",
+    "expression": "normal",
+    "flipped": false,
+    "gpu": "Tesla T4",
+    "guidance_scale": 5,
+    "height": 1024,
+    "model": "cagliostrolab/animagine-xl-4.0",
+    "negative_prompt": "monochrome, greyscale, sketch, lowres, bad anatomy, bad hands, text, error, missing finger, extra digits, fewer digits, cropped, worst quality, low quality, low score, bad score, average score, signature, watermark, username, blurry, 3d, realistic, messy hair, shiny hair, multicolored hair, streaked hair, detailed hair, colorful, vivid colors, saturated, full body, cowboy shot, from behind, profile, head out of frame, cropped head",
+    "num_inference_steps": 28,
+    "overrides": {},
+    "prompt": "1boy, solo, small boy, child, short hair, (light blue hair:1.2), blue eyes, cheerful, (bird wings:1.3), feathered wings, (sky blue clothes:1.2), light blue tunic, upper body, looking to the side, simple background, white background, smile, open mouth, thick outlines, flat color, limited palette, bold lineart, simple shading, masterpiece, high score, great score, absurdres",
+    "run_id": "20261124_012502",
+    "sampler": "Euler a",
+    "seed": 1577920075,
+    "style": "thick-line-flat",
+    "template": "face",
+    "torch": "2.14.1+cu130",
+    "transformers": "5.22.2",
+    "width": 1024
+  },
+  "face_crop": {
+    "clear_colors": [],
+    "large": [
+      64,
+      12,
+      928,
+      876
+    ],
+    "matte": true,
+    "matte_sha256": {
+      "face.png": "efad8e60cbaefc3df959cd258f6f4ae9629fb34813d31041bb7224cdde747732"
+    },
+    "small": [
+      208,
+      202,
+      784,
+      778
+    ],
+    "source_sha256": {
+      "face.png": "499bd3cdcc42b322df31faa16bbcaed2524774c09e5d12c6097b5f5bbe52334c"
+    }
+  }
+}

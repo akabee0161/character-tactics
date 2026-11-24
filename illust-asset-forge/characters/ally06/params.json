@@ -1,0 +1,48 @@
+{
+  "face.png": {
+    "adopted_from_sha256": "7b95b69d651f4faebe6b2e56cc2a609fc44bd401540b1c53eeb5bbb96c04815b",
+    "character": "ally06",
+    "commit": "d74b94a",
+    "diffusers": "0.42.1",
+    "expression": "normal",
+    "flipped": false,
+    "gpu": "Tesla T4",
+    "guidance_scale": 5,
+    "height": 1024,
+    "model": "cagliostrolab/animagine-xl-4.0",
+    "negative_prompt": "monochrome, greyscale, sketch, lowres, bad anatomy, bad hands, text, error, missing finger, extra digits, fewer digits, cropped, worst quality, low quality, low score, bad score, average score, signature, watermark, username, blurry, 3d, realistic, messy hair, shiny hair, multicolored hair, streaked hair, detailed hair, colorful, vivid colors, saturated, full body, cowboy shot, from behind, profile, head out of frame, cropped head",
+    "num_inference_steps": 28,
+    "overrides": {},
+    "prompt": "1girl, solo, young woman, long hair, purple hair, purple eyes, purple robe, long sleeves, hooded cape, upper body, looking to the side, simple background, white background, calm, closed mouth, thick outlines, flat color, limited palette, bold lineart, simple shading, masterpiece, high score, great score, absurdres",
+    "run_id": "20261124_005841",
+    "sampler": "Euler a",
+    "seed": 1519454140,
+    "style": "thick-line-flat",
+    "template": "face",
+    "torch": "2.14.1+cu130",
+    "transformers": "5.22.2",
+    "width": 1024
+  },
+  "face_crop": {
+    "clear_colors": [],
+    "large": [
+      0,
+      0,
+      864,
+      864
+    ],
+    "matte": true,
+    "matte_sha256": {
+      "face.png": "8cfdf4430a5f1d7c8977da201229a33d7f98ec3cabac34b61fb84bfcdeb86b99"
+    },
+    "small": [
+      98,
+      102,
+      674,
+      678
+    ],
+    "source_sha256": {
+      "face.png": "0b933f69a8a16c6a12a77de643cbe822c4b86f641fe7c5f0f464b691c0830d48"
+    }
+  }
+}
