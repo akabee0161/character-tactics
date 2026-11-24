@@ -10,8 +10,7 @@
 5. 残りの顔グラ 29 枚を作る（完了）
 段階: 完了
 次にやること:
-- 依頼者が頼んだら、feat/face-remaining から develop への PR（最終レビューの指摘 4 件は直した）
-- 背景除去（マスク・半透明の扱い・消す多角形・候補のページに並べる）を forge 本体（akabee0161/illust-asset-forge）に戻す。工程 5 の PR が develop に入ったあと、別のセッションで（依頼者と決めた。2026-11-24）。引き継ぎのプロンプトは Claude が用意する。Modal の道は forge の PR #6 で戻した（マージ済み）。ankardo の `new-game` スキルへの反映は、その後に相談する
+- 背景除去（マスク・半透明の扱い・消す多角形・候補のページに並べる）を forge 本体（akabee0161/illust-asset-forge）に戻す作業を、別のセッションで進めている（2026-11-24 開始）。終わったら `illust-asset-forge/UPSTREAM.md` の背景除去の行を「戻した（forge の PR 番号）」に直す。Modal の道は forge の PR #6 で戻した（マージ済み）。ankardo の `new-game` スキルへの反映は、その後に相談する
 - 工程 4 の結果を見て、ボルグのマップの絵を直すかを依頼者が決める（直すなら別の作業として相談）
 - Drive の置き場を `MyDrive/illust-asset-forge/character-tactics/` にしたい（依頼者。今は `MyDrive/character-tactics/illust-asset-forge/`。ゲームが増えるたびにフォルダが増えて分からなくなるため）。作業が落ち着いてから。直す所は `DRIVE_DIR`（ノートブックの変数とそのテスト `illust-asset-forge/tests/test_notebook.py`）・`illust-asset-forge/README.md`・`illust-asset-forge/CLAUDE.md`・`UPSTREAM.md`。Drive でのフォルダの移動は依頼者
 - 素体に耳を足す（依頼者の判断。`pixel-asset-forge/ISSUES.md`）。今はボルグの芯だけに耳がある
@@ -27,7 +26,7 @@
 - 採用した絵は、Google Drive のコネクター（`download_file_content`）で PNG の条件を残したまま取れる（2026-11-22 確かめた）。取った絵は会話に入り、ファイルとしても保存される
 
 
-工程 5 の結果（2026-11-24。feat/face-remaining、未 push）:
+工程 5 の結果（2026-11-24。PR #68 で develop にマージ済み。依頼者が develop のプレビューで顔を確かめた）:
 - 仲間・主人公・ガルム・敵（括り 8 枚）・村人の顔 29 枚を生成イラストにしてゲームに入れた。ボルグも同じ方法で書き出し直した（30 人）。設計 `docs/superpowers/specs/2026-11-23-face-remaining-design.md`、計画 `docs/superpowers/plans/2026-11-23-face-remaining.md`、台帳 `docs/superpowers/ledgers/2026-11-23-face-remaining.md`
 - 敵の顔は性別と頭の形の括り（`enemy-{m,f}-{thug,bandit,horn}`・盾持ち・まじない師）。`narazumono-face.png`・`yumihei-face.png` は消した
 - 背景は、色とつながりで消す方法では飾り（墨・金の筋・飛び散り）と髪に囲まれた白が残ったので、アニメ絵用の背景除去モデル（anime-seg）のマスクで消す方法に替えた（`face_crop.matte`）。モデルは Modal の CPU で動かす。**このサーバー（メモリ 1.9GB）でモデルを動かすとスワップで応答しなくなった**（2026-11-24、依頼者がプロセスを止めた）。迷った値は透明・不透明に寄せ（`harden`）、残った飾りは `face_crop.erase` の多角形で消す（今はイネスだけ）。リュカ・ノエル・ピコ・セラ・まじない師は、背景が消えやすい候補に選び直した
