@@ -73,9 +73,9 @@
 .venv/bin/python tools/compose.py compose/gau.json --check     # ガウは全24コマが部品から再現できる
 .venv/bin/python tools/compose.py compose/mist.json --check    # ミストも全24コマが部品から再現できる
 .venv/bin/python tools/compose.py compose/garum.json --check   # ガルム（48px）も全24コマが部品から再現できる
-.venv/bin/python tools/compose.py compose/borg.json --check    # ボルグも全24コマが部品から再現できる（入力がイラストのときの最初のユニット）
-.venv/bin/python tools/compose.py compose/ryuka.json --check   # リュカ（槍・男）も全24コマが部品から再現できる
-.venv/bin/python tools/compose.py compose/mira.json --check    # ミラ（槍・女）も全24コマが部品から再現できる
+.venv/bin/python tools/compose.py compose/ally05.json --check    # ボルグも全24コマが部品から再現できる（入力がイラストのときの最初のユニット）
+.venv/bin/python tools/compose.py compose/ally07.json --check   # リュカ（槍・男）も全24コマが部品から再現できる
+.venv/bin/python tools/compose.py compose/ally15.json --check    # ミラ（槍・女）も全24コマが部品から再現できる
 (set -e; for u in bandit knight horn thug; do .venv/bin/python tools/compose.py compose/dagger-$u.json --check; done)  # 短剣の敵4体も全24コマが部品から再現できる
 (set -e; for u in bandit horn bandit-a-f bandit-b-f bandit-c-f horn-b-f horn-c-f; do .venv/bin/python tools/compose.py compose/axe-$u.json --check; done)  # 斧の敵7体も全24コマが部品から再現できる
 (set -e; for u in knight thug thug-a-f thug-b-f thug-c-f; do .venv/bin/python tools/compose.py compose/spear-$u.json --check; done)  # 槍の敵5体も全24コマが部品から再現できる
@@ -169,6 +169,11 @@
 **新しく見つけたらそこに足すこと。** 報告して終わりにしない。直したら行ごと消す。
 README は「リポジトリの使い方」を書く場所なので、課題を書かない。
 （将来は GitHub Issues に移す予定。今は件数が多いのでローカルで管理している）
+
+## 部品・設定の名前にキャラクターの名前を使わない（2026-11-25 依頼者）
+
+キャラクターの名前は変わりうるので、部品のフォルダ・ファイル名、`compose/`・`checks/`・`sheets/` の名前と中の部品名には、名前（ryuka・mira・borg のような）を使わず、ゲームの ID を使う（`ally07`・`ally15`・`ally05`。例 `assets/part/hair/ally15/hair_ally15_down_base.txt`、`compose/ally07.json`）。
+新しい仲間の部品は ID で作る。ロラン・イネス・ガウ・ミスト・ガルムは、ゲームの ID 自体が名前（`roran` など）なので、まだ付け替えていない（付け替えるとゲームの ID・セーブ・テストにも及ぶので、依頼者と決める）。
 
 ## 勝手に決めないこと
 

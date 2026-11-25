@@ -1,0 +1,85 @@
+{
+  "unit": "ally15",
+  "compose": "compose/ally15.json",
+  "body": "female",
+  "head_chars": "",
+  "items": "stlmn",
+  "parts": {
+    "spear": {
+      "weapon": true,
+      "blade": "st",
+      "moves": true
+    },
+    "spear_hand": {
+      "fist": true,
+      "grips": "spear",
+      "fist_sizes": [
+        "3x2",
+        "2x3"
+      ],
+      "moves": true
+    },
+    "free_hand": {
+      "fist": true,
+      "fist_sizes": [
+        "2x2"
+      ]
+    },
+    "eye_E0": {
+      "eye": true
+    },
+    "hair_ally15": {
+      "head": true
+    },
+    "hair_ally15_back": {},
+    "cloth_ally15": {}
+  },
+  "orders": {
+    "down": [
+      "hair_ally15_back",
+      "CORE",
+      "eye_E0",
+      "cloth_ally15",
+      "hair_ally15",
+      "spear",
+      "spear_hand",
+      "free_hand"
+    ],
+    "up": [
+      "hair_ally15_back",
+      "spear",
+      "spear_hand",
+      "free_hand",
+      "CORE",
+      "eye_E0",
+      "cloth_ally15",
+      "hair_ally15"
+    ],
+    "left": [
+      "spear",
+      "spear_hand",
+      "hair_ally15_back",
+      "CORE",
+      "eye_E0",
+      "cloth_ally15",
+      "hair_ally15",
+      "free_hand"
+    ],
+    "right": [
+      "hair_ally15_back",
+      "free_hand",
+      "CORE",
+      "eye_E0",
+      "cloth_ally15",
+      "hair_ally15",
+      "spear",
+      "spear_hand"
+    ]
+  },
+  "weapon_check": {
+    "depth": [
+      "down"
+    ]
+  },
+  "exceptions": []
+}

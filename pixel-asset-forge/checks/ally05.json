@@ -1,0 +1,87 @@
+{
+  "unit": "ally05",
+  "compose": "compose/ally05.json",
+  "body": "male",
+  "head_chars": "",
+  "items": "GHJRKLMTUV",
+  "parts": {
+    "sword": {
+      "weapon": true,
+      "blade": "ij",
+      "moves": true
+    },
+    "sword_hand": {
+      "fist": true,
+      "grips": "sword",
+      "fist_sizes": [
+        "3x2"
+      ],
+      "moves": true
+    },
+    "shield": {
+      "fixed": true
+    },
+    "shield_hand": {
+      "fist": true,
+      "grips": "shield",
+      "fist_sizes": [
+        "3x2"
+      ]
+    },
+    "eye_E0": {
+      "eye": true
+    },
+    "hair_ally05": {
+      "head": true
+    },
+    "cloth_ally05": {}
+  },
+  "orders": {
+    "down": [
+      "CORE",
+      "eye_E0",
+      "cloth_ally05",
+      "hair_ally05",
+      "shield_hand",
+      "shield",
+      "sword",
+      "sword_hand"
+    ],
+    "up": [
+      "sword",
+      "shield",
+      "sword_hand",
+      "shield_hand",
+      "CORE",
+      "eye_E0",
+      "cloth_ally05",
+      "hair_ally05"
+    ],
+    "left": [
+      "sword",
+      "sword_hand",
+      "CORE",
+      "eye_E0",
+      "cloth_ally05",
+      "hair_ally05",
+      "shield_hand",
+      "shield"
+    ],
+    "right": [
+      "shield_hand",
+      "shield",
+      "CORE",
+      "eye_E0",
+      "cloth_ally05",
+      "hair_ally05",
+      "sword",
+      "sword_hand"
+    ]
+  },
+  "weapon_check": {
+    "depth": [
+      "down"
+    ]
+  },
+  "exceptions": []
+}
