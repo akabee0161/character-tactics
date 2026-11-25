@@ -181,6 +181,19 @@ gen/<unit>/                               1体のためのスクリプト（rora
 - 盾: 先のとがった形（面 8〜10px 幅）に、面の色を明るい灰にした。左向き・右向きは薄い縁だけで形は同じ
 - `tools/unit_picker.py` を拡張した: 層に `keep`、`layers` を向きごとに書ける（向きごとに盾と拳の重なり順が違うボルグの組み合わせを選ぶページに必要。`UPSTREAM.md`）
 
+### リュカ（槍、2026-11-25）
+
+入力は顔と全身絵（候補 4 番）。設定シート・決めたことの経緯は character-tactics の HANDOVER.md と台帳 `docs/superpowers/ledgers/2026-11-24-unit-art-all-1.md`。
+
+- 部品: 芯 `assets/part/body/ryuka/`（敵の男性の芯 `body/enemy_male/` の色替え。上着は赤・ズボンはベージュ・靴は暗い色。耳は描かない）、髪 `hair/ryuka/`（顔の前髪の長い乱れた短髪。耳は髪の形で避ける）、
+  上着・胸当て・肩当て `cloth/ryuka/`（高い襟の赤い上着、灰の胸当て、茶の肩当て。1 つの部品。外套は描かない）、槍 `equip/spear/ryuka/`（敵の槍 `equip/spear/male/` の形と位置の複製。色だけ赤）、
+  槍を握る拳・空き手 `fist/ryuka/`（敵の `fist/enemy_male/spear_hand_*`・`fist/gau/free_hand_*` を `skin_fair_*` に替えた写し）、目は `eye/E0`
+- 重なり順と動きは敵の槍（`checks/spear-thug.json`）と同じ（目・髪・上着を足しただけ）。槍は長さ 25px、握りは穂先から 12px
+- 色（すべてリュカ専用の色見本。`probe_colors.py` で輪郭・肌・互いと測り、HARD 0 件）: 髪 `hair_tawny_*`（顔の髪 `#c68e73` は肌の暗 `skin_shadow` と ΔE 5.6 で区別できないので、中を暗い `#b07354` にした）、上着 `jacket_scarlet_*`、
+  胸当て `armor_dove_*`（暗は刃の暗 `stone_shadow` と ΔE 10.0 の WARN。隣り合わない）、肩当て `shoulder_saddle_*`、ズボン `trousers_beige_*`、槍の柄 `spear_crimson_*`（`weapon`）、穂先 `spear_coral_*`（`blade`）
+- 顔と全身絵の食い違い: 髪・上着・胸当て・肩当ては顔、下半身は全身絵。全身絵の外套は描かない。槍は 1 本で赤（依頼者）。膝当ては 32px では見えないので描かない（Claude の判断）
+- 襟の上と下には、部品の輪郭（`o`）の行が要る（`part_outline` は、服の部品が肌・芯の服に直に接する縁を落とす）。襟の上は顎の下の row 13、下は row 15
+
 ### 短剣の持ち方（ガウ、標準のワークフローの試行）
 
 短剣のユニットの標準。手本は `assets/unit/gau/`。決めた経緯は character-tactics の
