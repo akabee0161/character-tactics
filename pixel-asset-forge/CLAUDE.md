@@ -73,7 +73,9 @@
 .venv/bin/python tools/compose.py compose/gau.json --check     # ガウは全24コマが部品から再現できる
 .venv/bin/python tools/compose.py compose/mist.json --check    # ミストも全24コマが部品から再現できる
 .venv/bin/python tools/compose.py compose/garum.json --check   # ガルム（48px）も全24コマが部品から再現できる
-.venv/bin/python tools/compose.py compose/borg.json --check    # ボルグも全24コマが部品から再現できる（入力がイラストのときの最初のユニット）
+.venv/bin/python tools/compose.py compose/ally05.json --check    # ボルグも全24コマが部品から再現できる（入力がイラストのときの最初のユニット）
+.venv/bin/python tools/compose.py compose/ally07.json --check   # リュカ（槍・男）も全24コマが部品から再現できる
+.venv/bin/python tools/compose.py compose/ally15.json --check    # ミラ（槍・女）も全24コマが部品から再現できる
 (set -e; for u in bandit knight horn thug; do .venv/bin/python tools/compose.py compose/dagger-$u.json --check; done)  # 短剣の敵4体も全24コマが部品から再現できる
 (set -e; for u in bandit horn bandit-a-f bandit-b-f bandit-c-f horn-b-f horn-c-f; do .venv/bin/python tools/compose.py compose/axe-$u.json --check; done)  # 斧の敵7体も全24コマが部品から再現できる
 (set -e; for u in knight thug thug-a-f thug-b-f thug-c-f; do .venv/bin/python tools/compose.py compose/spear-$u.json --check; done)  # 槍の敵5体も全24コマが部品から再現できる
@@ -147,6 +149,14 @@
 - 承認済みの重なり順（`checks/<ユニット>.json` の `orders`）は、絵を直して通す対象ではない。順そのものを変えたいときは、変える前に依頼者に確認する
 - 古い作り方の絵（2026-11-05 に消した `gen/enemy/` で作った絵など）と食い違っても、部品と道具の側に従う。古い絵は依頼者が全部を見きれていない
 
+## 絵のイメージを変えるときは、先に変える場所を赤枠の絵で見せる（2026-11-25 依頼者）
+
+髪型・服・持ち物の形のような、見た目のイメージを変える直しは、描く前に認識を合わせる。
+- **まず、変えようと思う場所を、赤枠で囲んだ絵で見せる**（今の絵と、赤枠を重ねた絵を並べる。印なしの絵も添える）。何をどう変えるかの短い説明を付ける
+- 依頼者の指示（もっと右・左・長く・短く など）を受けてから描く。**描く前に、確認の道具・書き出し・テストを流さない**（描くことが決まってから流す）
+- 描いた後は、変えた画素の前後と差分を赤枠で見せる（変えた画素の数も書く）
+- 依頼者が「戻して」と言ったときは、`git revert` で直前の変更を取り消す
+
 ## 新しい機械チェックを思いついたら、まず偽陽性を数える
 
 案の段階で良さそうに見えたチェックが、**3回とも実測して初めて撤回か下方修正に
@@ -167,6 +177,11 @@
 **新しく見つけたらそこに足すこと。** 報告して終わりにしない。直したら行ごと消す。
 README は「リポジトリの使い方」を書く場所なので、課題を書かない。
 （将来は GitHub Issues に移す予定。今は件数が多いのでローカルで管理している）
+
+## 部品・設定の名前にキャラクターの名前を使わない（2026-11-25 依頼者）
+
+キャラクターの名前は変わりうるので、部品のフォルダ・ファイル名、`compose/`・`checks/`・`sheets/` の名前と中の部品名には、名前（ryuka・mira・borg のような）を使わず、ゲームの ID を使う（`ally07`・`ally15`・`ally05`。例 `assets/part/hair/ally15/hair_ally15_down_base.txt`、`compose/ally07.json`）。
+新しい仲間の部品は ID で作る。ロラン・イネス・ガウ・ミスト・ガルムは、ゲームの ID 自体が名前（`roran` など）なので、まだ付け替えていない（付け替えるとゲームの ID・セーブ・テストにも及ぶので、依頼者と決める）。
 
 ## 勝手に決めないこと
 

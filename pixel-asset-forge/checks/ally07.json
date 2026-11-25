@@ -1,0 +1,80 @@
+{
+  "unit": "ally07",
+  "compose": "compose/ally07.json",
+  "body": "male",
+  "head_chars": "",
+  "items": "stlmn",
+  "parts": {
+    "spear": {
+      "weapon": true,
+      "blade": "st",
+      "moves": true
+    },
+    "spear_hand": {
+      "fist": true,
+      "grips": "spear",
+      "fist_sizes": [
+        "3x2",
+        "2x3"
+      ],
+      "moves": true
+    },
+    "free_hand": {
+      "fist": true,
+      "fist_sizes": [
+        "2x2"
+      ]
+    },
+    "eye_E0": {
+      "eye": true
+    },
+    "hair_ally07": {
+      "head": true
+    },
+    "cloth_ally07": {}
+  },
+  "orders": {
+    "down": [
+      "CORE",
+      "eye_E0",
+      "cloth_ally07",
+      "hair_ally07",
+      "spear",
+      "spear_hand",
+      "free_hand"
+    ],
+    "up": [
+      "spear",
+      "spear_hand",
+      "free_hand",
+      "CORE",
+      "eye_E0",
+      "cloth_ally07",
+      "hair_ally07"
+    ],
+    "left": [
+      "spear",
+      "spear_hand",
+      "CORE",
+      "eye_E0",
+      "cloth_ally07",
+      "hair_ally07",
+      "free_hand"
+    ],
+    "right": [
+      "free_hand",
+      "CORE",
+      "eye_E0",
+      "cloth_ally07",
+      "hair_ally07",
+      "spear",
+      "spear_hand"
+    ]
+  },
+  "weapon_check": {
+    "depth": [
+      "down"
+    ]
+  },
+  "exceptions": []
+}
