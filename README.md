@@ -251,7 +251,7 @@ cd pixel-asset-forge
 python3 tools/anim-page.py assets/units/roran.json out/anim/roran.html
 ```
 
-シートは `assets/images/` に書き出した PNG を読むので、`export.py` の後に作る。ページは画像を埋め込んだ HTML 1枚で、ブラウザでそのまま開ける。依頼者に見せるときは、この HTML を Artifact として公開する。ひな形は `tools/anim-page.html`。
+シートは `assets/images/` に書き出した PNG を読むので、`export.py` の後に作る。ページは画像を埋め込んだ HTML 1枚で、ブラウザでそのまま開ける。依頼者に見せるときは、この HTML を Artifact として公開する。ひな形は `tools/anim-page.html`。ユニットの JSON の `sprites.face`（ゲームの顔グラフィック）と、`illust-asset-forge/characters/<id>/source/fullbody.png`（全身絵）があれば、ページの上にも載る（ドット絵と見比べる用。無ければ載らない）。
 
 ## イラストの作りかた
 

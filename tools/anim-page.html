@@ -74,6 +74,13 @@
   .seg input:checked + label { background: var(--ink); color: var(--ground); border-color: var(--ink); }
   .check { display: flex; align-items: center; gap: 6px; color: var(--ink); cursor: pointer; }
 
+  .refs { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 16px; margin-bottom: 22px; }
+  .refs figure { margin: 0; display: grid; gap: 6px; min-width: 0; max-width: 100%; }
+  .refs img { display: block; max-width: 100%; height: auto; border: 1px solid var(--line); background: var(--panel); }
+  .refs[hidden] { display: none; }
+  .refs img.face { width: 256px; }
+  .refs img.fullbody { width: 288px; }
+  .refs figcaption { font-size: 12px; color: var(--muted); }
   .grid { display: grid; gap: 22px; }
   .state { display: grid; gap: 8px; }
   .state h2 {
@@ -135,6 +142,8 @@
     <label class="check"><input type="checkbox" id="foot"> <span id="foot-text">足元の線（y=30）</span></label>
   </div>
 
+  <div class="refs" id="refs" hidden></div>
+
   <div class="grid" id="grid"></div>
 
   <footer id="foot-note"></footer>
@@ -160,6 +169,22 @@ document.getElementById("title").textContent = document.title;
   const code = document.createElement("code");
   code.textContent = CONFIG.sheetName;
   sub.append("シート ", code, `（1コマ ${F}px）。行は「状態 × 4方向」で、ゲームと同じ fps で再生する。`);
+}
+{
+  // 顔グラフィックと全身絵（あれば）。ドット絵と見比べる参考
+  const box = document.getElementById("refs");
+  for (const ref of CONFIG.refs || []) {
+    const fig = document.createElement("figure");
+    const img = document.createElement("img");
+    img.className = ref.kind;
+    img.src = ref.src;
+    img.alt = `${CONFIG.name}の${ref.label}`;
+    const cap = document.createElement("figcaption");
+    cap.textContent = ref.label;
+    fig.append(img, cap);
+    box.append(fig);
+  }
+  box.hidden = !box.children.length;
 }
 document.getElementById("foot-note").textContent =
   "大きい絵は拡大、右の小さい絵は等倍と2倍。止めているときは「1コマ送る」で全部のマスが1コマずつ進む。";

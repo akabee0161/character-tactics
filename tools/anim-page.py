@@ -6,6 +6,7 @@
 
 ユニットの JSON の sprites.map（シート・1コマの大きさ・状態ごとのコマ数と fps）を読み、
 シートと地面のタイル（assets/images/tile-plain.png）を data: URI で埋め込む。
+ユニットの顔グラフィック（sprites.face）と、illust-asset-forge/characters/<id>/source/fullbody.png の全身絵があれば、ページの上にも載せる。
 外のファイルを読まないので、ブラウザで開くことも、Artifact として公開することもできる。
 標準ライブラリだけで動く。
 """
@@ -15,6 +16,7 @@ import sys
 from pathlib import Path
 
 IMAGES = Path("assets/images")
+FORGE_CHARACTERS = Path("illust-asset-forge/characters")
 TEMPLATE = Path(__file__).with_name("anim-page.html")
 STATES = (("idle", "待機"), ("walk", "歩き"), ("attack", "攻撃"))
 DIRS = ["下（正面）", "上（背面）", "左", "右"]  # シートの行の順（state_index * 4 + direction_index）
@@ -62,7 +64,20 @@ def main() -> int:
         if not path.is_file():
             print(f"{path} が無い（リポジトリの直下で実行する）", file=sys.stderr)
             return 1
+    # 顔グラフィック（ゲームの大きい顔）と全身絵（illust-asset-forge の参考資料）。あれば載せ、無ければ載せない
+    refs = []
+    face_name = unit.get("sprites", {}).get("face")
+    if isinstance(face_name, str) and face_name:
+        face = (IMAGES / face_name).resolve()
+        if face.is_relative_to(IMAGES.resolve()) and face.is_file():
+            refs.append({"label": "顔グラフィック", "src": data_uri(face), "kind": "face"})
+    unit_id = unit.get("id")
+    if isinstance(unit_id, str) and unit_id and "/" not in unit_id and ".." not in unit_id:
+        full = FORGE_CHARACTERS / unit_id / "source" / "fullbody.png"
+        if full.is_file():
+            refs.append({"label": "全身絵（参考資料）", "src": data_uri(full), "kind": "fullbody"})
     config = {
+        "refs": refs,
         "name": name,
         "frame": frame,
         "footY": FOOT_Y if frame == 32 else None,
