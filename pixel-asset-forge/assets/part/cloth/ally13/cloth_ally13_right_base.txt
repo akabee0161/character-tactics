@@ -1,4 +1,4 @@
-# ally13 の肩当てと革のバンド right（描き直す途中の土台）
+# ally13 の肩当てと革のバンド right（ally07 の肩当てと胸の部品の色替え）
 # type: unit
 # size: 32x32
 # light: upper-left

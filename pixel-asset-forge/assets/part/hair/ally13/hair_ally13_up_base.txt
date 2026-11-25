@@ -1,4 +1,4 @@
-# ally13 の髪 up（描き直す途中の土台）
+# ally13 の髪 up（ally07 の髪の色替え）
 # type: unit
 # size: 32x32
 # light: upper-left

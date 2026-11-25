@@ -1,4 +1,4 @@
-# ally09 の斧を握る拳 up_atk_wind（敵の男性の拳を肌の色だけ替えた写し）
+# ally13 の斧を握る拳 up_atk_wind（敵の男性の拳を肌の色だけ替えた写し）
 # type: unit
 # size: 32x32
 # light: upper-left

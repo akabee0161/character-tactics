@@ -7,7 +7,7 @@ Ruling: 実行方法は Native（このセッションで私が実装） — 依
 Ruling: 作業は今のチェックアウト（worktree を作らない） — ~/.claude/rules/git-workflow.md「逐次の実装は worktree を使わない」。
 Ruling: PR のマージは依頼者の合図を待つ — 依頼者（2026-11-25）。メモリに記録済み。
 Task 2: Ruling: 芯・斧・拳は既存部品の色替えの写し（芯 = ally07 の芯、斧 = equip/axe/male、斧の拳 = fist/enemy_male の肌を skin_fair、空き手 = ally07 のもの）、髪と髭・ベストと袖だけを新しく描いた — 計画の「形と位置は敵の斧のまま、色だけ替える」に従う — 髪・ベストの形は依頼者の指摘で直す
-Task 2: Ruling: 髭は髪の部品（hair/ally09）に入れた。part_outline・head_cover_check とも通った — Review Focus 2 の確認
+Task 2: Ruling: 髭は髪の部品（hair/ally09）に入れた。part_outline は通った。head_cover_check は被り物が無いので検査の対象外（髪と被り物の両方があるコマだけを見る）— Review Focus 2 は part_outline の通過だけで確かめた
 Task 2: Ruling: 顔と全身絵の食い違いは顔を正（髪・髭・ベストの色と形）、ズボン・靴は全身絵。腰の小物入れは描かない — 依頼者の追加指示（確認せず進める）
 Task 2: Ruling: 後ろ向きのベストの上の縁（row 18 の中央）を輪郭で閉じた — part_outline が落ちたため、道具に従って直した
 Task 2: Ruling: 色見本の警告 2 件（linen の明と中 ΔE 9.8、bark の中と暗 10.0）を、色を少し離して解消した — check_colors の警告
@@ -23,3 +23,12 @@ Task 3: 書き出しで変わった PNG は ally13-map.png だけ（Review Focus
 Task 2: complete (commits e0308fb..7416dd4, tests: unit_rules ally09 全通過・compose --check 0)
 Task 3: complete (commits 7416dd4..f82d8d9, tests: unit_rules ally13 全通過・compose --check 0)
 Tests (Task 2・3 まとめて): npm test 1276 件 OK・npm run build OK・forge unittest 804 件 OK
+Task 4: complete (commits 8cfead0.., 最終レビューの直し込み。台帳と HANDOVER の更新)
+Final: 最終レビュー（opus の code-reviewer、origin/develop..8cfead0）。重要 0、軽微 7。私が確かめて、1・2・3・4・6 を直した
+Final: fixed SPEC の「weapon_check の例外は無い」（実際は partial の 2 コマ）— types/unit/SPEC.md のバルド・オルトの節。checks/ally09.json・ally13.json の weapon_check.partial を確認。文書だけの直しなので失敗するテストは無し、validate 2151 件・unit_rules 両ユニット 0
+Final: fixed SPEC・HANDOVER の「大柄は面積で出した」「形で見分ける」「肩当てを描いた」（実際はリュカの形の色替えで、大柄の形の違いは無い）— 事実に合わせた。大柄を出すかは依頼者が絵を見て決める
+Final: fixed 部品の 1 行目のコメント（リュカの名前・持ち主の取り違え・描き直す途中の土台）55 ファイル — grep でキャラクターの名前が 0 件、compose --check 0
+Final: fixed 色見本 ember・pauldron・harness の説明に残っていた別の組の文を直した（ember は scarlet との WARN ΔE 6〜7 を書いた）
+Final: fixed Task 2 の Ruling の「head_cover_check も通った」— 被り物が無いので検査の対象外。part_outline の通過だけで確かめた、と直した
+Final: minor (deferred): 色見本が似た組が 2 つ — forge_hi/cleaver_hi ΔE 1.6、forge_base/cleaver_base ΔE 2.6（HARD）、walnut/ironwood ΔE 6.8〜6.9。バルドとオルトは隣り合わない。共有するかは依頼者の判断
+Final: minor (deferred): バルドの髭が目の下の行（y=12）の鼻の位置まで来ている（顔グラは口ひげが鼻の下から）。道具は通っている。依頼者が絵を見て決める

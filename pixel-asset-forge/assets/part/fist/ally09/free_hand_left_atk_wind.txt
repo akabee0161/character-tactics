@@ -1,4 +1,4 @@
-# リュカ left_atk_wind の空き手の拳
+# ally09 の空き手の拳 left_atk_wind（ally07 の空き手の拳の写し）
 # type: unit
 # size: 32x32
 # light: upper-left
