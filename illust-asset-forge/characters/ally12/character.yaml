@@ -1,8 +1,9 @@
 name: ユナ
 subject: [1girl, solo, young woman]
 appearance: [ponytail, (dark brown hair:1.2), brown eyes]
-outfit: [(green hood:1.3), hood down, green cloak, hunter clothes, leather quiver strap, green bandana on head, green headscarf]
-items: [holding bow, quiver on back]
+outfit: [(green hood:1.3), hood down, green cloak, hunter clothes, leather quiver strap]
+# 全身絵を頭巾つきにするタグ（2026-11-25）。items は全身絵にだけ効く（outfit に書くと顔の生成にも効く）
+items: [holding bow, quiver on back, green bandana on head, green headscarf]
 default_expression: normal
 expressions:
   normal: [calm, closed mouth]
