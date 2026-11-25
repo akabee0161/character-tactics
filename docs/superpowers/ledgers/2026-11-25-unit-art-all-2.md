@@ -32,3 +32,5 @@ Final: fixed 色見本 ember・pauldron・harness の説明に残っていた別
 Final: fixed Task 2 の Ruling の「head_cover_check も通った」— 被り物が無いので検査の対象外。part_outline の通過だけで確かめた、と直した
 Final: minor (deferred): 色見本が似た組が 2 つ — forge_hi/cleaver_hi ΔE 1.6、forge_base/cleaver_base ΔE 2.6（HARD）、walnut/ironwood ΔE 6.8〜6.9。バルドとオルトは隣り合わない。共有するかは依頼者の判断
 Final: minor (deferred): バルドの髭が目の下の行（y=12）の鼻の位置まで来ている（顔グラは口ひげが鼻の下から）。道具は通っている。依頼者が絵を見て決める
+Final: Ruling: オルトの大柄は、リュカと同じ形のままで OK — 依頼者（2026-11-25）「オルトは OK」 — 大柄に見せる形の違いは無い
+Final: fixed バルドの髭が鼻の位置まで来ていた — 依頼者の指摘（要修正）。赤枠の案のあと、依頼者の指示（正面は赤枠を下に 1px 広げる・左右は目の後ろ側の髭も 1px 下げる）どおりに描いた。変えた画素 13（正面 4・左 5・右 4）、validate・compose --check・unit_rules ally09 とも 0。画像を書き出した（ally09-map.png だけが変わった）。依頼者が見て OK
