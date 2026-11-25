@@ -77,6 +77,7 @@
 .venv/bin/python tools/compose.py compose/ally07.json --check   # リュカ（槍・男）も全24コマが部品から再現できる
 .venv/bin/python tools/compose.py compose/ally15.json --check    # ミラ（槍・女）も全24コマが部品から再現できる
 .venv/bin/python tools/compose.py compose/ally09.json --check    # バルド（斧・男）も全24コマが部品から再現できる
+.venv/bin/python tools/compose.py compose/ally13.json --check    # オルト（斧・男・大柄）も全24コマが部品から再現できる
 (set -e; for u in bandit knight horn thug; do .venv/bin/python tools/compose.py compose/dagger-$u.json --check; done)  # 短剣の敵4体も全24コマが部品から再現できる
 (set -e; for u in bandit horn bandit-a-f bandit-b-f bandit-c-f horn-b-f horn-c-f; do .venv/bin/python tools/compose.py compose/axe-$u.json --check; done)  # 斧の敵7体も全24コマが部品から再現できる
 (set -e; for u in knight thug thug-a-f thug-b-f thug-c-f; do .venv/bin/python tools/compose.py compose/spear-$u.json --check; done)  # 槍の敵5体も全24コマが部品から再現できる
