@@ -31,7 +31,7 @@ forge 本体も並行して開発が続く。forge の改善をこちらへ取�
 - 候補のページ: `src/artgen/rounds.py`（1 回りの記録）・`review_page.py`（候補を番号順に全部並べる HTML）。`intake.py` に `print_reports` を切り出した。画素を数えて頭が切れた候補を外す道具は試したが、髪と鎧を区別できず外しすぎたので入れていない
 - forge の PR #6 のレビュー（CodeRabbit）で見つかり、forge 側だけで直したもの（このコピーには同じ問題が残っている。2026-11-24）: `cloud install` が `local/selected/` に残った前回の全身絵で、その後 Colab の道で直した `source/fullbody.png` を戻す／全身だけを採用すると `source/face.png` が消える（forge は前回の取り込みの後に採用し直した絵だけを入れ、ほかを持ち越す）・`load_jobs` が `char`・`template` のパスのような名前を Modal の起動前に止めない・`cloud generate` の `--root` が Modal に送るフォルダと違っても止まらない・`save_outputs` と `new_round` が既にある絵・記録を置き換えうる・`save_outputs` が書き込みの途中で失敗すると、書いた分と書きかけの絵が残る（forge は消す）
 
-追加・直した（2026-11-23。工程 4「表示の大きさと顔の構図」。forge 本体に戻す候補）:
+追加・直した（2026-11-23。工程 4「表示の大きさと顔の構図」）。下の `templates/face.yaml` は戻した（forge の PR #8。2026-11-25 にマージ）。顔の切り出し（`face_crop`）は、forge ではテンプレートごとの `cutouts` に広げて戻した（forge の PR #8。2026-11-25 にマージ）。forge の `cutouts` は `face_crop` と別の実装で、設定の書き方が違うので、このコピーの `face_crop` は forge に合わせ直すまでこのゲームだけの実装として残る:
 
 - `templates/face.yaml`: 顔の写し方を `portrait` から `upper body` に替え、ネガティブから `upper body` を外した（`portrait` が顔を寄せて頭が上の辺で切れるため。依頼者が承認）。見本 4 人の絵は古いテンプレートで作ったまま
 - `src/artgen/config.py`・`face_crop.py`・`export.py`・`crop_review.py`: `character.yaml` の `face_crop`（大きい顔・小さい顔の切り出し範囲と `clear_colors`）、外につながる背景の透明化、書き出しの 2 枚（`face.png` 256px・`face-small.png` 128px）と確認図（`local/check/<id>/`）、承認用のページ（`python -m artgen.crop_review <id>`）を足した
@@ -39,12 +39,12 @@ forge 本体も並行して開発が続く。forge の改善をこちらへ取�
 
 追加・直した（2026-11-24。工程 5「残りの顔グラ」）:
 
-- `src/artgen/review_page.py`（forge 本体に戻す候補）: 候補をキャラクターごとの見出し（`名前（ID）`）の下に並べ、サムネイルを PNG から JPEG（quality 80）にした。17 人 200 枚を 1 枚のページにすると PNG では Artifact の上限 16MB を超えるため。`build_page` は `root` を受け取り、`cloud generate`・`page` が渡す
-- `src/artgen/cloud.py`（forge 本体に戻す候補）: `cloud merge ROUND_JSON ROUND_JSON [...]` を足した。Modal の 1 回は 1 時間で打ち切られて絵が全部失われるので、人数が多いときは分けて動かし、記録を通し番号の 1 つ（`merged_<日時>.json`）と 1 枚のページにまとめる。元の記録は変えない
-- `src/artgen/crop_review.py`（このゲームだけの変更。顔の構図・切り出しは forge 本体に戻さない）: `crop_review <id> <id> ...` で何人分かの承認用のページを 1 枚にまとめる `build_reviews` を足した。全員を先に検査し、1 人でも古ければ作らない。元画像・確認図は JPEG に縮める
-- `src/artgen/config.py`・`face_crop.py`・`export.py`（このゲームだけの変更。切り出しは forge 本体に戻さない）: `clear_colors` に任意の `min_rg`（r-g の下限）を足した。ally09 の背景（薄い茶）とシャツ（クリーム）が上限だけでは見分けられず、辺で切れたシャツが透明になったため。`params.json` には書いたときだけ記録する
-- `src/artgen/matte.py`・`modal_app.py`（`matte_remote`）・`cloud.py`（`cloud matte`）・`config.py`・`face_crop.py`・`export.py`（このゲームだけの変更。forge 本体に戻すかは、ゲームの開発が終わったら決める）: 顔の背景をアニメ絵用の背景除去モデル（anime-seg の isnetis.onnx）のマスクで透明にする `face_crop.matte` と、マスクから飾りを消す `face_crop.erase` を足した。色とつながりの方法では背景の飾りと髪に囲まれた白を消せなかったため。モデルは Modal の CPU で動かす（このサーバーはメモリ 1.9GB で推論できない）
-- `src/artgen/cloud.py`・`review_page.py`・`matte.py`（上と同じく、このゲームだけの変更）: `generate`・`merge`・`page` が、候補のページを作る前に全候補の背景を Modal で消し、候補の隣に背景を消した絵を並べる（`--no-matte` で止める）。選んだ後に背景が消えないと分かると選び直しになるため。`tests/conftest.py` で、テストから本物の Modal を呼べないようにした（この変更の途中で、テストが本物の Modal を 1 回起動したため）
+- `src/artgen/review_page.py`（戻した（forge の PR #8。2026-11-25 にマージ））: 候補をキャラクターごとの見出し（`名前（ID）`）の下に並べ、サムネイルを PNG から JPEG（quality 80）にした。17 人 200 枚を 1 枚のページにすると PNG では Artifact の上限 16MB を超えるため。`build_page` は `root` を受け取り、`cloud generate`・`page` が渡す
+- `src/artgen/cloud.py`（戻した（forge の PR #8。2026-11-25 にマージ））: `cloud merge ROUND_JSON ROUND_JSON [...]` を足した。Modal の 1 回は 1 時間で打ち切られて絵が全部失われるので、人数が多いときは分けて動かし、記録を通し番号の 1 つ（`merged_<日時>.json`）と 1 枚のページにまとめる。元の記録は変えない
+- `src/artgen/crop_review.py`（このコピーの `face_crop` 用の変更。forge には `cutout_review` が複数人用のページを持って戻った）: `crop_review <id> <id> ...` で何人分かの承認用のページを 1 枚にまとめる `build_reviews` を足した。全員を先に検査し、1 人でも古ければ作らない。元画像・確認図は JPEG に縮める
+- `src/artgen/config.py`・`face_crop.py`・`export.py`（このコピーの `face_crop` 用の変更。forge の `cutouts` の `clear_colors` にも `min_rg` が入った）: `clear_colors` に任意の `min_rg`（r-g の下限）を足した。ally09 の背景（薄い茶）とシャツ（クリーム）が上限だけでは見分けられず、辺で切れたシャツが透明になったため。`params.json` には書いたときだけ記録する
+- `src/artgen/matte.py`・`modal_app.py`（`matte_remote`）・`cloud.py`（`cloud matte`）・`config.py`・`face_crop.py`・`export.py`（戻した（forge の PR #8。2026-11-25 にマージ）。forge ではテンプレートごとの `cutouts` の `background: matte` と `erase`。モデルの SHA-256 を固定し、`cloud matte` が元の絵を Modal の CPU に送る）: 顔の背景をアニメ絵用の背景除去モデル（anime-seg の isnetis.onnx）のマスクで透明にする `face_crop.matte` と、マスクから飾りを消す `face_crop.erase` を足した。色とつながりの方法では背景の飾りと髪に囲まれた白を消せなかったため。モデルは Modal の CPU で動かす（このサーバーはメモリ 1.9GB で推論できない）
+- `src/artgen/cloud.py`・`review_page.py`・`matte.py`（上と同じく戻した（forge の PR #8。2026-11-25 にマージ））: `generate`・`merge`・`page` が、候補のページを作る前に全候補の背景を Modal で消し、候補の隣に背景を消した絵を並べる（`--no-matte` で止める）。選んだ後に背景が消えないと分かると選び直しになるため。`tests/conftest.py` で、テストから本物の Modal を呼べないようにした（この変更の途中で、テストが本物の Modal を 1 回起動したため）
 
 ## このゲームだけの変更
 
