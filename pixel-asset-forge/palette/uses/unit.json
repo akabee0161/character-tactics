@@ -542,17 +542,17 @@
   "armor_dove_hi": {
     "swatch": "dove_hi",
     "kind": "cloth",
-    "note": "リュカの胸当てと膝当て（明）"
+    "note": "リュカの胸当て（明）"
   },
   "armor_dove_base": {
     "swatch": "dove_base",
     "kind": "cloth",
-    "note": "リュカの胸当てと膝当て（中）"
+    "note": "リュカの胸当て（中）"
   },
   "armor_dove_shadow": {
     "swatch": "dove_shadow",
     "kind": "cloth",
-    "note": "リュカの胸当てと膝当て（暗）"
+    "note": "リュカの胸当て（暗）"
   },
   "shoulder_saddle_base": {
     "swatch": "saddle_base",
@@ -579,11 +579,6 @@
     "kind": "cloth",
     "note": "リュカのズボン（暗）"
   },
-  "spear_crimson_hi": {
-    "swatch": "crimson_hi",
-    "kind": "weapon",
-    "note": "リュカの槍の柄（明）"
-  },
   "spear_crimson_base": {
     "swatch": "crimson_base",
     "kind": "weapon",
@@ -603,11 +598,6 @@
     "swatch": "coral_base",
     "kind": "blade",
     "note": "リュカの槍の穂先（中）"
-  },
-  "spear_coral_shadow": {
-    "swatch": "coral_shadow",
-    "kind": "blade",
-    "note": "リュカの槍の穂先（暗）"
   },
   "hair_orange_hi": {
     "swatch": "orange_hi",
@@ -638,11 +628,6 @@
     "swatch": "amber_shadow",
     "kind": "cloth",
     "note": "ミラの鎧（暗）"
-  },
-  "spear_umber_hi": {
-    "swatch": "umber_hi",
-    "kind": "weapon",
-    "note": "ミラの槍の柄（明）"
   },
   "spear_umber_base": {
     "swatch": "umber_base",

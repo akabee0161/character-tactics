@@ -28,4 +28,14 @@ Task 4: ゲームの画面でのリュカの確認は、リュカが序盤の仲
 Task 4: complete (commits 4e25e12..862b3e8, tests: unit_rules ryuka 全通過・npm test・npm run build・forge unittest 804 OK)
 Task 5: Ruling: ミラは女性の槍の敵（spear-thug-a-f）の重なり順と動きを使う — 計画の Interfaces は「リュカの順を引き継ぐ。女性の敵と食い違うときは依頼者に聞く」だが、リュカは男性の敵の槍の順、ミラは女性の敵の槍の順で、どちらも同じ作り（長い髪の位置だけが違う）。食い違わないので聞かなかった — 長い髪の前後の重なり順が女性の敵と同じになる
 Task 5: Ruling: 顔と全身絵の食い違いは顔を正（髪＝橙の長い髪、鎧＝金の肩当てと胸当て）、下半身は全身絵（茶のタイツ）。鎧の色は顔の #eab27c が肌と近いので全身絵の #c8814c に寄せた — 依頼者の追加指示（確認せず進める）。三つ編みは正面の右の 5 行だけで、背面は敵の女性の後ろ髪のまま — 髪の形は依頼者の指摘で直す
-Task 5: complete (commits 862b3e8..HEAD, tests: unit_rules mira 全通過・npm test・npm run build・forge unittest 804 OK)
+Task 5: complete (commits ae593e7..3419d71, tests: unit_rules mira 全通過・npm test・npm run build・forge unittest 804 OK)
+Final: 最終レビュー（opus、b25922c..3419d71）。重大 0、重要 5、軽微 7。私が確かめて、重要 5 件・軽微 1〜5・7 を直した
+Final: fixed 襟が顎の肌を輪郭で消した（重要 1）— 襟を芯の row 14 に移し、服の部品の輪郭の行を無くした。unit_rules ryuka 全通過・npm test・npm run build・forge unittest 804 OK。絵が変わった（目の下の肌が戻り、襟は赤い 1 行）
+Final: fixed リュカの横向きの胸の前の黒い塊（重要 2）— 胸当てを外 1 列の輪郭＋内 3 列の色にし、肩当てを x15〜19 へずらして重ならなくした。unit_rules 通過
+Final: fixed ピコの全身絵の鳥を消す処理が髪を壊した（重要 3）— 髪の色の範囲を行ごとに取って守る方法に替え、元の絵（local/tmp/ally11_fullbody_with_bird.png）から作り直した。髪のハイライトと頭頂の輪郭は残り、頭頂は元の絵で鳥の体が重なっていたため平ら。顔の SHA-256 は同じ。前の Ruling の「ほかは変えていない」は誤りだった（髪の一部も変えていた）
+Final: fixed ミラの三つ編みが背面で無かった（重要 4）— 背面の後ろ髪に、向かって左（キャラクターの左肩の後ろ）へ 6 行の三つ編みを足した。unit_rules 通過
+Final: fixed ユナの追加タグが顔にも効く（重要 5）— character.yaml の outfit から外し、items に移した（items は全身絵にだけ効く）。pytest 578 件 OK
+Final: fixed 軽微 1・2・3・4・5・7 — 使わない色見本 3 種と用途の色 3 種を削除、armor_dove の説明、sheets の見出し、HANDOVER の次にやること 5 行・耳の記述、ISSUES の行の題と影響の大きさ、SPEC のボルグの節、台帳の hash
+Final: minor (deferred): 10 人の install 後の python -m artgen.export <id>（characters/<id>/fullbody.png と params.json の記録）を実行していない — export は face.png も書き出し、顔を書き換えうるため。実行するなら前後で SHA-256 を比べる（HANDOVER に書いた）
+Final: Ruling: ブランチは feat/unit-art-all のまま 1 本（計画の PR 2 の feat/unit-art-spear に分けていない）— 依頼者の追加指示で止まらず進め、PR は依頼者が頼んだときだけ作る。分けるかは PR のときに決める — 1 本の PR が大きい（ファイル数は CodeRabbit の対象を数える必要がある）
+Final: Ruling: リュカの胸当てが「ネクタイ」に見える・髪の明と肌の差が ΔE 10.1・ミラの胸当てが腹の帯に見える（レビューの保留）— 依頼者が見て指摘する（追加指示で結果を見せる）。見え方の好みなので Claude は直さない — 直すなら描き直し
