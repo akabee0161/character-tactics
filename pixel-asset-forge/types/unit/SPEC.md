@@ -185,7 +185,7 @@ gen/<unit>/                               1体のためのスクリプト（rora
 
 入力は顔と全身絵（候補 4 番）。設定シート・決めたことの経緯は character-tactics の HANDOVER.md と台帳 `docs/superpowers/ledgers/2026-11-24-unit-art-all-1.md`。
 
-- 部品: 芯 `assets/part/body/ally07/`（敵の男性の芯 `body/enemy_male/` の色替え。上着は赤・ズボンはベージュ・靴は暗い色。耳は描かない）、髪 `hair/ally07/`（顔の前髪の長い乱れた短髪。耳は髪の形で避ける）、
+- 部品: 芯 `assets/part/body/ally07/`（敵の男性の芯 `body/enemy_male/` の色替え。上着は赤・ズボンはベージュ・靴は暗い色。耳は描かない）、髪 `hair/ally07/`（顔の前髪の長い乱れた短髪。耳は髪の形で避ける。明は左上の 1 つの塊、暗い縦線で房に分ける。縞にしない。2026-11-25）、
   上着・胸当て・肩当て `cloth/ally07/`（高い襟の赤い上着、灰の胸当て、茶の肩当て。1 つの部品。外套は描かない）、槍 `equip/spear/ally07/`（敵の槍 `equip/spear/male/` の形と位置の複製。色だけ赤）、
   槍を握る拳・空き手 `fist/ally07/`（敵の `fist/enemy_male/spear_hand_*`・`fist/gau/free_hand_*` を `skin_fair_*` に替えた写し）、目は `eye/E0`
 - 重なり順と動きは敵の槍（`checks/spear-thug.json`）と同じ（目・髪・上着を足しただけ）。槍は長さ 25px、握りは穂先から 12px
