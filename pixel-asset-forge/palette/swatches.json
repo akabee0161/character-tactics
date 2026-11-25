@@ -406,5 +406,41 @@
   "coral_shadow": {
     "hex": "#c04e66",
     "note": "槍の穂先の珊瑚色（柄・上着と見分けるため明るくした）（暗）。リュカ（2026-11-25 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌・互いと測った（HARD 0 件）"
+  },
+  "orange_hi": {
+    "hex": "#fbb280",
+    "note": "髪の橙（顔の髪 #f49556）（明）。ミラ（2026-11-25）。顔・全身絵から測り、probe_colors.py で輪郭・肌 3 色・服・互いと測った（HARD 0 件。orange_hi と amber_hi の ΔE 9.5 の WARN が 1 件）"
+  },
+  "orange_base": {
+    "hex": "#f49556",
+    "note": "髪の橙（顔の髪 #f49556）（中）。ミラ（2026-11-25）。顔・全身絵から測り、probe_colors.py で輪郭・肌 3 色・服・互いと測った（HARD 0 件。orange_hi と amber_hi の ΔE 9.5 の WARN が 1 件）"
+  },
+  "orange_shadow": {
+    "hex": "#c46a3a",
+    "note": "髪の橙（顔の髪 #f49556）（暗）。ミラ（2026-11-25）。顔・全身絵から測り、probe_colors.py で輪郭・肌 3 色・服・互いと測った（HARD 0 件。orange_hi と amber_hi の ΔE 9.5 の WARN が 1 件）"
+  },
+  "amber_hi": {
+    "hex": "#dea066",
+    "note": "鎧の琥珀色（顔の鎧 #eab27c は肌と近いので全身絵の #c8814c に寄せて暗くした）（明）。ミラ（2026-11-25）。顔・全身絵から測り、probe_colors.py で輪郭・肌 3 色・服・互いと測った（HARD 0 件。orange_hi と amber_hi の ΔE 9.5 の WARN が 1 件）"
+  },
+  "amber_base": {
+    "hex": "#c9824a",
+    "note": "鎧の琥珀色（顔の鎧 #eab27c は肌と近いので全身絵の #c8814c に寄せて暗くした）（中）。ミラ（2026-11-25）。顔・全身絵から測り、probe_colors.py で輪郭・肌 3 色・服・互いと測った（HARD 0 件。orange_hi と amber_hi の ΔE 9.5 の WARN が 1 件）"
+  },
+  "amber_shadow": {
+    "hex": "#94603a",
+    "note": "鎧の琥珀色（顔の鎧 #eab27c は肌と近いので全身絵の #c8814c に寄せて暗くした）（暗）。ミラ（2026-11-25）。顔・全身絵から測り、probe_colors.py で輪郭・肌 3 色・服・互いと測った（HARD 0 件。orange_hi と amber_hi の ΔE 9.5 の WARN が 1 件）"
+  },
+  "umber_hi": {
+    "hex": "#7a5a48",
+    "note": "槍の柄の暗い茶（全身絵の槍の柄）（明）。ミラ（2026-11-25）。顔・全身絵から測り、probe_colors.py で輪郭・肌 3 色・服・互いと測った（HARD 0 件。orange_hi と amber_hi の ΔE 9.5 の WARN が 1 件）"
+  },
+  "umber_base": {
+    "hex": "#4e382d",
+    "note": "槍の柄の暗い茶（全身絵の槍の柄）（中）。ミラ（2026-11-25）。顔・全身絵から測り、probe_colors.py で輪郭・肌 3 色・服・互いと測った（HARD 0 件。orange_hi と amber_hi の ΔE 9.5 の WARN が 1 件）"
+  },
+  "umber_shadow": {
+    "hex": "#2e2220",
+    "note": "槍の柄の暗い茶（全身絵の槍の柄）（暗）。ミラ（2026-11-25）。顔・全身絵から測り、probe_colors.py で輪郭・肌 3 色・服・互いと測った（HARD 0 件。orange_hi と amber_hi の ΔE 9.5 の WARN が 1 件）"
   }
 }

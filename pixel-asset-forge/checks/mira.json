@@ -1,0 +1,85 @@
+{
+  "unit": "mira",
+  "compose": "compose/mira.json",
+  "body": "female",
+  "head_chars": "",
+  "items": "stlmn",
+  "parts": {
+    "spear": {
+      "weapon": true,
+      "blade": "st",
+      "moves": true
+    },
+    "spear_hand": {
+      "fist": true,
+      "grips": "spear",
+      "fist_sizes": [
+        "3x2",
+        "2x3"
+      ],
+      "moves": true
+    },
+    "free_hand": {
+      "fist": true,
+      "fist_sizes": [
+        "2x2"
+      ]
+    },
+    "eye_E0": {
+      "eye": true
+    },
+    "hair_mira": {
+      "head": true
+    },
+    "hair_mira_back": {},
+    "cloth_mira": {}
+  },
+  "orders": {
+    "down": [
+      "hair_mira_back",
+      "CORE",
+      "eye_E0",
+      "cloth_mira",
+      "hair_mira",
+      "spear",
+      "spear_hand",
+      "free_hand"
+    ],
+    "up": [
+      "hair_mira_back",
+      "spear",
+      "spear_hand",
+      "free_hand",
+      "CORE",
+      "eye_E0",
+      "cloth_mira",
+      "hair_mira"
+    ],
+    "left": [
+      "spear",
+      "spear_hand",
+      "hair_mira_back",
+      "CORE",
+      "eye_E0",
+      "cloth_mira",
+      "hair_mira",
+      "free_hand"
+    ],
+    "right": [
+      "hair_mira_back",
+      "free_hand",
+      "CORE",
+      "eye_E0",
+      "cloth_mira",
+      "hair_mira",
+      "spear",
+      "spear_hand"
+    ]
+  },
+  "weapon_check": {
+    "depth": [
+      "down"
+    ]
+  },
+  "exceptions": []
+}

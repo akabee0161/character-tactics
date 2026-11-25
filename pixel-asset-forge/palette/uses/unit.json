@@ -608,5 +608,60 @@
     "swatch": "coral_shadow",
     "kind": "blade",
     "note": "リュカの槍の穂先（暗）"
+  },
+  "hair_orange_hi": {
+    "swatch": "orange_hi",
+    "kind": "hair",
+    "note": "ミラの髪（明）"
+  },
+  "hair_orange_base": {
+    "swatch": "orange_base",
+    "kind": "hair",
+    "note": "ミラの髪（中）"
+  },
+  "hair_orange_shadow": {
+    "swatch": "orange_shadow",
+    "kind": "hair",
+    "note": "ミラの髪（暗）"
+  },
+  "armor_amber_hi": {
+    "swatch": "amber_hi",
+    "kind": "cloth",
+    "note": "ミラの鎧（明）"
+  },
+  "armor_amber_base": {
+    "swatch": "amber_base",
+    "kind": "cloth",
+    "note": "ミラの鎧（中）"
+  },
+  "armor_amber_shadow": {
+    "swatch": "amber_shadow",
+    "kind": "cloth",
+    "note": "ミラの鎧（暗）"
+  },
+  "spear_umber_hi": {
+    "swatch": "umber_hi",
+    "kind": "weapon",
+    "note": "ミラの槍の柄（明）"
+  },
+  "spear_umber_base": {
+    "swatch": "umber_base",
+    "kind": "weapon",
+    "note": "ミラの槍の柄（中）"
+  },
+  "spear_umber_shadow": {
+    "swatch": "umber_shadow",
+    "kind": "weapon",
+    "note": "ミラの槍の柄（暗）"
+  },
+  "spear_gold_hi": {
+    "swatch": "metal_hi",
+    "kind": "blade",
+    "note": "ミラの槍の穂先の金（明）"
+  },
+  "spear_gold_base": {
+    "swatch": "metal_base",
+    "kind": "blade",
+    "note": "ミラの槍の穂先の金（中）"
   }
 }
