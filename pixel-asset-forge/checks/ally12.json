@@ -1,0 +1,94 @@
+{
+  "unit": "ally12",
+  "compose": "compose/ally12.json",
+  "body": "female",
+  "head_chars": "",
+  "items": "klmstuw",
+  "parts": {
+    "eye_E0": {
+      "eye": true
+    },
+    "hair_ally12": {
+      "head": true
+    },
+    "hair_ally12_back": {},
+    "head_ally12": {
+      "head": true
+    },
+    "cloth_ally12": {},
+    "bow": {
+      "moves": true,
+      "open_chars": "s"
+    },
+    "arrow": {
+      "blade": "t",
+      "moves": true
+    },
+    "bow_hand": {
+      "fist": true,
+      "grips": "bow",
+      "fist_sizes": [
+        "2x2"
+      ]
+    },
+    "arrow_hand": {
+      "fist": true,
+      "grips": "arrow",
+      "fist_sizes": [
+        "2x2"
+      ],
+      "moves": true
+    }
+  },
+  "orders": {
+    "down": [
+      "hair_ally12_back",
+      "CORE",
+      "eye_E0",
+      "cloth_ally12",
+      "hair_ally12",
+      "head_ally12",
+      "bow",
+      "arrow",
+      "bow_hand",
+      "arrow_hand"
+    ],
+    "up": [
+      "arrow",
+      "arrow_hand",
+      "bow",
+      "bow_hand",
+      "CORE",
+      "eye_E0",
+      "cloth_ally12",
+      "hair_ally12",
+      "head_ally12"
+    ],
+    "left": [
+      "arrow",
+      "arrow_hand",
+      "bow",
+      "bow_hand",
+      "hair_ally12_back",
+      "CORE",
+      "eye_E0",
+      "cloth_ally12",
+      "hair_ally12",
+      "head_ally12"
+    ],
+    "right": [
+      "hair_ally12_back",
+      "CORE",
+      "eye_E0",
+      "cloth_ally12",
+      "hair_ally12",
+      "head_ally12",
+      "bow",
+      "bow_hand",
+      "arrow",
+      "arrow_hand"
+    ]
+  },
+  "weapon_check": null,
+  "exceptions": []
+}
