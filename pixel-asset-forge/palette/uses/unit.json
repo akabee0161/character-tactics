@@ -648,5 +648,170 @@
     "swatch": "metal_base",
     "kind": "blade",
     "note": "ミラの槍の穂先の金（中）"
+  },
+  "hair_hazel_hi": {
+    "swatch": "hazel_hi",
+    "kind": "hair",
+    "note": "バルド（ally09）の髪と髭（明）"
+  },
+  "vest_leather_hi": {
+    "swatch": "leather_hi",
+    "kind": "cloth",
+    "note": "バルド（ally09）のベスト（明）"
+  },
+  "shirt_linen_hi": {
+    "swatch": "linen_hi",
+    "kind": "cloth",
+    "note": "バルド（ally09）のシャツ（明）"
+  },
+  "trousers_bark_hi": {
+    "swatch": "bark_hi",
+    "kind": "cloth",
+    "note": "バルド（ally09）のズボン（明）"
+  },
+  "hair_hazel_base": {
+    "swatch": "hazel_base",
+    "kind": "hair",
+    "note": "バルド（ally09）の髪と髭（中）"
+  },
+  "vest_leather_base": {
+    "swatch": "leather_base",
+    "kind": "cloth",
+    "note": "バルド（ally09）のベスト（中）"
+  },
+  "shirt_linen_base": {
+    "swatch": "linen_base",
+    "kind": "cloth",
+    "note": "バルド（ally09）のシャツ（中）"
+  },
+  "trousers_bark_base": {
+    "swatch": "bark_base",
+    "kind": "cloth",
+    "note": "バルド（ally09）のズボン（中）"
+  },
+  "hair_hazel_shadow": {
+    "swatch": "hazel_shadow",
+    "kind": "hair",
+    "note": "バルド（ally09）の髪と髭（暗）"
+  },
+  "vest_leather_shadow": {
+    "swatch": "leather_shadow",
+    "kind": "cloth",
+    "note": "バルド（ally09）のベスト（暗）"
+  },
+  "shirt_linen_shadow": {
+    "swatch": "linen_shadow",
+    "kind": "cloth",
+    "note": "バルド（ally09）のシャツ（暗）"
+  },
+  "trousers_bark_shadow": {
+    "swatch": "bark_shadow",
+    "kind": "cloth",
+    "note": "バルド（ally09）のズボン（暗）"
+  },
+  "axe_walnut_base": {
+    "swatch": "walnut_base",
+    "kind": "weapon",
+    "note": "バルド（ally09）の斧の柄（中）"
+  },
+  "axe_walnut_shadow": {
+    "swatch": "walnut_shadow",
+    "kind": "weapon",
+    "note": "バルド（ally09）の斧の柄（暗）"
+  },
+  "axe_forge_hi": {
+    "swatch": "forge_hi",
+    "kind": "blade",
+    "note": "バルド（ally09）の斧の刃の縁（明）"
+  },
+  "axe_forge_base": {
+    "swatch": "forge_base",
+    "kind": "blade",
+    "note": "バルド（ally09）の斧の頭（中）"
+  },
+  "hair_ember_hi": {
+    "swatch": "ember_hi",
+    "kind": "hair",
+    "note": "オルト（ally13）の髪（明）"
+  },
+  "suit_tangerine_hi": {
+    "swatch": "tangerine_hi",
+    "kind": "cloth",
+    "note": "オルト（ally13）のつなぎの服（明）"
+  },
+  "pauldron_slate_hi": {
+    "swatch": "pauldron_hi",
+    "kind": "cloth",
+    "note": "オルト（ally13）の肩当てと襟（明）"
+  },
+  "harness_brown_hi": {
+    "swatch": "harness_hi",
+    "kind": "cloth",
+    "note": "オルト（ally13）の革のバンド（明）"
+  },
+  "hair_ember_base": {
+    "swatch": "ember_base",
+    "kind": "hair",
+    "note": "オルト（ally13）の髪（中）"
+  },
+  "suit_tangerine_base": {
+    "swatch": "tangerine_base",
+    "kind": "cloth",
+    "note": "オルト（ally13）のつなぎの服（中）"
+  },
+  "pauldron_slate_base": {
+    "swatch": "pauldron_base",
+    "kind": "cloth",
+    "note": "オルト（ally13）の肩当てと襟（中）"
+  },
+  "harness_brown_base": {
+    "swatch": "harness_base",
+    "kind": "cloth",
+    "note": "オルト（ally13）の革のバンド（中）"
+  },
+  "hair_ember_shadow": {
+    "swatch": "ember_shadow",
+    "kind": "hair",
+    "note": "オルト（ally13）の髪（暗）"
+  },
+  "suit_tangerine_shadow": {
+    "swatch": "tangerine_shadow",
+    "kind": "cloth",
+    "note": "オルト（ally13）のつなぎの服（暗）"
+  },
+  "pauldron_slate_shadow": {
+    "swatch": "pauldron_shadow",
+    "kind": "cloth",
+    "note": "オルト（ally13）の肩当てと襟（暗）"
+  },
+  "harness_brown_shadow": {
+    "swatch": "harness_shadow",
+    "kind": "cloth",
+    "note": "オルト（ally13）の革のバンド（暗）"
+  },
+  "boots_greaves_base": {
+    "swatch": "greaves_dark_base",
+    "kind": "cloth",
+    "note": "オルト（ally13）の脛当てと靴（中）"
+  },
+  "axe_ironwood_base": {
+    "swatch": "ironwood_base",
+    "kind": "weapon",
+    "note": "オルト（ally13）の斧の柄（中）"
+  },
+  "axe_ironwood_shadow": {
+    "swatch": "ironwood_shadow",
+    "kind": "weapon",
+    "note": "オルト（ally13）の斧の柄（暗）"
+  },
+  "axe_cleaver_hi": {
+    "swatch": "cleaver_hi",
+    "kind": "blade",
+    "note": "オルト（ally13）の斧の刃の縁（明）"
+  },
+  "axe_cleaver_base": {
+    "swatch": "cleaver_base",
+    "kind": "blade",
+    "note": "オルト（ally13）の斧の頭（中）"
   }
 }
