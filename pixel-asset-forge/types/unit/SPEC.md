@@ -236,12 +236,12 @@ gen/<unit>/                               1体のためのスクリプト（rora
 入力は顔と全身絵（再生成の 8 番）。依頼者の追加指示（確認せず進める）で Claude の判断で進めた。判断は台帳 `docs/superpowers/ledgers/2026-11-26-unit-art-all-3.md`。
 
 - 部品: 芯 `assets/part/body/ally12/`（ミストの芯 `body/mist/` の色替え。上着は深緑、靴は緑（芯の最後の 2 行の `y` を `h` に）。耳は描かない。`atk_draw`・`atk_release` の芯は `atk_hit` の複製。敵の女性・ミスト・イネスの芯は攻撃のコマも base と同じ形）、
-  髪 `hair/ally12/`（頭の髪は `hair/A` の形の茶。ポニーテールは後ろの部品 `hair_ally12_back`）、頭巾 `head/ally12/`（`head/bandana_female` から結び目を無くし、髪の幅 x8〜23 に広げた緑）、
+  髪 `hair/ally12/`（頭の髪は `hair/A` の形の茶。ポニーテールは後ろの部品 `hair_ally12_back`）、頭巾 `head/ally12/`（`head/bandana_female` から横の結び目を無くし（背面の小さな結び目は残る）、髪の幅 x8〜23 に広げた緑）、
   外套 `cloth/ally12/`（肩の襟の折り返し・革の紐・ベルト。1 つの部品。矢筒は描かない）、目は `eye/E0`。弓 `equip/bow/`・矢 `equip/arrow/`・拳 `fist/ines/` はイネスのものをそのまま使う（肌が `skin_fair` で芯と同じ）
 - 重なり順は女性の弓の敵（`checks/bow-bandit-a-f.json`）と同じ（目・服・髪・頭巾の位置）。弓・矢・拳の層・32 コマ・攻撃 6 コマ・6fps はイネスと同じ（弓の持ち方の節）。シートは `sheets/ines.txt` の写し。`assets/units/ally12.json` の `attack` を 3 コマから 6 コマにした。確認の道具の例外は無い
 - ポニーテール: 被り物（頭巾）があると、頭の高さ（y<=14）で髪が頭巾の外に出てはいけない（`head_cover_check`）。尾は肩の高さ（y>=15）から垂らし、頭の後ろの髪を 1 行（y=14）伸ばして尾につないだ。down・left・right は体の奥の部品（`back`）で、画面の右（right は左）に出る。up は体の手前なので、前の部品の髪（背中の中央、x13〜18、y11〜22）に含めた。right は left の左右反転（明 `W` と暗 `Z` は入れ替え）
 - 色（ユナ専用の色見本。`probe_colors.py` で輪郭・肌・互いと測り、HARD・WARN 0 件）: 髪 `hair_brunette_*`（色見本 `brunette_*`）、頭巾 `bandana_moss_*`（`moss_*`）、外套と服 `cloak_pine_*`（`pine_*`）、靴 `boots_moss_base`（`moss_base`）、革 `strap_leather_*`（`leather_*`。種類 `ornament`）
-- 顔と全身絵の食い違い: 髪・頭巾・外套の色は顔（頭巾は黄緑、外套は深緑。全身絵の上着は黄緑）、タイツ（茶）と靴（緑）は全身絵。矢筒は 32px では見えず、イネスにも無いので描かない。頭巾の結び目は描かない（ポニーテールの付け根と重なるため）
+- 顔と全身絵の食い違い: 髪・頭巾・外套の色は顔（頭巾は黄緑、外套は深緑。全身絵の上着は黄緑）、タイツ（茶）と靴（緑）は全身絵。矢筒は 32px では見えず、イネスにも無いので描かない。頭巾の横の結び目は描かない（背面の小さな結び目は残る。ポニーテールの付け根と重なるため）
 - `assets/part/equip/bow`・`equip/arrow`・`fist/ines` を共有している（ユナ用に写していない）。イネスの部品を直すとユナも変わる
 
 ### セラ（魔法の杖・女・フード・長い髪、2026-11-26）

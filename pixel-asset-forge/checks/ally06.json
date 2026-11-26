@@ -29,7 +29,9 @@
     "head_ally06": {
       "head": true
     },
-    "hair_ally06": {},
+    "hair_ally06": {
+      "head": true
+    },
     "cloth_ally06": {},
     "hair_ally06_back": {}
   },
