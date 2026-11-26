@@ -10,6 +10,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",
+    "test:full": "FULL=1 vitest run",
     "test:watch": "vitest",
     "balance": "vite-node tools/balance.ts --"
   },

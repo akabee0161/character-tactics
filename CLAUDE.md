@@ -13,7 +13,8 @@ character-tactics で作業する際の指針。プロジェクトの詳細(構�
 ```bash
 npm install
 npm run dev     # 開発サーバ
-npm test        # ユニットテスト (Vitest)
+npm test        # ユニットテスト (Vitest)。ステージ全部を遊ばせる遅いテスト（*.slow.test.ts）は流さない（約 5 分）
+npm run test:full # 遅いテストも含めて全部（約 25 分。本番反映の CI が流す）
 npm run build   # 型チェック + 本番ビルド (out/play/character-tactics/)
 npm run balance # ステージの難易度を測る（ボットで全ステージを通し、通しと育てた場合の勝率を表にする。40 シード、約 4 分）
 ```
