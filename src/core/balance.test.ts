@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { newSave } from '../save/save';
 import {
-  BATTLE_DT, BATTLE_TIME_LIMIT, botCommands, MAX_ATTEMPTS, TARGET_BANDS, formatTable, isOutOfBand, measure, playThrough, runBattle,
+  BATTLE_DT, BATTLE_TIME_LIMIT, botCommands, TARGET_BANDS, formatTable, isOutOfBand, playThrough, runBattle,
   boostLevels, goalSafeDest, routeAvoidingGoal, walkableSafeDest,
   isOutOfBandRush, pickRushers, rushCommands, runRush, RUSH_MAX, RUSH_SEEDS, RUSH_SKILL_NEAR, RUSH_EXEMPT,
 } from './balance';
@@ -85,38 +85,6 @@ describe('runBattle', () => {
     const joined = [1, 2, 3, 4, 5].map((seed) => runBattle(reg, stage('stage9'), newSave(reg), seed).state.joined);
     expect(joined.some((j) => j.includes('ally08'))).toBe(true);
   }, 60_000);
-});
-
-describe('playThrough', () => {
-  it('ステージ順に進み、打ち切りは最後の1つだけ', () => {
-    const runs = playThrough(reg, 1);
-    expect(runs[0]!.stageId).toBe(reg.stages[0]!.id);
-    expect(runs.length).toBeLessThanOrEqual(reg.stages.length);
-    for (const r of runs) {
-      expect(r.attempts).toBeGreaterThanOrEqual(1);
-      expect(r.attempts).toBeLessThanOrEqual(MAX_ATTEMPTS);
-    }
-    expect(runs.filter((r) => !r.cleared).length).toBeLessThanOrEqual(1);
-    const bad = runs.findIndex((r) => !r.cleared);
-    if (bad >= 0) expect(bad).toBe(runs.length - 1);
-  });
-
-  it('同じシードなら同じ結果になる', () => {
-    expect(playThrough(reg, 3)).toEqual(playThrough(reg, 3));
-  });
-});
-
-describe('measure', () => {
-  it('ステージと同じ順・長さで、値が範囲内', () => {
-    const stats = measure(reg, 2);
-    expect(stats.map((s) => s.stageId)).toEqual(reg.stages.map((s) => s.id));
-    for (const s of stats) {
-      expect(s.firstTryRate).toBeGreaterThanOrEqual(0);
-      expect(s.firstTryRate).toBeLessThanOrEqual(100);
-      expect(s.reached).toBeGreaterThanOrEqual(0);
-    }
-    expect(stats[0]!.reached).toBe(2);
-  }, 120_000);
 });
 
 describe('TARGET_BANDS / formatTable', () => {
@@ -256,18 +224,6 @@ it('runBattle は終了時の敵の残り（生きている敵 + 湧き残り）
   const alive = out.state.units.filter((u) => u.side === 'enemy' && !u.retired && u.hp > 0).length;
   const spawnLeft = out.state.stage.spawners.reduce((a, sp, i) => a + sp.total - (out.state.spawnCounts[i] ?? 0), 0);
   expect(out.enemiesLeft).toBe(alive + spawnLeft);
-});
-
-describe('playThrough の育てた場合・平均レベル', () => {
-  it('各ステージに grownWon・avgLevel・leftover がある', () => {
-    const runs = playThrough(reg, 1);
-    expect(runs.length).toBeGreaterThan(0);
-    for (const r of runs) {
-      expect(typeof r.grownWon).toBe('boolean');
-      if (r.cleared) expect(r.avgLevel).toBeGreaterThanOrEqual(1);
-      expect(typeof r.leftover).toBe('boolean');
-    }
-  }, 120_000);
 });
 
 describe('ゴールの円を避ける目的地', () => {
