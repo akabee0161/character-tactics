@@ -1,0 +1,941 @@
+{
+  "unit": "ally06",
+  "frames": {
+    "down_base": {
+      "body": "assets/part/body/ally06/core_down_base.txt",
+      "layers": [
+        {
+          "part": "assets/part/hair/ally06/hair_ally06_back_down_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E0/eye_E0_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/ally06/cloth_ally06_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/ally06/hair_ally06_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/ally06/head_ally06_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/staff_ally06/staff_ally06_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/ally06/staff_hand_down_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/fist/ally06/free_hand_down_base.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "down_idle2": {
+      "body": "assets/part/body/ally06/core_down_idle2.txt",
+      "layers": [
+        {
+          "part": "assets/part/hair/ally06/hair_ally06_back_down_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E0/eye_E0_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/ally06/cloth_ally06_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/ally06/hair_ally06_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/ally06/head_ally06_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/staff_ally06/staff_ally06_down_idle2.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/ally06/staff_hand_down_idle2.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/fist/ally06/free_hand_down_idle2.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "down_walk_a": {
+      "body": "assets/part/body/ally06/core_down_walk_a.txt",
+      "layers": [
+        {
+          "part": "assets/part/hair/ally06/hair_ally06_back_down_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E0/eye_E0_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/ally06/cloth_ally06_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/ally06/hair_ally06_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/ally06/head_ally06_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/staff_ally06/staff_ally06_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/ally06/staff_hand_down_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/fist/ally06/free_hand_down_base.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "down_walk_b": {
+      "body": "assets/part/body/ally06/core_down_walk_b.txt",
+      "layers": [
+        {
+          "part": "assets/part/hair/ally06/hair_ally06_back_down_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E0/eye_E0_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/ally06/cloth_ally06_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/ally06/hair_ally06_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/ally06/head_ally06_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/staff_ally06/staff_ally06_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/ally06/staff_hand_down_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/fist/ally06/free_hand_down_base.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "down_atk_wind": {
+      "body": "assets/part/body/ally06/core_down_atk_wind.txt",
+      "layers": [
+        {
+          "part": "assets/part/hair/ally06/hair_ally06_back_down_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E0/eye_E0_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/ally06/cloth_ally06_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/ally06/hair_ally06_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/ally06/head_ally06_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/staff_ally06/staff_ally06_down_atk_wind.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/ally06/staff_hand_down_atk_wind.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/fist/ally06/free_hand_down_atk_wind.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "down_atk_hit": {
+      "body": "assets/part/body/ally06/core_down_atk_hit.txt",
+      "layers": [
+        {
+          "part": "assets/part/hair/ally06/hair_ally06_back_down_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E0/eye_E0_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/ally06/cloth_ally06_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/ally06/hair_ally06_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/ally06/head_ally06_down_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/staff_ally06/staff_ally06_down_atk_hit.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/ally06/staff_hand_down_atk_hit.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/fist/ally06/free_hand_down_atk_hit.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "up_base": {
+      "body": "assets/part/body/ally06/core_up_base.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/ally06/free_hand_up_base.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/fist/ally06/staff_hand_up_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/staff_ally06/staff_ally06_up_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E0/eye_E0_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/ally06/cloth_ally06_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/ally06/hair_ally06_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/ally06/head_ally06_up_base.txt",
+          "z": "front"
+        }
+      ]
+    },
+    "up_idle2": {
+      "body": "assets/part/body/ally06/core_up_idle2.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/ally06/free_hand_up_idle2.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/fist/ally06/staff_hand_up_idle2.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/staff_ally06/staff_ally06_up_idle2.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E0/eye_E0_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/ally06/cloth_ally06_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/ally06/hair_ally06_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/ally06/head_ally06_up_base.txt",
+          "z": "front"
+        }
+      ]
+    },
+    "up_walk_a": {
+      "body": "assets/part/body/ally06/core_up_walk_a.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/ally06/free_hand_up_base.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/fist/ally06/staff_hand_up_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/staff_ally06/staff_ally06_up_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E0/eye_E0_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/ally06/cloth_ally06_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/ally06/hair_ally06_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/ally06/head_ally06_up_base.txt",
+          "z": "front"
+        }
+      ]
+    },
+    "up_walk_b": {
+      "body": "assets/part/body/ally06/core_up_walk_b.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/ally06/free_hand_up_base.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/fist/ally06/staff_hand_up_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/staff_ally06/staff_ally06_up_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E0/eye_E0_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/ally06/cloth_ally06_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/ally06/hair_ally06_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/ally06/head_ally06_up_base.txt",
+          "z": "front"
+        }
+      ]
+    },
+    "up_atk_wind": {
+      "body": "assets/part/body/ally06/core_up_atk_wind.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/ally06/free_hand_up_atk_wind.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/fist/ally06/staff_hand_up_atk_wind.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/staff_ally06/staff_ally06_up_atk_wind.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E0/eye_E0_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/ally06/cloth_ally06_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/ally06/hair_ally06_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/ally06/head_ally06_up_base.txt",
+          "z": "front"
+        }
+      ]
+    },
+    "up_atk_hit": {
+      "body": "assets/part/body/ally06/core_up_atk_hit.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/ally06/free_hand_up_atk_hit.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/fist/ally06/staff_hand_up_atk_hit.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/staff_ally06/staff_ally06_up_atk_hit.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E0/eye_E0_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/ally06/cloth_ally06_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/ally06/hair_ally06_up_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/ally06/head_ally06_up_base.txt",
+          "z": "front"
+        }
+      ]
+    },
+    "left_base": {
+      "body": "assets/part/body/ally06/core_left_base.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/ally06/staff_hand_left_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/staff_ally06/staff_ally06_left_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E0/eye_E0_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/ally06/cloth_ally06_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/ally06/hair_ally06_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/ally06/head_ally06_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/ally06/free_hand_left_base.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "left_idle2": {
+      "body": "assets/part/body/ally06/core_left_idle2.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/ally06/staff_hand_left_idle2.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/staff_ally06/staff_ally06_left_idle2.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E0/eye_E0_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/ally06/cloth_ally06_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/ally06/hair_ally06_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/ally06/head_ally06_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/ally06/free_hand_left_idle2.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "left_walk_a": {
+      "body": "assets/part/body/ally06/core_left_walk_a.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/ally06/staff_hand_left_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/staff_ally06/staff_ally06_left_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E0/eye_E0_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/ally06/cloth_ally06_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/ally06/hair_ally06_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/ally06/head_ally06_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/ally06/free_hand_left_base.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "left_walk_b": {
+      "body": "assets/part/body/ally06/core_left_walk_b.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/ally06/staff_hand_left_base.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/staff_ally06/staff_ally06_left_base.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E0/eye_E0_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/ally06/cloth_ally06_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/ally06/hair_ally06_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/ally06/head_ally06_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/ally06/free_hand_left_base.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "left_atk_wind": {
+      "body": "assets/part/body/ally06/core_left_atk_wind.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/ally06/staff_hand_left_atk_wind.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/staff_ally06/staff_ally06_left_atk_wind.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E0/eye_E0_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/ally06/cloth_ally06_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/ally06/hair_ally06_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/ally06/head_ally06_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/ally06/free_hand_left_atk_wind.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "left_atk_hit": {
+      "body": "assets/part/body/ally06/core_left_atk_hit.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/ally06/staff_hand_left_atk_hit.txt",
+          "z": "back",
+          "hand": true,
+          "keep": [
+            "weapon"
+          ]
+        },
+        {
+          "part": "assets/part/equip/staff_ally06/staff_ally06_left_atk_hit.txt",
+          "z": "back"
+        },
+        {
+          "part": "assets/part/eye/E0/eye_E0_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/ally06/cloth_ally06_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/ally06/hair_ally06_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/ally06/head_ally06_left_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/ally06/free_hand_left_atk_hit.txt",
+          "z": "front",
+          "hand": true
+        }
+      ]
+    },
+    "right_base": {
+      "body": "assets/part/body/ally06/core_right_base.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/ally06/free_hand_right_base.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/eye/E0/eye_E0_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/ally06/cloth_ally06_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/ally06/hair_ally06_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/ally06/head_ally06_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/staff_ally06/staff_ally06_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/ally06/staff_hand_right_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "weapon"
+          ]
+        }
+      ]
+    },
+    "right_idle2": {
+      "body": "assets/part/body/ally06/core_right_idle2.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/ally06/free_hand_right_idle2.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/eye/E0/eye_E0_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/ally06/cloth_ally06_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/ally06/hair_ally06_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/ally06/head_ally06_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/staff_ally06/staff_ally06_right_idle2.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/ally06/staff_hand_right_idle2.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "weapon"
+          ]
+        }
+      ]
+    },
+    "right_walk_a": {
+      "body": "assets/part/body/ally06/core_right_walk_a.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/ally06/free_hand_right_base.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/eye/E0/eye_E0_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/ally06/cloth_ally06_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/ally06/hair_ally06_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/ally06/head_ally06_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/staff_ally06/staff_ally06_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/ally06/staff_hand_right_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "weapon"
+          ]
+        }
+      ]
+    },
+    "right_walk_b": {
+      "body": "assets/part/body/ally06/core_right_walk_b.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/ally06/free_hand_right_base.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/eye/E0/eye_E0_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/ally06/cloth_ally06_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/ally06/hair_ally06_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/ally06/head_ally06_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/staff_ally06/staff_ally06_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/ally06/staff_hand_right_base.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "weapon"
+          ]
+        }
+      ]
+    },
+    "right_atk_wind": {
+      "body": "assets/part/body/ally06/core_right_atk_wind.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/ally06/free_hand_right_atk_wind.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/eye/E0/eye_E0_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/ally06/cloth_ally06_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/ally06/hair_ally06_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/ally06/head_ally06_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/staff_ally06/staff_ally06_right_atk_wind.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/ally06/staff_hand_right_atk_wind.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "weapon"
+          ]
+        }
+      ]
+    },
+    "right_atk_hit": {
+      "body": "assets/part/body/ally06/core_right_atk_hit.txt",
+      "layers": [
+        {
+          "part": "assets/part/fist/ally06/free_hand_right_atk_hit.txt",
+          "z": "back",
+          "hand": true
+        },
+        {
+          "part": "assets/part/eye/E0/eye_E0_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/cloth/ally06/cloth_ally06_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/hair/ally06/hair_ally06_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/head/ally06/head_ally06_right_base.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/equip/staff_ally06/staff_ally06_right_atk_hit.txt",
+          "z": "front"
+        },
+        {
+          "part": "assets/part/fist/ally06/staff_hand_right_atk_hit.txt",
+          "z": "front",
+          "hand": true,
+          "keep": [
+            "weapon"
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -51,6 +51,54 @@
     "hex": "#96604a",
     "note": "明るい肌色の濃"
   },
+  "pale_hi": {
+    "hex": "#fff0e8",
+    "note": "白い肌色の明"
+  },
+  "pale_base": {
+    "hex": "#f6d6c6",
+    "note": "白い肌色の中"
+  },
+  "pale_shadow": {
+    "hex": "#d8a592",
+    "note": "白い肌色の暗"
+  },
+  "scepter_gold_hi": {
+    "hex": "#f2cf72",
+    "note": "セラの杖の金の飾り（明）"
+  },
+  "scepter_gold_base": {
+    "hex": "#d8a63c",
+    "note": "セラの杖の金の飾り（中）"
+  },
+  "scepter_gold_shadow": {
+    "hex": "#a8742c",
+    "note": "セラの杖の金の飾り（暗）"
+  },
+  "scepter_ruby_hi": {
+    "hex": "#f0707a",
+    "note": "セラの杖のルビー（明）"
+  },
+  "scepter_ruby_base": {
+    "hex": "#c02f40",
+    "note": "セラの杖のルビー（中）"
+  },
+  "scepter_blue_base": {
+    "hex": "#4a54b0",
+    "note": "セラの杖の青い柄（中）"
+  },
+  "scepter_blue_shadow": {
+    "hex": "#343c86",
+    "note": "セラの杖の青い柄（暗）"
+  },
+  "scepter_linen_base": {
+    "hex": "#fff3d0",
+    "note": "セラの杖の白い布（中）"
+  },
+  "scepter_linen_shadow": {
+    "hex": "#d8caa0",
+    "note": "セラの杖の白い布（暗）"
+  },
   "skin_rose_hi": {
     "hex": "#f0d4d0",
     "note": "赤みの肌色の明"
@@ -562,5 +610,81 @@
   "cleaver_base": {
     "hex": "#615a5e",
     "note": "斧の頭の鉄（中）。オルト（ally13）（2026-11-25 の設定シート CP0）。probe_colors.py で輪郭・肌・互いと測った（HARD 0 件）"
+  },
+  "brunette_hi": {
+    "hex": "#a97f6f",
+    "note": "髪の茶（顔の髪 #9d7567 を元に）（明）。ユナ（ally12）（2026-11-26 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌 3 色・互いと測った（HARD・WARN 0 件）"
+  },
+  "brunette_base": {
+    "hex": "#835e55",
+    "note": "髪の茶（顔の髪 #9d7567 を元に）（中）。ユナ（ally12）（2026-11-26 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌 3 色・互いと測った（HARD・WARN 0 件）"
+  },
+  "brunette_shadow": {
+    "hex": "#5a413f",
+    "note": "髪の茶（顔の髪 #9d7567 を元に）（暗）。ユナ（ally12）（2026-11-26 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌 3 色・互いと測った（HARD・WARN 0 件）"
+  },
+  "moss_hi": {
+    "hex": "#bcc78a",
+    "note": "頭巾の黄緑（顔の頭巾 #afb87f を元に）（明）。ユナ（ally12）（2026-11-26 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌 3 色・互いと測った（HARD・WARN 0 件）"
+  },
+  "moss_base": {
+    "hex": "#98a85f",
+    "note": "頭巾の黄緑（顔の頭巾 #afb87f を元に）（中）。ユナ（ally12）（2026-11-26 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌 3 色・互いと測った（HARD・WARN 0 件）"
+  },
+  "moss_shadow": {
+    "hex": "#6f8048",
+    "note": "頭巾の黄緑（顔の頭巾 #afb87f を元に）（暗）。ユナ（ally12）（2026-11-26 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌 3 色・互いと測った（HARD・WARN 0 件）"
+  },
+  "pine_hi": {
+    "hex": "#5f8f7c",
+    "note": "外套の深緑（顔の外套 #41655c）（明）。ユナ（ally12）（2026-11-26 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌 3 色・互いと測った（HARD・WARN 0 件）"
+  },
+  "pine_base": {
+    "hex": "#41655c",
+    "note": "外套の深緑（顔の外套 #41655c）（中）。ユナ（ally12）（2026-11-26 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌 3 色・互いと測った（HARD・WARN 0 件）"
+  },
+  "pine_shadow": {
+    "hex": "#2f4b46",
+    "note": "外套の深緑（顔の外套 #41655c）（暗）。ユナ（ally12）（2026-11-26 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌 3 色・互いと測った（HARD・WARN 0 件）"
+  },
+  "lilac_hi": {
+    "hex": "#e0bdef",
+    "note": "髪の薄紫（顔の髪 #be92d0 を元に、フード・外套と分けて明るく）（明）。セラ（ally06）（2026-11-26 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌 3 色・金・互いと測った（HARD・WARN 0 件）"
+  },
+  "lilac_base": {
+    "hex": "#c8a0da",
+    "note": "髪の薄紫（顔の髪 #be92d0 を元に、フード・外套と分けて明るく）（中）。セラ（ally06）（2026-11-26 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌 3 色・金・互いと測った（HARD・WARN 0 件）"
+  },
+  "lilac_shadow": {
+    "hex": "#a67fc2",
+    "note": "髪の薄紫（顔の髪 #be92d0 を元に、フード・外套と分けて明るく）（暗）。セラ（ally06）（2026-11-26 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌 3 色・金・互いと測った（HARD・WARN 0 件）"
+  },
+  "violet_hi": {
+    "hex": "#7d62a8",
+    "note": "フードと外套の紫（顔のフード #896aab・#5e4c84 を元に）（明）。セラ（ally06）（2026-11-26 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌 3 色・金・互いと測った（HARD・WARN 0 件）"
+  },
+  "violet_base": {
+    "hex": "#61498d",
+    "note": "フードと外套の紫（顔のフード #896aab・#5e4c84 を元に）（中）。セラ（ally06）（2026-11-26 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌 3 色・金・互いと測った（HARD・WARN 0 件）"
+  },
+  "violet_shadow": {
+    "hex": "#473468",
+    "note": "フードと外套の紫（顔のフード #896aab・#5e4c84 を元に）（暗）。セラ（ally06）（2026-11-26 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌 3 色・金・互いと測った（HARD・WARN 0 件）"
+  },
+  "periwinkle_hi": {
+    "hex": "#bdb6e8",
+    "note": "ローブの青紫（全身絵のローブ #9082c5・#bb93dc を元に、外套と分けて）（明）。セラ（ally06）（2026-11-26 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌 3 色・金・互いと測った（HARD・WARN 0 件）"
+  },
+  "periwinkle_base": {
+    "hex": "#9f98d8",
+    "note": "ローブの青紫（全身絵のローブ #9082c5・#bb93dc を元に、外套と分けて）（中）。セラ（ally06）（2026-11-26 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌 3 色・金・互いと測った（HARD・WARN 0 件）"
+  },
+  "periwinkle_shadow": {
+    "hex": "#7f78b8",
+    "note": "ローブの青紫（全身絵のローブ #9082c5・#bb93dc を元に、外套と分けて）（暗）。セラ（ally06）（2026-11-26 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌 3 色・金・互いと測った（HARD・WARN 0 件）"
+  },
+  "lace_base": {
+    "hex": "#ece6f3",
+    "note": "フードと外套のレースの白紫（顔のフードの縁 #cdc7d8 を明るく）。セラ（ally06）（2026-11-26 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌 3 色・金・互いと測った（HARD・WARN 0 件）"
   }
 }

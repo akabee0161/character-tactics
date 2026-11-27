@@ -199,6 +199,66 @@
     "kind": "ornament",
     "note": "長い髪 C の結び目"
   },
+  "skin_pale_hi": {
+    "swatch": "pale_hi",
+    "kind": "skin",
+    "note": "白い肌・拳（ally06）（明）"
+  },
+  "skin_pale_base": {
+    "swatch": "pale_base",
+    "kind": "skin",
+    "note": "白い肌・拳（ally06）（中）"
+  },
+  "skin_pale_shadow": {
+    "swatch": "pale_shadow",
+    "kind": "skin",
+    "note": "白い肌・拳（ally06）（暗）"
+  },
+  "staff_gold_hi": {
+    "swatch": "scepter_gold_hi",
+    "kind": "weapon",
+    "note": "セラの杖の金の飾り（明）"
+  },
+  "staff_gold_base": {
+    "swatch": "scepter_gold_base",
+    "kind": "weapon",
+    "note": "セラの杖の金の飾り（中）"
+  },
+  "staff_gold_shadow": {
+    "swatch": "scepter_gold_shadow",
+    "kind": "weapon",
+    "note": "セラの杖の金の飾り（暗）"
+  },
+  "staff_ruby_hi": {
+    "swatch": "scepter_ruby_hi",
+    "kind": "weapon",
+    "note": "セラの杖のルビー（明）"
+  },
+  "staff_ruby_base": {
+    "swatch": "scepter_ruby_base",
+    "kind": "weapon",
+    "note": "セラの杖のルビー（中）"
+  },
+  "staff_blue_base": {
+    "swatch": "scepter_blue_base",
+    "kind": "weapon",
+    "note": "セラの杖の青い柄（中）"
+  },
+  "staff_blue_shadow": {
+    "swatch": "scepter_blue_shadow",
+    "kind": "weapon",
+    "note": "セラの杖の青い柄（暗）"
+  },
+  "staff_linen_base": {
+    "swatch": "scepter_linen_base",
+    "kind": "weapon",
+    "note": "セラの杖の白い布（中）"
+  },
+  "staff_linen_shadow": {
+    "swatch": "scepter_linen_shadow",
+    "kind": "weapon",
+    "note": "セラの杖の白い布（暗）"
+  },
   "skin_fair_hi": {
     "swatch": "skin_hi",
     "kind": "skin",
@@ -813,5 +873,150 @@
     "swatch": "cleaver_base",
     "kind": "blade",
     "note": "オルト（ally13）の斧の頭（中）"
+  },
+  "hair_brunette_hi": {
+    "swatch": "brunette_hi",
+    "kind": "hair",
+    "note": "ユナの髪とポニーテール（明）"
+  },
+  "hair_brunette_base": {
+    "swatch": "brunette_base",
+    "kind": "hair",
+    "note": "ユナの髪とポニーテール（中）"
+  },
+  "hair_brunette_shadow": {
+    "swatch": "brunette_shadow",
+    "kind": "hair",
+    "note": "ユナの髪とポニーテール（暗）"
+  },
+  "bandana_moss_hi": {
+    "swatch": "moss_hi",
+    "kind": "headgear",
+    "note": "ユナの頭巾（明）"
+  },
+  "bandana_moss_base": {
+    "swatch": "moss_base",
+    "kind": "headgear",
+    "note": "ユナの頭巾（中）"
+  },
+  "bandana_moss_shadow": {
+    "swatch": "moss_shadow",
+    "kind": "headgear",
+    "note": "ユナの頭巾（暗）"
+  },
+  "cloak_pine_hi": {
+    "swatch": "pine_hi",
+    "kind": "cloth",
+    "note": "ユナの外套と服（明）"
+  },
+  "cloak_pine_base": {
+    "swatch": "pine_base",
+    "kind": "cloth",
+    "note": "ユナの外套と服（中）"
+  },
+  "cloak_pine_shadow": {
+    "swatch": "pine_shadow",
+    "kind": "cloth",
+    "note": "ユナの外套と服（暗）"
+  },
+  "boots_moss_base": {
+    "swatch": "moss_base",
+    "kind": "cloth",
+    "note": "ユナの靴（全身絵の緑の靴）"
+  },
+  "strap_leather_hi": {
+    "swatch": "leather_hi",
+    "kind": "ornament",
+    "note": "ユナの革の紐とベルト（明）"
+  },
+  "strap_leather_base": {
+    "swatch": "leather_base",
+    "kind": "ornament",
+    "note": "ユナの革の紐とベルト（中）"
+  },
+  "strap_leather_shadow": {
+    "swatch": "leather_shadow",
+    "kind": "ornament",
+    "note": "ユナの革の紐とベルト（暗）"
+  },
+  "hair_lilac_hi": {
+    "swatch": "lilac_hi",
+    "kind": "hair",
+    "note": "セラの髪（明）"
+  },
+  "hair_lilac_base": {
+    "swatch": "lilac_base",
+    "kind": "hair",
+    "note": "セラの髪（中）"
+  },
+  "hair_lilac_shadow": {
+    "swatch": "lilac_shadow",
+    "kind": "hair",
+    "note": "セラの髪（暗）"
+  },
+  "hood_violet_hi": {
+    "swatch": "violet_hi",
+    "kind": "headgear",
+    "note": "セラのフード（明）"
+  },
+  "hood_violet_base": {
+    "swatch": "violet_base",
+    "kind": "headgear",
+    "note": "セラのフード（中）"
+  },
+  "hood_violet_shadow": {
+    "swatch": "violet_shadow",
+    "kind": "headgear",
+    "note": "セラのフード（暗）"
+  },
+  "cape_violet_hi": {
+    "swatch": "violet_hi",
+    "kind": "cloth",
+    "note": "セラの外套（明）"
+  },
+  "cape_violet_base": {
+    "swatch": "violet_base",
+    "kind": "cloth",
+    "note": "セラの外套（中）"
+  },
+  "cape_violet_shadow": {
+    "swatch": "violet_shadow",
+    "kind": "cloth",
+    "note": "セラの外套（暗）"
+  },
+  "robe_periwinkle_hi": {
+    "swatch": "periwinkle_hi",
+    "kind": "cloth",
+    "note": "セラのローブと服（明）"
+  },
+  "robe_periwinkle_base": {
+    "swatch": "periwinkle_base",
+    "kind": "cloth",
+    "note": "セラのローブと服（中）"
+  },
+  "robe_periwinkle_shadow": {
+    "swatch": "periwinkle_shadow",
+    "kind": "cloth",
+    "note": "セラのローブと服（暗）"
+  },
+  "hood_lace_base": {
+    "swatch": "lace_base",
+    "kind": "headgear",
+    "note": "セラのフードのレースの縁"
+  },
+  "cape_lace_base": {
+    "swatch": "lace_base",
+    "kind": "ornament",
+    "note": "セラの外套の裾のレース"
+  },
+  "trim_gold_base": {
+    "swatch": "metal_base",
+    "kind": "ornament",
+    "note": "セラの外套の留め金（金）"
+  },
+  "sandal_linen_base": {
+    "swatch": "linen_base",
+    "kind": "cloth",
+    "note": "セラのサンダル（全身絵の白い足元）"
   }
 }
