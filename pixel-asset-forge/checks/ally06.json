@@ -5,12 +5,12 @@
   "head_chars": "",
   "items": "mng",
   "parts": {
-    "staff": {
+    "staff_ally06": {
       "moves": true
     },
     "staff_hand": {
       "fist": true,
-      "grips": "staff",
+      "grips": "staff_ally06",
       "fist_sizes": [
         "3x2",
         "2x2"
@@ -43,12 +43,12 @@
       "cloth_ally06",
       "hair_ally06",
       "head_ally06",
-      "staff",
+      "staff_ally06",
       "staff_hand",
       "free_hand"
     ],
     "up": [
-      "staff",
+      "staff_ally06",
       "staff_hand",
       "free_hand",
       "CORE",
@@ -58,9 +58,8 @@
       "head_ally06"
     ],
     "left": [
-      "staff",
+      "staff_ally06",
       "staff_hand",
-      "hair_ally06_back",
       "CORE",
       "eye_E0",
       "cloth_ally06",
@@ -69,14 +68,13 @@
       "free_hand"
     ],
     "right": [
-      "hair_ally06_back",
       "free_hand",
       "CORE",
       "eye_E0",
       "cloth_ally06",
       "hair_ally06",
       "head_ally06",
-      "staff",
+      "staff_ally06",
       "staff_hand"
     ]
   },

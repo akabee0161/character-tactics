@@ -25,11 +25,11 @@
           "z": "front"
         },
         {
-          "part": "assets/part/equip/staff/staff_down_base.txt",
+          "part": "assets/part/equip/staff_ally06/staff_ally06_down_base.txt",
           "z": "front"
         },
         {
-          "part": "assets/part/fist/mist/staff_hand_down_base.txt",
+          "part": "assets/part/fist/ally06/staff_hand_down_base.txt",
           "z": "front",
           "hand": true,
           "keep": [
@@ -37,7 +37,7 @@
           ]
         },
         {
-          "part": "assets/part/fist/mist/free_hand_down_base.txt",
+          "part": "assets/part/fist/ally06/free_hand_down_base.txt",
           "z": "front",
           "hand": true
         }
@@ -67,11 +67,11 @@
           "z": "front"
         },
         {
-          "part": "assets/part/equip/staff/staff_down_idle2.txt",
+          "part": "assets/part/equip/staff_ally06/staff_ally06_down_idle2.txt",
           "z": "front"
         },
         {
-          "part": "assets/part/fist/mist/staff_hand_down_idle2.txt",
+          "part": "assets/part/fist/ally06/staff_hand_down_idle2.txt",
           "z": "front",
           "hand": true,
           "keep": [
@@ -79,7 +79,7 @@
           ]
         },
         {
-          "part": "assets/part/fist/mist/free_hand_down_idle2.txt",
+          "part": "assets/part/fist/ally06/free_hand_down_idle2.txt",
           "z": "front",
           "hand": true
         }
@@ -109,11 +109,11 @@
           "z": "front"
         },
         {
-          "part": "assets/part/equip/staff/staff_down_base.txt",
+          "part": "assets/part/equip/staff_ally06/staff_ally06_down_base.txt",
           "z": "front"
         },
         {
-          "part": "assets/part/fist/mist/staff_hand_down_base.txt",
+          "part": "assets/part/fist/ally06/staff_hand_down_base.txt",
           "z": "front",
           "hand": true,
           "keep": [
@@ -121,7 +121,7 @@
           ]
         },
         {
-          "part": "assets/part/fist/mist/free_hand_down_base.txt",
+          "part": "assets/part/fist/ally06/free_hand_down_base.txt",
           "z": "front",
           "hand": true
         }
@@ -151,11 +151,11 @@
           "z": "front"
         },
         {
-          "part": "assets/part/equip/staff/staff_down_base.txt",
+          "part": "assets/part/equip/staff_ally06/staff_ally06_down_base.txt",
           "z": "front"
         },
         {
-          "part": "assets/part/fist/mist/staff_hand_down_base.txt",
+          "part": "assets/part/fist/ally06/staff_hand_down_base.txt",
           "z": "front",
           "hand": true,
           "keep": [
@@ -163,7 +163,7 @@
           ]
         },
         {
-          "part": "assets/part/fist/mist/free_hand_down_base.txt",
+          "part": "assets/part/fist/ally06/free_hand_down_base.txt",
           "z": "front",
           "hand": true
         }
@@ -193,11 +193,11 @@
           "z": "front"
         },
         {
-          "part": "assets/part/equip/staff/staff_down_atk_wind.txt",
+          "part": "assets/part/equip/staff_ally06/staff_ally06_down_atk_wind.txt",
           "z": "front"
         },
         {
-          "part": "assets/part/fist/mist/staff_hand_down_atk_wind.txt",
+          "part": "assets/part/fist/ally06/staff_hand_down_atk_wind.txt",
           "z": "front",
           "hand": true,
           "keep": [
@@ -205,7 +205,7 @@
           ]
         },
         {
-          "part": "assets/part/fist/mist/free_hand_down_atk_wind.txt",
+          "part": "assets/part/fist/ally06/free_hand_down_atk_wind.txt",
           "z": "front",
           "hand": true
         }
@@ -235,11 +235,11 @@
           "z": "front"
         },
         {
-          "part": "assets/part/equip/staff/staff_down_atk_hit.txt",
+          "part": "assets/part/equip/staff_ally06/staff_ally06_down_atk_hit.txt",
           "z": "front"
         },
         {
-          "part": "assets/part/fist/mist/staff_hand_down_atk_hit.txt",
+          "part": "assets/part/fist/ally06/staff_hand_down_atk_hit.txt",
           "z": "front",
           "hand": true,
           "keep": [
@@ -247,7 +247,7 @@
           ]
         },
         {
-          "part": "assets/part/fist/mist/free_hand_down_atk_hit.txt",
+          "part": "assets/part/fist/ally06/free_hand_down_atk_hit.txt",
           "z": "front",
           "hand": true
         }
@@ -257,12 +257,12 @@
       "body": "assets/part/body/ally06/core_up_base.txt",
       "layers": [
         {
-          "part": "assets/part/fist/mist/free_hand_up_base.txt",
+          "part": "assets/part/fist/ally06/free_hand_up_base.txt",
           "z": "back",
           "hand": true
         },
         {
-          "part": "assets/part/fist/mist/staff_hand_up_base.txt",
+          "part": "assets/part/fist/ally06/staff_hand_up_base.txt",
           "z": "back",
           "hand": true,
           "keep": [
@@ -270,7 +270,7 @@
           ]
         },
         {
-          "part": "assets/part/equip/staff/staff_up_base.txt",
+          "part": "assets/part/equip/staff_ally06/staff_ally06_up_base.txt",
           "z": "back"
         },
         {
@@ -295,12 +295,12 @@
       "body": "assets/part/body/ally06/core_up_idle2.txt",
       "layers": [
         {
-          "part": "assets/part/fist/mist/free_hand_up_idle2.txt",
+          "part": "assets/part/fist/ally06/free_hand_up_idle2.txt",
           "z": "back",
           "hand": true
         },
         {
-          "part": "assets/part/fist/mist/staff_hand_up_idle2.txt",
+          "part": "assets/part/fist/ally06/staff_hand_up_idle2.txt",
           "z": "back",
           "hand": true,
           "keep": [
@@ -308,7 +308,7 @@
           ]
         },
         {
-          "part": "assets/part/equip/staff/staff_up_idle2.txt",
+          "part": "assets/part/equip/staff_ally06/staff_ally06_up_idle2.txt",
           "z": "back"
         },
         {
@@ -333,12 +333,12 @@
       "body": "assets/part/body/ally06/core_up_walk_a.txt",
       "layers": [
         {
-          "part": "assets/part/fist/mist/free_hand_up_base.txt",
+          "part": "assets/part/fist/ally06/free_hand_up_base.txt",
           "z": "back",
           "hand": true
         },
         {
-          "part": "assets/part/fist/mist/staff_hand_up_base.txt",
+          "part": "assets/part/fist/ally06/staff_hand_up_base.txt",
           "z": "back",
           "hand": true,
           "keep": [
@@ -346,7 +346,7 @@
           ]
         },
         {
-          "part": "assets/part/equip/staff/staff_up_base.txt",
+          "part": "assets/part/equip/staff_ally06/staff_ally06_up_base.txt",
           "z": "back"
         },
         {
@@ -371,12 +371,12 @@
       "body": "assets/part/body/ally06/core_up_walk_b.txt",
       "layers": [
         {
-          "part": "assets/part/fist/mist/free_hand_up_base.txt",
+          "part": "assets/part/fist/ally06/free_hand_up_base.txt",
           "z": "back",
           "hand": true
         },
         {
-          "part": "assets/part/fist/mist/staff_hand_up_base.txt",
+          "part": "assets/part/fist/ally06/staff_hand_up_base.txt",
           "z": "back",
           "hand": true,
           "keep": [
@@ -384,7 +384,7 @@
           ]
         },
         {
-          "part": "assets/part/equip/staff/staff_up_base.txt",
+          "part": "assets/part/equip/staff_ally06/staff_ally06_up_base.txt",
           "z": "back"
         },
         {
@@ -409,12 +409,12 @@
       "body": "assets/part/body/ally06/core_up_atk_wind.txt",
       "layers": [
         {
-          "part": "assets/part/fist/mist/free_hand_up_atk_wind.txt",
+          "part": "assets/part/fist/ally06/free_hand_up_atk_wind.txt",
           "z": "back",
           "hand": true
         },
         {
-          "part": "assets/part/fist/mist/staff_hand_up_atk_wind.txt",
+          "part": "assets/part/fist/ally06/staff_hand_up_atk_wind.txt",
           "z": "back",
           "hand": true,
           "keep": [
@@ -422,7 +422,7 @@
           ]
         },
         {
-          "part": "assets/part/equip/staff/staff_up_atk_wind.txt",
+          "part": "assets/part/equip/staff_ally06/staff_ally06_up_atk_wind.txt",
           "z": "back"
         },
         {
@@ -447,12 +447,12 @@
       "body": "assets/part/body/ally06/core_up_atk_hit.txt",
       "layers": [
         {
-          "part": "assets/part/fist/mist/free_hand_up_atk_hit.txt",
+          "part": "assets/part/fist/ally06/free_hand_up_atk_hit.txt",
           "z": "back",
           "hand": true
         },
         {
-          "part": "assets/part/fist/mist/staff_hand_up_atk_hit.txt",
+          "part": "assets/part/fist/ally06/staff_hand_up_atk_hit.txt",
           "z": "back",
           "hand": true,
           "keep": [
@@ -460,7 +460,7 @@
           ]
         },
         {
-          "part": "assets/part/equip/staff/staff_up_atk_hit.txt",
+          "part": "assets/part/equip/staff_ally06/staff_ally06_up_atk_hit.txt",
           "z": "back"
         },
         {
@@ -485,11 +485,7 @@
       "body": "assets/part/body/ally06/core_left_base.txt",
       "layers": [
         {
-          "part": "assets/part/hair/ally06/hair_ally06_back_left_base.txt",
-          "z": "back"
-        },
-        {
-          "part": "assets/part/fist/mist/staff_hand_left_base.txt",
+          "part": "assets/part/fist/ally06/staff_hand_left_base.txt",
           "z": "back",
           "hand": true,
           "keep": [
@@ -497,7 +493,7 @@
           ]
         },
         {
-          "part": "assets/part/equip/staff/staff_left_base.txt",
+          "part": "assets/part/equip/staff_ally06/staff_ally06_left_base.txt",
           "z": "back"
         },
         {
@@ -517,7 +513,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/fist/mist/free_hand_left_base.txt",
+          "part": "assets/part/fist/ally06/free_hand_left_base.txt",
           "z": "front",
           "hand": true
         }
@@ -527,11 +523,7 @@
       "body": "assets/part/body/ally06/core_left_idle2.txt",
       "layers": [
         {
-          "part": "assets/part/hair/ally06/hair_ally06_back_left_base.txt",
-          "z": "back"
-        },
-        {
-          "part": "assets/part/fist/mist/staff_hand_left_idle2.txt",
+          "part": "assets/part/fist/ally06/staff_hand_left_idle2.txt",
           "z": "back",
           "hand": true,
           "keep": [
@@ -539,7 +531,7 @@
           ]
         },
         {
-          "part": "assets/part/equip/staff/staff_left_idle2.txt",
+          "part": "assets/part/equip/staff_ally06/staff_ally06_left_idle2.txt",
           "z": "back"
         },
         {
@@ -559,7 +551,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/fist/mist/free_hand_left_idle2.txt",
+          "part": "assets/part/fist/ally06/free_hand_left_idle2.txt",
           "z": "front",
           "hand": true
         }
@@ -569,11 +561,7 @@
       "body": "assets/part/body/ally06/core_left_walk_a.txt",
       "layers": [
         {
-          "part": "assets/part/hair/ally06/hair_ally06_back_left_base.txt",
-          "z": "back"
-        },
-        {
-          "part": "assets/part/fist/mist/staff_hand_left_base.txt",
+          "part": "assets/part/fist/ally06/staff_hand_left_base.txt",
           "z": "back",
           "hand": true,
           "keep": [
@@ -581,7 +569,7 @@
           ]
         },
         {
-          "part": "assets/part/equip/staff/staff_left_base.txt",
+          "part": "assets/part/equip/staff_ally06/staff_ally06_left_base.txt",
           "z": "back"
         },
         {
@@ -601,7 +589,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/fist/mist/free_hand_left_base.txt",
+          "part": "assets/part/fist/ally06/free_hand_left_base.txt",
           "z": "front",
           "hand": true
         }
@@ -611,11 +599,7 @@
       "body": "assets/part/body/ally06/core_left_walk_b.txt",
       "layers": [
         {
-          "part": "assets/part/hair/ally06/hair_ally06_back_left_base.txt",
-          "z": "back"
-        },
-        {
-          "part": "assets/part/fist/mist/staff_hand_left_base.txt",
+          "part": "assets/part/fist/ally06/staff_hand_left_base.txt",
           "z": "back",
           "hand": true,
           "keep": [
@@ -623,7 +607,7 @@
           ]
         },
         {
-          "part": "assets/part/equip/staff/staff_left_base.txt",
+          "part": "assets/part/equip/staff_ally06/staff_ally06_left_base.txt",
           "z": "back"
         },
         {
@@ -643,7 +627,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/fist/mist/free_hand_left_base.txt",
+          "part": "assets/part/fist/ally06/free_hand_left_base.txt",
           "z": "front",
           "hand": true
         }
@@ -653,11 +637,7 @@
       "body": "assets/part/body/ally06/core_left_atk_wind.txt",
       "layers": [
         {
-          "part": "assets/part/hair/ally06/hair_ally06_back_left_base.txt",
-          "z": "back"
-        },
-        {
-          "part": "assets/part/fist/mist/staff_hand_left_atk_wind.txt",
+          "part": "assets/part/fist/ally06/staff_hand_left_atk_wind.txt",
           "z": "back",
           "hand": true,
           "keep": [
@@ -665,7 +645,7 @@
           ]
         },
         {
-          "part": "assets/part/equip/staff/staff_left_atk_wind.txt",
+          "part": "assets/part/equip/staff_ally06/staff_ally06_left_atk_wind.txt",
           "z": "back"
         },
         {
@@ -685,7 +665,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/fist/mist/free_hand_left_atk_wind.txt",
+          "part": "assets/part/fist/ally06/free_hand_left_atk_wind.txt",
           "z": "front",
           "hand": true
         }
@@ -695,11 +675,7 @@
       "body": "assets/part/body/ally06/core_left_atk_hit.txt",
       "layers": [
         {
-          "part": "assets/part/hair/ally06/hair_ally06_back_left_base.txt",
-          "z": "back"
-        },
-        {
-          "part": "assets/part/fist/mist/staff_hand_left_atk_hit.txt",
+          "part": "assets/part/fist/ally06/staff_hand_left_atk_hit.txt",
           "z": "back",
           "hand": true,
           "keep": [
@@ -707,7 +683,7 @@
           ]
         },
         {
-          "part": "assets/part/equip/staff/staff_left_atk_hit.txt",
+          "part": "assets/part/equip/staff_ally06/staff_ally06_left_atk_hit.txt",
           "z": "back"
         },
         {
@@ -727,7 +703,7 @@
           "z": "front"
         },
         {
-          "part": "assets/part/fist/mist/free_hand_left_atk_hit.txt",
+          "part": "assets/part/fist/ally06/free_hand_left_atk_hit.txt",
           "z": "front",
           "hand": true
         }
@@ -737,7 +713,7 @@
       "body": "assets/part/body/ally06/core_right_base.txt",
       "layers": [
         {
-          "part": "assets/part/fist/mist/free_hand_right_base.txt",
+          "part": "assets/part/fist/ally06/free_hand_right_base.txt",
           "z": "back",
           "hand": true
         },
@@ -758,20 +734,16 @@
           "z": "front"
         },
         {
-          "part": "assets/part/equip/staff/staff_right_base.txt",
+          "part": "assets/part/equip/staff_ally06/staff_ally06_right_base.txt",
           "z": "front"
         },
         {
-          "part": "assets/part/fist/mist/staff_hand_right_base.txt",
+          "part": "assets/part/fist/ally06/staff_hand_right_base.txt",
           "z": "front",
           "hand": true,
           "keep": [
             "weapon"
           ]
-        },
-        {
-          "part": "assets/part/hair/ally06/hair_ally06_back_right_base.txt",
-          "z": "back"
         }
       ]
     },
@@ -779,7 +751,7 @@
       "body": "assets/part/body/ally06/core_right_idle2.txt",
       "layers": [
         {
-          "part": "assets/part/fist/mist/free_hand_right_idle2.txt",
+          "part": "assets/part/fist/ally06/free_hand_right_idle2.txt",
           "z": "back",
           "hand": true
         },
@@ -800,20 +772,16 @@
           "z": "front"
         },
         {
-          "part": "assets/part/equip/staff/staff_right_idle2.txt",
+          "part": "assets/part/equip/staff_ally06/staff_ally06_right_idle2.txt",
           "z": "front"
         },
         {
-          "part": "assets/part/fist/mist/staff_hand_right_idle2.txt",
+          "part": "assets/part/fist/ally06/staff_hand_right_idle2.txt",
           "z": "front",
           "hand": true,
           "keep": [
             "weapon"
           ]
-        },
-        {
-          "part": "assets/part/hair/ally06/hair_ally06_back_right_base.txt",
-          "z": "back"
         }
       ]
     },
@@ -821,7 +789,7 @@
       "body": "assets/part/body/ally06/core_right_walk_a.txt",
       "layers": [
         {
-          "part": "assets/part/fist/mist/free_hand_right_base.txt",
+          "part": "assets/part/fist/ally06/free_hand_right_base.txt",
           "z": "back",
           "hand": true
         },
@@ -842,20 +810,16 @@
           "z": "front"
         },
         {
-          "part": "assets/part/equip/staff/staff_right_base.txt",
+          "part": "assets/part/equip/staff_ally06/staff_ally06_right_base.txt",
           "z": "front"
         },
         {
-          "part": "assets/part/fist/mist/staff_hand_right_base.txt",
+          "part": "assets/part/fist/ally06/staff_hand_right_base.txt",
           "z": "front",
           "hand": true,
           "keep": [
             "weapon"
           ]
-        },
-        {
-          "part": "assets/part/hair/ally06/hair_ally06_back_right_base.txt",
-          "z": "back"
         }
       ]
     },
@@ -863,7 +827,7 @@
       "body": "assets/part/body/ally06/core_right_walk_b.txt",
       "layers": [
         {
-          "part": "assets/part/fist/mist/free_hand_right_base.txt",
+          "part": "assets/part/fist/ally06/free_hand_right_base.txt",
           "z": "back",
           "hand": true
         },
@@ -884,20 +848,16 @@
           "z": "front"
         },
         {
-          "part": "assets/part/equip/staff/staff_right_base.txt",
+          "part": "assets/part/equip/staff_ally06/staff_ally06_right_base.txt",
           "z": "front"
         },
         {
-          "part": "assets/part/fist/mist/staff_hand_right_base.txt",
+          "part": "assets/part/fist/ally06/staff_hand_right_base.txt",
           "z": "front",
           "hand": true,
           "keep": [
             "weapon"
           ]
-        },
-        {
-          "part": "assets/part/hair/ally06/hair_ally06_back_right_base.txt",
-          "z": "back"
         }
       ]
     },
@@ -905,7 +865,7 @@
       "body": "assets/part/body/ally06/core_right_atk_wind.txt",
       "layers": [
         {
-          "part": "assets/part/fist/mist/free_hand_right_atk_wind.txt",
+          "part": "assets/part/fist/ally06/free_hand_right_atk_wind.txt",
           "z": "back",
           "hand": true
         },
@@ -926,20 +886,16 @@
           "z": "front"
         },
         {
-          "part": "assets/part/equip/staff/staff_right_atk_wind.txt",
+          "part": "assets/part/equip/staff_ally06/staff_ally06_right_atk_wind.txt",
           "z": "front"
         },
         {
-          "part": "assets/part/fist/mist/staff_hand_right_atk_wind.txt",
+          "part": "assets/part/fist/ally06/staff_hand_right_atk_wind.txt",
           "z": "front",
           "hand": true,
           "keep": [
             "weapon"
           ]
-        },
-        {
-          "part": "assets/part/hair/ally06/hair_ally06_back_right_base.txt",
-          "z": "back"
         }
       ]
     },
@@ -947,7 +903,7 @@
       "body": "assets/part/body/ally06/core_right_atk_hit.txt",
       "layers": [
         {
-          "part": "assets/part/fist/mist/free_hand_right_atk_hit.txt",
+          "part": "assets/part/fist/ally06/free_hand_right_atk_hit.txt",
           "z": "back",
           "hand": true
         },
@@ -968,20 +924,16 @@
           "z": "front"
         },
         {
-          "part": "assets/part/equip/staff/staff_right_atk_hit.txt",
+          "part": "assets/part/equip/staff_ally06/staff_ally06_right_atk_hit.txt",
           "z": "front"
         },
         {
-          "part": "assets/part/fist/mist/staff_hand_right_atk_hit.txt",
+          "part": "assets/part/fist/ally06/staff_hand_right_atk_hit.txt",
           "z": "front",
           "hand": true,
           "keep": [
             "weapon"
           ]
-        },
-        {
-          "part": "assets/part/hair/ally06/hair_ally06_back_right_base.txt",
-          "z": "back"
         }
       ]
     }

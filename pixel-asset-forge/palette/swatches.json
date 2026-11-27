@@ -51,6 +51,54 @@
     "hex": "#96604a",
     "note": "明るい肌色の濃"
   },
+  "pale_hi": {
+    "hex": "#fff0e8",
+    "note": "白い肌色の明"
+  },
+  "pale_base": {
+    "hex": "#f6d6c6",
+    "note": "白い肌色の中"
+  },
+  "pale_shadow": {
+    "hex": "#d8a592",
+    "note": "白い肌色の暗"
+  },
+  "scepter_gold_hi": {
+    "hex": "#f2cf72",
+    "note": "セラの杖の金の飾り（明）"
+  },
+  "scepter_gold_base": {
+    "hex": "#d8a63c",
+    "note": "セラの杖の金の飾り（中）"
+  },
+  "scepter_gold_shadow": {
+    "hex": "#a8742c",
+    "note": "セラの杖の金の飾り（暗）"
+  },
+  "scepter_ruby_hi": {
+    "hex": "#f0707a",
+    "note": "セラの杖のルビー（明）"
+  },
+  "scepter_ruby_base": {
+    "hex": "#c02f40",
+    "note": "セラの杖のルビー（中）"
+  },
+  "scepter_blue_base": {
+    "hex": "#4a54b0",
+    "note": "セラの杖の青い柄（中）"
+  },
+  "scepter_blue_shadow": {
+    "hex": "#343c86",
+    "note": "セラの杖の青い柄（暗）"
+  },
+  "scepter_linen_base": {
+    "hex": "#fff3d0",
+    "note": "セラの杖の白い布（中）"
+  },
+  "scepter_linen_shadow": {
+    "hex": "#d8caa0",
+    "note": "セラの杖の白い布（暗）"
+  },
   "skin_rose_hi": {
     "hex": "#f0d4d0",
     "note": "赤みの肌色の明"

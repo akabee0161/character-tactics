@@ -199,6 +199,66 @@
     "kind": "ornament",
     "note": "長い髪 C の結び目"
   },
+  "skin_pale_hi": {
+    "swatch": "pale_hi",
+    "kind": "skin",
+    "note": "白い肌・拳（ally06）（明）"
+  },
+  "skin_pale_base": {
+    "swatch": "pale_base",
+    "kind": "skin",
+    "note": "白い肌・拳（ally06）（中）"
+  },
+  "skin_pale_shadow": {
+    "swatch": "pale_shadow",
+    "kind": "skin",
+    "note": "白い肌・拳（ally06）（暗）"
+  },
+  "staff_gold_hi": {
+    "swatch": "scepter_gold_hi",
+    "kind": "weapon",
+    "note": "セラの杖の金の飾り（明）"
+  },
+  "staff_gold_base": {
+    "swatch": "scepter_gold_base",
+    "kind": "weapon",
+    "note": "セラの杖の金の飾り（中）"
+  },
+  "staff_gold_shadow": {
+    "swatch": "scepter_gold_shadow",
+    "kind": "weapon",
+    "note": "セラの杖の金の飾り（暗）"
+  },
+  "staff_ruby_hi": {
+    "swatch": "scepter_ruby_hi",
+    "kind": "weapon",
+    "note": "セラの杖のルビー（明）"
+  },
+  "staff_ruby_base": {
+    "swatch": "scepter_ruby_base",
+    "kind": "weapon",
+    "note": "セラの杖のルビー（中）"
+  },
+  "staff_blue_base": {
+    "swatch": "scepter_blue_base",
+    "kind": "weapon",
+    "note": "セラの杖の青い柄（中）"
+  },
+  "staff_blue_shadow": {
+    "swatch": "scepter_blue_shadow",
+    "kind": "weapon",
+    "note": "セラの杖の青い柄（暗）"
+  },
+  "staff_linen_base": {
+    "swatch": "scepter_linen_base",
+    "kind": "weapon",
+    "note": "セラの杖の白い布（中）"
+  },
+  "staff_linen_shadow": {
+    "swatch": "scepter_linen_shadow",
+    "kind": "weapon",
+    "note": "セラの杖の白い布（暗）"
+  },
   "skin_fair_hi": {
     "swatch": "skin_hi",
     "kind": "skin",
