@@ -1,4 +1,4 @@
-# ally10 の盾を持つ拳 left（ボルグの盾の拳の複製。肌は同じ skin_fair）
+# ally10 の盾を持つ拳 left（ally05 の盾の拳の複製。肌は同じ skin_fair）
 # type: unit
 # size: 32x32
 # light: upper-left

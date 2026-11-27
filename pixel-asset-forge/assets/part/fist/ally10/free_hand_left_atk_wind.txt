@@ -1,4 +1,4 @@
-# ally10 の空き手の拳 left_atk_wind（ボルグの剣の拳の複製。何も握らず、攻撃では拳が動く）
+# ally10 の空き手の拳 left_atk_wind（ally05 の剣の拳の複製。何も握らず、攻撃では拳が動く）
 # type: unit
 # size: 32x32
 # light: upper-left
