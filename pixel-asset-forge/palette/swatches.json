@@ -686,5 +686,89 @@
   "lace_base": {
     "hex": "#ece6f3",
     "note": "フードと外套のレースの白紫（顔のフードの縁 #cdc7d8 を明るく）。セラ（ally06）（2026-11-26 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌 3 色・金・互いと測った（HARD・WARN 0 件）"
+  },
+  "steelblue_hi": {
+    "hex": "#5a8dc0",
+    "note": "鎧と盾の面の青（明）。ally14（2026-11-27 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌・金・ボルグの鎧と測った（HARD 0 件）"
+  },
+  "steelblue_base": {
+    "hex": "#3c6a98",
+    "note": "鎧と盾の面の青（中）。ally14（2026-11-27 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌・金・ボルグの鎧と測った（HARD 0 件）"
+  },
+  "steelblue_shadow": {
+    "hex": "#284a70",
+    "note": "鎧と盾の面の青（暗）。ally14（2026-11-27 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌・金・ボルグの鎧と測った（HARD 0 件）"
+  },
+  "ink_hi": {
+    "hex": "#5a6480",
+    "note": "髪と髭の黒（明。輪郭の黒と区別できる青みの黒）。ally14（2026-11-27 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌・金・ボルグの鎧と測った（HARD 0 件）"
+  },
+  "ink_base": {
+    "hex": "#3d445a",
+    "note": "髪と髭の黒（中）。ally14（2026-11-27 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌・金・ボルグの鎧と測った（HARD 0 件）"
+  },
+  "ink_shadow": {
+    "hex": "#272b3b",
+    "note": "髪と髭の黒（暗）。ally14（2026-11-27 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌・金・ボルグの鎧と測った（HARD 0 件）"
+  },
+  "blond_hi": {
+    "hex": "#f2e2a4",
+    "note": "髪の淡い金（明）。ally10（2026-11-27 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌・互いと測った（HARD 0 件）"
+  },
+  "blond_base": {
+    "hex": "#ddc27c",
+    "note": "髪の淡い金（中）。ally10（2026-11-27 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌・互いと測った（HARD 0 件）"
+  },
+  "blond_shadow": {
+    "hex": "#b0955a",
+    "note": "髪の淡い金（暗）。ally10（2026-11-27 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌・互いと測った（HARD 0 件）"
+  },
+  "chalk_hi": {
+    "hex": "#fcfbf7",
+    "note": "白い法衣と外套（明）。ally10（2026-11-27 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌・互いと測った（HARD 0 件）"
+  },
+  "chalk_base": {
+    "hex": "#e0dacf",
+    "note": "白い法衣と外套（中）。ally10（2026-11-27 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌・互いと測った（HARD 0 件）"
+  },
+  "chalk_shadow": {
+    "hex": "#b4ad9f",
+    "note": "白い法衣と外套（暗）。ally10（2026-11-27 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌・互いと測った（HARD 0 件）"
+  },
+  "saffron_hi": {
+    "hex": "#ffe07a",
+    "note": "法衣の黄の縁（明）。ally10（2026-11-27 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌・互いと測った（HARD 0 件）"
+  },
+  "saffron_base": {
+    "hex": "#f0b830",
+    "note": "法衣の黄の縁（中）。ally10（2026-11-27 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌・互いと測った（HARD 0 件）"
+  },
+  "saffron_shadow": {
+    "hex": "#b8860f",
+    "note": "法衣の黄の縁（暗）。ally10（2026-11-27 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌・互いと測った（HARD 0 件）"
+  },
+  "goldface_hi": {
+    "hex": "#f0c860",
+    "note": "盾の面の金（明）。ally10（2026-11-27 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌・互いと測った（HARD 0 件）"
+  },
+  "goldface_base": {
+    "hex": "#d8a23a",
+    "note": "盾の面の金（中）。ally10（2026-11-27 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌・互いと測った（HARD 0 件）"
+  },
+  "goldface_shadow": {
+    "hex": "#a6741c",
+    "note": "盾の面の金（暗）。ally10（2026-11-27 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌・互いと測った（HARD 0 件）"
+  },
+  "sand_hi": {
+    "hex": "#ebdcae",
+    "note": "盾の縁の砂色（明）。ally10（2026-11-27 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌・互いと測った（HARD 0 件）"
+  },
+  "sand_base": {
+    "hex": "#c9b480",
+    "note": "盾の縁の砂色（中）。ally10（2026-11-27 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌・互いと測った（HARD 0 件）"
+  },
+  "sand_shadow": {
+    "hex": "#8f7b4c",
+    "note": "盾の縁の砂色（暗）。ally10（2026-11-27 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌・互いと測った（HARD 0 件）"
   }
 }
