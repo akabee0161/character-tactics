@@ -692,7 +692,7 @@
     "note": "鎧と盾の面の青（明）。ally14（2026-11-27 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌・金・ボルグの鎧と測った（HARD 0 件）"
   },
   "steelblue_base": {
-    "hex": "#3c6a98",
+    "hex": "#3a6094",
     "note": "鎧と盾の面の青（中）。ally14（2026-11-27 の設定シート CP0）。顔・全身絵から測り、probe_colors.py で輪郭・肌・金・ボルグの鎧と測った（HARD 0 件）"
   },
   "steelblue_shadow": {
