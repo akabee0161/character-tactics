@@ -1,0 +1,73 @@
+{
+  "unit": "ally14",
+  "compose": "compose/ally14.json",
+  "body": "male",
+  "head_chars": "",
+  "items": "TUVKLM",
+  "parts": {
+    "free_hand": {
+      "fist": true,
+      "fist_sizes": [
+        "3x2"
+      ],
+      "moves": true
+    },
+    "shield": {
+      "fixed": true
+    },
+    "shield_hand": {
+      "fist": true,
+      "grips": "shield",
+      "fist_sizes": [
+        "3x2"
+      ]
+    },
+    "eye_E0": {
+      "eye": true
+    },
+    "hair_ally14": {
+      "head": true
+    },
+    "cloth_ally14": {}
+  },
+  "orders": {
+    "down": [
+      "CORE",
+      "eye_E0",
+      "cloth_ally14",
+      "hair_ally14",
+      "shield_hand",
+      "shield",
+      "free_hand"
+    ],
+    "up": [
+      "shield",
+      "free_hand",
+      "shield_hand",
+      "CORE",
+      "eye_E0",
+      "cloth_ally14",
+      "hair_ally14"
+    ],
+    "left": [
+      "free_hand",
+      "CORE",
+      "eye_E0",
+      "cloth_ally14",
+      "hair_ally14",
+      "shield_hand",
+      "shield"
+    ],
+    "right": [
+      "shield_hand",
+      "shield",
+      "CORE",
+      "eye_E0",
+      "cloth_ally14",
+      "hair_ally14",
+      "free_hand"
+    ]
+  },
+  "weapon_check": null,
+  "exceptions": []
+}

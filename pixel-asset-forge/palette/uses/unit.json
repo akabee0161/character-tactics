@@ -1018,5 +1018,130 @@
     "swatch": "linen_base",
     "kind": "cloth",
     "note": "セラのサンダル（全身絵の白い足元）"
+  },
+  "armor_steel_hi": {
+    "swatch": "steelblue_hi",
+    "kind": "cloth",
+    "note": "ally14 の鎧の青（明）"
+  },
+  "armor_steel_base": {
+    "swatch": "steelblue_base",
+    "kind": "cloth",
+    "note": "ally14 の鎧の青（中）"
+  },
+  "armor_steel_shadow": {
+    "swatch": "steelblue_shadow",
+    "kind": "cloth",
+    "note": "ally14 の鎧の青（暗）"
+  },
+  "shield_blue_hi": {
+    "swatch": "steelblue_hi",
+    "kind": "shield",
+    "note": "ally14 の盾の面の青（明）"
+  },
+  "shield_blue_base": {
+    "swatch": "steelblue_base",
+    "kind": "shield",
+    "note": "ally14 の盾の面の青（中）"
+  },
+  "shield_blue_shadow": {
+    "swatch": "steelblue_shadow",
+    "kind": "shield",
+    "note": "ally14 の盾の面の青（暗）"
+  },
+  "hair_ink_hi": {
+    "swatch": "ink_hi",
+    "kind": "hair",
+    "note": "ally14 の髪と髭の黒（明）"
+  },
+  "hair_ink_base": {
+    "swatch": "ink_base",
+    "kind": "hair",
+    "note": "ally14 の髪と髭の黒（中）"
+  },
+  "hair_ink_shadow": {
+    "swatch": "ink_shadow",
+    "kind": "hair",
+    "note": "ally14 の髪と髭の黒（暗）"
+  },
+  "hair_blond_hi": {
+    "swatch": "blond_hi",
+    "kind": "hair",
+    "note": "ally10 の髪（明）"
+  },
+  "hair_blond_base": {
+    "swatch": "blond_base",
+    "kind": "hair",
+    "note": "ally10 の髪（中）"
+  },
+  "hair_blond_shadow": {
+    "swatch": "blond_shadow",
+    "kind": "hair",
+    "note": "ally10 の髪（暗）"
+  },
+  "robe_chalk_hi": {
+    "swatch": "chalk_hi",
+    "kind": "cloth",
+    "note": "ally10 の法衣と外套の白（明）"
+  },
+  "robe_chalk_base": {
+    "swatch": "chalk_base",
+    "kind": "cloth",
+    "note": "ally10 の法衣と外套の白（中）"
+  },
+  "robe_chalk_shadow": {
+    "swatch": "chalk_shadow",
+    "kind": "cloth",
+    "note": "ally10 の法衣と外套の白（暗）"
+  },
+  "trim_saffron_hi": {
+    "swatch": "saffron_hi",
+    "kind": "cloth",
+    "note": "ally10 の黄の縁（明）"
+  },
+  "trim_saffron_base": {
+    "swatch": "saffron_base",
+    "kind": "cloth",
+    "note": "ally10 の黄の縁（中）"
+  },
+  "trim_saffron_shadow": {
+    "swatch": "saffron_shadow",
+    "kind": "cloth",
+    "note": "ally10 の黄の縁（暗）"
+  },
+  "shield_gold_hi": {
+    "swatch": "goldface_hi",
+    "kind": "shield",
+    "note": "ally10 の盾の面の金（明）"
+  },
+  "shield_gold_base": {
+    "swatch": "goldface_base",
+    "kind": "shield",
+    "note": "ally10 の盾の面の金（中）"
+  },
+  "shield_gold_shadow": {
+    "swatch": "goldface_shadow",
+    "kind": "shield",
+    "note": "ally10 の盾の面の金（暗）"
+  },
+  "shield_sand_hi": {
+    "swatch": "sand_hi",
+    "kind": "shield",
+    "note": "ally10 の盾の縁の砂色（明）"
+  },
+  "shield_sand_base": {
+    "swatch": "sand_base",
+    "kind": "shield",
+    "note": "ally10 の盾の縁の砂色（中）"
+  },
+  "shield_sand_shadow": {
+    "swatch": "sand_shadow",
+    "kind": "shield",
+    "note": "ally10 の盾の縁の砂色（暗）"
+  },
+  "shield_cross": {
+    "swatch": "chalk_hi",
+    "kind": "shield",
+    "note": "ally10 の盾の白い十字"
   }
 }
