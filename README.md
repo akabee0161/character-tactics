@@ -146,6 +146,25 @@ URL に `?debug` を付けると、戦闘中だけ次の操作ができる（攻
 | `.` | 一時停止中に、シムを1ステップ（1/60秒）進める |
 | `S` | 1/4 の速さと通常の速さを切り替える |
 
+### ユニットの絵を確かめる（`npm run unit-view`）
+
+ユニットの絵をゲームの描画で描いても崩れないかを、1 つのコマンドで合否にする。`pixel-asset-forge/CLAUDE.md` の「ゲームで動かす」確認を、画面操作なしで済ませるためのもの（作業するエージェントが使う）。開発用の別ページ `unit-view.html` が、全シートを升に並べてゲームの描画関数（`drawUnitFigure`）で描き、シートのコマと画素を照らし合わせる。`vite build` は `index.html` だけを入れるので、このページは本番の配信物に入らない。
+
+```bash
+free -m   # 空きを見る。少なければ Chromium を起こさない
+CHROME=~/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome \
+  systemd-run --user --scope -p MemoryMax=900M npm run unit-view [-- --out <dir>]
+```
+
+- **確かめること**: 体の画素がシートの該当のコマと 1 画素も違わないこと（足元の行が升の足元の点に来る位置を、描画側の `bodyCenter` を使わずに独立に計算して比べる）。飛行の定義は `FLYING_LIFT` だけ上が正解として比べる（ページが持ち上げて描くので、戦闘の `drawUnits` が飛行を持ち上げているかは見ていない）。影は描かない
+- **数だけ出すこと**: 絵に付く印（旗・HP バー・弓の印）が絵の画素を塗り替えた数（表示は「かぶり」）。不具合かどうかは決めていないので、合否には使わない
+- **確かめないこと**: スマホの倍率（0.796 倍など）での線の消え（直すのはゲーム側。`pixel-asset-forge/ISSUES.md`「ゲームが整数倍でない倍率で描く」）、地形・敵・技の演出との重なり、足元の行より下が空か（attack の一部のコマが足元の 1 行下まで描いていて、承認済みのため）
+- **シートの中身**（コマ数より左の列に絵があるか・右の列が空か）は、ブラウザを使わずに `npm test` の `src/engine/sheet-frames.test.ts` が見る
+- **環境変数**: `CHROME`（Chromium の実行ファイル。無ければ止まる）、`CDP_PORT`（既定 9333。9222 は使わない。そのポートに別の Chromium がいると、取り違えずに終了コード 2 で止まる）
+- **終了コード**: 0 = 全部一致、1 = 違う升がある（シート・状態・方向・コマ番号・違った画素の数を出す）、2 = ページが開けない・画像を読めない・時間切れ・Chromium が起きない
+- **結果**: `out/unit-view/unit-view.png`（全シートを並べた画面）と `unit-view.json`（升ごとの結果）。`out/` は git 管理外。`npm run build` は `out/play/character-tactics/` だけを消すので残る
+- メモリはスクリプトが制限しない。サーバの空きが少ないので、上の `systemd-run` を付けて起こす
+
 ## 構成
 
 | ディレクトリ / ファイル | 責務 |
@@ -161,6 +180,11 @@ URL に `?debug` を付けると、戦闘中だけ次の操作ができる（攻
 | `src/core/events.ts` | 村の訪問と説得の判定、加入の完了 |
 | `src/core/balance.ts` | 難易度を測るボットと、通しの実行・集計（純ロジック） |
 | `tools/balance.ts` | `npm run balance` の入口（引数の解釈と表の出力だけ） |
+| `tools/unit-view.ts` | `npm run unit-view` の入口（開発サーバと Chromium を起こして結果を読み、終了コードを返す） |
+| `tools/cdp.ts` | ヘッドレス Chromium を CDP で動かす道具（開発サーバの起動・ページを開く・評価・撮影）。依存を足さず組み込みの `WebSocket` で話す |
+| `unit-view.html` | ユニットの絵の確認用ページ（開発用。本番の配信物に入らない） |
+| `src/dev/` | `unit-view.html` の中身。並べ方（`unit-view-layout.ts`）・画素の照らし合わせ（`unit-view-compare.ts`）は純関数で、ページ本体（`unit-view.ts`）は描画コードなのでテストしない |
+| `src/engine/png-node.ts` | PNG を読む関数（テスト専用。`node:zlib` を使うのでブラウザのコードから import しない） |
 | `src/core/party.ts` | 出撃の候補になる仲間の並び（加入しうる仲間は加わるまで出ない。切らずに全員。場の 8 人は `state.ts` が決める） |
 | `src/core/sortie.ts` | 出撃の決め方（純ロジック）。外せない仲間（負けの条件の `unitLost`）・出撃の候補・最初の出撃（外せない仲間 → 開始時の加入 → 前回の出撃 → 自動の順で 8 人まで）・入れる/外すの判定。説得する役は外せる仲間のまま |
 | `src/render/` | Canvas2D 描画 |

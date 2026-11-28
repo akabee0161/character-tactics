@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>unit-view（開発用）</title>
+    <style>
+      /* 背景は src/dev/unit-view-layout.ts の VIEW_BG（どのパレットにも無い色）と同じ */
+      html, body { margin: 0; background: rgb(255, 0, 255); }
+      #view { display: block; image-rendering: pixelated; }
+    </style>
+  </head>
+  <body>
+    <canvas id="view"></canvas>
+    <script type="module" src="/src/dev/unit-view.ts"></script>
+  </body>
+</html>

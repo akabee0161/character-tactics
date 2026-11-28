@@ -1,6 +1,7 @@
 import { bondSupporters } from '../core/bonds';
 import { isFunbaruActive } from '../core/combat';
 import { activeBuffs, drawBuffMarks } from './buff-marks';
+import type { ActiveBuffs } from './buff-marks';
 import { playerUnits } from '../core/sim';
 import { lookupDef } from '../engine/registry';
 import type { Registry } from '../engine/registry';
@@ -11,7 +12,7 @@ import { flicker, lightSources } from './lighting';
 import type { LightSource } from './lighting';
 import { alertMarks } from './objectives-view';
 import { STILL, frameFor, stateOf } from './anim';
-import type { AnimStore } from './anim';
+import type { AnimFrame, AnimStore } from './anim';
 import { FOOT_INSET, bodyCenter, drawHalf, drawMapUnit, tileSide } from './sprites';
 import type { SpriteDef } from './sprites';
 import { LOGICAL_H, LOGICAL_W, MAP_ORIGIN, mapToLogical } from './viewport';
@@ -301,7 +302,7 @@ function drawHpBar(
 }
 
 /** 飛行のユニットの絵を持ち上げる高さ（px） */
-const FLYING_LIFT = 5;
+export const FLYING_LIFT = 5;
 
 /** 点滅中の倒れた仲間。コマは今の frameFor のまま、体だけを描く */
 function drawFallenUnit(
@@ -370,53 +371,91 @@ function drawUnits(
     }
     const sheet = def.sprites.map;
     const frame = sheet === null ? STILL : frameFor(anim, unit.uid, sheet, state.time);
-    // 絵が入ると 22px から 32px になる。HPバーやリングはこの half を基準にする
-    const half = drawHalf(def, radius);
-    if (phase !== 'marks') {
-      drawMapUnit(ctx, p, radius, def, images, frame);
-    }
-    if (phase === 'bodies') continue;
-    // 弓を通しにくい印。体ではなく印なので、暗い膜の上に描く（暗くないステージでは体の直後で、これまでと同じ順）
-    if (unit.bowDamageCap !== null) {
-      ctx.fillStyle = '#c8ccd4';
-      ctx.fillRect(p.x - 14, p.y - 8, 5, 16);
-    }
-
-    if (isAlly) {
-      // 旗(キャラだとわかるように)
-      ctx.fillStyle = COLORS.text;
-      ctx.fillRect(p.x + half - 2, p.y - half - 6, 2, 10);
-      ctx.fillRect(p.x + half, p.y - half - 6, 7, 5);
-
-      if (unit.uid === selected) {
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 3;
-        ctx.setLineDash([4, 3]);
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, half + 10, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.setLineDash([]);
-      }
-    }
-
-    if (isFunbaruActive(unit, state.time)) {
-      ctx.strokeStyle = '#ffe27a';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, half + 4, 0, Math.PI * 2);
-      ctx.stroke();
-    }
-    if (unit.neraiuchiArmed) {
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, half + 7, 0, Math.PI * 2);
-      ctx.stroke();
-    }
-    drawBuffMarks(ctx, p.x, p.y - half - 12, activeBuffs(unit, state.time));
     const displayedHp = effects.displayedHp.get(unit.uid) ?? unit.hp;
-    drawHpBar(ctx, p, half, displayedHp / unit.maxHp, isAlly ? COLORS.hpAlly : COLORS.hpEnemy);
+    drawUnitFigure(ctx, def, p, radius, images, frame, {
+      isAlly,
+      selected: unit.uid === selected,
+      funbaru: isFunbaruActive(unit, state.time),
+      neraiuchi: unit.neraiuchiArmed,
+      bowCap: unit.bowDamageCap !== null,
+      buffs: activeBuffs(unit, state.time),
+      hpRatio: displayedHp / unit.maxHp,
+    }, phase);
   }
+}
+
+/** 絵に付いて回る印の有無。Unit と BattleState を丸ごと渡さずに 1 体ぶんを描くための入力 */
+export type FigureMarks = {
+  isAlly: boolean;
+  selected: boolean;
+  funbaru: boolean;
+  neraiuchi: boolean;
+  /** 弓を通しにくい印 */
+  bowCap: boolean;
+  buffs: ActiveBuffs;
+  hpRatio: number;
+};
+
+/**
+ * 1 体ぶんの、絵と、絵に付いて回る印（弓の印・旗・選択の輪・踏ん張り・狙い撃ち・強化・HPバー）を描く。
+ * p は（持ち上げ済みの）絵の中心。足元の影・跳ぶ技や飛行の持ち上げはここに入れない（絵ではなく地面の印なので drawUnits が持つ）。
+ * phase は暗いステージの 'bodies'（体だけ）/ 'marks'（印だけ）の分け方と同じ。unit-view のページもこれで描く
+ */
+export function drawUnitFigure(
+  ctx: CanvasRenderingContext2D,
+  def: SpriteDef,
+  p: Vec2,
+  radius: number,
+  images: ImageCache,
+  frame: AnimFrame,
+  marks: FigureMarks,
+  phase: 'all' | 'bodies' | 'marks',
+): void {
+  // 絵が入ると 22px から 32px になる。HPバーやリングはこの half を基準にする
+  const half = drawHalf(def, radius);
+  if (phase !== 'marks') {
+    drawMapUnit(ctx, p, radius, def, images, frame);
+  }
+  if (phase === 'bodies') return;
+  // 弓を通しにくい印。体ではなく印なので、暗い膜の上に描く（暗くないステージでは体の直後で、これまでと同じ順）
+  if (marks.bowCap) {
+    ctx.fillStyle = '#c8ccd4';
+    ctx.fillRect(p.x - 14, p.y - 8, 5, 16);
+  }
+
+  if (marks.isAlly) {
+    // 旗(キャラだとわかるように)
+    ctx.fillStyle = COLORS.text;
+    ctx.fillRect(p.x + half - 2, p.y - half - 6, 2, 10);
+    ctx.fillRect(p.x + half, p.y - half - 6, 7, 5);
+
+    if (marks.selected) {
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 3;
+      ctx.setLineDash([4, 3]);
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, half + 10, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+  }
+
+  if (marks.funbaru) {
+    ctx.strokeStyle = '#ffe27a';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, half + 4, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  if (marks.neraiuchi) {
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, half + 7, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  drawBuffMarks(ctx, p.x, p.y - half - 12, marks.buffs);
+  drawHpBar(ctx, p, half, marks.hpRatio, marks.isAlly ? COLORS.hpAlly : COLORS.hpEnemy);
 }
 
 // 暗い膜用のオフスクリーン。マップの大きさで1枚を使い回す（毎フレーム作り直さない）
