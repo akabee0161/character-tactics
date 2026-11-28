@@ -1,6 +1,7 @@
 // ヘッドレス Chromium を CDP（Chrome DevTools Protocol）で動かす小さな道具。unit-view と一時の撮影で使う。
 // 依存は増やさない: WebSocket は Node の組み込み、開発サーバは vite の createServer。
 import { spawn } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -30,11 +31,31 @@ export async function startDevServer(): Promise<{ url: string; close(): Promise<
 
 type Target = { type: string; webSocketDebuggerUrl?: string };
 
-async function waitForTarget(port: number, timeoutMs: number): Promise<string> {
+/** そのポートで CDP が答えるか（= 先客がいるか） */
+async function portAnswers(port: number): Promise<boolean> {
+  try {
+    const res = await fetch(`http://127.0.0.1:${port}/json/version`);
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * 起こした Chromium のページだけを選ぶ。起こすときに --user-agent に印を付けておき、/json/version の User-Agent に
+ * その印があるときだけ、そのポートの page に繋ぐ（別の Chromium が同じポートで答えていても、そのページには繋がない）
+ */
+async function waitForTarget(port: number, marker: string, timeoutMs: number): Promise<string> {
   const start = Date.now();
   let last = '';
   while (Date.now() - start < timeoutMs) {
     try {
+      const ver = (await (await fetch(`http://127.0.0.1:${port}/json/version`)).json()) as { 'User-Agent'?: string };
+      if (!(ver['User-Agent'] ?? '').includes(marker)) {
+        last = `そのポートで答えているのは別の Chromium（User-Agent に印が無い）`;
+        await sleep(200);
+        continue;
+      }
       const res = await fetch(`http://127.0.0.1:${port}/json/list`);
       const list = (await res.json()) as Target[];
       const page = list.find((t) => t.type === 'page' && t.webSocketDebuggerUrl !== undefined);
@@ -108,12 +129,17 @@ function connect(wsUrl: string): Promise<Cdp> {
 
 /** Chromium を起こして CDP で繋ぐ。close で Chromium を止め、一時のプロファイルを消す */
 export async function launchChrome(opts: { chrome: string; port: number }): Promise<{ cdp: Cdp; close(): Promise<void> }> {
+  // そのポートに先客（別の Chromium）がいると、その page を自分のものと取り違えて操作してしまう。先に空きを確かめる
+  if (await portAnswers(opts.port)) {
+    throw new Error(`Chromium が起きない: CDP のポート ${opts.port} はすでに使われている（CDP_PORT を変えてください）`);
+  }
   const profile = mkdtempSync(join(tmpdir(), 'unit-view-chrome-'));
+  const marker = `unit-view-${randomUUID()}`;
   const child = spawn(
     opts.chrome,
     [
       '--headless=new', '--no-sandbox', '--disable-gpu',
-      `--remote-debugging-port=${opts.port}`, `--user-data-dir=${profile}`, 'about:blank',
+      `--remote-debugging-port=${opts.port}`, `--user-data-dir=${profile}`, `--user-agent=${marker}`, 'about:blank',
     ],
     { stdio: 'ignore' },
   );
@@ -128,7 +154,8 @@ export async function launchChrome(opts: { chrome: string; port: number }): Prom
   };
   try {
     const wsUrl = await Promise.race([
-      waitForTarget(opts.port, 15000),
+      // 空きを確かめた後で別の Chromium が同じポートを取る競合に備え、繋ぐ先は自分が起こした Chromium（User-Agent の印）に限る
+      waitForTarget(opts.port, marker, 15000),
       (async () => {
         while (spawnError === null) await sleep(100);
         throw new Error(`Chromium が起きない: ${spawnError}`);

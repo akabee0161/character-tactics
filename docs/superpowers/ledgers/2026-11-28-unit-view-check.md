@@ -20,3 +20,5 @@ Final: fixed I-1 Chromium が読み込み中に落ちると止まる — /tmp �
 Final: fixed I-2 開発サーバ起動失敗が exit 1 になる — startDevServer を try の中へ、main の reject を exit 2 に。自動テスト・再現は未実施（コードと型だけ）
 Final: fixed M-1(Important に再格付け) README の飛行の持ち上げの記述を実際の確認範囲に合わせた
 Final: minor (deferred): M-2 半透明画素があると理由不明の NG／M-3 ページが壊れると 60 秒待つ／M-4 9333 使用中だと別の Chromium を操作／M-5 起動失敗待ちのループが止まらない／M-6 開発サーバのポート 5180 固定・台帳の写しが未作成／M-7 tools/ は型検査の対象外／M-8 コメントの食い違い 2 件／M-9 README の旧 CDP 節の 9222
+PR #75 CodeRabbit(Minor 2件): fixed 敵の区画が同じ ID の味方の定義で描かれる — isAlly で units/enemies を選ぶ（描画ページなので自動テスト無し。unit-view 38 シート OK）
+PR #75 CodeRabbit: fixed CDP のポートを取り違える（M-4 と同じ）— 起こす前にポートが空きか確かめ、繋ぐ前に /json/version の User-Agent の印で自分の Chromium かを確かめる。同じポートで 2 回起こす再現スクリプト ACCEPTED→rejected。Ruling: 計画の DevToolsActivePort 案・URL の印案は、この Chromium では書かれない／最初のページが chrome://newtab になるため使えず、User-Agent の印にした。競合（確認後に別の Chromium が取る）側の経路は再現していない

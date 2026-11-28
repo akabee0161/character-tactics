@@ -71,7 +71,8 @@ async function run(): Promise<UnitViewResult> {
   }
 
   for (const sec of layout.sections) {
-    const def = reg.units.get(sec.entry.defId) ?? reg.enemies.get(sec.entry.defId);
+    // 味方と敵に同じ ID があっても、区画の種別の側の定義を引く（敵のシートを味方の定義で描かない）
+    const def = sec.entry.isAlly ? reg.units.get(sec.entry.defId) : reg.enemies.get(sec.entry.defId);
     if (def === undefined) return fail(`定義が見つからない: ${sec.entry.defId}`);
     const lift = sec.entry.flying ? FLYING_LIFT : 0;
     const marks = {
