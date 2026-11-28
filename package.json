@@ -12,7 +12,8 @@
     "test": "vitest run",
     "test:full": "FULL=1 vitest run",
     "test:watch": "vitest",
-    "balance": "vite-node tools/balance.ts --"
+    "balance": "vite-node tools/balance.ts --",
+    "unit-view": "vite-node tools/unit-view.ts --"
   },
   "devDependencies": {
     "@types/node": "^26.4.1",
