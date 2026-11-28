@@ -457,6 +457,13 @@ pixel-asset-forge #6: https://github.com/akabee0161/pixel-asset-forge/issues/6
 - 村のイベント（依頼者が別件で扱う）
 - pixel-asset-forge の CLAUDE.md の「ゲーム側で倍率を直す予定」という記述（別リポジトリ。直す前に依頼者に確認）
 
+## ユニットの絵をゲームの描画で確かめる `npm run unit-view`（2026-11-28、feat/unit-view-debug）
+
+- 全シートをゲームの描画関数で描き、シートのコマと画素で照らし合わせる。CHROME が要る。使い方・結果の読み方は README「ユニットの絵を確かめる」。残りのユニットの絵の作業（上の進捗の欄）の「ゲームで動かす」確認に使う
+- 足元の行より下の画素（attack の一部のコマが y=31 まで描いている）は、依頼者が問題なしとした。確認から外してある
+- 設計書・計画・台帳: `docs/superpowers/specs/2026-11-28-unit-view-check-design.md`、`docs/superpowers/plans/2026-11-28-unit-view-check.md`、`docs/superpowers/ledgers/2026-11-28-unit-view-check.md`（先送りにした Minor もここ）
+- 上の「進捗」の欄は、この作業の状態ではなく、全員分のユニットのドット絵の作業のもの（このブランチでは直していない）
+
 ## 資料
 
 - forge の issue: https://github.com/akabee0161/pixel-asset-forge/issues/6
